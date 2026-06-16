@@ -12,4 +12,5 @@ public interface IWmiDiskService
     Task<List<char>> GetAvailableLettersAsync();
     Task<(long Min, long Max)> GetPartitionSupportedSizeAsync(char driveLetter);
     Task<List<MountedImageInfo>> GetMountedImagesAsync();
+    Task<Dictionary<char, string>> GetBitLockerStatusAsync();
 }

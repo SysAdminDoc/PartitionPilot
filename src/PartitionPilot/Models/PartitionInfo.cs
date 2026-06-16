@@ -16,6 +16,7 @@ public class PartitionInfo
     public bool IsHidden { get; set; }
     public bool HasPagefile { get; set; }
     public int DiskNumber { get; set; }
+    public string EncryptionStatus { get; set; } = "";
 
     public string LetterDisplay => DriveLetter.HasValue ? $"{DriveLetter}:" : "—";
 
@@ -33,6 +34,7 @@ public class PartitionInfo
             if (IsActive) parts.Add("Active");
             if (IsHidden) parts.Add("Hidden");
             if (HasPagefile) parts.Add("Pagefile");
+            if (!string.IsNullOrEmpty(EncryptionStatus)) parts.Add(EncryptionStatus);
             return parts.Count > 0 ? string.Join(", ", parts) : Type;
         }
     }
