@@ -699,8 +699,27 @@ public class ToolsViewModel : ViewModelBase
             string bcdbootArgs;
             if (firmware.Equals("UEFI", StringComparison.OrdinalIgnoreCase))
             {
-                bcdbootArgs = $"{SelectedBootDrive}:\\Windows /s S: /f UEFI";
-                _log.Log("Detected UEFI firmware — using UEFI boot repair.");
+                _log.Log("Detected UEFI firmware — locating EFI System Partition...");
+                var efiLetterCmd = "(Get-Partition | Where-Object { $_.GptType -eq '{c12a7328-f81f-11d2-ba4b-00a0c93ec93b}' } | Select-Object -First 1).DriveLetter";
+                var efiLetter = (await _processRunner.RunPowerShellAsync(efiLetterCmd, _log)).Trim();
+
+                if (string.IsNullOrEmpty(efiLetter) || efiLetter.Length != 1 || !char.IsLetter(efiLetter[0]))
+                {
+                    // EFI partition has no letter assigned — temporarily assign one
+                    _log.Log("EFI partition has no drive letter, assigning a temporary letter...");
+                    var assignCmd = "$esp = Get-Partition | Where-Object { $_.GptType -eq '{c12a7328-f81f-11d2-ba4b-00a0c93ec93b}' } | Select-Object -First 1; " +
+                                    "Add-PartitionAccessPath -DiskNumber $esp.DiskNumber -PartitionNumber $esp.PartitionNumber -AssignDriveLetter; " +
+                                    "(Get-Partition -DiskNumber $esp.DiskNumber -PartitionNumber $esp.PartitionNumber).DriveLetter";
+                    efiLetter = (await _processRunner.RunPowerShellAsync(assignCmd, _log)).Trim();
+                }
+
+                if (string.IsNullOrEmpty(efiLetter) || !char.IsLetter(efiLetter[0]))
+                {
+                    throw new InvalidOperationException("Could not locate or mount the EFI System Partition.");
+                }
+
+                _log.Log($"EFI System Partition at {efiLetter}:");
+                bcdbootArgs = $"{SelectedBootDrive}:\\Windows /s {efiLetter}: /f UEFI";
             }
             else
             {

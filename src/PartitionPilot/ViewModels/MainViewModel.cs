@@ -36,8 +36,8 @@ public class MainViewModel : ViewModelBase
     public MainViewModel()
     {
         _processRunner = new ProcessRunner();
-        _wmiService = new WmiDiskService(_processRunner);
         Log = new ActivityLog();
+        _wmiService = new WmiDiskService(_processRunner, Log);
 
         Partitions = new PartitionsViewModel(_wmiService, _processRunner, Log);
         DiskHealth = new DiskHealthViewModel(_wmiService, Log);

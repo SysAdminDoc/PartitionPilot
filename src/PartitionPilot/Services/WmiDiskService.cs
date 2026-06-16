@@ -9,10 +9,12 @@ public class WmiDiskService
     private const string CimScope = @"\\.\root\CIMV2";
 
     private readonly ProcessRunner _runner;
+    private readonly ActivityLog _log;
 
-    public WmiDiskService(ProcessRunner runner)
+    public WmiDiskService(ProcessRunner runner, ActivityLog log)
     {
         _runner = runner;
+        _log = log;
     }
 
     // ───────────────────────── Disks ─────────────────────────
@@ -44,7 +46,7 @@ public class WmiDiskService
                 }
             }
         }
-        catch { /* return empty */ }
+        catch (Exception ex) { _log.Log($"WMI GetDisks failed: {ex.Message}"); }
         return list;
     });
 
@@ -86,7 +88,7 @@ public class WmiDiskService
                 }
             }
         }
-        catch { /* return empty */ }
+        catch (Exception ex) { _log.Log($"WMI GetPartitions failed: {ex.Message}"); }
 
         list.Sort((a, b) => a.Offset.CompareTo(b.Offset));
         return list;
@@ -145,7 +147,7 @@ public class WmiDiskService
                 }
             }
         }
-        catch { /* return empty */ }
+        catch (Exception ex) { _log.Log($"WMI GetVolumes failed: {ex.Message}"); }
         return list;
     });
 
@@ -207,7 +209,7 @@ public class WmiDiskService
                 }
             }
         }
-        catch { /* return empty */ }
+        catch (Exception ex) { _log.Log($"WMI GetPhysicalDisks failed: {ex.Message}"); }
         return list;
     });
 
@@ -257,7 +259,7 @@ public class WmiDiskService
                 return null;
             });
         }
-        catch { /* fall through to PowerShell approach */ }
+        catch (Exception ex) { _log.Log($"WMI SMART query failed, trying PowerShell: {ex.Message}"); }
 
         // Attempt 2: PowerShell fallback
         try
@@ -283,7 +285,7 @@ public class WmiDiskService
                 WriteLatencyMax = GetJsonLong(root, "WriteLatencyMax")
             };
         }
-        catch { return null; }
+        catch (Exception ex) { _log.Log($"PowerShell SMART query failed: {ex.Message}"); return null; }
     }
 
     // ──────────────── Alignment Audit ───────────────────
@@ -318,7 +320,7 @@ public class WmiDiskService
                 }
             }
         }
-        catch { /* return empty */ }
+        catch (Exception ex) { _log.Log($"WMI AlignmentAudit failed: {ex.Message}"); }
         return list;
     });
 
@@ -344,7 +346,7 @@ public class WmiDiskService
                 }
             }
         }
-        catch { /* return empty */ }
+        catch (Exception ex) { _log.Log($"WMI PagefileLocations failed: {ex.Message}"); }
         return set;
     });
 
@@ -376,7 +378,7 @@ public class WmiDiskService
             });
             partitions = allPartitions;
         }
-        catch { /* return all letters */ }
+        catch (Exception ex) { _log.Log($"WMI GetAvailableLetters failed: {ex.Message}"); }
 
         var usedSet = new HashSet<char>(partitions);
         var available = new List<char>();
@@ -444,36 +446,45 @@ public class WmiDiskService
                 }
             }
         }
-        catch { /* return empty */ }
+        catch (Exception ex) { _log.Log($"WMI GetMountedImages failed: {ex.Message}"); }
         return list;
     });
 
     private static char? FindImageDriveLetter(ManagementScope scope, ManagementObject imageObj)
     {
-        // Query for associated volumes via the disk image's disk number
         try
         {
             var devicePath = imageObj["DevicePath"]?.ToString();
             if (string.IsNullOrEmpty(devicePath)) return null;
 
-            using var volSearcher = new ManagementObjectSearcher(scope,
-                new ObjectQuery("SELECT DriveLetter FROM MSFT_Volume"));
+            // MSFT_DiskImage.DevicePath maps to MSFT_Disk.Path — find the disk number
+            using var diskSearcher = new ManagementObjectSearcher(scope,
+                new ObjectQuery($"SELECT Number FROM MSFT_Disk WHERE Path = '{devicePath.Replace("'", "''")}'"));
 
-            foreach (ManagementObject vol in volSearcher.Get())
+            int? diskNumber = null;
+            foreach (ManagementObject disk in diskSearcher.Get())
             {
-                using (vol)
+                using (disk)
+                    diskNumber = Convert.ToInt32(disk["Number"]);
+            }
+
+            if (diskNumber is null) return null;
+
+            // Find the first partition with a drive letter on that disk
+            using var partSearcher = new ManagementObjectSearcher(scope,
+                new ObjectQuery($"SELECT DriveLetter FROM MSFT_Partition WHERE DiskNumber = {diskNumber}"));
+
+            foreach (ManagementObject part in partSearcher.Get())
+            {
+                using (part)
                 {
-                    var rawLetter = Convert.ToChar(vol["DriveLetter"] ?? '\0');
+                    var rawLetter = Convert.ToChar(part["DriveLetter"] ?? '\0');
                     if (rawLetter != '\0')
-                    {
-                        // Return the first available letter as a best-effort match
-                        // A more precise match would correlate via disk number
-                        // but MSFT_DiskImage doesn't always expose it directly
-                    }
+                        return rawLetter;
                 }
             }
         }
-        catch { /* ignore */ }
+        catch { /* leave null */ }
         return null;
     }
 
