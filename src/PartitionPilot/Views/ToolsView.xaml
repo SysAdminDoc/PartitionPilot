@@ -200,10 +200,20 @@
                            FontSize="16"
                            FontWeight="SemiBold"
                            HorizontalAlignment="Center"/>
+                <TextBlock Text="{Binding StatusText}"
+                           Foreground="{StaticResource TextBrush}"
+                           FontSize="13"
+                           Margin="0,6,0,0"
+                           TextAlignment="Center"/>
                 <TextBlock Text="Output is being captured in the activity log."
                            Style="{StaticResource CaptionText}"
                            Margin="0,6,0,0"
                            TextAlignment="Center"/>
+                <Button Content="Cancel"
+                        Command="{Binding CancelCommand}"
+                        Style="{StaticResource ToolbarButton}"
+                        HorizontalAlignment="Center"
+                        Margin="0,12,0,0"/>
             </StackPanel>
         </Border>
     </Grid>

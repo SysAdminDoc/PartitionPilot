@@ -279,6 +279,8 @@ public class ToolsViewModel : ViewModelBase
 
     // ──────────────────────── Shared ────────────────────────
 
+    private CancellationTokenSource? _cts;
+
     private bool _isBusy;
     public bool IsBusy
     {
@@ -288,6 +290,13 @@ public class ToolsViewModel : ViewModelBase
             if (SetProperty(ref _isBusy, value))
                 CommandManager.InvalidateRequerySuggested();
         }
+    }
+
+    private string _statusText = "";
+    public string StatusText
+    {
+        get => _statusText;
+        set => SetProperty(ref _statusText, value);
     }
 
     // ──────────────────────── Commands ────────────────────────
@@ -301,6 +310,7 @@ public class ToolsViewModel : ViewModelBase
     public ICommand RunBootRepairCommand { get; }
     public ICommand RunBenchmarkCommand { get; }
     public ICommand RefreshCommand { get; }
+    public ICommand CancelCommand { get; }
 
     public ToolsViewModel(WmiDiskService wmiService, ProcessRunner processRunner, ActivityLog log, IDialogService dialog)
     {
@@ -320,6 +330,32 @@ public class ToolsViewModel : ViewModelBase
         RunBootRepairCommand = new AsyncRelayCommand(_ => RunBootRepairAsync(), _ => SelectedBootDrive != default);
         RunBenchmarkCommand = new AsyncRelayCommand(_ => RunBenchmarkAsync(SelectedBenchDrive), _ => SelectedBenchDrive != default);
         RefreshCommand = new AsyncRelayCommand(_ => RefreshDriveListsAsync());
+        CancelCommand = new RelayCommand(_ => CancelCurrentOperation(), _ => IsBusy && _cts is not null);
+    }
+
+    private CancellationToken BeginOperation(string status)
+    {
+        _cts?.Cancel();
+        _cts?.Dispose();
+        _cts = new CancellationTokenSource();
+        StatusText = status;
+        IsBusy = true;
+        return _cts.Token;
+    }
+
+    private void EndOperation(string? status = null)
+    {
+        StatusText = status ?? "";
+        IsBusy = false;
+        _cts?.Dispose();
+        _cts = null;
+    }
+
+    private void CancelCurrentOperation()
+    {
+        _cts?.Cancel();
+        _log.Log("Operation cancelled by user.");
+        StatusText = "Cancelling...";
     }
 
     // ──────────────────────── Refresh ────────────────────────
@@ -478,7 +514,7 @@ public class ToolsViewModel : ViewModelBase
     {
         if (SelectedCheckDrive == default) return;
 
-        IsBusy = true;
+        var ct = BeginOperation($"Checking {SelectedCheckDrive}: ({CheckMode})...");
         try
         {
             string mode = CheckMode switch
@@ -490,11 +526,15 @@ public class ToolsViewModel : ViewModelBase
 
             _log.Log($"Running Repair-Volume on {SelectedCheckDrive}: ({CheckMode})...");
             var cmd = $"Repair-Volume -DriveLetter '{SelectedCheckDrive}' {mode}";
-            var result = await _processRunner.RunPowerShellAsync(cmd, _log);
+            var result = await _processRunner.RunPowerShellAsync(cmd, _log, ct);
             _log.Log($"Check result: {result.Trim()}");
 
             _dialog.ShowInfo($"File system check ({CheckMode}) on {SelectedCheckDrive}: completed.\n\n{result.Trim()}",
                 "Check Complete");
+        }
+        catch (OperationCanceledException)
+        {
+            _log.Log("File system check cancelled.");
         }
         catch (Exception ex)
         {
@@ -503,7 +543,7 @@ public class ToolsViewModel : ViewModelBase
         }
         finally
         {
-            IsBusy = false;
+            EndOperation();
         }
     }
 
@@ -513,7 +553,7 @@ public class ToolsViewModel : ViewModelBase
     {
         if (SelectedOptDrive == default) return;
 
-        IsBusy = true;
+        var ct = BeginOperation($"Optimizing {SelectedOptDrive}: ({OptimizeMode})...");
         try
         {
             string mode = OptimizeMode switch
@@ -526,11 +566,15 @@ public class ToolsViewModel : ViewModelBase
 
             _log.Log($"Running Optimize-Volume on {SelectedOptDrive}: ({OptimizeMode})...");
             var cmd = $"Optimize-Volume -DriveLetter '{SelectedOptDrive}' {mode} -Verbose";
-            var result = await _processRunner.RunPowerShellAsync(cmd, _log);
+            var result = await _processRunner.RunPowerShellAsync(cmd, _log, ct);
             _log.Log($"Optimize result: {result.Trim()}");
 
             _dialog.ShowInfo($"Optimization ({OptimizeMode}) on {SelectedOptDrive}: completed.\n\n{result.Trim()}",
                 "Optimize Complete");
+        }
+        catch (OperationCanceledException)
+        {
+            _log.Log("Optimization cancelled.");
         }
         catch (Exception ex)
         {
@@ -539,7 +583,7 @@ public class ToolsViewModel : ViewModelBase
         }
         finally
         {
-            IsBusy = false;
+            EndOperation();
         }
     }
 
@@ -553,16 +597,20 @@ public class ToolsViewModel : ViewModelBase
             $"Wipe free space on {letter}:?\n\nExisting files remain in place. Previously deleted data in free space will be overwritten.",
             "Confirm Free-Space Wipe")) return;
 
-        IsBusy = true;
+        var ct = BeginOperation($"Wiping free space on {letter}:...");
         try
         {
             _log.Log($"Wiping free space on {letter}: with cipher /w...");
-            await _processRunner.RunExeAsync("cipher", $"/w:{letter}:\\", _log);
+            await _processRunner.RunExeAsync("cipher", $"/w:{letter}:\\", _log, ct: ct);
 
             _log.Log($"Free-space wipe complete on {letter}:.");
             _dialog.ShowInfo($"Free-space wipe complete on {letter}:.", "Wipe Complete");
 
             await RefreshDriveListsAsync();
+        }
+        catch (OperationCanceledException)
+        {
+            _log.Log($"Free-space wipe on {letter}: cancelled.");
         }
         catch (Exception ex)
         {
@@ -571,7 +619,7 @@ public class ToolsViewModel : ViewModelBase
         }
         finally
         {
-            IsBusy = false;
+            EndOperation();
         }
     }
 
@@ -601,48 +649,51 @@ public class ToolsViewModel : ViewModelBase
             "FINAL WARNING: Click Yes to begin disk wipe immediately.",
             "Wipe Disk -- FINAL Confirmation")) return;
 
-        IsBusy = true;
+        var ct = BeginOperation($"Wiping Disk {SelectedWipeDrive.Number}...");
         try
         {
             int diskNum = SelectedWipeDrive.Number;
             _log.Log($"Wiping Disk {diskNum} ({WipeMode})...");
 
-            // Clear the disk first
+            StatusText = $"Clearing Disk {diskNum}...";
             var clearCmd = $"Clear-Disk -Number {diskNum} -RemoveData -RemoveOEM -Confirm:$false";
-            await _processRunner.RunPowerShellAsync(clearCmd, _log);
+            await _processRunner.RunPowerShellAsync(clearCmd, _log, ct);
             _log.Log($"Disk {diskNum} cleared.");
 
             if (WipeMode != "SinglePass")
             {
-                // For multi-pass wipe, use cipher on each volume or write zeros
+                StatusText = "Running multi-pass wipe with cipher /w...";
                 _log.Log("Running multi-pass wipe with cipher /w...");
 
-                // Initialize the disk first so cipher has a volume to work with
                 var initCmd = $"Initialize-Disk -Number {diskNum} -PartitionStyle GPT -Confirm:$false";
-                await _processRunner.RunPowerShellAsync(initCmd, _log);
+                await _processRunner.RunPowerShellAsync(initCmd, _log, ct);
 
                 var createPartCmd = $"New-Partition -DiskNumber {diskNum} -UseMaximumSize -AssignDriveLetter | Format-Volume -FileSystem NTFS -Confirm:$false";
-                var partResult = await _processRunner.RunPowerShellAsync(createPartCmd, _log);
+                await _processRunner.RunPowerShellAsync(createPartCmd, _log, ct);
 
-                // Extract the assigned letter and run cipher
                 var letterCmd = $"(Get-Partition -DiskNumber {diskNum} | Where-Object {{ $_.DriveLetter }} | Select-Object -First 1).DriveLetter";
-                var letterResult = await _processRunner.RunPowerShellAsync(letterCmd, _log);
+                var letterResult = await _processRunner.RunPowerShellAsync(letterCmd, _log, ct);
                 var letter = letterResult.Trim();
 
                 if (!string.IsNullOrEmpty(letter))
                 {
-                    await _processRunner.RunExeAsync("cipher", $"/w:{letter}:\\", _log);
+                    StatusText = $"Cipher wiping {letter}:\\...";
+                    await _processRunner.RunExeAsync("cipher", $"/w:{letter}:\\", _log, ct: ct);
                     _log.Log($"Cipher wipe complete on {letter}:\\.");
                 }
 
-                // Clean up — clear again
-                await _processRunner.RunPowerShellAsync(clearCmd, _log);
+                StatusText = "Final disk clear...";
+                await _processRunner.RunPowerShellAsync(clearCmd, _log, ct);
             }
 
             _log.Log($"Disk {diskNum} wipe complete.");
             _dialog.ShowInfo($"Disk {diskNum} has been wiped.", "Wipe Complete");
 
             await RefreshDriveListsAsync();
+        }
+        catch (OperationCanceledException)
+        {
+            _log.Log("Disk wipe cancelled.");
         }
         catch (Exception ex)
         {
@@ -651,7 +702,7 @@ public class ToolsViewModel : ViewModelBase
         }
         finally
         {
-            IsBusy = false;
+            EndOperation();
         }
     }
 
@@ -724,7 +775,7 @@ public class ToolsViewModel : ViewModelBase
     {
         if (driveLetter == default) return;
 
-        IsBusy = true;
+        var ct = BeginOperation($"Benchmarking {driveLetter}:...");
         BenchmarkResults = "Running benchmark...";
         try
         {
@@ -735,12 +786,18 @@ public class ToolsViewModel : ViewModelBase
                 Application.Current.Dispatcher.Invoke(() =>
                 {
                     BenchmarkResults = msg;
+                    StatusText = msg.Split('\n')[0];
                 });
             });
 
-            await Task.Run(() => RunBenchmarkCore(driveLetter, progress));
+            await Task.Run(() => RunBenchmarkCore(driveLetter, progress, ct), ct);
 
             _log.Log($"Benchmark complete for {driveLetter}:.");
+        }
+        catch (OperationCanceledException)
+        {
+            _log.Log("Benchmark cancelled.");
+            BenchmarkResults = "Benchmark cancelled.";
         }
         catch (Exception ex)
         {
@@ -749,11 +806,11 @@ public class ToolsViewModel : ViewModelBase
         }
         finally
         {
-            IsBusy = false;
+            EndOperation();
         }
     }
 
-    private void RunBenchmarkCore(char driveLetter, IProgress<string> progress)
+    private void RunBenchmarkCore(char driveLetter, IProgress<string> progress, CancellationToken ct)
     {
         const int fileSizeMB = 256;
         const int blockSize = 1024 * 1024; // 1 MB
@@ -777,7 +834,10 @@ public class ToolsViewModel : ViewModelBase
             using (var fs = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None, blockSize, FileOptions.WriteThrough))
             {
                 for (int i = 0; i < totalBlocks; i++)
+                {
+                    ct.ThrowIfCancellationRequested();
                     fs.Write(buffer, 0, blockSize);
+                }
             }
             sw.Stop();
             double seqWriteMBs = fileSizeMB / sw.Elapsed.TotalSeconds;
@@ -789,7 +849,8 @@ public class ToolsViewModel : ViewModelBase
             sw.Restart();
             using (var fs = new FileStream(tempPath, FileMode.Open, FileAccess.Read, FileShare.None, blockSize, FileOptions.SequentialScan))
             {
-                while (fs.Read(buffer, 0, blockSize) > 0) { }
+                while (fs.Read(buffer, 0, blockSize) > 0)
+                    ct.ThrowIfCancellationRequested();
             }
             sw.Stop();
             double seqReadMBs = fileSizeMB / sw.Elapsed.TotalSeconds;
@@ -808,8 +869,9 @@ public class ToolsViewModel : ViewModelBase
             {
                 for (int i = 0; i < random4KOps; i++)
                 {
+                    ct.ThrowIfCancellationRequested();
                     long offset = (long)(rng.NextDouble() * maxOffset);
-                    offset = offset - (offset % random4KBlockSize); // align to 4K
+                    offset = offset - (offset % random4KBlockSize);
                     fs.Seek(offset, SeekOrigin.Begin);
                     fs.Write(smallBuf, 0, random4KBlockSize);
                 }
@@ -827,6 +889,7 @@ public class ToolsViewModel : ViewModelBase
             {
                 for (int i = 0; i < random4KOps; i++)
                 {
+                    ct.ThrowIfCancellationRequested();
                     long offset = (long)(rng.NextDouble() * maxOffset);
                     offset = offset - (offset % random4KBlockSize);
                     fs.Seek(offset, SeekOrigin.Begin);
