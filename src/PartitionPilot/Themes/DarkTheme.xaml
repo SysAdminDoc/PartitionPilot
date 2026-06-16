@@ -18,6 +18,15 @@
     <Color x:Key="LogBgColor">#0D0F12</Color>
     <Color x:Key="InputBgColor">#14171B</Color>
     <Color x:Key="SelectionColor">#2D6F92</Color>
+    <Color x:Key="AccentSubtleColor">#172A34</Color>
+    <Color x:Key="PrimarySoftColor">#173242</Color>
+    <Color x:Key="SuccessSoftColor">#143527</Color>
+    <Color x:Key="WarningSoftColor">#3A3020</Color>
+    <Color x:Key="DangerSoftColor">#3A2024</Color>
+    <Color x:Key="TableRuleColor">#293039</Color>
+    <Color x:Key="BadgeBgColor">#18242B</Color>
+    <Color x:Key="StatusBgColor">#141B20</Color>
+    <Color x:Key="DialogFooterColor">#1A1E23</Color>
 
     <SolidColorBrush x:Key="BgBrush" Color="{StaticResource WindowBgColor}"/>
     <SolidColorBrush x:Key="WindowBgBrush" Color="{StaticResource WindowBgColor}"/>
@@ -37,6 +46,15 @@
     <SolidColorBrush x:Key="LogBgBrush" Color="{StaticResource LogBgColor}"/>
     <SolidColorBrush x:Key="InputBgBrush" Color="{StaticResource InputBgColor}"/>
     <SolidColorBrush x:Key="SelectionBrush" Color="{StaticResource SelectionColor}"/>
+    <SolidColorBrush x:Key="AccentSubtleBrush" Color="{StaticResource AccentSubtleColor}"/>
+    <SolidColorBrush x:Key="PrimarySoftBrush" Color="{StaticResource PrimarySoftColor}"/>
+    <SolidColorBrush x:Key="SuccessSoftBrush" Color="{StaticResource SuccessSoftColor}"/>
+    <SolidColorBrush x:Key="WarningSoftBrush" Color="{StaticResource WarningSoftColor}"/>
+    <SolidColorBrush x:Key="DangerSoftBrush" Color="{StaticResource DangerSoftColor}"/>
+    <SolidColorBrush x:Key="TableRuleBrush" Color="{StaticResource TableRuleColor}"/>
+    <SolidColorBrush x:Key="BadgeBgBrush" Color="{StaticResource BadgeBgColor}"/>
+    <SolidColorBrush x:Key="StatusBgBrush" Color="{StaticResource StatusBgColor}"/>
+    <SolidColorBrush x:Key="DialogFooterBrush" Color="{StaticResource DialogFooterColor}"/>
 
     <!-- Interactive state tokens -->
     <SolidColorBrush x:Key="ItemHoverBrush" Color="#242A31"/>

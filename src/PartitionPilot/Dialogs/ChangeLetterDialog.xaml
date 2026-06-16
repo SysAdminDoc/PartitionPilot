@@ -12,16 +12,19 @@
                        Margin="0,0,0,14"/>
 
             <TextBlock Text="Current letter" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
-            <TextBlock x:Name="txtCurrent" Foreground="{StaticResource PrimaryBrush}" FontSize="13" FontWeight="SemiBold" Margin="0,0,0,12"/>
+            <TextBlock x:Name="txtCurrent" Foreground="{DynamicResource PrimaryBrush}" FontSize="13" FontWeight="SemiBold" Margin="0,0,0,12"/>
 
             <TextBlock Text="New letter" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
-            <ComboBox x:Name="cmbLetter" Height="34" FontSize="13" Margin="0,0,0,16"/>
+            <ComboBox x:Name="cmbLetter" Height="34" FontSize="13" Margin="0,0,0,16"
+                      AutomationProperties.Name="New drive letter"/>
 
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                <Button Content="Apply" Width="96" Height="34" Style="{StaticResource PrimaryButton}"
-                        IsDefault="True" Click="OnOk"/>
-                <Button Content="Cancel" Width="96" Height="34" Margin="8,0,0,0" IsCancel="True"/>
-            </StackPanel>
+            <Border Style="{StaticResource DialogFooter}">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Content="Apply" Width="96" Height="34" Style="{StaticResource PrimaryButton}"
+                            IsDefault="True" Click="OnOk"/>
+                    <Button Content="Cancel" Width="96" Height="34" Margin="8,0,0,0" IsCancel="True"/>
+                </StackPanel>
+            </Border>
         </StackPanel>
     </Border>
 </Window>

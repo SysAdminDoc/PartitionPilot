@@ -3,9 +3,10 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:views="clr-namespace:PartitionPilot.Views"
         Title="PartitionPilot" Width="1180" Height="780"
+        Icon="Assets/AppIcon.png"
         MinWidth="960" MinHeight="680"
         WindowStartupLocation="CenterScreen"
-        Background="{StaticResource WindowBgBrush}"
+        Background="{DynamicResource WindowBgBrush}"
         Closing="Window_Closing">
 
     <Grid Margin="18">
@@ -16,7 +17,7 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <Border Grid.Row="0" Style="{StaticResource PanelCard}" Padding="16" Margin="0,0,0,14">
+        <Border Grid.Row="0" Style="{StaticResource PanelCard}" Padding="18" Margin="0,0,0,14">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -25,31 +26,31 @@
 
                 <StackPanel>
                     <TextBlock Text="PartitionPilot"
-                               FontSize="26"
-                               FontWeight="SemiBold"
-                               Foreground="{StaticResource TextBrush}"/>
-                    <TextBlock Text="Disk partition management for Windows"
+                               Style="{StaticResource AppTitleText}"/>
+                    <TextBlock Text="Windows disk operations, health checks, and image workflows"
                                Style="{StaticResource CaptionText}"
-                               Margin="0,3,0,0"/>
+                               Margin="0,2,0,0"/>
                 </StackPanel>
 
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Button Content="{Binding ThemeLabel}"
-                            Command="{Binding ToggleThemeCommand}"
-                            Style="{StaticResource ToolbarButton}"
-                            Margin="0,0,10,0"
-                            Padding="8,4"
-                            AutomationProperties.Name="Toggle theme"/>
-                    <Border Background="{StaticResource ToolbarBtnBrush}"
-                            BorderBrush="{StaticResource BorderStrongBrush}"
-                            BorderThickness="1"
-                            CornerRadius="4"
-                            Padding="10,6">
-                        <TextBlock Text="Administrator mode"
-                                   Foreground="{StaticResource PrimaryBrush}"
+                    <Border Style="{StaticResource StatusBadge}" Margin="0,0,8,0">
+                        <TextBlock Text="Admin session"
+                                   Foreground="{DynamicResource WarningBrush}"
                                    FontSize="12"
                                    FontWeight="SemiBold"/>
                     </Border>
+                    <Border Style="{StaticResource StatusBadge}" Margin="0,0,8,0">
+                        <TextBlock Text="Logged session"
+                                   Foreground="{DynamicResource SuccessBrush}"
+                                   FontSize="12"
+                                   FontWeight="SemiBold"/>
+                    </Border>
+                    <Button Content="{Binding ThemeLabel}"
+                            Command="{Binding ToggleThemeCommand}"
+                            Style="{StaticResource ToolbarButton}"
+                            Margin="0"
+                            Padding="8,4"
+                            AutomationProperties.Name="Toggle theme"/>
                 </StackPanel>
             </Grid>
         </Border>
@@ -81,8 +82,8 @@
         </TabControl>
 
         <Border Grid.Row="2"
-                Background="{StaticResource LogBgBrush}"
-                BorderBrush="{StaticResource BorderBrush}"
+                Background="{DynamicResource LogBgBrush}"
+                BorderBrush="{DynamicResource BorderBrush}"
                 BorderThickness="1"
                 CornerRadius="6"
                 Padding="12"
@@ -93,17 +94,26 @@
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <DockPanel Grid.Row="0" Margin="0,0,0,8">
-                    <TextBlock Text="Activity Log"
-                               Style="{StaticResource FieldLabelText}"
-                               VerticalAlignment="Center"/>
+                <Grid Grid.Row="0" Margin="0,0,0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel>
+                        <TextBlock Text="Activity Log"
+                                   Style="{StaticResource FieldLabelText}"/>
+                        <TextBlock Text="Command output, safety checks, and operation history"
+                                   Style="{StaticResource CaptionText}"
+                                   Margin="0,2,0,0"/>
+                    </StackPanel>
                     <Button Content="Export Log"
                             Command="{Binding ExportLogCommand}"
                             Style="{StaticResource ToolbarButton}"
+                            Grid.Column="1"
                             HorizontalAlignment="Right"
                             Padding="8,3"
                             AutomationProperties.Name="Export activity log"/>
-                </DockPanel>
+                </Grid>
 
                 <TextBox Grid.Row="1"
                          Text="{Binding Log.FullText, Mode=OneWay}"
@@ -112,7 +122,7 @@
                          FontFamily="Consolas"
                          FontSize="12"
                          Background="Transparent"
-                         Foreground="{StaticResource SubtextBrush}"
+                         Foreground="{DynamicResource SubtextBrush}"
                          BorderThickness="0"
                          Padding="0"
                          TextWrapping="Wrap"
@@ -122,15 +132,21 @@
         </Border>
 
         <Border Grid.Row="3"
-                Background="{StaticResource PanelBgBrush}"
-                BorderBrush="{StaticResource BorderBrush}"
+                Background="{DynamicResource StatusBgBrush}"
+                BorderBrush="{DynamicResource BorderBrush}"
                 BorderThickness="1"
                 CornerRadius="6"
                 Padding="10,7">
-            <TextBlock Text="{Binding StatusText}"
-                       Foreground="{StaticResource SubtextBrush}"
-                       FontSize="12"
-                       AutomationProperties.Name="Status"/>
+            <DockPanel LastChildFill="True">
+                <TextBlock Text="Status"
+                           Style="{StaticResource FieldLabelText}"
+                           Margin="0,0,10,0"/>
+                <TextBlock Text="{Binding StatusText}"
+                           Foreground="{DynamicResource SubtextBrush}"
+                           FontSize="12"
+                           TextTrimming="CharacterEllipsis"
+                           AutomationProperties.Name="Status"/>
+            </DockPanel>
         </Border>
     </Grid>
 </Window>

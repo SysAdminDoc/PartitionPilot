@@ -12,16 +12,19 @@
                        Margin="0,0,0,14"/>
 
             <TextBlock Text="Current size" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
-            <TextBlock x:Name="txtInfo" Foreground="{StaticResource PrimaryBrush}" FontSize="13" FontWeight="SemiBold" Margin="0,0,0,12"/>
+            <TextBlock x:Name="txtInfo" Foreground="{DynamicResource PrimaryBrush}" FontSize="13" FontWeight="SemiBold" Margin="0,0,0,12"/>
 
             <TextBlock Text="New size (GB)" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
-            <TextBox x:Name="txtSize" Height="34" FontSize="13" Margin="0,0,0,16"/>
+            <TextBox x:Name="txtSize" Height="34" FontSize="13" Margin="0,0,0,16"
+                     AutomationProperties.Name="New size in GB"/>
 
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                <Button Content="Resize" Width="96" Height="34" Style="{StaticResource PrimaryButton}"
-                        IsDefault="True" Click="OnOk"/>
-                <Button Content="Cancel" Width="96" Height="34" Margin="8,0,0,0" IsCancel="True"/>
-            </StackPanel>
+            <Border Style="{StaticResource DialogFooter}">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Content="Resize" Width="96" Height="34" Style="{StaticResource PrimaryButton}"
+                            IsDefault="True" Click="OnOk"/>
+                    <Button Content="Cancel" Width="96" Height="34" Margin="8,0,0,0" IsCancel="True"/>
+                </StackPanel>
+            </Border>
         </StackPanel>
     </Border>
 </Window>

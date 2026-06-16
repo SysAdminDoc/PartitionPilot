@@ -6,32 +6,46 @@
         <DockPanel IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}">
             <Border DockPanel.Dock="Top" Style="{StaticResource PanelCard}" Margin="0,0,0,10">
                 <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
 
-                    <TextBlock Grid.Column="0"
-                               Text="Disk"
-                               Style="{StaticResource FieldLabelText}"
-                               Margin="0,0,10,0"/>
+                    <StackPanel Grid.Row="0" Margin="0,0,0,12">
+                        <TextBlock Text="Partition Workspace" Style="{StaticResource PageTitleText}"/>
+                        <TextBlock Text="Select a physical disk before changing partition layout or drive letters."
+                                   Style="{StaticResource CaptionText}"
+                                   Margin="0,2,0,0"/>
+                    </StackPanel>
 
-                    <ComboBox Grid.Column="1"
-                              ItemsSource="{Binding Disks}"
-                              SelectedItem="{Binding SelectedDisk}"
-                              DisplayMemberPath="DisplayText"
-                              MinWidth="420"
-                              Height="34"
-                              FontSize="13"
-                              AutomationProperties.Name="Disk selector"/>
+                    <Grid Grid.Row="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
 
-                    <Button Grid.Column="2"
-                            Content="Refresh"
-                            Command="{Binding RefreshCommand}"
-                            Style="{StaticResource ToolbarButton}"
-                            Margin="10,0,0,0"
-                            AutomationProperties.Name="Refresh disks"/>
+                        <TextBlock Grid.Column="0"
+                                   Text="Disk"
+                                   Style="{StaticResource FieldLabelText}"
+                                   Margin="0,0,10,0"/>
+
+                        <ComboBox Grid.Column="1"
+                                  ItemsSource="{Binding Disks}"
+                                  SelectedItem="{Binding SelectedDisk}"
+                                  DisplayMemberPath="DisplayText"
+                                  MinWidth="420"
+                                  Height="34"
+                                  FontSize="13"
+                                  AutomationProperties.Name="Disk selector"/>
+
+                        <Button Grid.Column="2"
+                                Content="Refresh"
+                                Command="{Binding RefreshCommand}"
+                                Style="{StaticResource ToolbarButton}"
+                                Margin="10,0,0,0"
+                                AutomationProperties.Name="Refresh disks"/>
+                    </Grid>
                 </Grid>
             </Border>
 
@@ -51,7 +65,10 @@
                                Margin="0,0,0,8"/>
                     <WrapPanel>
                         <Button Content="Create"
-                                Style="{StaticResource ToolbarButton}"
+                                Style="{StaticResource PrimaryButton}"
+                                MinWidth="92"
+                                Height="34"
+                                Margin="0,0,6,6"
                                 Click="OnCreate"
                                 IsEnabled="{Binding HasSelectedDisk}"
                                 ToolTip="Create a partition from unallocated space"
@@ -153,10 +170,9 @@
                         </ListView.View>
                     </ListView>
 
-                    <TextBlock Text="Select Refresh to load disks, then choose a disk to review its partition layout."
-                               IsHitTestVisible="False">
-                        <TextBlock.Style>
-                            <Style TargetType="TextBlock" BasedOn="{StaticResource EmptyStateText}">
+                    <Border IsHitTestVisible="False">
+                        <Border.Style>
+                            <Style TargetType="Border" BasedOn="{StaticResource EmptyStatePanel}">
                                 <Setter Property="Visibility" Value="Collapsed"/>
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding Partitions.Count}" Value="0">
@@ -164,24 +180,30 @@
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
-                        </TextBlock.Style>
-                    </TextBlock>
+                        </Border.Style>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="No partition data loaded" Style="{StaticResource EmptyStateTitle}"/>
+                            <TextBlock Text="Refresh disks, then choose a disk to review layout, volumes, and available actions."
+                                       Style="{StaticResource EmptyStateText}"
+                                       Margin="0"/>
+                        </StackPanel>
+                    </Border>
                 </Grid>
             </Border>
         </DockPanel>
 
         <Border Style="{StaticResource BusyOverlay}">
-            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                <TextBlock Text="Working"
-                           Foreground="{StaticResource TextBrush}"
-                           FontSize="16"
-                           FontWeight="SemiBold"
-                           HorizontalAlignment="Center"/>
-                <TextBlock Text="PartitionPilot is querying disks and applying the requested operation."
-                           Style="{StaticResource CaptionText}"
-                           Margin="0,6,0,0"
-                           TextAlignment="Center"/>
-            </StackPanel>
+            <Border Style="{StaticResource BusyPanel}" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <StackPanel>
+                    <TextBlock Text="Working"
+                               Style="{StaticResource PageTitleText}"
+                               HorizontalAlignment="Center"/>
+                    <ProgressBar Style="{StaticResource BusyProgress}" IsIndeterminate="True"/>
+                    <TextBlock Text="Querying disks or applying the requested partition operation."
+                               Style="{StaticResource CaptionText}"
+                               TextAlignment="Center"/>
+                </StackPanel>
+            </Border>
         </Border>
     </Grid>
 </UserControl>

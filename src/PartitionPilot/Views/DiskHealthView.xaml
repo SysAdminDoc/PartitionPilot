@@ -5,39 +5,52 @@
         <DockPanel IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}">
             <Border DockPanel.Dock="Top" Style="{StaticResource PanelCard}" Margin="0,0,0,10">
                 <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
 
-                    <TextBlock Grid.Column="0"
-                               Text="Physical Disk"
-                               Style="{StaticResource FieldLabelText}"
-                               Margin="0,0,10,0"/>
-                    <ComboBox Grid.Column="1"
-                              ItemsSource="{Binding PhysicalDisks}"
-                              SelectedItem="{Binding SelectedDisk}"
-                              DisplayMemberPath="DisplayText"
-                              MinWidth="420"
-                              Height="34"
-                              FontSize="13"
-                              AutomationProperties.Name="Physical disk selector"/>
-                    <Button Grid.Column="2"
-                            Content="Refresh"
-                            Command="{Binding RefreshCommand}"
-                            Style="{StaticResource ToolbarButton}"
-                            Margin="10,0,0,0"
-                            AutomationProperties.Name="Refresh disk health"/>
+                    <StackPanel Grid.Row="0" Margin="0,0,0,12">
+                        <TextBlock Text="Disk Health" Style="{StaticResource PageTitleText}"/>
+                        <TextBlock Text="Review physical disk status, reliability telemetry, and alignment."
+                                   Style="{StaticResource CaptionText}"
+                                   Margin="0,2,0,0"/>
+                    </StackPanel>
+
+                    <Grid Grid.Row="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Grid.Column="0"
+                                   Text="Physical Disk"
+                                   Style="{StaticResource FieldLabelText}"
+                                   Margin="0,0,10,0"/>
+                        <ComboBox Grid.Column="1"
+                                  ItemsSource="{Binding PhysicalDisks}"
+                                  SelectedItem="{Binding SelectedDisk}"
+                                  DisplayMemberPath="DisplayText"
+                                  MinWidth="420"
+                                  Height="34"
+                                  FontSize="13"
+                                  AutomationProperties.Name="Physical disk selector"/>
+                        <Button Grid.Column="2"
+                                Content="Refresh"
+                                Command="{Binding RefreshCommand}"
+                                Style="{StaticResource ToolbarButton}"
+                                Margin="10,0,0,0"
+                                AutomationProperties.Name="Refresh disk health"/>
+                    </Grid>
                 </Grid>
             </Border>
 
             <ScrollViewer VerticalScrollBarVisibility="Auto">
                 <StackPanel Margin="0,0,8,0">
-                    <TextBlock Text="Select Refresh to load disk health, SMART reliability data, and 4K alignment status."
-                               MinHeight="90">
-                        <TextBlock.Style>
-                            <Style TargetType="TextBlock" BasedOn="{StaticResource EmptyStateText}">
+                    <Border MinHeight="100">
+                        <Border.Style>
+                            <Style TargetType="Border" BasedOn="{StaticResource EmptyStatePanel}">
                                 <Setter Property="Visibility" Value="Collapsed"/>
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding PhysicalDisks.Count}" Value="0">
@@ -45,10 +58,25 @@
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
-                        </TextBlock.Style>
-                    </TextBlock>
+                        </Border.Style>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="No disk health data loaded" Style="{StaticResource EmptyStateTitle}"/>
+                            <TextBlock Text="Refresh to load physical disk, SMART reliability, and alignment details."
+                                       Style="{StaticResource EmptyStateText}"
+                                       Margin="0"/>
+                        </StackPanel>
+                    </Border>
 
-                    <GroupBox Header="Disk Information" Style="{StaticResource SectionGroup}">
+                    <GroupBox Header="Disk Information">
+                        <GroupBox.Style>
+                            <Style TargetType="GroupBox" BasedOn="{StaticResource SectionGroup}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding SelectedDisk}" Value="{x:Null}">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </GroupBox.Style>
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="170"/>
@@ -78,15 +106,26 @@
                             <TextBlock Grid.Row="5" Grid.Column="0" Text="Capacity" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
                             <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding DiskSizeText}" Margin="0,3"/>
                             <TextBlock Grid.Row="6" Grid.Column="0" Text="Health" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
-                            <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding SelectedDisk.HealthStatus}" Foreground="{StaticResource SuccessBrush}" FontWeight="SemiBold" Margin="0,3"/>
+                            <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding SelectedDisk.HealthStatus}" FontWeight="SemiBold" Margin="0,3"/>
                             <TextBlock Grid.Row="7" Grid.Column="0" Text="Sector Sizes" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
                             <TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding SectorSizeText}" Margin="0,3"/>
                         </Grid>
                     </GroupBox>
 
-                    <GroupBox Header="SMART / Reliability Data"
-                              Style="{StaticResource SectionGroup}"
-                              Visibility="{Binding HasSmartData, Converter={StaticResource BoolVis}}">
+                    <GroupBox Header="SMART / Reliability Data">
+                        <GroupBox.Style>
+                            <Style TargetType="GroupBox" BasedOn="{StaticResource SectionGroup}">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasSmartData}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding SelectedDisk}" Value="{x:Null}">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </GroupBox.Style>
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="170"/>
@@ -119,14 +158,34 @@
                         </Grid>
                     </GroupBox>
 
-                    <Border Style="{StaticResource Card}"
-                            Margin="0,0,0,12"
-                            Visibility="{Binding HasSmartData, Converter={StaticResource BoolVisInverse}}">
+                    <Border Margin="0,0,0,12">
+                        <Border.Style>
+                            <Style TargetType="Border" BasedOn="{StaticResource NoticePanel}">
+                                <Setter Property="Visibility" Value="Visible"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasSmartData}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding SelectedDisk}" Value="{x:Null}">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
                         <TextBlock Text="SMART reliability data is not available for the selected disk."
                                    Style="{StaticResource CaptionText}"/>
                     </Border>
 
-                    <GroupBox Header="4K Alignment Audit" Style="{StaticResource SectionGroup}">
+                    <GroupBox Header="4K Alignment Audit">
+                        <GroupBox.Style>
+                            <Style TargetType="GroupBox" BasedOn="{StaticResource SectionGroup}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding SelectedDisk}" Value="{x:Null}">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </GroupBox.Style>
                         <Grid>
                             <ListView ItemsSource="{Binding AlignmentEntries}"
                                       BorderThickness="0"
@@ -144,10 +203,9 @@
                                 </ListView.View>
                             </ListView>
 
-                            <TextBlock Text="Alignment details will appear after health data loads."
-                                       IsHitTestVisible="False">
-                                <TextBlock.Style>
-                                    <Style TargetType="TextBlock" BasedOn="{StaticResource EmptyStateText}">
+                            <Border IsHitTestVisible="False">
+                                <Border.Style>
+                                    <Style TargetType="Border" BasedOn="{StaticResource EmptyStatePanel}">
                                         <Setter Property="Visibility" Value="Collapsed"/>
                                         <Style.Triggers>
                                             <DataTrigger Binding="{Binding AlignmentEntries.Count}" Value="0">
@@ -155,8 +213,14 @@
                                             </DataTrigger>
                                         </Style.Triggers>
                                     </Style>
-                                </TextBlock.Style>
-                            </TextBlock>
+                                </Border.Style>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="No alignment entries" Style="{StaticResource EmptyStateTitle}"/>
+                                    <TextBlock Text="Alignment details will appear after health data loads."
+                                               Style="{StaticResource EmptyStateText}"
+                                               Margin="0"/>
+                                </StackPanel>
+                            </Border>
                         </Grid>
                     </GroupBox>
                 </StackPanel>
@@ -164,17 +228,17 @@
         </DockPanel>
 
         <Border Style="{StaticResource BusyOverlay}">
-            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                <TextBlock Text="Loading health data"
-                           Foreground="{StaticResource TextBrush}"
-                           FontSize="16"
-                           FontWeight="SemiBold"
-                           HorizontalAlignment="Center"/>
-                <TextBlock Text="Reading physical disk, SMART, and alignment details."
-                           Style="{StaticResource CaptionText}"
-                           Margin="0,6,0,0"
-                           TextAlignment="Center"/>
-            </StackPanel>
+            <Border Style="{StaticResource BusyPanel}" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <StackPanel>
+                    <TextBlock Text="Loading health data"
+                               Style="{StaticResource PageTitleText}"
+                               HorizontalAlignment="Center"/>
+                    <ProgressBar Style="{StaticResource BusyProgress}" IsIndeterminate="True"/>
+                    <TextBlock Text="Reading physical disk, SMART, and alignment details."
+                               Style="{StaticResource CaptionText}"
+                               TextAlignment="Center"/>
+                </StackPanel>
+            </Border>
         </Border>
     </Grid>
 </UserControl>

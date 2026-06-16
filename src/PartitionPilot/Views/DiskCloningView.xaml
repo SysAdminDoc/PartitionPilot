@@ -10,7 +10,7 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <StackPanel>
-                        <TextBlock Text="Disk Cloning" Style="{StaticResource SectionTitleText}"/>
+                        <TextBlock Text="Disk Cloning" Style="{StaticResource PageTitleText}"/>
                         <TextBlock Text="Create disk images (WIM/VHDX) and restore them to target disks."
                                    Style="{StaticResource CaptionText}"
                                    Margin="0,3,0,0"/>
@@ -21,6 +21,25 @@
                             Style="{StaticResource ToolbarButton}"
                             AutomationProperties.Name="Refresh disk list"/>
                 </Grid>
+            </Border>
+
+            <Border DockPanel.Dock="Top" Margin="0,0,0,10">
+                <Border.Style>
+                    <Style TargetType="Border" BasedOn="{StaticResource EmptyStatePanel}">
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding DriveLetters.Count}" Value="0">
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="No cloning targets loaded" Style="{StaticResource EmptyStateTitle}"/>
+                    <TextBlock Text="Refresh to load source volumes and target disks before creating or restoring an image."
+                               Style="{StaticResource EmptyStateText}"
+                               Margin="0"/>
+                </StackPanel>
             </Border>
 
             <ScrollViewer VerticalScrollBarVisibility="Auto">
@@ -59,6 +78,11 @@
                             <TextBlock Text="Apply a WIM or VHDX image to a target disk. All data on the target will be destroyed."
                                        Style="{StaticResource CaptionText}"
                                        Margin="0,0,0,10"/>
+                            <Border Style="{StaticResource DangerNoticePanel}">
+                                <TextBlock Text="Restore writes to the selected target disk and replaces its contents."
+                                           Style="{StaticResource CaptionText}"
+                                           Foreground="{DynamicResource DangerBtnFgBrush}"/>
+                            </Border>
                             <TextBlock Text="Image File" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
                             <DockPanel Margin="0,0,0,10">
                                 <Button DockPanel.Dock="Right" Content="Browse"
@@ -88,21 +112,23 @@
         </DockPanel>
 
         <Border Style="{StaticResource BusyOverlay}">
-            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                <TextBlock Text="Disk Cloning"
-                           Foreground="{StaticResource TextBrush}"
-                           FontSize="16" FontWeight="SemiBold"
-                           HorizontalAlignment="Center"/>
-                <TextBlock Text="{Binding StatusText}"
-                           Foreground="{StaticResource TextBrush}"
-                           FontSize="13" Margin="0,6,0,0"
-                           TextAlignment="Center"/>
-                <Button Content="Cancel"
-                        Command="{Binding CancelCommand}"
-                        Style="{StaticResource ToolbarButton}"
-                        HorizontalAlignment="Center" Margin="0,12,0,0"
-                        AutomationProperties.Name="Cancel cloning operation"/>
-            </StackPanel>
+            <Border Style="{StaticResource BusyPanel}" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <StackPanel>
+                    <TextBlock Text="Disk Cloning"
+                               Style="{StaticResource PageTitleText}"
+                               HorizontalAlignment="Center"/>
+                    <ProgressBar Style="{StaticResource BusyProgress}" IsIndeterminate="True"/>
+                    <TextBlock Text="{Binding StatusText}"
+                               Foreground="{DynamicResource TextBrush}"
+                               FontSize="13"
+                               TextAlignment="Center"/>
+                    <Button Content="Cancel"
+                            Command="{Binding CancelCommand}"
+                            Style="{StaticResource ToolbarButton}"
+                            HorizontalAlignment="Center" Margin="0,12,0,0"
+                            AutomationProperties.Name="Cancel cloning operation"/>
+                </StackPanel>
+            </Border>
         </Border>
     </Grid>
 </UserControl>
