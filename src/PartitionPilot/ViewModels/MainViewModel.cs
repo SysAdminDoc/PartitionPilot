@@ -62,6 +62,17 @@ public class MainViewModel : ViewModelBase
         ToggleThemeCommand = new RelayCommand(_ => ToggleTheme());
 
         Log.Log("PartitionPilot ready.");
+        _ = CheckForUpdateAsync();
+    }
+
+    private async Task CheckForUpdateAsync()
+    {
+        var result = await UpdateService.CheckForUpdateAsync();
+        if (result is { available: true } update)
+        {
+            Log.Log($"Update available: v{update.version} — {update.url}");
+            StatusText = $"Update available: v{update.version}";
+        }
     }
 
     private void ToggleTheme()
