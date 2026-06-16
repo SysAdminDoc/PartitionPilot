@@ -10,14 +10,14 @@ public class ProcessRunner
         @"\b(error|failed|cannot|unable to|not found|access is denied|the specified .+ does not exist)\b",
         RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
-    public async Task<string> RunDiskpartAsync(string script, ActivityLog? log = null)
+    public async Task<string> RunDiskpartAsync(string script, ActivityLog? log = null, CancellationToken ct = default)
     {
         var tempFile = Path.Combine(Path.GetTempPath(), $"pp_diskpart_{Guid.NewGuid():N}.txt");
         try
         {
-            await File.WriteAllTextAsync(tempFile, script);
+            await File.WriteAllTextAsync(tempFile, script, ct);
             log?.Log($"diskpart /s \"{tempFile}\"");
-            var output = await RunExeAsync("diskpart", $"/s \"{tempFile}\"", log);
+            var output = await RunExeAsync("diskpart", $"/s \"{tempFile}\"", log, ct: ct);
 
             if (DiskpartErrorPattern.IsMatch(output))
             {
@@ -33,16 +33,16 @@ public class ProcessRunner
         }
     }
 
-    public async Task<string> RunPowerShellAsync(string command, ActivityLog? log = null)
+    public async Task<string> RunPowerShellAsync(string command, ActivityLog? log = null, CancellationToken ct = default)
     {
         log?.Log($"powershell: {command}");
         return await RunExeAsync("powershell.exe",
             $"-NoProfile -NonInteractive -Command \"{command.Replace("\"", "\\\"")}\"", log,
-            ignoreStderrOnSuccess: true);
+            ignoreStderrOnSuccess: true, ct: ct);
     }
 
     public async Task<string> RunExeAsync(string fileName, string arguments, ActivityLog? log = null,
-        bool ignoreStderrOnSuccess = false)
+        bool ignoreStderrOnSuccess = false, CancellationToken ct = default)
     {
         log?.Log($"Run: {fileName} {arguments}");
 
@@ -59,10 +59,15 @@ public class ProcessRunner
         using var process = new Process { StartInfo = psi };
         process.Start();
 
-        var stdoutTask = process.StandardOutput.ReadToEndAsync();
-        var stderrTask = process.StandardError.ReadToEndAsync();
+        await using var reg = ct.Register(() =>
+        {
+            try { process.Kill(entireProcessTree: true); } catch { /* already exited */ }
+        });
 
-        await process.WaitForExitAsync();
+        var stdoutTask = process.StandardOutput.ReadToEndAsync(ct);
+        var stderrTask = process.StandardError.ReadToEndAsync(ct);
+
+        await process.WaitForExitAsync(ct);
 
         var stdout = await stdoutTask;
         var stderr = await stderrTask;
