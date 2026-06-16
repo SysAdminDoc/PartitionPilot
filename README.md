@@ -1,10 +1,12 @@
-![Version](https://img.shields.io/badge/version-0.2.1-4CC2FF)
+![Version](https://img.shields.io/badge/version-0.2.2-4CC2FF)
 ![License](https://img.shields.io/badge/license-MIT-5EE0A0)
 ![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-F4C96A)
 
 # PartitionPilot
 
 PartitionPilot is a Windows disk partition management tool for power users and IT administrators. It provides a WPF interface for partition operations, disk health checks, maintenance tools, and disk image workflows.
+
+![PartitionPilot main window](assets/screenshots/partitionpilot-main-v0.2.2.png)
 
 ## Features
 
@@ -21,6 +23,7 @@ PartitionPilot is a Windows disk partition management tool for power users and I
 - Cancellable long-running operations with progress reporting.
 - Startup update check against GitHub Releases.
 - Screen reader accessibility (AutomationProperties on all interactive controls).
+- Premium dark/light UI system with live theme switching, custom app chrome, refined empty/loading states, and consistent risk notices.
 
 ## Requirements
 

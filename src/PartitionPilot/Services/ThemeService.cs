@@ -10,6 +10,7 @@ public static class ThemeService
     private static readonly string SettingsFile = Path.Combine(SettingsDir, "settings.txt");
 
     public static bool IsDarkMode { get; private set; } = true;
+    public static event EventHandler? ThemeChanged;
 
     public static void LoadAndApply()
     {
@@ -34,6 +35,8 @@ public static class ThemeService
             merged[0] = themeDict;
         else
             merged.Insert(0, themeDict);
+
+        ThemeChanged?.Invoke(null, EventArgs.Empty);
     }
 
     private static bool LoadPreference()

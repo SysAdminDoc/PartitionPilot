@@ -10,7 +10,7 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <StackPanel>
-                        <TextBlock Text="Disk Usage Analysis" Style="{StaticResource SectionTitleText}"/>
+                        <TextBlock Text="Disk Usage Analysis" Style="{StaticResource PageTitleText}"/>
                         <TextBlock Text="Scan a volume to see which folders consume the most space."
                                    Style="{StaticResource CaptionText}"
                                    Margin="0,3,0,0"/>
@@ -37,61 +37,85 @@
                        Style="{StaticResource CaptionText}"
                        Margin="0,6,0,0"/>
 
-            <ListView ItemsSource="{Binding TopFolders}"
-                      BorderThickness="0"
-                      Background="Transparent"
-                      AutomationProperties.Name="Disk usage results">
-                <ListView.View>
-                    <GridView>
-                        <GridViewColumn Header="Folder" Width="320"
-                                        DisplayMemberBinding="{Binding Name}"/>
-                        <GridViewColumn Header="Size" Width="100"
-                                        DisplayMemberBinding="{Binding SizeText}"/>
-                        <GridViewColumn Header="Files" Width="80"
-                                        DisplayMemberBinding="{Binding FileCount}"/>
-                        <GridViewColumn Header="Share" Width="160">
-                            <GridViewColumn.CellTemplate>
-                                <DataTemplate>
-                                    <Grid Width="140" Height="16">
-                                        <Border Background="{StaticResource CardBgBrush}"
-                                                CornerRadius="3"/>
-                                        <Border Background="{StaticResource PrimaryBrush}"
-                                                CornerRadius="3"
-                                                HorizontalAlignment="Left"
-                                                Width="{Binding Proportion, Converter={StaticResource ProportionToWidth}}"/>
-                                        <TextBlock Text="{Binding Proportion, StringFormat='{}{0:P0}'}"
-                                                   Foreground="{StaticResource TextBrush}"
-                                                   FontSize="10"
-                                                   HorizontalAlignment="Center"
-                                                   VerticalAlignment="Center"/>
-                                    </Grid>
-                                </DataTemplate>
-                            </GridViewColumn.CellTemplate>
-                        </GridViewColumn>
-                    </GridView>
-                </ListView.View>
-            </ListView>
+            <Border Style="{StaticResource Card}" Padding="0">
+                <Grid>
+                    <ListView ItemsSource="{Binding TopFolders}"
+                              BorderThickness="0"
+                              Background="Transparent"
+                              AutomationProperties.Name="Disk usage results">
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn Header="Folder" Width="320"
+                                                DisplayMemberBinding="{Binding Name}"/>
+                                <GridViewColumn Header="Size" Width="100"
+                                                DisplayMemberBinding="{Binding SizeText}"/>
+                                <GridViewColumn Header="Files" Width="80"
+                                                DisplayMemberBinding="{Binding FileCount}"/>
+                                <GridViewColumn Header="Share" Width="160">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Grid Width="140" Height="16">
+                                                <Border Background="{DynamicResource StatusBgBrush}"
+                                                        CornerRadius="3"/>
+                                                <Border Background="{DynamicResource PrimaryBrush}"
+                                                        CornerRadius="3"
+                                                        HorizontalAlignment="Left"
+                                                        Width="{Binding Proportion, Converter={StaticResource ProportionToWidth}}"/>
+                                                <TextBlock Text="{Binding Proportion, StringFormat='{}{0:P0}'}"
+                                                           Foreground="{DynamicResource TextBrush}"
+                                                           FontSize="10"
+                                                           FontWeight="SemiBold"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center"/>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+
+                    <Border IsHitTestVisible="False">
+                        <Border.Style>
+                            <Style TargetType="Border" BasedOn="{StaticResource EmptyStatePanel}">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding TopFolders.Count}" Value="0">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="No usage scan results" Style="{StaticResource EmptyStateTitle}"/>
+                            <TextBlock Text="Choose a drive and scan it to rank the largest top-level folders."
+                                       Style="{StaticResource EmptyStateText}"
+                                       Margin="0"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </Border>
         </DockPanel>
 
         <Border Style="{StaticResource BusyOverlay}">
-            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                <TextBlock Text="Scanning drive"
-                           Foreground="{StaticResource TextBrush}"
-                           FontSize="16"
-                           FontWeight="SemiBold"
-                           HorizontalAlignment="Center"/>
-                <TextBlock Text="{Binding StatusText}"
-                           Foreground="{StaticResource TextBrush}"
-                           FontSize="13"
-                           Margin="0,6,0,0"
-                           TextAlignment="Center"/>
-                <Button Content="Cancel"
-                        Command="{Binding CancelCommand}"
-                        Style="{StaticResource ToolbarButton}"
-                        HorizontalAlignment="Center"
-                        Margin="0,12,0,0"
-                        AutomationProperties.Name="Cancel disk usage scan"/>
-            </StackPanel>
+            <Border Style="{StaticResource BusyPanel}" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <StackPanel>
+                    <TextBlock Text="Scanning drive"
+                               Style="{StaticResource PageTitleText}"
+                               HorizontalAlignment="Center"/>
+                    <ProgressBar Style="{StaticResource BusyProgress}" IsIndeterminate="True"/>
+                    <TextBlock Text="{Binding StatusText}"
+                               Foreground="{DynamicResource TextBrush}"
+                               FontSize="13"
+                               TextAlignment="Center"/>
+                    <Button Content="Cancel"
+                            Command="{Binding CancelCommand}"
+                            Style="{StaticResource ToolbarButton}"
+                            HorizontalAlignment="Center"
+                            Margin="0,12,0,0"
+                            AutomationProperties.Name="Cancel disk usage scan"/>
+                </StackPanel>
+            </Border>
         </Border>
     </Grid>
 </UserControl>

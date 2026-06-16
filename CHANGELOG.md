@@ -1,5 +1,16 @@
 # Changelog
 
+## PartitionPilot v0.2.2 - 2026-06-16
+
+### Premium UX Polish
+- Refined the app shell with a dark native title bar, custom PartitionPilot icon, stronger product hierarchy, and clearer status badges.
+- Added semantic theme surfaces for notices, badges, empty states, disabled controls, busy panels, scrollbars, and dialog footers.
+- Converted brush references to DynamicResource so dark/light theme switching applies live without requiring restart.
+- Upgraded Partitions, Disk Health, Disk Usage, Disk Images, Tools, and Disk Cloning empty/loading/risk states for a calmer first-run and long-operation experience.
+- Improved disk-map readability with a richer empty state, segment accessibility names, and contrast-aware segment labels.
+- Standardized operation dialogs with clearer destructive notices, structured footers, and accessible field names.
+- Added README screenshot artifact for the polished main window.
+
 ## PartitionPilot v0.2.1 - 2026-06-16
 
 ### Audit Fixes

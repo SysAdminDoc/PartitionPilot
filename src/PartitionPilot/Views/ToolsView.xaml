@@ -10,7 +10,7 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <StackPanel>
-                        <TextBlock Text="Maintenance Tools" Style="{StaticResource SectionTitleText}"/>
+                        <TextBlock Text="Maintenance Tools" Style="{StaticResource PageTitleText}"/>
                         <TextBlock Text="Run native Windows disk utilities with clearer targeting and logged output."
                                    Style="{StaticResource CaptionText}"
                                    Margin="0,3,0,0"/>
@@ -129,7 +129,7 @@
                                        Margin="0,0,0,10"/>
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
                                 <RadioButton Content="Free space" IsChecked="{Binding WipeIsFreeSpace}"/>
-                                <RadioButton Content="Entire disk" IsChecked="{Binding WipeIsFullDisk}" Foreground="{StaticResource DangerBrush}"/>
+                                <RadioButton Content="Entire disk" IsChecked="{Binding WipeIsFullDisk}" Foreground="{DynamicResource DangerBrush}"/>
                             </StackPanel>
 
                             <Grid Margin="0,0,0,10">
@@ -151,6 +151,12 @@
                                               AutomationProperties.Name="Wipe disk selector"/>
                                 </StackPanel>
                             </Grid>
+
+                            <Border Style="{StaticResource DangerNoticePanel}">
+                                <TextBlock Text="Entire disk wipe is destructive. Confirm the selected target before starting."
+                                           Style="{StaticResource CaptionText}"
+                                           Foreground="{DynamicResource DangerBtnFgBrush}"/>
+                            </Border>
 
                             <Button Content="Start Wipe"
                                     Style="{StaticResource DangerButton}"
@@ -239,28 +245,28 @@
         </DockPanel>
 
         <Border Style="{StaticResource BusyOverlay}">
-            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                <TextBlock Text="Running tool"
-                           Foreground="{StaticResource TextBrush}"
-                           FontSize="16"
-                           FontWeight="SemiBold"
-                           HorizontalAlignment="Center"/>
-                <TextBlock Text="{Binding StatusText}"
-                           Foreground="{StaticResource TextBrush}"
-                           FontSize="13"
-                           Margin="0,6,0,0"
-                           TextAlignment="Center"/>
-                <TextBlock Text="Output is being captured in the activity log."
-                           Style="{StaticResource CaptionText}"
-                           Margin="0,6,0,0"
-                           TextAlignment="Center"/>
-                <Button Content="Cancel"
-                        Command="{Binding CancelCommand}"
-                        Style="{StaticResource ToolbarButton}"
-                        HorizontalAlignment="Center"
-                        Margin="0,12,0,0"
-                        AutomationProperties.Name="Cancel tool operation"/>
-            </StackPanel>
+            <Border Style="{StaticResource BusyPanel}" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <StackPanel>
+                    <TextBlock Text="Running tool"
+                               Style="{StaticResource PageTitleText}"
+                               HorizontalAlignment="Center"/>
+                    <ProgressBar Style="{StaticResource BusyProgress}" IsIndeterminate="True"/>
+                    <TextBlock Text="{Binding StatusText}"
+                               Foreground="{DynamicResource TextBrush}"
+                               FontSize="13"
+                               TextAlignment="Center"/>
+                    <TextBlock Text="Output is being captured in the activity log."
+                               Style="{StaticResource CaptionText}"
+                               Margin="0,6,0,0"
+                               TextAlignment="Center"/>
+                    <Button Content="Cancel"
+                            Command="{Binding CancelCommand}"
+                            Style="{StaticResource ToolbarButton}"
+                            HorizontalAlignment="Center"
+                            Margin="0,12,0,0"
+                            AutomationProperties.Name="Cancel tool operation"/>
+                </StackPanel>
+            </Border>
         </Border>
     </Grid>
 </UserControl>

@@ -1,12 +1,12 @@
 <UserControl x:Class="PartitionPilot.Controls.DiskBarControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Border BorderBrush="{StaticResource BorderBrush}"
+    <Border BorderBrush="{DynamicResource BorderStrongBrush}"
             BorderThickness="1"
             CornerRadius="6"
             ClipToBounds="True"
-            Background="{StaticResource LogBgBrush}"
-            Padding="6">
+            Background="{DynamicResource StatusBgBrush}"
+            Padding="8">
         <Grid x:Name="BarGrid"/>
     </Border>
 </UserControl>

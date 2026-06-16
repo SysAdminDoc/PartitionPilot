@@ -10,7 +10,7 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <StackPanel>
-                        <TextBlock Text="Disk Images" Style="{StaticResource SectionTitleText}"/>
+                        <TextBlock Text="Disk Images" Style="{StaticResource PageTitleText}"/>
                         <TextBlock Text="Mount, dismount, and create ISO, VHD, and VHDX images."
                                    Style="{StaticResource CaptionText}"
                                    Margin="0,3,0,0"/>
@@ -77,10 +77,9 @@
                                     </ListView.View>
                                 </ListView>
 
-                                <TextBlock Text="No mounted images found."
-                                           IsHitTestVisible="False">
-                                    <TextBlock.Style>
-                                        <Style TargetType="TextBlock" BasedOn="{StaticResource EmptyStateText}">
+                                <Border IsHitTestVisible="False">
+                                    <Border.Style>
+                                        <Style TargetType="Border" BasedOn="{StaticResource EmptyStatePanel}">
                                             <Setter Property="Visibility" Value="Collapsed"/>
                                             <Style.Triggers>
                                                 <DataTrigger Binding="{Binding MountedImages.Count}" Value="0">
@@ -88,8 +87,14 @@
                                                 </DataTrigger>
                                             </Style.Triggers>
                                         </Style>
-                                    </TextBlock.Style>
-                                </TextBlock>
+                                    </Border.Style>
+                                    <StackPanel VerticalAlignment="Center">
+                                        <TextBlock Text="No mounted images" Style="{StaticResource EmptyStateTitle}"/>
+                                        <TextBlock Text="Mounted ISO, VHD, and VHDX files will appear here."
+                                                   Style="{StaticResource EmptyStateText}"
+                                                   Margin="0"/>
+                                    </StackPanel>
+                                </Border>
                             </Grid>
                             <Button Content="Dismount Selected"
                                     Style="{StaticResource PrimaryButton}"
@@ -155,17 +160,17 @@
         </DockPanel>
 
         <Border Style="{StaticResource BusyOverlay}">
-            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                <TextBlock Text="Working with disk images"
-                           Foreground="{StaticResource TextBrush}"
-                           FontSize="16"
-                           FontWeight="SemiBold"
-                           HorizontalAlignment="Center"/>
-                <TextBlock Text="Mount, dismount, and VHD operations are being logged."
-                           Style="{StaticResource CaptionText}"
-                           Margin="0,6,0,0"
-                           TextAlignment="Center"/>
-            </StackPanel>
+            <Border Style="{StaticResource BusyPanel}" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <StackPanel>
+                    <TextBlock Text="Working with disk images"
+                               Style="{StaticResource PageTitleText}"
+                               HorizontalAlignment="Center"/>
+                    <ProgressBar Style="{StaticResource BusyProgress}" IsIndeterminate="True"/>
+                    <TextBlock Text="Mount, dismount, and VHD operations are being logged."
+                               Style="{StaticResource CaptionText}"
+                               TextAlignment="Center"/>
+                </StackPanel>
+            </Border>
         </Border>
     </Grid>
 </UserControl>

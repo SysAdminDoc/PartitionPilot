@@ -11,17 +11,24 @@
                        Style="{StaticResource CaptionText}"
                        Margin="0,0,0,14"/>
 
-            <TextBlock Text="Available space" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
-            <TextBlock x:Name="txtInfo" Foreground="{StaticResource PrimaryBrush}" FontSize="13" FontWeight="SemiBold" Margin="0,0,0,12"/>
+            <Border Style="{StaticResource NoticePanel}">
+                <StackPanel>
+                    <TextBlock Text="Available space" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
+                    <TextBlock x:Name="txtInfo" Foreground="{DynamicResource PrimaryBrush}" FontSize="13" FontWeight="SemiBold"/>
+                </StackPanel>
+            </Border>
 
             <TextBlock Text="Size (GB)" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
-            <TextBox x:Name="txtSize" Height="34" FontSize="13" Margin="0,0,0,10"/>
+            <TextBox x:Name="txtSize" Height="34" FontSize="13" Margin="0,0,0,10"
+                     AutomationProperties.Name="Partition size in GB"/>
 
             <TextBlock Text="Drive letter" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
-            <ComboBox x:Name="cmbLetter" Height="34" FontSize="13" Margin="0,0,0,10"/>
+            <ComboBox x:Name="cmbLetter" Height="34" FontSize="13" Margin="0,0,0,10"
+                      AutomationProperties.Name="Drive letter"/>
 
             <TextBlock Text="File system" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
-            <ComboBox x:Name="cmbFS" Height="34" FontSize="13" Margin="0,0,0,10">
+            <ComboBox x:Name="cmbFS" Height="34" FontSize="13" Margin="0,0,0,10"
+                      AutomationProperties.Name="File system">
                 <ComboBoxItem Content="NTFS" IsSelected="True"/>
                 <ComboBoxItem Content="FAT32"/>
                 <ComboBoxItem Content="exFAT"/>
@@ -29,15 +36,18 @@
             </ComboBox>
 
             <TextBlock Text="Volume label" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
-            <TextBox x:Name="txtLabel" Height="34" FontSize="13" Margin="0,0,0,10"/>
+            <TextBox x:Name="txtLabel" Height="34" FontSize="13" Margin="0,0,0,10"
+                     AutomationProperties.Name="Volume label"/>
 
             <CheckBox x:Name="chkQuick" Content="Quick format" IsChecked="True" Margin="0,0,0,16"/>
 
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                <Button Content="Create" Width="96" Height="34" Style="{StaticResource PrimaryButton}"
-                        IsDefault="True" Click="OnOk"/>
-                <Button Content="Cancel" Width="96" Height="34" Margin="8,0,0,0" IsCancel="True"/>
-            </StackPanel>
+            <Border Style="{StaticResource DialogFooter}">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Content="Create" Width="96" Height="34" Style="{StaticResource PrimaryButton}"
+                            IsDefault="True" Click="OnOk"/>
+                    <Button Content="Cancel" Width="96" Height="34" Margin="8,0,0,0" IsCancel="True"/>
+                </StackPanel>
+            </Border>
         </StackPanel>
     </Border>
 </Window>
