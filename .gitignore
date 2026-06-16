@@ -1,0 +1,15 @@
+bin/
+obj/
+.vs/
+.idea/
+*.user
+*.suo
+*.log
+*.tmp
+TestResults/
+artifacts/
+
+# Local working notes
+CLAUDE.md
+CODEX_CHANGELOG.md
+.claude/

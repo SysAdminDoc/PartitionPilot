@@ -1,0 +1,180 @@
+<UserControl x:Class="PartitionPilot.Views.DiskHealthView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid>
+        <DockPanel IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}">
+            <Border DockPanel.Dock="Top" Style="{StaticResource PanelCard}" Margin="0,0,0,10">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Column="0"
+                               Text="Physical Disk"
+                               Style="{StaticResource FieldLabelText}"
+                               Margin="0,0,10,0"/>
+                    <ComboBox Grid.Column="1"
+                              ItemsSource="{Binding PhysicalDisks}"
+                              SelectedItem="{Binding SelectedDisk}"
+                              DisplayMemberPath="DisplayText"
+                              MinWidth="420"
+                              Height="34"
+                              FontSize="13"
+                              AutomationProperties.Name="Physical disk selector"/>
+                    <Button Grid.Column="2"
+                            Content="Refresh"
+                            Command="{Binding RefreshCommand}"
+                            Style="{StaticResource ToolbarButton}"
+                            Margin="10,0,0,0"
+                            AutomationProperties.Name="Refresh disk health"/>
+                </Grid>
+            </Border>
+
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="0,0,8,0">
+                    <TextBlock Text="Select Refresh to load disk health, SMART reliability data, and 4K alignment status."
+                               MinHeight="90">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock" BasedOn="{StaticResource EmptyStateText}">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding PhysicalDisks.Count}" Value="0">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+
+                    <GroupBox Header="Disk Information" Style="{StaticResource SectionGroup}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="170"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Model" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SelectedDisk.FriendlyName}" Margin="0,3"/>
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Serial Number" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedDisk.SerialNumber}" Margin="0,3"/>
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Firmware" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SelectedDisk.FirmwareVersion}" Margin="0,3"/>
+                            <TextBlock Grid.Row="3" Grid.Column="0" Text="Media Type" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding SelectedDisk.MediaType}" Margin="0,3"/>
+                            <TextBlock Grid.Row="4" Grid.Column="0" Text="Bus Type" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding SelectedDisk.BusType}" Margin="0,3"/>
+                            <TextBlock Grid.Row="5" Grid.Column="0" Text="Capacity" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding DiskSizeText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="6" Grid.Column="0" Text="Health" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding SelectedDisk.HealthStatus}" Foreground="{StaticResource SuccessBrush}" FontWeight="SemiBold" Margin="0,3"/>
+                            <TextBlock Grid.Row="7" Grid.Column="0" Text="Sector Sizes" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding SectorSizeText}" Margin="0,3"/>
+                        </Grid>
+                    </GroupBox>
+
+                    <GroupBox Header="SMART / Reliability Data"
+                              Style="{StaticResource SectionGroup}"
+                              Visibility="{Binding HasSmartData, Converter={StaticResource BoolVis}}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="170"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Temperature" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding TemperatureText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Wear Level" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding WearText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Power-On Time" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding PowerOnText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="3" Grid.Column="0" Text="Read Errors" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding ReadErrorsText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="4" Grid.Column="0" Text="Write Errors" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding WriteErrorsText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="5" Grid.Column="0" Text="Max Read Latency" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding ReadLatencyText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="6" Grid.Column="0" Text="Max Write Latency" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding WriteLatencyText}" Margin="0,3"/>
+                        </Grid>
+                    </GroupBox>
+
+                    <Border Style="{StaticResource Card}"
+                            Margin="0,0,0,12"
+                            Visibility="{Binding HasSmartData, Converter={StaticResource BoolVisInverse}}">
+                        <TextBlock Text="SMART reliability data is not available for the selected disk."
+                                   Style="{StaticResource CaptionText}"/>
+                    </Border>
+
+                    <GroupBox Header="4K Alignment Audit" Style="{StaticResource SectionGroup}">
+                        <Grid>
+                            <ListView ItemsSource="{Binding AlignmentEntries}"
+                                      BorderThickness="0"
+                                      FontSize="12.5"
+                                      MinHeight="150"
+                                      AutomationProperties.Name="4K alignment audit table">
+                                <ListView.View>
+                                    <GridView>
+                                        <GridViewColumn Header="Partition" Width="140" DisplayMemberBinding="{Binding PartitionDisplay}"/>
+                                        <GridViewColumn Header="Letter" Width="70" DisplayMemberBinding="{Binding LetterDisplay}"/>
+                                        <GridViewColumn Header="Offset" Width="150" DisplayMemberBinding="{Binding OffsetDisplay}"/>
+                                        <GridViewColumn Header="Aligned" Width="86" DisplayMemberBinding="{Binding AlignedDisplay}"/>
+                                        <GridViewColumn Header="Status" Width="320" DisplayMemberBinding="{Binding Status}"/>
+                                    </GridView>
+                                </ListView.View>
+                            </ListView>
+
+                            <TextBlock Text="Alignment details will appear after health data loads."
+                                       IsHitTestVisible="False">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock" BasedOn="{StaticResource EmptyStateText}">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding AlignmentEntries.Count}" Value="0">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Grid>
+                    </GroupBox>
+                </StackPanel>
+            </ScrollViewer>
+        </DockPanel>
+
+        <Border Style="{StaticResource BusyOverlay}">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                <TextBlock Text="Loading health data"
+                           Foreground="{StaticResource TextBrush}"
+                           FontSize="16"
+                           FontWeight="SemiBold"
+                           HorizontalAlignment="Center"/>
+                <TextBlock Text="Reading physical disk, SMART, and alignment details."
+                           Style="{StaticResource CaptionText}"
+                           Margin="0,6,0,0"
+                           TextAlignment="Center"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>
