@@ -1,0 +1,108 @@
+<UserControl x:Class="PartitionPilot.Views.DiskCloningView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid>
+        <DockPanel IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}">
+            <Border DockPanel.Dock="Top" Style="{StaticResource PanelCard}" Margin="0,0,0,10">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel>
+                        <TextBlock Text="Disk Cloning" Style="{StaticResource SectionTitleText}"/>
+                        <TextBlock Text="Create disk images (WIM/VHDX) and restore them to target disks."
+                                   Style="{StaticResource CaptionText}"
+                                   Margin="0,3,0,0"/>
+                    </StackPanel>
+                    <Button Grid.Column="1"
+                            Content="Refresh"
+                            Command="{Binding RefreshCommand}"
+                            Style="{StaticResource ToolbarButton}"
+                            AutomationProperties.Name="Refresh disk list"/>
+                </Grid>
+            </Border>
+
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <WrapPanel>
+                    <GroupBox Header="Create Image" Style="{StaticResource ToolGroup}">
+                        <StackPanel>
+                            <TextBlock Text="Capture a volume to a WIM or VHDX file."
+                                       Style="{StaticResource CaptionText}"
+                                       Margin="0,0,0,10"/>
+                            <TextBlock Text="Source Volume" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
+                            <ComboBox ItemsSource="{Binding DriveLetters}"
+                                      SelectedItem="{Binding SelectedSourceDrive}"
+                                      Height="34" Margin="0,0,0,10"
+                                      AutomationProperties.Name="Source volume"/>
+                            <TextBlock Text="Image Path" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
+                            <DockPanel Margin="0,0,0,10">
+                                <Button DockPanel.Dock="Right" Content="Browse"
+                                        Command="{Binding BrowseImageCommand}"
+                                        Style="{StaticResource ToolbarButton}"
+                                        Margin="6,0,0,0"
+                                        AutomationProperties.Name="Browse image save path"/>
+                                <TextBox Text="{Binding ImagePath, UpdateSourceTrigger=PropertyChanged}"
+                                         Height="34"
+                                         AutomationProperties.Name="Image file path"/>
+                            </DockPanel>
+                            <Button Content="Create Image"
+                                    Style="{StaticResource PrimaryButton}"
+                                    Command="{Binding CreateImageCommand}"
+                                    HorizontalAlignment="Left"
+                                    AutomationProperties.Name="Create disk image"/>
+                        </StackPanel>
+                    </GroupBox>
+
+                    <GroupBox Header="Restore Image" Style="{StaticResource ToolGroup}">
+                        <StackPanel>
+                            <TextBlock Text="Apply a WIM or VHDX image to a target disk. All data on the target will be destroyed."
+                                       Style="{StaticResource CaptionText}"
+                                       Margin="0,0,0,10"/>
+                            <TextBlock Text="Image File" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
+                            <DockPanel Margin="0,0,0,10">
+                                <Button DockPanel.Dock="Right" Content="Browse"
+                                        Command="{Binding BrowseRestoreImageCommand}"
+                                        Style="{StaticResource ToolbarButton}"
+                                        Margin="6,0,0,0"
+                                        AutomationProperties.Name="Browse restore image"/>
+                                <TextBox Text="{Binding RestoreImagePath, UpdateSourceTrigger=PropertyChanged}"
+                                         Height="34"
+                                         AutomationProperties.Name="Restore image file path"/>
+                            </DockPanel>
+                            <TextBlock Text="Target Disk" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
+                            <ComboBox ItemsSource="{Binding AllDisks}"
+                                      SelectedItem="{Binding SelectedTargetDisk}"
+                                      DisplayMemberPath="DisplayText"
+                                      Height="34" Margin="0,0,0,10"
+                                      AutomationProperties.Name="Target disk"/>
+                            <Button Content="Restore Image"
+                                    Style="{StaticResource PrimaryButton}"
+                                    Command="{Binding RestoreImageCommand}"
+                                    HorizontalAlignment="Left"
+                                    AutomationProperties.Name="Restore disk image"/>
+                        </StackPanel>
+                    </GroupBox>
+                </WrapPanel>
+            </ScrollViewer>
+        </DockPanel>
+
+        <Border Style="{StaticResource BusyOverlay}">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                <TextBlock Text="Disk Cloning"
+                           Foreground="{StaticResource TextBrush}"
+                           FontSize="16" FontWeight="SemiBold"
+                           HorizontalAlignment="Center"/>
+                <TextBlock Text="{Binding StatusText}"
+                           Foreground="{StaticResource TextBrush}"
+                           FontSize="13" Margin="0,6,0,0"
+                           TextAlignment="Center"/>
+                <Button Content="Cancel"
+                        Command="{Binding CancelCommand}"
+                        Style="{StaticResource ToolbarButton}"
+                        HorizontalAlignment="Center" Margin="0,12,0,0"
+                        AutomationProperties.Name="Cancel cloning operation"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

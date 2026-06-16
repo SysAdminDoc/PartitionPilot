@@ -38,7 +38,8 @@
                             Command="{Binding ToggleThemeCommand}"
                             Style="{StaticResource ToolbarButton}"
                             Margin="0,0,10,0"
-                            Padding="8,4"/>
+                            Padding="8,4"
+                            AutomationProperties.Name="Toggle theme"/>
                     <Border Background="#182026"
                             BorderBrush="{StaticResource BorderStrongBrush}"
                             BorderThickness="1"
@@ -74,6 +75,9 @@
             <TabItem Header="Disk Usage" Style="{StaticResource NavTabItem}">
                 <views:DiskUsageView DataContext="{Binding DiskUsage}"/>
             </TabItem>
+            <TabItem Header="Disk Cloning" Style="{StaticResource NavTabItem}">
+                <views:DiskCloningView DataContext="{Binding DiskCloning}"/>
+            </TabItem>
         </TabControl>
 
         <Border Grid.Row="2"
@@ -97,7 +101,8 @@
                             Command="{Binding ExportLogCommand}"
                             Style="{StaticResource ToolbarButton}"
                             HorizontalAlignment="Right"
-                            Padding="8,3"/>
+                            Padding="8,3"
+                            AutomationProperties.Name="Export activity log"/>
                 </DockPanel>
 
                 <TextBox Grid.Row="1"
