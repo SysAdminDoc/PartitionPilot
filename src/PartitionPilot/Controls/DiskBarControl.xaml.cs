@@ -74,6 +74,13 @@ public partial class DiskBarControl : UserControl
         var converter = new BrushConverter();
         var segmentBorderBrush = TryFindResource("TableRuleBrush") as Brush
                                  ?? new SolidColorBrush(Color.FromRgb(41, 48, 57));
+        var segmentSurfaceBrush = TryFindResource("CardBgBrush") as Brush
+                                  ?? new SolidColorBrush(Color.FromRgb(32, 36, 42));
+        var segmentTextBrush = TryFindResource("TextBrush") as Brush ?? Brushes.White;
+        var segmentSubtextBrush = TryFindResource("SubtextBrush") as Brush
+                                  ?? new SolidColorBrush(Color.FromRgb(170, 180, 192));
+        var segmentMutedBrush = TryFindResource("MutedTextBrush") as Brush
+                                ?? new SolidColorBrush(Color.FromRgb(116, 128, 140));
         int col = 0;
         foreach (var seg in segments)
         {
@@ -87,40 +94,69 @@ public partial class DiskBarControl : UserControl
                             ?? new SolidColorBrush(Colors.Gray);
             var border = new Border
             {
-                Background = fillBrush,
+                Background = segmentSurfaceBrush,
                 BorderBrush = segmentBorderBrush,
                 BorderThickness = new Thickness(1),
-                Margin = new Thickness(1.5, 5, 1.5, 5),
+                Margin = new Thickness(2, 4, 2, 4),
                 CornerRadius = new CornerRadius(4),
-                ToolTip = $"{seg.Type}: {SizeUtil.Format(seg.SizeBytes)}"
+                ToolTip = $"{seg.Label} - {seg.Type}, {seg.SizeText}",
+                ClipToBounds = true
             };
-            AutomationProperties.SetName(border, $"{seg.Label}, {seg.Type}, {SizeUtil.Format(seg.SizeBytes)}");
+            AutomationProperties.SetName(border, $"{seg.Label}, {seg.Type}, {seg.SizeText}");
 
-            var tb = new TextBlock
+            var contentGrid = new Grid();
+            contentGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(4) });
+            contentGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+
+            var accent = new Border
+            {
+                Background = fillBrush,
+                CornerRadius = new CornerRadius(4, 0, 0, 4)
+            };
+            Grid.SetColumn(accent, 0);
+            contentGrid.Children.Add(accent);
+
+            var textStack = new StackPanel
+            {
+                Margin = new Thickness(9, 8, 8, 7),
+                VerticalAlignment = VerticalAlignment.Center
+            };
+            textStack.Children.Add(new TextBlock
             {
                 Text = seg.Label,
-                Foreground = GetReadableSegmentTextBrush(fillBrush.Color),
-                FontSize = 10,
+                Foreground = segmentTextBrush,
+                FontSize = 12,
                 FontWeight = FontWeights.SemiBold,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                VerticalAlignment = VerticalAlignment.Center,
-                TextAlignment = TextAlignment.Center,
-                TextTrimming = TextTrimming.CharacterEllipsis,
-                Margin = new Thickness(2, 0, 2, 0)
-            };
+                TextTrimming = TextTrimming.CharacterEllipsis
+            });
+            textStack.Children.Add(new TextBlock
+            {
+                Text = seg.SizeText,
+                Foreground = segmentSubtextBrush,
+                FontSize = 11,
+                Margin = new Thickness(0, 2, 0, 0),
+                TextTrimming = TextTrimming.CharacterEllipsis
+            });
 
-            border.Child = tb;
+            if (seg.Proportion >= 0.055)
+            {
+                textStack.Children.Add(new TextBlock
+                {
+                    Text = seg.Type,
+                    Foreground = segmentMutedBrush,
+                    FontSize = 10.5,
+                    Margin = new Thickness(0, 3, 0, 0),
+                    TextTrimming = TextTrimming.CharacterEllipsis
+                });
+            }
+
+            Grid.SetColumn(textStack, 1);
+            contentGrid.Children.Add(textStack);
+
+            border.Child = contentGrid;
             Grid.SetColumn(border, col);
             BarGrid.Children.Add(border);
             col++;
         }
-    }
-
-    private static Brush GetReadableSegmentTextBrush(Color background)
-    {
-        var luminance = (0.299 * background.R) + (0.587 * background.G) + (0.114 * background.B);
-        return luminance > 145
-            ? new SolidColorBrush(Color.FromRgb(7, 17, 22))
-            : Brushes.White;
     }
 }

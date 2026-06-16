@@ -3,194 +3,251 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:controls="clr-namespace:PartitionPilot.Controls">
     <Grid>
-        <DockPanel IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}">
-            <Border DockPanel.Dock="Top" Style="{StaticResource PanelCard}" Margin="0,0,0,10">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
+        <Grid IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="236"/>
+            </Grid.ColumnDefinitions>
 
-                    <StackPanel Grid.Row="0" Margin="0,0,0,12">
-                        <TextBlock Text="Partition Workspace" Style="{StaticResource PageTitleText}"/>
-                        <TextBlock Text="Select a physical disk before changing partition layout or drive letters."
-                                   Style="{StaticResource CaptionText}"
-                                   Margin="0,2,0,0"/>
-                    </StackPanel>
+            <Grid Grid.Column="0" Margin="0,0,12,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="120"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
 
-                    <Grid Grid.Row="1">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
+                <Border Grid.Row="0" Style="{StaticResource PanelCard}" Margin="0,0,0,10">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
 
-                        <TextBlock Grid.Column="0"
-                                   Text="Disk"
-                                   Style="{StaticResource FieldLabelText}"
-                                   Margin="0,0,10,0"/>
+                        <Grid Grid.Row="0" Margin="0,0,0,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="Partition Workspace" Style="{StaticResource PageTitleText}"/>
+                                <TextBlock Text="Review a disk layout before creating, resizing, formatting, or assigning volumes."
+                                           Style="{StaticResource CaptionText}"
+                                           Margin="0,2,0,0"/>
+                            </StackPanel>
+                            <Button Grid.Column="1"
+                                    Content="Refresh"
+                                    Command="{Binding RefreshCommand}"
+                                    Style="{StaticResource CommandBarButton}"
+                                    Margin="10,0,0,0"
+                                    AutomationProperties.Name="Refresh disks"/>
+                        </Grid>
 
-                        <ComboBox Grid.Column="1"
-                                  ItemsSource="{Binding Disks}"
-                                  SelectedItem="{Binding SelectedDisk}"
-                                  DisplayMemberPath="DisplayText"
-                                  MinWidth="420"
-                                  Height="34"
-                                  FontSize="13"
-                                  AutomationProperties.Name="Disk selector"/>
+                        <Grid Grid.Row="1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
 
-                        <Button Grid.Column="2"
-                                Content="Refresh"
-                                Command="{Binding RefreshCommand}"
-                                Style="{StaticResource ToolbarButton}"
-                                Margin="10,0,0,0"
-                                AutomationProperties.Name="Refresh disks"/>
+                            <TextBlock Grid.Column="0"
+                                       Text="Select Disk"
+                                       Style="{StaticResource FieldLabelText}"
+                                       Margin="0,0,10,0"/>
+
+                            <ComboBox Grid.Column="1"
+                                      ItemsSource="{Binding Disks}"
+                                      SelectedItem="{Binding SelectedDisk}"
+                                      DisplayMemberPath="DisplayText"
+                                      MinWidth="420"
+                                      Height="34"
+                                      FontSize="13"
+                                      AutomationProperties.Name="Disk selector"/>
+                        </Grid>
+
+                        <Grid Grid.Row="2" Margin="0,12,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="Capacity" Style="{StaticResource TinyLabelText}"/>
+                                <TextBlock Text="{Binding DiskCapacityText}"
+                                           Style="{StaticResource CaptionText}"
+                                           TextTrimming="CharacterEllipsis"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Margin="14,0,0,0">
+                                <TextBlock Text="Largest Free Extent" Style="{StaticResource TinyLabelText}"/>
+                                <TextBlock Text="{Binding DiskFreeExtentText}"
+                                           Style="{StaticResource CaptionText}"
+                                           TextTrimming="CharacterEllipsis"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="2" Margin="14,0,0,0">
+                                <TextBlock Text="Partition Style" Style="{StaticResource TinyLabelText}"/>
+                                <TextBlock Text="{Binding DiskPartitionStyleText}"
+                                           Style="{StaticResource CaptionText}"
+                                           TextTrimming="CharacterEllipsis"/>
+                            </StackPanel>
+                        </Grid>
                     </Grid>
-                </Grid>
-            </Border>
+                </Border>
 
-            <controls:DiskBarControl DockPanel.Dock="Top"
-                                     Height="76"
-                                     Margin="0,0,0,10"
-                                     Segments="{Binding DiskBarSegments}"/>
+                <controls:DiskBarControl Grid.Row="1"
+                                         Margin="0,0,0,10"
+                                         Segments="{Binding DiskBarSegments}"/>
 
-            <Border DockPanel.Dock="Top"
+                <Border Grid.Row="2" Style="{StaticResource Card}" Padding="0">
+                    <Grid>
+                        <ListView ItemsSource="{Binding Partitions}"
+                                  SelectedItem="{Binding SelectedPartition}"
+                                  BorderThickness="0"
+                                  Background="Transparent"
+                                  FontSize="13"
+                                  AutomationProperties.Name="Partition table">
+                            <ListView.ItemContainerStyle>
+                                <Style TargetType="ListViewItem" BasedOn="{StaticResource {x:Type ListViewItem}}">
+                                    <EventSetter Event="PreviewMouseRightButtonDown" Handler="OnPartitionRowRightClick"/>
+                                </Style>
+                            </ListView.ItemContainerStyle>
+                            <ListView.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="Create partition" Click="OnCreate"/>
+                                    <Separator/>
+                                    <MenuItem Header="Delete partition"
+                                              Command="{Binding PlacementTarget.DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+                                    <MenuItem Header="Format partition" Click="OnFormat"/>
+                                    <MenuItem Header="Resize partition" Click="OnResize"/>
+                                    <MenuItem Header="Extend partition"
+                                              Command="{Binding PlacementTarget.DataContext.ExtendCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+                                    <MenuItem Header="Split partition" Click="OnSplit"/>
+                                    <MenuItem Header="Change drive letter" Click="OnChangeLetter"/>
+                                    <Separator/>
+                                    <MenuItem Header="Set active"
+                                              Command="{Binding PlacementTarget.DataContext.SetActiveCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+                                    <MenuItem Header="Hide or unhide"
+                                              Command="{Binding PlacementTarget.DataContext.HideCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+                                </ContextMenu>
+                            </ListView.ContextMenu>
+                            <ListView.View>
+                                <GridView>
+                                    <GridViewColumn Header="Partition" Width="180" DisplayMemberBinding="{Binding PartitionDisplay}"/>
+                                    <GridViewColumn Header="Type" Width="104" DisplayMemberBinding="{Binding Type}"/>
+                                    <GridViewColumn Header="File System" Width="112" DisplayMemberBinding="{Binding FileSystemDisplay}"/>
+                                    <GridViewColumn Header="Capacity" Width="108" DisplayMemberBinding="{Binding SizeText}"/>
+                                    <GridViewColumn Header="Free" Width="108" DisplayMemberBinding="{Binding FreeText}"/>
+                                    <GridViewColumn Header="Status" Width="260" DisplayMemberBinding="{Binding Details}"/>
+                                </GridView>
+                            </ListView.View>
+                        </ListView>
+
+                        <Border IsHitTestVisible="False">
+                            <Border.Style>
+                                <Style TargetType="Border" BasedOn="{StaticResource EmptyStatePanel}">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Partitions.Count}" Value="0">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="No partition data loaded" Style="{StaticResource EmptyStateTitle}"/>
+                                <TextBlock Text="The workspace will populate after disk discovery completes, or after you choose a disk."
+                                           Style="{StaticResource EmptyStateText}"
+                                           Margin="0"/>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <Border Grid.Column="1"
                     Style="{StaticResource PanelCard}"
-                    Padding="12"
-                    Margin="0,0,0,10">
-                <DockPanel>
-                    <TextBlock DockPanel.Dock="Top"
-                               Text="Partition Actions"
-                               Style="{StaticResource FieldLabelText}"
-                               Margin="0,0,0,8"/>
-                    <WrapPanel>
-                        <Button Content="Create"
-                                Style="{StaticResource PrimaryButton}"
-                                MinWidth="92"
-                                Height="34"
-                                Margin="0,0,6,6"
+                    Padding="0">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="14">
+                        <TextBlock Text="Partition Actions" Style="{StaticResource SectionTitleText}"/>
+                        <TextBlock Text="Actions are enabled only when the required disk or partition is selected."
+                                   Style="{StaticResource CaptionText}"
+                                   Margin="0,2,0,12"/>
+
+                        <Button Content="Create Partition"
+                                Style="{StaticResource ActionRailPrimaryButton}"
                                 Click="OnCreate"
                                 IsEnabled="{Binding HasSelectedDisk}"
                                 ToolTip="Create a partition from unallocated space"
                                 AutomationProperties.Name="Create partition"/>
-                        <Button Content="Delete"
-                                Style="{StaticResource DangerButton}"
-                                MinWidth="92"
-                                Height="34"
-                                Margin="0,0,6,6"
-                                Command="{Binding DeleteCommand}"
-                                ToolTip="Delete the selected partition"
-                                AutomationProperties.Name="Delete partition"/>
-                        <Button Content="Format"
-                                Style="{StaticResource ToolbarButton}"
-                                Click="OnFormat"
-                                IsEnabled="{Binding HasSelectedPartition}"
-                                ToolTip="Format the selected volume"
-                                AutomationProperties.Name="Format partition"/>
                         <Button Content="Resize"
-                                Style="{StaticResource ToolbarButton}"
+                                Style="{StaticResource ActionRailButton}"
                                 Click="OnResize"
                                 IsEnabled="{Binding HasSelectedPartition}"
                                 ToolTip="Resize the selected volume"
                                 AutomationProperties.Name="Resize partition"/>
                         <Button Content="Extend"
-                                Style="{StaticResource ToolbarButton}"
+                                Style="{StaticResource ActionRailButton}"
                                 Command="{Binding ExtendCommand}"
                                 ToolTip="Extend the selected partition into available space"
                                 AutomationProperties.Name="Extend partition"/>
                         <Button Content="Split"
-                                Style="{StaticResource ToolbarButton}"
+                                Style="{StaticResource ActionRailButton}"
                                 Click="OnSplit"
                                 IsEnabled="{Binding HasSelectedPartition}"
                                 ToolTip="Split the selected volume into two volumes"
                                 AutomationProperties.Name="Split partition"/>
-                        <Button Content="Change Letter"
-                                Style="{StaticResource ToolbarButton}"
+                        <Button Content="Format"
+                                Style="{StaticResource ActionRailButton}"
+                                Click="OnFormat"
+                                IsEnabled="{Binding HasSelectedPartition}"
+                                ToolTip="Format the selected volume"
+                                AutomationProperties.Name="Format partition"/>
+                        <Button Content="Change Drive Letter"
+                                Style="{StaticResource ActionRailButton}"
                                 Click="OnChangeLetter"
                                 IsEnabled="{Binding HasSelectedPartition}"
                                 ToolTip="Assign or change the selected partition drive letter"
                                 AutomationProperties.Name="Change drive letter"/>
-                        <Button Content="Set Active"
-                                Style="{StaticResource ToolbarButton}"
-                                Command="{Binding SetActiveCommand}"
-                                ToolTip="Mark the selected partition as active"
-                                AutomationProperties.Name="Set partition active"/>
-                        <Button Content="Hide"
-                                Style="{StaticResource ToolbarButton}"
+                        <Button Content="Hide or Unhide"
+                                Style="{StaticResource ActionRailButton}"
                                 Command="{Binding HideCommand}"
                                 ToolTip="Hide or unhide the selected partition"
                                 AutomationProperties.Name="Hide or unhide partition"/>
-                    </WrapPanel>
-                </DockPanel>
-            </Border>
+                        <Button Content="Set Active"
+                                Style="{StaticResource ActionRailButton}"
+                                Command="{Binding SetActiveCommand}"
+                                ToolTip="Mark the selected partition as active"
+                                AutomationProperties.Name="Set partition active"/>
+                        <Button Content="Delete"
+                                Style="{StaticResource ActionRailDangerButton}"
+                                Command="{Binding DeleteCommand}"
+                                ToolTip="Delete the selected partition"
+                                AutomationProperties.Name="Delete partition"/>
 
-            <Border Style="{StaticResource Card}" Padding="0">
-                <Grid>
-                    <ListView ItemsSource="{Binding Partitions}"
-                              SelectedItem="{Binding SelectedPartition}"
-                              BorderThickness="0"
-                              Background="Transparent"
-                              FontSize="13"
-                              AutomationProperties.Name="Partition table">
-                        <ListView.ItemContainerStyle>
-                            <Style TargetType="ListViewItem" BasedOn="{StaticResource {x:Type ListViewItem}}">
-                                <EventSetter Event="PreviewMouseRightButtonDown" Handler="OnPartitionRowRightClick"/>
-                            </Style>
-                        </ListView.ItemContainerStyle>
-                        <ListView.ContextMenu>
-                            <ContextMenu>
-                                <MenuItem Header="Create partition" Click="OnCreate"/>
-                                <Separator/>
-                                <MenuItem Header="Delete partition"
-                                          Command="{Binding PlacementTarget.DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
-                                <MenuItem Header="Format partition" Click="OnFormat"/>
-                                <MenuItem Header="Resize partition" Click="OnResize"/>
-                                <MenuItem Header="Extend partition"
-                                          Command="{Binding PlacementTarget.DataContext.ExtendCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
-                                <MenuItem Header="Split partition" Click="OnSplit"/>
-                                <MenuItem Header="Change drive letter" Click="OnChangeLetter"/>
-                                <Separator/>
-                                <MenuItem Header="Set active"
-                                          Command="{Binding PlacementTarget.DataContext.SetActiveCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
-                                <MenuItem Header="Hide or unhide"
-                                          Command="{Binding PlacementTarget.DataContext.HideCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
-                            </ContextMenu>
-                        </ListView.ContextMenu>
-                        <ListView.View>
-                            <GridView>
-                                <GridViewColumn Header="#" Width="44" DisplayMemberBinding="{Binding PartitionNumber}"/>
-                                <GridViewColumn Header="Letter" Width="72" DisplayMemberBinding="{Binding LetterDisplay}"/>
-                                <GridViewColumn Header="Label" Width="140" DisplayMemberBinding="{Binding Label}"/>
-                                <GridViewColumn Header="Size" Width="104" DisplayMemberBinding="{Binding SizeText}"/>
-                                <GridViewColumn Header="Free" Width="104" DisplayMemberBinding="{Binding FreeText}"/>
-                                <GridViewColumn Header="Type" Width="100" DisplayMemberBinding="{Binding Type}"/>
-                                <GridViewColumn Header="File System" Width="108" DisplayMemberBinding="{Binding FileSystem}"/>
-                                <GridViewColumn Header="Details" Width="260" DisplayMemberBinding="{Binding Details}"/>
-                            </GridView>
-                        </ListView.View>
-                    </ListView>
+                        <Border Height="1"
+                                Background="{DynamicResource TableRuleBrush}"
+                                Margin="0,10,0,12"/>
 
-                    <Border IsHitTestVisible="False">
-                        <Border.Style>
-                            <Style TargetType="Border" BasedOn="{StaticResource EmptyStatePanel}">
-                                <Setter Property="Visibility" Value="Collapsed"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding Partitions.Count}" Value="0">
-                                        <Setter Property="Visibility" Value="Visible"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Border.Style>
-                        <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="No partition data loaded" Style="{StaticResource EmptyStateTitle}"/>
-                            <TextBlock Text="Refresh disks, then choose a disk to review layout, volumes, and available actions."
-                                       Style="{StaticResource EmptyStateText}"
-                                       Margin="0"/>
-                        </StackPanel>
-                    </Border>
-                </Grid>
+                        <TextBlock Text="Selection" Style="{StaticResource SectionTitleText}"/>
+                        <TextBlock Text="{Binding SelectedPartitionName}"
+                                   Style="{StaticResource CaptionText}"
+                                   FontWeight="SemiBold"
+                                   Margin="0,5,0,2"/>
+                        <TextBlock Text="{Binding SelectedPartitionSummary}"
+                                   Style="{StaticResource CaptionText}"/>
+
+                        <Border Height="1"
+                                Background="{DynamicResource TableRuleBrush}"
+                                Margin="0,12,0,12"/>
+
+                        <TextBlock Text="Safety" Style="{StaticResource SectionTitleText}"/>
+                        <TextBlock Text="Destructive operations require confirmation, log their command output, and refresh the partition map afterward."
+                                   Style="{StaticResource CaptionText}"
+                                   Margin="0,5,0,0"/>
+                    </StackPanel>
+                </ScrollViewer>
             </Border>
-        </DockPanel>
+        </Grid>
 
         <Border Style="{StaticResource BusyOverlay}">
             <Border Style="{StaticResource BusyPanel}" HorizontalAlignment="Center" VerticalAlignment="Center">

@@ -24,6 +24,13 @@
         <Setter Property="LineHeight" Value="32"/>
     </Style>
 
+    <Style x:Key="ShellTitleText" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+        <Setter Property="FontSize" Value="18"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="LineHeight" Value="24"/>
+    </Style>
+
     <Style x:Key="PageTitleText" TargetType="TextBlock">
         <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
         <Setter Property="FontSize" Value="15"/>
@@ -50,6 +57,27 @@
         <Setter Property="FontSize" Value="12"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
+    </Style>
+
+    <Style x:Key="TinyLabelText" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource MutedTextBrush}"/>
+        <Setter Property="FontSize" Value="11"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="LineHeight" Value="15"/>
+    </Style>
+
+    <Style x:Key="NavTitleText" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType=TabItem}}"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="LineHeight" Value="18"/>
+    </Style>
+
+    <Style x:Key="NavSubtitleText" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource MutedTextBrush}"/>
+        <Setter Property="FontSize" Value="11"/>
+        <Setter Property="LineHeight" Value="15"/>
+        <Setter Property="TextWrapping" Value="Wrap"/>
     </Style>
 
     <Style x:Key="EmptyStateText" TargetType="TextBlock" BasedOn="{StaticResource CaptionText}">
@@ -249,6 +277,8 @@
         <Setter Property="MinHeight" Value="34"/>
         <Setter Property="Padding" Value="14,6"/>
         <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
         <Setter Property="FocusVisualStyle" Value="{StaticResource ControlFocusVisual}"/>
         <Setter Property="Template">
             <Setter.Value>
@@ -260,8 +290,8 @@
                             CornerRadius="6"
                             Padding="{TemplateBinding Padding}"
                             SnapsToDevicePixels="True">
-                        <ContentPresenter HorizontalAlignment="Center"
-                                          VerticalAlignment="Center"
+                        <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                                           RecognizesAccessKey="True"/>
                     </Border>
                     <ControlTemplate.Triggers>
@@ -307,11 +337,79 @@
         <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
     </Style>
 
+    <Style x:Key="CommandBarButton" TargetType="Button" BasedOn="{StaticResource ToolbarButton}">
+        <Setter Property="MinWidth" Value="0"/>
+        <Setter Property="Height" Value="32"/>
+        <Setter Property="Margin" Value="0,0,8,0"/>
+        <Setter Property="Padding" Value="11,5"/>
+    </Style>
+
+    <Style x:Key="ActionRailButton" TargetType="Button" BasedOn="{StaticResource BaseButton}">
+        <Setter Property="MinWidth" Value="0"/>
+        <Setter Property="Height" Value="36"/>
+        <Setter Property="Margin" Value="0,0,0,8"/>
+        <Setter Property="Padding" Value="12,7"/>
+        <Setter Property="HorizontalContentAlignment" Value="Left"/>
+        <Setter Property="Background" Value="{DynamicResource ToolbarBtnBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+    </Style>
+
+    <Style x:Key="ActionRailPrimaryButton" TargetType="Button" BasedOn="{StaticResource ActionRailButton}">
+        <Setter Property="Background" Value="{DynamicResource PrimarySoftBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+    </Style>
+
+    <Style x:Key="ActionRailDangerButton" TargetType="Button" BasedOn="{StaticResource ActionRailButton}">
+        <Setter Property="Background" Value="{DynamicResource DangerSoftBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource DangerBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource DangerBrush}"/>
+    </Style>
+
+    <Style x:Key="LogFilterToggle" TargetType="ToggleButton">
+        <Setter Property="Foreground" Value="{DynamicResource SubtextBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource ToolbarBtnBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="FontSize" Value="11.5"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="MinHeight" Value="28"/>
+        <Setter Property="Padding" Value="12,4"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="FocusVisualStyle" Value="{StaticResource ControlFocusVisual}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ToggleButton">
+                    <Border x:Name="Bd"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="4"
+                            Padding="{TemplateBinding Padding}">
+                        <ContentPresenter HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"
+                                          RecognizesAccessKey="True"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource PrimarySoftBrush}"/>
+                            <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <!-- Navigation -->
     <Style x:Key="NavTabItem" TargetType="TabItem">
-        <Setter Property="Padding" Value="14,12"/>
+        <Setter Property="Padding" Value="14,11"/>
         <Setter Property="FontSize" Value="13"/>
-        <Setter Property="MinWidth" Value="132"/>
+        <Setter Property="MinWidth" Value="178"/>
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="Foreground" Value="{DynamicResource SubtextBrush}"/>
         <Setter Property="FocusVisualStyle" Value="{StaticResource ControlFocusVisual}"/>
@@ -324,7 +422,7 @@
                             BorderBrush="Transparent"
                             BorderThickness="3,0,0,0"
                             CornerRadius="6"
-                            Margin="0,0,10,6">
+                            Margin="0,0,12,6">
                         <ContentPresenter ContentSource="Header"
                                           HorizontalAlignment="Left"
                                           VerticalAlignment="Center"/>
@@ -556,6 +654,13 @@
         <Setter Property="CornerRadius" Value="4"/>
         <Setter Property="Padding" Value="10,6"/>
         <Setter Property="SnapsToDevicePixels" Value="True"/>
+    </Style>
+
+    <Style x:Key="StatusTile" TargetType="Border" BasedOn="{StaticResource Card}">
+        <Setter Property="Background" Value="{DynamicResource StatusBgBrush}"/>
+        <Setter Property="Padding" Value="14,10"/>
+        <Setter Property="MinWidth" Value="190"/>
+        <Setter Property="Margin" Value="0,0,10,0"/>
     </Style>
 
     <Style x:Key="NoticePanel" TargetType="Border" BasedOn="{StaticResource Card}">

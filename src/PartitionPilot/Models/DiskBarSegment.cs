@@ -7,4 +7,5 @@ public class DiskBarSegment
     public string Label { get; set; } = "";
     public string ColorHex { get; set; } = "#888888";
     public double Proportion { get; set; }
+    public string SizeText => SizeUtil.Format(SizeBytes);
 }
