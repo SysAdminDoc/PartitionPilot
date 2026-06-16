@@ -21,11 +21,13 @@
                         <ComboBox ItemsSource="{Binding DriveLetters}"
                                   SelectedItem="{Binding SelectedDrive}"
                                   Width="60" Height="34"
-                                  Margin="0,0,10,0"/>
+                                  Margin="0,0,10,0"
+                                  AutomationProperties.Name="Drive letter selector"/>
                         <Button Content="Scan"
                                 Command="{Binding ScanCommand}"
                                 Style="{StaticResource PrimaryButton}"
-                                MinWidth="80" Height="34"/>
+                                MinWidth="80" Height="34"
+                                AutomationProperties.Name="Scan disk usage"/>
                     </StackPanel>
                 </Grid>
             </Border>
@@ -93,7 +95,8 @@
                         Command="{Binding CancelCommand}"
                         Style="{StaticResource ToolbarButton}"
                         HorizontalAlignment="Center"
-                        Margin="0,12,0,0"/>
+                        Margin="0,12,0,0"
+                        AutomationProperties.Name="Cancel disk usage scan"/>
             </StackPanel>
         </Border>
     </Grid>
