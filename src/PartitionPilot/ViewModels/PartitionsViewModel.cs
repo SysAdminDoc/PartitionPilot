@@ -9,6 +9,7 @@ public class PartitionsViewModel : ViewModelBase
     private readonly WmiDiskService _wmiService;
     private readonly ProcessRunner _processRunner;
     private readonly ActivityLog _log;
+    private readonly IDialogService _dialog;
 
     public ObservableCollection<DiskInfo> Disks { get; } = new();
     public ObservableCollection<PartitionInfo> Partitions { get; } = new();
@@ -85,11 +86,12 @@ public class PartitionsViewModel : ViewModelBase
     private const string DefaultColor = "#B18CFF";
     private const double MinProportion = 0.018;
 
-    public PartitionsViewModel(WmiDiskService wmiService, ProcessRunner processRunner, ActivityLog log)
+    public PartitionsViewModel(WmiDiskService wmiService, ProcessRunner processRunner, ActivityLog log, IDialogService dialog)
     {
         _wmiService = wmiService;
         _processRunner = processRunner;
         _log = log;
+        _dialog = dialog;
 
         RefreshCommand = new AsyncRelayCommand(_ => LoadDisksAsync());
         DeleteCommand = new AsyncRelayCommand(_ => ExecuteDeleteAsync(), _ => SelectedPartition is not null);
@@ -296,8 +298,7 @@ public class PartitionsViewModel : ViewModelBase
         catch (Exception ex)
         {
             _log.Log($"Create failed: {ex.Message}");
-            MessageBox.Show($"Failed to create partition:\n{ex.Message}", "Create Error",
-                MessageBoxButton.OK, MessageBoxImage.Error);
+            _dialog.ShowError($"Failed to create partition:\n{ex.Message}", "Create Error");
         }
         finally
         {
@@ -326,8 +327,7 @@ public class PartitionsViewModel : ViewModelBase
         catch (Exception ex)
         {
             _log.Log($"Format failed: {ex.Message}");
-            MessageBox.Show($"Failed to format volume:\n{ex.Message}", "Format Error",
-                MessageBoxButton.OK, MessageBoxImage.Error);
+            _dialog.ShowError($"Failed to format volume:\n{ex.Message}", "Format Error");
         }
         finally
         {
@@ -351,8 +351,7 @@ public class PartitionsViewModel : ViewModelBase
         catch (Exception ex)
         {
             _log.Log($"Resize failed: {ex.Message}");
-            MessageBox.Show($"Failed to resize partition:\n{ex.Message}", "Resize Error",
-                MessageBoxButton.OK, MessageBoxImage.Error);
+            _dialog.ShowError($"Failed to resize partition:\n{ex.Message}", "Resize Error");
         }
         finally
         {
@@ -392,8 +391,7 @@ public class PartitionsViewModel : ViewModelBase
         catch (Exception ex)
         {
             _log.Log($"Split failed: {ex.Message}");
-            MessageBox.Show($"Failed to split partition:\n{ex.Message}", "Split Error",
-                MessageBoxButton.OK, MessageBoxImage.Error);
+            _dialog.ShowError($"Failed to split partition:\n{ex.Message}", "Split Error");
         }
         finally
         {
@@ -437,8 +435,7 @@ public class PartitionsViewModel : ViewModelBase
         catch (Exception ex)
         {
             _log.Log($"Change letter failed: {ex.Message}");
-            MessageBox.Show($"Failed to change drive letter:\n{ex.Message}", "Change Letter Error",
-                MessageBoxButton.OK, MessageBoxImage.Error);
+            _dialog.ShowError($"Failed to change drive letter:\n{ex.Message}", "Change Letter Error");
         }
         finally
         {
@@ -453,14 +450,11 @@ public class PartitionsViewModel : ViewModelBase
         if (SelectedPartition is null || SelectedDisk is null) return;
 
         var part = SelectedPartition;
-        var result = MessageBox.Show(
+        if (!_dialog.ConfirmWarning(
             $"Delete partition {part.PartitionNumber} on Disk {SelectedDisk.Number}?\n" +
             $"Letter: {part.LetterDisplay}, Size: {part.SizeText}\n\n" +
             "ALL DATA ON THIS PARTITION WILL BE LOST.",
-            "Confirm Delete",
-            MessageBoxButton.YesNo, MessageBoxImage.Warning);
-
-        if (result != MessageBoxResult.Yes) return;
+            "Confirm Delete")) return;
 
         IsBusy = true;
         try
@@ -481,8 +475,7 @@ public class PartitionsViewModel : ViewModelBase
         catch (Exception ex)
         {
             _log.Log($"Delete failed: {ex.Message}");
-            MessageBox.Show($"Failed to delete partition:\n{ex.Message}", "Delete Error",
-                MessageBoxButton.OK, MessageBoxImage.Error);
+            _dialog.ShowError($"Failed to delete partition:\n{ex.Message}", "Delete Error");
         }
         finally
         {
@@ -510,9 +503,7 @@ public class PartitionsViewModel : ViewModelBase
         if (warnings.Count > 0)
             msg += "\n\nWarnings:\n" + string.Join("\n", warnings.Select(w => $"  - {w}"));
 
-        var confirm = MessageBox.Show(msg, "Confirm Extend",
-            MessageBoxButton.YesNo, MessageBoxImage.Question);
-        if (confirm != MessageBoxResult.Yes) return;
+        if (!_dialog.Confirm(msg, "Confirm Extend")) return;
 
         IsBusy = true;
         try
@@ -590,8 +581,7 @@ public class PartitionsViewModel : ViewModelBase
         catch (Exception ex)
         {
             _log.Log($"Extend failed: {ex.Message}");
-            MessageBox.Show($"Failed to extend partition:\n{ex.Message}", "Extend Error",
-                MessageBoxButton.OK, MessageBoxImage.Error);
+            _dialog.ShowError($"Failed to extend partition:\n{ex.Message}", "Extend Error");
         }
         finally
         {
@@ -604,13 +594,10 @@ public class PartitionsViewModel : ViewModelBase
         if (SelectedPartition is null || SelectedDisk is null) return;
 
         var part = SelectedPartition;
-        var confirm = MessageBox.Show(
+        if (!_dialog.ConfirmWarning(
             $"Set partition {part.PartitionNumber} on Disk {SelectedDisk.Number} as ACTIVE?\n\n" +
             "Warning: Setting the wrong partition as active can prevent Windows from booting.",
-            "Confirm Set Active",
-            MessageBoxButton.YesNo, MessageBoxImage.Warning);
-
-        if (confirm != MessageBoxResult.Yes) return;
+            "Confirm Set Active")) return;
 
         IsBusy = true;
         try
@@ -625,8 +612,7 @@ public class PartitionsViewModel : ViewModelBase
         catch (Exception ex)
         {
             _log.Log($"Set active failed: {ex.Message}");
-            MessageBox.Show($"Failed to set partition as active:\n{ex.Message}", "Set Active Error",
-                MessageBoxButton.OK, MessageBoxImage.Error);
+            _dialog.ShowError($"Failed to set partition as active:\n{ex.Message}", "Set Active Error");
         }
         finally
         {
@@ -642,12 +628,9 @@ public class PartitionsViewModel : ViewModelBase
         bool willHide = !part.IsHidden;
         string action = willHide ? "Hide" : "Unhide";
 
-        var confirm = MessageBox.Show(
+        if (!_dialog.Confirm(
             $"{action} partition {part.PartitionNumber} ({part.LetterDisplay}) on Disk {SelectedDisk.Number}?",
-            $"Confirm {action}",
-            MessageBoxButton.YesNo, MessageBoxImage.Question);
-
-        if (confirm != MessageBoxResult.Yes) return;
+            $"Confirm {action}")) return;
 
         IsBusy = true;
         try
@@ -662,8 +645,7 @@ public class PartitionsViewModel : ViewModelBase
         catch (Exception ex)
         {
             _log.Log($"{action} failed: {ex.Message}");
-            MessageBox.Show($"Failed to {action.ToLower()} partition:\n{ex.Message}", $"{action} Error",
-                MessageBoxButton.OK, MessageBoxImage.Error);
+            _dialog.ShowError($"Failed to {action.ToLower()} partition:\n{ex.Message}", $"{action} Error");
         }
         finally
         {
