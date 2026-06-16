@@ -1,4 +1,4 @@
-![Version](https://img.shields.io/badge/version-0.1.0-4CC2FF)
+![Version](https://img.shields.io/badge/version-0.2.0-4CC2FF)
 ![License](https://img.shields.io/badge/license-MIT-5EE0A0)
 ![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-F4C96A)
 
@@ -11,9 +11,16 @@ PartitionPilot is a Windows disk partition management tool for power users and I
 - Partition overview with disk map, partition table, and contextual actions.
 - Create, delete, format, resize, extend, split, hide, and drive-letter operations.
 - Disk health and SMART reliability data with 4K alignment review.
-- Maintenance tools for MBR to GPT conversion, filesystem repair, optimization/TRIM, secure wipe, boot repair, and benchmarking.
+- BitLocker encryption status per volume.
+- Maintenance tools: MBR to GPT conversion, filesystem repair, optimization/TRIM, secure wipe, boot repair, surface test, and benchmarking.
 - Disk image workflows for mounting, dismounting, and creating VHD/VHDX images.
-- Activity log and clear busy states for long-running operations.
+- Disk usage analysis with top-folder size breakdown.
+- Disk cloning: create and restore WIM/VHDX images.
+- Dark and light theme with persistent preference.
+- Activity log with export and auto-save.
+- Cancellable long-running operations with progress reporting.
+- Startup update check against GitHub Releases.
+- Screen reader accessibility (AutomationProperties on all interactive controls).
 
 ## Requirements
 

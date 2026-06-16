@@ -5,7 +5,7 @@ namespace PartitionPilot;
 
 public static class UpdateService
 {
-    private const string CurrentVersion = "0.1.0";
+    private const string CurrentVersion = "0.2.0";
     private const string ReleasesApiUrl = "https://api.github.com/repos/SysAdminDoc/PartitionPilot/releases/latest";
 
     public static async Task<(bool available, string version, string url)?> CheckForUpdateAsync()
