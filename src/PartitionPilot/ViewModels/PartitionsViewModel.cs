@@ -152,12 +152,17 @@ public class PartitionsViewModel : ViewModelBase
             var vols = await _wmiService.GetVolumesAsync();
             WmiDiskService.EnrichPartitionsWithVolumes(parts, vols);
 
-            // Detect pagefiles
             var pagefileLetters = await _wmiService.GetPagefileLocationsAsync();
+            var bitlockerStatus = await _wmiService.GetBitLockerStatusAsync();
             foreach (var p in parts)
             {
-                if (p.DriveLetter.HasValue && pagefileLetters.Contains(p.DriveLetter.Value))
-                    p.HasPagefile = true;
+                if (p.DriveLetter.HasValue)
+                {
+                    if (pagefileLetters.Contains(p.DriveLetter.Value))
+                        p.HasPagefile = true;
+                    if (bitlockerStatus.TryGetValue(p.DriveLetter.Value, out var blStatus))
+                        p.EncryptionStatus = blStatus;
+                }
             }
 
             Application.Current.Dispatcher.Invoke(() =>

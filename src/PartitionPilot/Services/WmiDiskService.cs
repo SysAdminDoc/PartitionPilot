@@ -488,6 +488,46 @@ public class WmiDiskService : IWmiDiskService
         return null;
     }
 
+    // ──────────────── BitLocker Status ────────────────────
+
+    public Task<Dictionary<char, string>> GetBitLockerStatusAsync() => Task.Run(() =>
+    {
+        var result = new Dictionary<char, string>();
+        try
+        {
+            var scope = new ManagementScope(@"\\.\root\CIMV2\Security\MicrosoftVolumeEncryption");
+            scope.Connect();
+            using var searcher = new ManagementObjectSearcher(scope,
+                new ObjectQuery("SELECT DriveLetter, ProtectionStatus FROM Win32_EncryptableVolume"));
+
+            foreach (ManagementObject obj in searcher.Get())
+            {
+                using (obj)
+                {
+                    var driveLetter = obj["DriveLetter"]?.ToString();
+                    if (string.IsNullOrEmpty(driveLetter) || driveLetter.Length < 1) continue;
+
+                    var letter = driveLetter[0];
+                    if (!char.IsLetter(letter)) continue;
+
+                    var status = Convert.ToInt32(obj["ProtectionStatus"] ?? 0);
+                    var statusText = status switch
+                    {
+                        0 => "BitLocker: Off",
+                        1 => "BitLocker: On",
+                        2 => "BitLocker: Unknown",
+                        _ => ""
+                    };
+
+                    if (!string.IsNullOrEmpty(statusText))
+                        result[char.ToUpperInvariant(letter)] = statusText;
+                }
+            }
+        }
+        catch (Exception ex) { _log.Log($"BitLocker query failed (requires admin): {ex.Message}"); }
+        return result;
+    });
+
     // ──────────────── WMI Helpers ────────────────────────
 
     private static int? GetNullableInt(ManagementObject obj, string property)
