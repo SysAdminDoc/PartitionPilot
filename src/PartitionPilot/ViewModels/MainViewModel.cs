@@ -14,6 +14,7 @@ public class MainViewModel : ViewModelBase
     public ToolsViewModel Tools { get; }
     public DiskImagesViewModel DiskImages { get; }
     public DiskUsageViewModel DiskUsage { get; }
+    public DiskCloningViewModel DiskCloning { get; }
 
     private string _statusText = "Ready";
     public string StatusText
@@ -56,6 +57,7 @@ public class MainViewModel : ViewModelBase
         Tools = new ToolsViewModel(_wmiService, _processRunner, Log, _dialog);
         DiskImages = new DiskImagesViewModel(_processRunner, _wmiService, Log, _dialog);
         DiskUsage = new DiskUsageViewModel(_wmiService, Log);
+        DiskCloning = new DiskCloningViewModel(_processRunner, _wmiService, Log, _dialog);
 
         TabChangedCommand = new AsyncRelayCommand(OnTabChangedAsync);
         ExportLogCommand = new RelayCommand(_ => ExportLog());
@@ -128,6 +130,10 @@ public class MainViewModel : ViewModelBase
                 case 4:
                     StatusText = "Loading drive list...";
                     await DiskUsage.RefreshDrivesAsync();
+                    break;
+                case 5:
+                    StatusText = "Loading cloning data...";
+                    await DiskCloning.RefreshAsync();
                     break;
             }
 
