@@ -255,6 +255,28 @@ public class ToolsViewModel : ViewModelBase
         }
     }
 
+    // ──────────────────────── Surface Test ────────────────────────
+
+    public ObservableCollection<char> SurfaceTestVolumes => DriveLetters;
+
+    private char _selectedSurfaceTestVolume;
+    public char SelectedSurfaceTestVolume
+    {
+        get => _selectedSurfaceTestVolume;
+        set
+        {
+            if (SetProperty(ref _selectedSurfaceTestVolume, value))
+                CommandManager.InvalidateRequerySuggested();
+        }
+    }
+
+    private string _surfaceTestResults = "";
+    public string SurfaceTestResults
+    {
+        get => _surfaceTestResults;
+        set => SetProperty(ref _surfaceTestResults, value);
+    }
+
     // ──────────────────────── Benchmark ────────────────────────
 
     public ObservableCollection<char> BenchDrives => DriveLetters;
@@ -309,6 +331,7 @@ public class ToolsViewModel : ViewModelBase
     public ICommand RunWipeCommand { get; }
     public ICommand RunBootRepairCommand { get; }
     public ICommand RunBenchmarkCommand { get; }
+    public ICommand RunSurfaceTestCommand { get; }
     public ICommand RefreshCommand { get; }
     public ICommand CancelCommand { get; }
 
@@ -329,6 +352,7 @@ public class ToolsViewModel : ViewModelBase
             _ => WipeIsFreeSpace ? SelectedWipeVolume?.DriveLetter is not null : SelectedWipeDrive is not null);
         RunBootRepairCommand = new AsyncRelayCommand(_ => RunBootRepairAsync(), _ => SelectedBootDrive != default);
         RunBenchmarkCommand = new AsyncRelayCommand(_ => RunBenchmarkAsync(SelectedBenchDrive), _ => SelectedBenchDrive != default);
+        RunSurfaceTestCommand = new AsyncRelayCommand(_ => RunSurfaceTestAsync(), _ => SelectedSurfaceTestVolume != default);
         RefreshCommand = new AsyncRelayCommand(_ => RefreshDriveListsAsync());
         CancelCommand = new RelayCommand(_ => CancelCurrentOperation(), _ => IsBusy && _cts is not null);
     }
@@ -766,6 +790,40 @@ public class ToolsViewModel : ViewModelBase
         finally
         {
             IsBusy = false;
+        }
+    }
+
+    // ──────────────────────── Surface Test ────────────────────────
+
+    private async Task RunSurfaceTestAsync()
+    {
+        if (SelectedSurfaceTestVolume == default) return;
+
+        var ct = BeginOperation($"Running surface test on {SelectedSurfaceTestVolume}:...");
+        SurfaceTestResults = "Running surface test (this may take a while)...";
+        try
+        {
+            _log.Log($"Starting surface test (chkdsk /R) on {SelectedSurfaceTestVolume}:...");
+            var cmd = $"Repair-Volume -DriveLetter '{SelectedSurfaceTestVolume}' -OfflineScanAndFix";
+            var result = await _processRunner.RunPowerShellAsync(cmd, _log, ct);
+            SurfaceTestResults = result.Trim();
+            _log.Log($"Surface test complete: {result.Trim()}");
+            _dialog.ShowInfo($"Surface test on {SelectedSurfaceTestVolume}: completed.\n\n{result.Trim()}", "Surface Test Complete");
+        }
+        catch (OperationCanceledException)
+        {
+            _log.Log("Surface test cancelled.");
+            SurfaceTestResults = "Surface test cancelled.";
+        }
+        catch (Exception ex)
+        {
+            _log.Log($"Surface test failed: {ex.Message}");
+            SurfaceTestResults = $"Failed: {ex.Message}";
+            _dialog.ShowError($"Surface test failed:\n{ex.Message}", "Surface Test Error");
+        }
+        finally
+        {
+            EndOperation();
         }
     }
 

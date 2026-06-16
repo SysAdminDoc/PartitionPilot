@@ -164,6 +164,32 @@
                         </StackPanel>
                     </GroupBox>
 
+                    <GroupBox Header="Surface Test" Style="{StaticResource ToolGroup}">
+                        <StackPanel>
+                            <TextBlock Text="Scan a volume for bad sectors using Repair-Volume OfflineScanAndFix. May take several minutes."
+                                       Style="{StaticResource CaptionText}"
+                                       Margin="0,0,0,10"/>
+                            <TextBlock Text="Volume" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
+                            <ComboBox ItemsSource="{Binding SurfaceTestVolumes}"
+                                      SelectedItem="{Binding SelectedSurfaceTestVolume}"
+                                      Height="34"
+                                      Margin="0,0,0,10"/>
+                            <Button Content="Run Surface Test"
+                                    Style="{StaticResource PrimaryButton}"
+                                    Command="{Binding RunSurfaceTestCommand}"
+                                    HorizontalAlignment="Left"
+                                    Margin="0,0,0,10"/>
+                            <TextBox Text="{Binding SurfaceTestResults, Mode=OneWay}"
+                                     IsReadOnly="True"
+                                     FontFamily="Consolas"
+                                     FontSize="12"
+                                     Height="80"
+                                     VerticalScrollBarVisibility="Auto"
+                                     TextWrapping="Wrap"
+                                     AutomationProperties.Name="Surface test results"/>
+                        </StackPanel>
+                    </GroupBox>
+
                     <GroupBox Header="Disk Benchmark" Style="{StaticResource ToolGroup}">
                         <StackPanel>
                             <TextBlock Text="Measure sequential and random 4K throughput using a 256 MB temporary file."
