@@ -19,7 +19,8 @@
                             Content="Refresh Lists"
                             Command="{Binding RefreshCommand}"
                             Style="{StaticResource ToolbarButton}"
-                            Margin="12,0,0,0"/>
+                            Margin="12,0,0,0"
+                            AutomationProperties.Name="Refresh tool lists"/>
                 </Grid>
             </Border>
 
@@ -36,17 +37,20 @@
                                       SelectedItem="{Binding SelectedMbrDisk}"
                                       DisplayMemberPath="DisplayText"
                                       Height="34"
-                                      Margin="0,0,0,10"/>
+                                      Margin="0,0,0,10"
+                                      AutomationProperties.Name="MBR disk selector"/>
                             <WrapPanel>
                                 <Button Content="Validate"
                                         Style="{StaticResource ToolbarButton}"
-                                        Command="{Binding ValidateMbrToGptCommand}"/>
+                                        Command="{Binding ValidateMbrToGptCommand}"
+                                        AutomationProperties.Name="Validate MBR to GPT conversion"/>
                                 <Button Content="Convert"
                                         Style="{StaticResource PrimaryButton}"
                                         MinWidth="92"
                                         Height="34"
                                         Margin="0,0,6,6"
-                                        Command="{Binding ConvertMbrToGptCommand}"/>
+                                        Command="{Binding ConvertMbrToGptCommand}"
+                                        AutomationProperties.Name="Convert MBR to GPT"/>
                             </WrapPanel>
                         </StackPanel>
                     </GroupBox>
@@ -60,7 +64,8 @@
                             <ComboBox ItemsSource="{Binding Fat32Volumes}"
                                       SelectedItem="{Binding SelectedFat32Volume}"
                                       Height="34"
-                                      Margin="0,0,0,10"/>
+                                      Margin="0,0,0,10"
+                                      AutomationProperties.Name="FAT32 volume selector"/>
                             <Button Content="Convert Volume"
                                     Style="{StaticResource PrimaryButton}"
                                     Command="{Binding ConvertFat32Command}"
