@@ -37,4 +37,17 @@
     <SolidColorBrush x:Key="LogBgBrush" Color="{StaticResource LogBgColor}"/>
     <SolidColorBrush x:Key="InputBgBrush" Color="{StaticResource InputBgColor}"/>
     <SolidColorBrush x:Key="SelectionBrush" Color="{StaticResource SelectionColor}"/>
+
+    <!-- Interactive state tokens -->
+    <SolidColorBrush x:Key="ItemHoverBrush" Color="#242A31"/>
+    <SolidColorBrush x:Key="ItemSelectedBrush" Color="#263845"/>
+    <SolidColorBrush x:Key="DropdownHighlightBrush" Color="#263845"/>
+    <SolidColorBrush x:Key="DropdownSelectedBrush" Color="#20303B"/>
+    <SolidColorBrush x:Key="NavHoverBrush" Color="#1D2228"/>
+    <SolidColorBrush x:Key="HeaderBgBrush" Color="#171A1F"/>
+    <SolidColorBrush x:Key="OverlayBrush" Color="#B8111315"/>
+    <SolidColorBrush x:Key="ToolbarBtnBrush" Color="#1A1E23"/>
+    <SolidColorBrush x:Key="DangerBtnBgBrush" Color="#3A2024"/>
+    <SolidColorBrush x:Key="DangerBtnFgBrush" Color="#FFEDEE"/>
+    <SolidColorBrush x:Key="PrimaryBtnFgBrush" Color="#071116"/>
 </ResourceDictionary>
