@@ -26,8 +26,13 @@ public partial class CreatePartitionDialog : Window
             MessageBox.Show("Enter a valid size.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }
+        if (cmbLetter.SelectedItem is not char letter)
+        {
+            MessageBox.Show("Select a drive letter.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
         SizeGB = size;
-        SelectedLetter = (char)cmbLetter.SelectedItem;
+        SelectedLetter = letter;
         FileSystem = (cmbFS.SelectedItem as System.Windows.Controls.ComboBoxItem)?.Content?.ToString() ?? "NTFS";
         VolumeLabel = txtLabel.Text.Trim();
         QuickFormat = chkQuick.IsChecked == true;

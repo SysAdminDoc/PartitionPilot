@@ -29,4 +29,24 @@ public class ProcessRunnerTests
     {
         Assert.Throws<ArgumentException>(() => ProcessRunner.ValidateDriveLetter(input));
     }
+
+    [Theory]
+    [InlineData("NTFS")]
+    [InlineData("FAT32")]
+    [InlineData("exFAT")]
+    [InlineData("ReFS")]
+    [InlineData("ntfs")]
+    public void ValidateFileSystem_AcceptsAllowed(string fs)
+    {
+        Assert.Equal(fs, ProcessRunner.ValidateFileSystem(fs));
+    }
+
+    [Theory]
+    [InlineData("NTFS\nclean")]
+    [InlineData("ext4")]
+    [InlineData("")]
+    public void ValidateFileSystem_RejectsInvalid(string fs)
+    {
+        Assert.Throws<ArgumentException>(() => ProcessRunner.ValidateFileSystem(fs));
+    }
 }

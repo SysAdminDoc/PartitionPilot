@@ -102,4 +102,14 @@ public class ProcessRunner : IProcessRunner
             throw new ArgumentException($"Invalid drive letter: {letter}");
         return letter;
     }
+
+    private static readonly HashSet<string> AllowedFileSystems = new(StringComparer.OrdinalIgnoreCase)
+        { "NTFS", "FAT32", "FAT", "exFAT", "ReFS" };
+
+    public static string ValidateFileSystem(string fs)
+    {
+        if (!AllowedFileSystems.Contains(fs))
+            throw new ArgumentException($"Unsupported file system: {fs}");
+        return fs;
+    }
 }
