@@ -10,6 +10,7 @@ public class DiskImagesViewModel : ViewModelBase
     private readonly ProcessRunner _processRunner;
     private readonly WmiDiskService _wmiService;
     private readonly ActivityLog _log;
+    private readonly IDialogService _dialog;
 
     // ──────────────────────── Mount ────────────────────────
 
@@ -97,11 +98,12 @@ public class DiskImagesViewModel : ViewModelBase
     public ICommand CreateVhdCommand { get; }
     public ICommand RefreshCommand { get; }
 
-    public DiskImagesViewModel(ProcessRunner processRunner, WmiDiskService wmiService, ActivityLog log)
+    public DiskImagesViewModel(ProcessRunner processRunner, WmiDiskService wmiService, ActivityLog log, IDialogService dialog)
     {
         _processRunner = processRunner;
         _wmiService = wmiService;
         _log = log;
+        _dialog = dialog;
 
         BrowseMountCommand = new RelayCommand(_ => BrowseMountPath());
         MountCommand = new AsyncRelayCommand(_ => MountAsync(), _ => !string.IsNullOrWhiteSpace(MountPath));
@@ -157,14 +159,12 @@ public class DiskImagesViewModel : ViewModelBase
 
             await RefreshAsync();
 
-            MessageBox.Show($"Image mounted successfully.\n\n{result.Trim()}", "Mount Complete",
-                MessageBoxButton.OK, MessageBoxImage.Information);
+            _dialog.ShowInfo($"Image mounted successfully.\n\n{result.Trim()}", "Mount Complete");
         }
         catch (Exception ex)
         {
             _log.Log($"Mount failed: {ex.Message}");
-            MessageBox.Show($"Failed to mount image:\n{ex.Message}", "Mount Error",
-                MessageBoxButton.OK, MessageBoxImage.Error);
+            _dialog.ShowError($"Failed to mount image:\n{ex.Message}", "Mount Error");
         }
         finally
         {
@@ -189,14 +189,12 @@ public class DiskImagesViewModel : ViewModelBase
             SelectedMountedImage = null;
             await RefreshAsync();
 
-            MessageBox.Show("Image dismounted successfully.", "Dismount Complete",
-                MessageBoxButton.OK, MessageBoxImage.Information);
+            _dialog.ShowInfo("Image dismounted successfully.", "Dismount Complete");
         }
         catch (Exception ex)
         {
             _log.Log($"Dismount failed: {ex.Message}");
-            MessageBox.Show($"Failed to dismount image:\n{ex.Message}", "Dismount Error",
-                MessageBoxButton.OK, MessageBoxImage.Error);
+            _dialog.ShowError($"Failed to dismount image:\n{ex.Message}", "Dismount Error");
         }
         finally
         {
@@ -234,14 +232,13 @@ public class DiskImagesViewModel : ViewModelBase
 
             await RefreshAsync();
 
-            MessageBox.Show($"VHD created and mounted successfully.\n\nPath: {VhdPath}\nSize: {VhdSizeGB:F1} GB",
-                "VHD Created", MessageBoxButton.OK, MessageBoxImage.Information);
+            _dialog.ShowInfo($"VHD created and mounted successfully.\n\nPath: {VhdPath}\nSize: {VhdSizeGB:F1} GB",
+                "VHD Created");
         }
         catch (Exception ex)
         {
             _log.Log($"Create VHD failed: {ex.Message}");
-            MessageBox.Show($"Failed to create VHD:\n{ex.Message}", "Create VHD Error",
-                MessageBoxButton.OK, MessageBoxImage.Error);
+            _dialog.ShowError($"Failed to create VHD:\n{ex.Message}", "Create VHD Error");
         }
         finally
         {

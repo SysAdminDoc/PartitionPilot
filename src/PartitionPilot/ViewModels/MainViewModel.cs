@@ -6,6 +6,7 @@ public class MainViewModel : ViewModelBase
 {
     private readonly ProcessRunner _processRunner;
     private readonly WmiDiskService _wmiService;
+    private readonly IDialogService _dialog;
 
     public ActivityLog Log { get; }
     public PartitionsViewModel Partitions { get; }
@@ -38,11 +39,12 @@ public class MainViewModel : ViewModelBase
         _processRunner = new ProcessRunner();
         Log = new ActivityLog();
         _wmiService = new WmiDiskService(_processRunner, Log);
+        _dialog = new MessageBoxDialogService();
 
-        Partitions = new PartitionsViewModel(_wmiService, _processRunner, Log);
+        Partitions = new PartitionsViewModel(_wmiService, _processRunner, Log, _dialog);
         DiskHealth = new DiskHealthViewModel(_wmiService, Log);
-        Tools = new ToolsViewModel(_wmiService, _processRunner, Log);
-        DiskImages = new DiskImagesViewModel(_processRunner, _wmiService, Log);
+        Tools = new ToolsViewModel(_wmiService, _processRunner, Log, _dialog);
+        DiskImages = new DiskImagesViewModel(_processRunner, _wmiService, Log, _dialog);
 
         TabChangedCommand = new AsyncRelayCommand(OnTabChangedAsync);
 

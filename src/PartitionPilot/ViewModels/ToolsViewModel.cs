@@ -11,6 +11,7 @@ public class ToolsViewModel : ViewModelBase
     private readonly WmiDiskService _wmiService;
     private readonly ProcessRunner _processRunner;
     private readonly ActivityLog _log;
+    private readonly IDialogService _dialog;
 
     // ──────────────────────── MBR → GPT ────────────────────────
 
@@ -301,11 +302,12 @@ public class ToolsViewModel : ViewModelBase
     public ICommand RunBenchmarkCommand { get; }
     public ICommand RefreshCommand { get; }
 
-    public ToolsViewModel(WmiDiskService wmiService, ProcessRunner processRunner, ActivityLog log)
+    public ToolsViewModel(WmiDiskService wmiService, ProcessRunner processRunner, ActivityLog log, IDialogService dialog)
     {
         _wmiService = wmiService;
         _processRunner = processRunner;
         _log = log;
+        _dialog = dialog;
 
         ValidateMbrToGptCommand = new AsyncRelayCommand(_ => ValidateMbrToGptAsync(), _ => SelectedMbrDisk is not null);
         ConvertMbrToGptCommand = new AsyncRelayCommand(_ => ConvertMbrToGptAsync(), _ => SelectedMbrDisk is not null);
@@ -396,13 +398,12 @@ public class ToolsViewModel : ViewModelBase
             var result = await _processRunner.RunExeAsync("mbr2gpt", $"/validate /disk:{SelectedMbrDisk.Number} /allowFullOS", _log);
             _log.Log($"Validation result:\n{result.Trim()}");
 
-            MessageBox.Show(result.Trim(), "MBR2GPT Validation", MessageBoxButton.OK, MessageBoxImage.Information);
+            _dialog.ShowInfo(result.Trim(), "MBR2GPT Validation");
         }
         catch (Exception ex)
         {
             _log.Log($"MBR2GPT validation failed: {ex.Message}");
-            MessageBox.Show($"Validation failed:\n{ex.Message}", "MBR2GPT Error",
-                MessageBoxButton.OK, MessageBoxImage.Error);
+            _dialog.ShowError($"Validation failed:\n{ex.Message}", "MBR2GPT Error");
         }
         finally
         {
@@ -414,13 +415,10 @@ public class ToolsViewModel : ViewModelBase
     {
         if (SelectedMbrDisk is null) return;
 
-        var confirm = MessageBox.Show(
+        if (!_dialog.ConfirmWarning(
             $"Convert Disk {SelectedMbrDisk.Number} ({SelectedMbrDisk.FriendlyName}) from MBR to GPT?\n\n" +
             "This operation is irreversible. Ensure you have validated first.",
-            "Confirm MBR to GPT Conversion",
-            MessageBoxButton.YesNo, MessageBoxImage.Warning);
-
-        if (confirm != MessageBoxResult.Yes) return;
+            "Confirm MBR to GPT Conversion")) return;
 
         IsBusy = true;
         try
@@ -429,16 +427,14 @@ public class ToolsViewModel : ViewModelBase
             var result = await _processRunner.RunExeAsync("mbr2gpt", $"/convert /disk:{SelectedMbrDisk.Number} /allowFullOS", _log);
             _log.Log($"Conversion result:\n{result.Trim()}");
 
-            MessageBox.Show("MBR to GPT conversion completed successfully.", "Conversion Complete",
-                MessageBoxButton.OK, MessageBoxImage.Information);
+            _dialog.ShowInfo("MBR to GPT conversion completed successfully.", "Conversion Complete");
 
             await RefreshDriveListsAsync();
         }
         catch (Exception ex)
         {
             _log.Log($"MBR to GPT conversion failed: {ex.Message}");
-            MessageBox.Show($"Conversion failed:\n{ex.Message}", "MBR2GPT Error",
-                MessageBoxButton.OK, MessageBoxImage.Error);
+            _dialog.ShowError($"Conversion failed:\n{ex.Message}", "MBR2GPT Error");
         }
         finally
         {
@@ -452,12 +448,9 @@ public class ToolsViewModel : ViewModelBase
     {
         if (SelectedFat32Volume == default) return;
 
-        var confirm = MessageBox.Show(
+        if (!_dialog.ConfirmWarning(
             $"Convert {SelectedFat32Volume}: from FAT32 to NTFS?\n\nThis is a one-way conversion.",
-            "Confirm FAT32 to NTFS",
-            MessageBoxButton.YesNo, MessageBoxImage.Warning);
-
-        if (confirm != MessageBoxResult.Yes) return;
+            "Confirm FAT32 to NTFS")) return;
 
         IsBusy = true;
         try
@@ -466,14 +459,12 @@ public class ToolsViewModel : ViewModelBase
             var result = await _processRunner.RunExeAsync("convert.exe", $"{SelectedFat32Volume}: /FS:NTFS /NoSecurity /X", _log);
             _log.Log($"Convert result:\n{result.Trim()}");
 
-            MessageBox.Show($"Conversion complete for {SelectedFat32Volume}:.", "Conversion Complete",
-                MessageBoxButton.OK, MessageBoxImage.Information);
+            _dialog.ShowInfo($"Conversion complete for {SelectedFat32Volume}:.", "Conversion Complete");
         }
         catch (Exception ex)
         {
             _log.Log($"FAT32 conversion failed: {ex.Message}");
-            MessageBox.Show($"Conversion failed:\n{ex.Message}", "Convert Error",
-                MessageBoxButton.OK, MessageBoxImage.Error);
+            _dialog.ShowError($"Conversion failed:\n{ex.Message}", "Convert Error");
         }
         finally
         {
@@ -502,14 +493,13 @@ public class ToolsViewModel : ViewModelBase
             var result = await _processRunner.RunPowerShellAsync(cmd, _log);
             _log.Log($"Check result: {result.Trim()}");
 
-            MessageBox.Show($"File system check ({CheckMode}) on {SelectedCheckDrive}: completed.\n\n{result.Trim()}",
-                "Check Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+            _dialog.ShowInfo($"File system check ({CheckMode}) on {SelectedCheckDrive}: completed.\n\n{result.Trim()}",
+                "Check Complete");
         }
         catch (Exception ex)
         {
             _log.Log($"File system check failed: {ex.Message}");
-            MessageBox.Show($"Check failed:\n{ex.Message}", "Check Error",
-                MessageBoxButton.OK, MessageBoxImage.Error);
+            _dialog.ShowError($"Check failed:\n{ex.Message}", "Check Error");
         }
         finally
         {
@@ -539,14 +529,13 @@ public class ToolsViewModel : ViewModelBase
             var result = await _processRunner.RunPowerShellAsync(cmd, _log);
             _log.Log($"Optimize result: {result.Trim()}");
 
-            MessageBox.Show($"Optimization ({OptimizeMode}) on {SelectedOptDrive}: completed.\n\n{result.Trim()}",
-                "Optimize Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+            _dialog.ShowInfo($"Optimization ({OptimizeMode}) on {SelectedOptDrive}: completed.\n\n{result.Trim()}",
+                "Optimize Complete");
         }
         catch (Exception ex)
         {
             _log.Log($"Optimization failed: {ex.Message}");
-            MessageBox.Show($"Optimization failed:\n{ex.Message}", "Optimize Error",
-                MessageBoxButton.OK, MessageBoxImage.Error);
+            _dialog.ShowError($"Optimization failed:\n{ex.Message}", "Optimize Error");
         }
         finally
         {
@@ -560,12 +549,9 @@ public class ToolsViewModel : ViewModelBase
     {
         if (SelectedWipeVolume?.DriveLetter is not char letter) return;
 
-        var confirm = MessageBox.Show(
+        if (!_dialog.Confirm(
             $"Wipe free space on {letter}:?\n\nExisting files remain in place. Previously deleted data in free space will be overwritten.",
-            "Confirm Free-Space Wipe",
-            MessageBoxButton.YesNo, MessageBoxImage.Information);
-
-        if (confirm != MessageBoxResult.Yes) return;
+            "Confirm Free-Space Wipe")) return;
 
         IsBusy = true;
         try
@@ -574,16 +560,14 @@ public class ToolsViewModel : ViewModelBase
             await _processRunner.RunExeAsync("cipher", $"/w:{letter}:\\", _log);
 
             _log.Log($"Free-space wipe complete on {letter}:.");
-            MessageBox.Show($"Free-space wipe complete on {letter}:.", "Wipe Complete",
-                MessageBoxButton.OK, MessageBoxImage.Information);
+            _dialog.ShowInfo($"Free-space wipe complete on {letter}:.", "Wipe Complete");
 
             await RefreshDriveListsAsync();
         }
         catch (Exception ex)
         {
             _log.Log($"Free-space wipe failed: {ex.Message}");
-            MessageBox.Show($"Free-space wipe failed:\n{ex.Message}", "Wipe Error",
-                MessageBoxButton.OK, MessageBoxImage.Error);
+            _dialog.ShowError($"Free-space wipe failed:\n{ex.Message}", "Wipe Error");
         }
         finally
         {
@@ -601,28 +585,21 @@ public class ToolsViewModel : ViewModelBase
 
         if (SelectedWipeDrive is null) return;
 
-        // Triple confirmation for destructive wipe
-        var confirm1 = MessageBox.Show(
+        if (!_dialog.ConfirmWarning(
             $"WARNING: You are about to wipe Disk {SelectedWipeDrive.Number} ({SelectedWipeDrive.FriendlyName}).\n\n" +
             "ALL DATA ON THIS DISK WILL BE PERMANENTLY DESTROYED.\n\nContinue?",
-            "Wipe Disk — Confirmation 1 of 3",
-            MessageBoxButton.YesNo, MessageBoxImage.Warning);
-        if (confirm1 != MessageBoxResult.Yes) return;
+            "Wipe Disk -- Confirmation 1 of 3")) return;
 
-        var confirm2 = MessageBox.Show(
+        if (!_dialog.ConfirmWarning(
             $"Are you absolutely sure you want to wipe Disk {SelectedWipeDrive.Number}?\n\n" +
             $"Disk: {SelectedWipeDrive.FriendlyName}\n" +
             $"Size: {SizeUtil.Format(SelectedWipeDrive.Size)}\n" +
             $"Mode: {WipeMode}\n\nThis CANNOT be undone.",
-            "Wipe Disk — Confirmation 2 of 3",
-            MessageBoxButton.YesNo, MessageBoxImage.Warning);
-        if (confirm2 != MessageBoxResult.Yes) return;
+            "Wipe Disk -- Confirmation 2 of 3")) return;
 
-        var confirm3 = MessageBox.Show(
+        if (!_dialog.ConfirmDanger(
             "FINAL WARNING: Click Yes to begin disk wipe immediately.",
-            "Wipe Disk — FINAL Confirmation",
-            MessageBoxButton.YesNo, MessageBoxImage.Stop);
-        if (confirm3 != MessageBoxResult.Yes) return;
+            "Wipe Disk -- FINAL Confirmation")) return;
 
         IsBusy = true;
         try
@@ -663,16 +640,14 @@ public class ToolsViewModel : ViewModelBase
             }
 
             _log.Log($"Disk {diskNum} wipe complete.");
-            MessageBox.Show($"Disk {diskNum} has been wiped.", "Wipe Complete",
-                MessageBoxButton.OK, MessageBoxImage.Information);
+            _dialog.ShowInfo($"Disk {diskNum} has been wiped.", "Wipe Complete");
 
             await RefreshDriveListsAsync();
         }
         catch (Exception ex)
         {
             _log.Log($"Wipe failed: {ex.Message}");
-            MessageBox.Show($"Wipe failed:\n{ex.Message}", "Wipe Error",
-                MessageBoxButton.OK, MessageBoxImage.Error);
+            _dialog.ShowError($"Wipe failed:\n{ex.Message}", "Wipe Error");
         }
         finally
         {
@@ -730,14 +705,12 @@ public class ToolsViewModel : ViewModelBase
             var result = await _processRunner.RunExeAsync("bcdboot", bcdbootArgs, _log);
             _log.Log($"Boot repair result: {result.Trim()}");
 
-            MessageBox.Show($"Boot repair completed.\n\n{result.Trim()}", "Boot Repair Complete",
-                MessageBoxButton.OK, MessageBoxImage.Information);
+            _dialog.ShowInfo($"Boot repair completed.\n\n{result.Trim()}", "Boot Repair Complete");
         }
         catch (Exception ex)
         {
             _log.Log($"Boot repair failed: {ex.Message}");
-            MessageBox.Show($"Boot repair failed:\n{ex.Message}", "Boot Repair Error",
-                MessageBoxButton.OK, MessageBoxImage.Error);
+            _dialog.ShowError($"Boot repair failed:\n{ex.Message}", "Boot Repair Error");
         }
         finally
         {
