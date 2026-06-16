@@ -19,7 +19,8 @@
                             Content="Refresh"
                             Command="{Binding RefreshCommand}"
                             Style="{StaticResource ToolbarButton}"
-                            Margin="12,0,0,0"/>
+                            Margin="12,0,0,0"
+                            AutomationProperties.Name="Refresh disk images"/>
                 </Grid>
             </Border>
 
@@ -46,12 +47,14 @@
                                         Content="Browse"
                                         Command="{Binding BrowseMountCommand}"
                                         Style="{StaticResource ToolbarButton}"
-                                        Margin="8,0,0,0"/>
+                                        Margin="8,0,0,0"
+                                        AutomationProperties.Name="Browse for image to mount"/>
                             </Grid>
                             <Button Content="Mount Image"
                                     Style="{StaticResource PrimaryButton}"
                                     Command="{Binding MountCommand}"
-                                    HorizontalAlignment="Left"/>
+                                    HorizontalAlignment="Left"
+                                    AutomationProperties.Name="Mount image"/>
                         </StackPanel>
                     </GroupBox>
 
@@ -91,7 +94,8 @@
                             <Button Content="Dismount Selected"
                                     Style="{StaticResource PrimaryButton}"
                                     Command="{Binding DismountCommand}"
-                                    HorizontalAlignment="Left"/>
+                                    HorizontalAlignment="Left"
+                                    AutomationProperties.Name="Dismount selected image"/>
                         </StackPanel>
                     </GroupBox>
 
@@ -115,7 +119,8 @@
                                         Content="Browse"
                                         Command="{Binding BrowseVhdCommand}"
                                         Style="{StaticResource ToolbarButton}"
-                                        Margin="8,0,0,0"/>
+                                        Margin="8,0,0,0"
+                                        AutomationProperties.Name="Browse for VHD save location"/>
                             </Grid>
 
                             <TextBlock Text="Size" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
@@ -141,7 +146,8 @@
                             <Button Content="Create VHD"
                                     Style="{StaticResource PrimaryButton}"
                                     Command="{Binding CreateVhdCommand}"
-                                    HorizontalAlignment="Left"/>
+                                    HorizontalAlignment="Left"
+                                    AutomationProperties.Name="Create virtual hard disk"/>
                         </StackPanel>
                     </GroupBox>
                 </WrapPanel>
