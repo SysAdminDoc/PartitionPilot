@@ -287,6 +287,7 @@ public class PartitionsViewModel : ViewModelBase
             long sizeMB = (long)(sizeGB * 1024);
             letter = ProcessRunner.ValidateDriveLetter(letter);
             label = ProcessRunner.SanitizeLabel(label);
+            fs = ProcessRunner.ValidateFileSystem(fs);
             _log.Log($"Creating partition on Disk {diskNum}: {sizeGB:F2} GB, {fs}, letter={letter}...");
 
             string script = $"""
@@ -318,6 +319,7 @@ public class PartitionsViewModel : ViewModelBase
         {
             letter = ProcessRunner.ValidateDriveLetter(letter);
             label = ProcessRunner.SanitizeLabel(label);
+            fs = ProcessRunner.ValidateFileSystem(fs);
             _log.Log($"Formatting {letter}: as {fs} (label=\"{label}\", quick={quick})...");
 
             string script = $"""
@@ -345,7 +347,7 @@ public class PartitionsViewModel : ViewModelBase
         IsBusy = true;
         try
         {
-            long newSizeMB = newSizeBytes / (1024 * 1024);
+            letter = ProcessRunner.ValidateDriveLetter(letter);
             _log.Log($"Resizing {letter}: to {SizeUtil.Format(newSizeBytes)}...");
 
             var cmd = $"Resize-Partition -DriveLetter '{letter}' -Size {newSizeBytes}";
@@ -372,6 +374,7 @@ public class PartitionsViewModel : ViewModelBase
             letter = ProcessRunner.ValidateDriveLetter(letter);
             newLetter = ProcessRunner.ValidateDriveLetter(newLetter);
             label = ProcessRunner.SanitizeLabel(label);
+            fs = ProcessRunner.ValidateFileSystem(fs);
             _log.Log($"Splitting {letter}: — shrink by {newPartGB:F2} GB, new partition {newLetter}:...");
 
             long shrinkMB = (long)(newPartGB * 1024);

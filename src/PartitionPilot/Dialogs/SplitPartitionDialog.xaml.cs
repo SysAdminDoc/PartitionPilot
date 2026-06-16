@@ -27,8 +27,13 @@ public partial class SplitPartitionDialog : Window
             MessageBox.Show("Enter a valid size.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }
+        if (cmbLetter.SelectedItem is not char letter)
+        {
+            MessageBox.Show("Select a drive letter.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
         NewPartSizeGB = size;
-        NewLetter = (char)cmbLetter.SelectedItem;
+        NewLetter = letter;
         FileSystem = (cmbFS.SelectedItem as System.Windows.Controls.ComboBoxItem)?.Content?.ToString() ?? "NTFS";
         VolumeLabel = txtLabel.Text.Trim();
         DialogResult = true;

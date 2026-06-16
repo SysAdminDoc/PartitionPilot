@@ -81,7 +81,10 @@ public class MainViewModel : ViewModelBase
     {
         ThemeService.Toggle();
         ThemeLabel = ThemeService.IsDarkMode ? "Light Mode" : "Dark Mode";
-        Log.Log($"Theme switched to {(ThemeService.IsDarkMode ? "dark" : "light")} mode.");
+        Log.Log($"Theme preference saved: {(ThemeService.IsDarkMode ? "dark" : "light")} mode. Takes effect on next launch.");
+        _dialog.ShowInfo(
+            $"Theme set to {(ThemeService.IsDarkMode ? "dark" : "light")} mode.\n\nRestart PartitionPilot to apply the new theme.",
+            "Theme Changed");
     }
 
     private void ExportLog()
