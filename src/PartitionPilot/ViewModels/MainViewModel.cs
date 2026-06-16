@@ -13,6 +13,7 @@ public class MainViewModel : ViewModelBase
     public DiskHealthViewModel DiskHealth { get; }
     public ToolsViewModel Tools { get; }
     public DiskImagesViewModel DiskImages { get; }
+    public DiskUsageViewModel DiskUsage { get; }
 
     private string _statusText = "Ready";
     public string StatusText
@@ -54,6 +55,7 @@ public class MainViewModel : ViewModelBase
         DiskHealth = new DiskHealthViewModel(_wmiService, Log);
         Tools = new ToolsViewModel(_wmiService, _processRunner, Log, _dialog);
         DiskImages = new DiskImagesViewModel(_processRunner, _wmiService, Log, _dialog);
+        DiskUsage = new DiskUsageViewModel(_wmiService, Log);
 
         TabChangedCommand = new AsyncRelayCommand(OnTabChangedAsync);
         ExportLogCommand = new RelayCommand(_ => ExportLog());
@@ -111,6 +113,10 @@ public class MainViewModel : ViewModelBase
                 case 3:
                     StatusText = "Loading disk images...";
                     await DiskImages.RefreshAsync();
+                    break;
+                case 4:
+                    StatusText = "Loading drive list...";
+                    await DiskUsage.RefreshDrivesAsync();
                     break;
             }
 

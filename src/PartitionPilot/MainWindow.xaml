@@ -71,6 +71,9 @@
             <TabItem Header="Disk Images" Style="{StaticResource NavTabItem}">
                 <views:DiskImagesView DataContext="{Binding DiskImages}"/>
             </TabItem>
+            <TabItem Header="Disk Usage" Style="{StaticResource NavTabItem}">
+                <views:DiskUsageView DataContext="{Binding DiskUsage}"/>
+            </TabItem>
         </TabControl>
 
         <Border Grid.Row="2"
