@@ -34,6 +34,14 @@ public class MainViewModel : ViewModelBase
 
     public ICommand TabChangedCommand { get; }
     public ICommand ExportLogCommand { get; }
+    public ICommand ToggleThemeCommand { get; }
+
+    private string _themeLabel = ThemeService.IsDarkMode ? "Light Mode" : "Dark Mode";
+    public string ThemeLabel
+    {
+        get => _themeLabel;
+        set => SetProperty(ref _themeLabel, value);
+    }
 
     public MainViewModel()
     {
@@ -49,8 +57,16 @@ public class MainViewModel : ViewModelBase
 
         TabChangedCommand = new AsyncRelayCommand(OnTabChangedAsync);
         ExportLogCommand = new RelayCommand(_ => ExportLog());
+        ToggleThemeCommand = new RelayCommand(_ => ToggleTheme());
 
         Log.Log("PartitionPilot ready.");
+    }
+
+    private void ToggleTheme()
+    {
+        ThemeService.Toggle();
+        ThemeLabel = ThemeService.IsDarkMode ? "Light Mode" : "Dark Mode";
+        Log.Log($"Theme switched to {(ThemeService.IsDarkMode ? "dark" : "light")} mode.");
     }
 
     private void ExportLog()

@@ -33,18 +33,23 @@
                                Margin="0,3,0,0"/>
                 </StackPanel>
 
-                <Border Grid.Column="1"
-                        Background="#182026"
-                        BorderBrush="{StaticResource BorderStrongBrush}"
-                        BorderThickness="1"
-                        CornerRadius="4"
-                        Padding="10,6"
-                        VerticalAlignment="Center">
-                    <TextBlock Text="Administrator mode"
-                               Foreground="{StaticResource PrimaryBrush}"
-                               FontSize="12"
-                               FontWeight="SemiBold"/>
-                </Border>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Content="{Binding ThemeLabel}"
+                            Command="{Binding ToggleThemeCommand}"
+                            Style="{StaticResource ToolbarButton}"
+                            Margin="0,0,10,0"
+                            Padding="8,4"/>
+                    <Border Background="#182026"
+                            BorderBrush="{StaticResource BorderStrongBrush}"
+                            BorderThickness="1"
+                            CornerRadius="4"
+                            Padding="10,6">
+                        <TextBlock Text="Administrator mode"
+                                   Foreground="{StaticResource PrimaryBrush}"
+                                   FontSize="12"
+                                   FontWeight="SemiBold"/>
+                    </Border>
+                </StackPanel>
             </Grid>
         </Border>
 

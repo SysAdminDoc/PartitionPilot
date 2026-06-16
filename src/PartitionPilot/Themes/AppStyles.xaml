@@ -6,44 +6,6 @@
     <local:InverseBooleanToVisibilityConverter x:Key="BoolVisInverse"/>
     <local:InverseBooleanConverter x:Key="InverseBool"/>
 
-    <!-- Palette -->
-    <Color x:Key="WindowBgColor">#111315</Color>
-    <Color x:Key="PanelBgColor">#171A1F</Color>
-    <Color x:Key="CardBgColor">#20242A</Color>
-    <Color x:Key="CardElevatedColor">#252A31</Color>
-    <Color x:Key="BorderColor">#343A42</Color>
-    <Color x:Key="BorderStrongColor">#4B5563</Color>
-    <Color x:Key="TextColor">#F4F7FA</Color>
-    <Color x:Key="SubtextColor">#AAB4C0</Color>
-    <Color x:Key="MutedTextColor">#74808C</Color>
-    <Color x:Key="PrimaryColor">#4CC2FF</Color>
-    <Color x:Key="PrimaryPressedColor">#2DAAE8</Color>
-    <Color x:Key="SuccessColor">#5EE0A0</Color>
-    <Color x:Key="WarningColor">#F4C96A</Color>
-    <Color x:Key="DangerColor">#FF6B6B</Color>
-    <Color x:Key="LogBgColor">#0D0F12</Color>
-    <Color x:Key="InputBgColor">#14171B</Color>
-    <Color x:Key="SelectionColor">#2D6F92</Color>
-
-    <SolidColorBrush x:Key="BgBrush" Color="{StaticResource WindowBgColor}"/>
-    <SolidColorBrush x:Key="WindowBgBrush" Color="{StaticResource WindowBgColor}"/>
-    <SolidColorBrush x:Key="PanelBgBrush" Color="{StaticResource PanelBgColor}"/>
-    <SolidColorBrush x:Key="CardBgBrush" Color="{StaticResource CardBgColor}"/>
-    <SolidColorBrush x:Key="CardElevatedBrush" Color="{StaticResource CardElevatedColor}"/>
-    <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}"/>
-    <SolidColorBrush x:Key="BorderStrongBrush" Color="{StaticResource BorderStrongColor}"/>
-    <SolidColorBrush x:Key="TextBrush" Color="{StaticResource TextColor}"/>
-    <SolidColorBrush x:Key="SubtextBrush" Color="{StaticResource SubtextColor}"/>
-    <SolidColorBrush x:Key="MutedTextBrush" Color="{StaticResource MutedTextColor}"/>
-    <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource PrimaryColor}"/>
-    <SolidColorBrush x:Key="PrimaryPressedBrush" Color="{StaticResource PrimaryPressedColor}"/>
-    <SolidColorBrush x:Key="SuccessBrush" Color="{StaticResource SuccessColor}"/>
-    <SolidColorBrush x:Key="WarningBrush" Color="{StaticResource WarningColor}"/>
-    <SolidColorBrush x:Key="DangerBrush" Color="{StaticResource DangerColor}"/>
-    <SolidColorBrush x:Key="LogBgBrush" Color="{StaticResource LogBgColor}"/>
-    <SolidColorBrush x:Key="InputBgBrush" Color="{StaticResource InputBgColor}"/>
-    <SolidColorBrush x:Key="SelectionBrush" Color="{StaticResource SelectionColor}"/>
-
     <!-- Typography -->
     <Style TargetType="TextBlock">
         <Setter Property="FontFamily" Value="Segoe UI"/>
