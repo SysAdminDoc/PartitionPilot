@@ -24,6 +24,10 @@ public class PartitionsViewModel : ViewModelBase
             if (SetProperty(ref _selectedDisk, value))
             {
                 OnPropertyChanged(nameof(HasSelectedDisk));
+                OnPropertyChanged(nameof(SelectedDiskSummary));
+                OnPropertyChanged(nameof(DiskCapacityText));
+                OnPropertyChanged(nameof(DiskFreeExtentText));
+                OnPropertyChanged(nameof(DiskPartitionStyleText));
                 CommandManager.InvalidateRequerySuggested();
                 _ = LoadPartitionsAsync();
             }
@@ -39,6 +43,8 @@ public class PartitionsViewModel : ViewModelBase
             if (SetProperty(ref _selectedPartition, value))
             {
                 OnPropertyChanged(nameof(HasSelectedPartition));
+                OnPropertyChanged(nameof(SelectedPartitionName));
+                OnPropertyChanged(nameof(SelectedPartitionSummary));
                 CommandManager.InvalidateRequerySuggested();
             }
         }
@@ -65,6 +71,32 @@ public class PartitionsViewModel : ViewModelBase
     public bool HasSelectedDisk => SelectedDisk is not null;
 
     public bool HasSelectedPartition => SelectedPartition is not null;
+
+    public string SelectedDiskSummary => SelectedDisk is null
+        ? "Select a physical disk to review capacity, layout, and available partition operations."
+        : $"{SizeUtil.Format(SelectedDisk.Size)} total | {SelectedDisk.PartitionStyle} | {SelectedDisk.NumberOfPartitions} partitions | {SizeUtil.Format(SelectedDisk.LargestFreeExtent)} largest free extent";
+
+    public string DiskCapacityText => SelectedDisk is null ? "No disk selected" : $"{SizeUtil.Format(SelectedDisk.Size)} total";
+
+    public string DiskFreeExtentText => SelectedDisk is null
+        ? "Refresh disks to load free-space data"
+        : $"{SizeUtil.Format(SelectedDisk.LargestFreeExtent)} largest free extent";
+
+    public string DiskPartitionStyleText => SelectedDisk is null ? "Partition style unavailable" : $"{SelectedDisk.PartitionStyle} partition style";
+
+    public string SelectedPartitionName => SelectedPartition is null ? "No partition selected" : SelectedPartition.PartitionDisplay;
+
+    public string SelectedPartitionSummary
+    {
+        get
+        {
+            if (SelectedPartition is null)
+                return "Select a table row or disk-map segment before applying partition actions.";
+
+            var fileSystem = string.IsNullOrWhiteSpace(SelectedPartition.FileSystem) ? "No file system" : SelectedPartition.FileSystem;
+            return $"{SelectedPartition.SizeText} | {fileSystem} | {SelectedPartition.Details}";
+        }
+    }
 
     // Commands
     public ICommand RefreshCommand { get; }
@@ -114,6 +146,7 @@ public class PartitionsViewModel : ViewModelBase
         try
         {
             _log.Log("Refreshing disk list...");
+            var priorDiskNumber = SelectedDisk?.Number;
             var disks = await _wmiService.GetDisksAsync();
 
             Application.Current.Dispatcher.Invoke(() =>
@@ -121,12 +154,11 @@ public class PartitionsViewModel : ViewModelBase
                 Disks.Clear();
                 foreach (var d in disks)
                     Disks.Add(d);
+
+                SelectedDisk = Disks.FirstOrDefault(d => d.Number == priorDiskNumber) ?? Disks.FirstOrDefault();
             });
 
             _log.Log($"Found {disks.Count} disk(s).");
-
-            if (Disks.Count > 0 && SelectedDisk is null)
-                SelectedDisk = Disks[0];
         }
         catch (Exception ex)
         {
@@ -140,7 +172,15 @@ public class PartitionsViewModel : ViewModelBase
 
     public async Task LoadPartitionsAsync()
     {
-        if (SelectedDisk is null) return;
+        if (SelectedDisk is null)
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                Partitions.Clear();
+                DiskBarSegments.Clear();
+            });
+            return;
+        }
 
         IsBusy = true;
         try
@@ -207,14 +247,14 @@ public class PartitionsViewModel : ViewModelBase
                 {
                     Type = "Unallocated",
                     SizeBytes = gap,
-                    Label = $"Unallocated ({SizeUtil.Format(gap)})",
+                    Label = "Unallocated",
                     ColorHex = SegmentColors["Unallocated"],
                 });
             }
 
             string label = part.DriveLetter.HasValue
-                ? $"{part.DriveLetter}: ({SizeUtil.Format(part.Size)})"
-                : $"{part.Type} ({SizeUtil.Format(part.Size)})";
+                ? $"{part.DriveLetter}: {(!string.IsNullOrWhiteSpace(part.Label) ? part.Label : "Volume")}"
+                : part.PartitionDisplay;
 
             segments.Add(new DiskBarSegment
             {
@@ -231,13 +271,13 @@ public class PartitionsViewModel : ViewModelBase
         if (cursor < totalSize)
         {
             long gap = totalSize - cursor;
-            segments.Add(new DiskBarSegment
-            {
-                Type = "Unallocated",
-                SizeBytes = gap,
-                Label = $"Unallocated ({SizeUtil.Format(gap)})",
-                ColorHex = SegmentColors["Unallocated"],
-            });
+                segments.Add(new DiskBarSegment
+                {
+                    Type = "Unallocated",
+                    SizeBytes = gap,
+                    Label = "Unallocated",
+                    ColorHex = SegmentColors["Unallocated"],
+                });
         }
 
         // Compute proportions, enforce minimum
@@ -375,7 +415,7 @@ public class PartitionsViewModel : ViewModelBase
             newLetter = ProcessRunner.ValidateDriveLetter(newLetter);
             label = ProcessRunner.SanitizeLabel(label);
             fs = ProcessRunner.ValidateFileSystem(fs);
-            _log.Log($"Splitting {letter}: — shrink by {newPartGB:F2} GB, new partition {newLetter}:...");
+            _log.Log($"Splitting {letter}: shrink by {newPartGB:F2} GB, new partition {newLetter}:...");
 
             long shrinkMB = (long)(newPartGB * 1024);
 
@@ -574,7 +614,7 @@ public class PartitionsViewModel : ViewModelBase
             }
             else
             {
-                // No drive letter — use diskpart
+                // No drive letter, use diskpart.
                 string script = $"""
                     select disk {SelectedDisk.Number}
                     select partition {part.PartitionNumber}

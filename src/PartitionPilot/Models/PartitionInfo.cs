@@ -18,11 +18,25 @@ public class PartitionInfo
     public int DiskNumber { get; set; }
     public string EncryptionStatus { get; set; } = "";
 
-    public string LetterDisplay => DriveLetter.HasValue ? $"{DriveLetter}:" : "—";
+    public string LetterDisplay => DriveLetter.HasValue ? $"{DriveLetter}:" : "-";
+
+    public string PartitionDisplay
+    {
+        get
+        {
+            if (DriveLetter.HasValue && !string.IsNullOrWhiteSpace(Label))
+                return $"{DriveLetter}: {Label}";
+            if (DriveLetter.HasValue)
+                return $"{DriveLetter}: Volume";
+            return string.IsNullOrWhiteSpace(Label) ? $"Partition {PartitionNumber}" : Label;
+        }
+    }
 
     public string SizeText => SizeUtil.Format(Size);
 
-    public string FreeText => FreeSpace > 0 ? SizeUtil.Format(FreeSpace) : "—";
+    public string FreeText => FreeSpace > 0 ? SizeUtil.Format(FreeSpace) : "-";
+
+    public string FileSystemDisplay => string.IsNullOrWhiteSpace(FileSystem) ? "-" : FileSystem;
 
     public string Details
     {

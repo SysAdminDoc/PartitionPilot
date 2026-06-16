@@ -1,5 +1,15 @@
 # Changelog
 
+## PartitionPilot v0.2.3 - 2026-06-16
+
+### Reference-Driven Console Polish
+- Reworked the main shell into a denser disk-console layout with compact brand/command bar, session-status tiles, descriptive navigation, and a calmer bottom status strip.
+- Added a global Refresh command that reloads the active workspace and auto-loads the partition workspace at startup to reduce first-run friction.
+- Moved partition operations into a persistent right-side action rail with clearer selection context, safety copy, and disabled-state affordances.
+- Redesigned the disk map as partition cards with accent strips, capacity text, type labels, and stronger empty-state feedback.
+- Replaced the raw activity textbox with structured, filterable log entries, clear/export actions, live entry count, and table semantics.
+- Cleaned user-facing placeholder dashes in partition rows and refreshed the README screenshot for the polished shell.
+
 ## PartitionPilot v0.2.2 - 2026-06-16
 
 ### Premium UX Polish

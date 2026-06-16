@@ -1,9 +1,12 @@
+using System.Security.Principal;
 using System.Windows.Input;
 
 namespace PartitionPilot;
 
 public class MainViewModel : ViewModelBase
 {
+    public const string AppVersionText = "PartitionPilot v0.2.3";
+
     private readonly ProcessRunner _processRunner;
     private readonly WmiDiskService _wmiService;
     private readonly IDialogService _dialog;
@@ -20,7 +23,11 @@ public class MainViewModel : ViewModelBase
     public string StatusText
     {
         get => _statusText;
-        set => SetProperty(ref _statusText, value);
+        set
+        {
+            if (SetProperty(ref _statusText, value))
+                OnPropertyChanged(nameof(SessionStateDetail));
+        }
     }
 
     private int _selectedTabIndex;
@@ -37,6 +44,13 @@ public class MainViewModel : ViewModelBase
     public ICommand TabChangedCommand { get; }
     public ICommand ExportLogCommand { get; }
     public ICommand ToggleThemeCommand { get; }
+    public ICommand RefreshCurrentCommand { get; }
+
+    public string VersionText => AppVersionText;
+    public string AdminSessionText { get; }
+    public string AdminSessionDetail { get; }
+    public string SessionStateText => "Session state";
+    public string SessionStateDetail => StatusText;
 
     private string _themeLabel = ThemeService.IsDarkMode ? "Light Mode" : "Dark Mode";
     public string ThemeLabel
@@ -62,9 +76,15 @@ public class MainViewModel : ViewModelBase
         TabChangedCommand = new AsyncRelayCommand(OnTabChangedAsync);
         ExportLogCommand = new RelayCommand(_ => ExportLog());
         ToggleThemeCommand = new RelayCommand(_ => ToggleTheme());
+        RefreshCurrentCommand = new AsyncRelayCommand(_ => RefreshCurrentAsync());
+
+        var isAdmin = IsRunningAsAdministrator();
+        AdminSessionText = isAdmin ? "Admin session" : "Standard session";
+        AdminSessionDetail = isAdmin ? "Disk changes available" : "Run as administrator for write operations";
 
         Log.Log("PartitionPilot ready.");
         _ = CheckForUpdateAsync();
+        _ = Partitions.LoadDisksAsync();
     }
 
     private async Task CheckForUpdateAsync()
@@ -72,7 +92,7 @@ public class MainViewModel : ViewModelBase
         var result = await UpdateService.CheckForUpdateAsync();
         if (result is { available: true } update)
         {
-            Log.Log($"Update available: v{update.version} — {update.url}");
+            Log.Log($"Update available: v{update.version} - {update.url}");
             StatusText = $"Update available: v{update.version}";
         }
     }
@@ -105,39 +125,27 @@ public class MainViewModel : ViewModelBase
         Log.AutoSave();
     }
 
+    private async Task RefreshCurrentAsync()
+    {
+        try
+        {
+            StatusText = "Refreshing current workspace...";
+            await RefreshTabAsync(SelectedTabIndex);
+            StatusText = "Ready";
+        }
+        catch (Exception ex)
+        {
+            StatusText = $"Error: {ex.Message}";
+            Log.Log($"Refresh error: {ex.Message}");
+        }
+    }
+
     private async Task OnTabChangedAsync(object? parameter)
     {
         try
         {
             var index = parameter is int i ? i : _selectedTabIndex;
-
-            switch (index)
-            {
-                case 0:
-                    // Partitions tab is loaded on demand via its own RefreshCommand
-                    break;
-                case 1:
-                    StatusText = "Loading disk health data...";
-                    await DiskHealth.RefreshAsync();
-                    break;
-                case 2:
-                    StatusText = "Loading tools drive lists...";
-                    await Tools.RefreshDriveListsAsync();
-                    break;
-                case 3:
-                    StatusText = "Loading disk images...";
-                    await DiskImages.RefreshAsync();
-                    break;
-                case 4:
-                    StatusText = "Loading drive list...";
-                    await DiskUsage.RefreshDrivesAsync();
-                    break;
-                case 5:
-                    StatusText = "Loading cloning data...";
-                    await DiskCloning.RefreshAsync();
-                    break;
-            }
-
+            await RefreshTabAsync(index);
             StatusText = "Ready";
         }
         catch (Exception ex)
@@ -145,5 +153,43 @@ public class MainViewModel : ViewModelBase
             StatusText = $"Error: {ex.Message}";
             Log.Log($"Tab switch error: {ex.Message}");
         }
+    }
+
+    private async Task RefreshTabAsync(int index)
+    {
+        switch (index)
+        {
+            case 0:
+                StatusText = "Loading partition layout...";
+                await Partitions.LoadDisksAsync();
+                break;
+            case 1:
+                StatusText = "Loading disk health data...";
+                await DiskHealth.RefreshAsync();
+                break;
+            case 2:
+                StatusText = "Loading tools drive lists...";
+                await Tools.RefreshDriveListsAsync();
+                break;
+            case 3:
+                StatusText = "Loading disk images...";
+                await DiskImages.RefreshAsync();
+                break;
+            case 4:
+                StatusText = "Loading drive list...";
+                await DiskUsage.RefreshDrivesAsync();
+                break;
+            case 5:
+                StatusText = "Loading cloning data...";
+                await DiskCloning.RefreshAsync();
+                break;
+        }
+    }
+
+    private static bool IsRunningAsAdministrator()
+    {
+        using var identity = WindowsIdentity.GetCurrent();
+        var principal = new WindowsPrincipal(identity);
+        return principal.IsInRole(WindowsBuiltInRole.Administrator);
     }
 }
