@@ -72,7 +72,11 @@ public class ProcessRunner : IProcessRunner
         var stdout = await stdoutTask;
         var stderr = await stderrTask;
 
-        if (process.ExitCode != 0)
+        var isRobocopy = fileName.Equals("robocopy", StringComparison.OrdinalIgnoreCase) ||
+                         fileName.Equals("robocopy.exe", StringComparison.OrdinalIgnoreCase);
+        var isFatalExit = isRobocopy ? process.ExitCode >= 8 : process.ExitCode != 0;
+
+        if (isFatalExit)
         {
             var detail = !string.IsNullOrWhiteSpace(stderr) ? stderr.Trim() : stdout.Trim();
             log?.Log($"ERROR ({process.ExitCode}): {detail}");

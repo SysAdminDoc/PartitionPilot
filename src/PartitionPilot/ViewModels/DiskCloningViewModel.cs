@@ -164,8 +164,9 @@ public class DiskCloningViewModel : ViewModelBase
             if (ext == ".wim")
             {
                 _log.Log($"Creating WIM image of {SelectedSourceDrive}:\\ to {ImagePath}...");
-                var cmd = $"DISM /Capture-Image /ImageFile:\"{ImagePath}\" /CaptureDir:{SelectedSourceDrive}:\\ /Name:\"PartitionPilot Capture\" /Compress:Fast";
-                await _processRunner.RunExeAsync("dism.exe", $"/Capture-Image /ImageFile:\"{ImagePath}\" /CaptureDir:{SelectedSourceDrive}:\\ /Name:\"PartitionPilot Capture\" /Compress:Fast", _log, ct: ct);
+                await _processRunner.RunExeAsync("dism.exe",
+                    $"/Capture-Image /ImageFile:\"{ImagePath}\" /CaptureDir:{SelectedSourceDrive}:\\ /Name:\"PartitionPilot Capture\" /Compress:Fast",
+                    _log, ct: ct);
             }
             else
             {
