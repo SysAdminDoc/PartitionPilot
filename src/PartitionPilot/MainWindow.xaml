@@ -40,7 +40,7 @@
                             Margin="0,0,10,0"
                             Padding="8,4"
                             AutomationProperties.Name="Toggle theme"/>
-                    <Border Background="#182026"
+                    <Border Background="{StaticResource ToolbarBtnBrush}"
                             BorderBrush="{StaticResource BorderStrongBrush}"
                             BorderThickness="1"
                             CornerRadius="4"

@@ -42,10 +42,12 @@ public partial class DiskBarControl : UserControl
         var segments = Segments;
         if (segments is null || segments.Count == 0)
         {
+            var mutedBrush = TryFindResource("MutedTextBrush") as Brush
+                             ?? new SolidColorBrush(Color.FromRgb(116, 128, 140));
             BarGrid.Children.Add(new TextBlock
             {
                 Text = "No partition map loaded",
-                Foreground = new SolidColorBrush(Color.FromRgb(116, 128, 140)),
+                Foreground = mutedBrush,
                 FontSize = 12,
                 FontWeight = FontWeights.SemiBold,
                 HorizontalAlignment = HorizontalAlignment.Center,
