@@ -16,4 +16,10 @@ public partial class MainWindow : Window
         if (sender is TextBox tb)
             tb.ScrollToEnd();
     }
+
+    private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+    {
+        if (DataContext is MainViewModel vm)
+            vm.OnClosing();
+    }
 }

@@ -33,6 +33,7 @@ public class MainViewModel : ViewModelBase
     }
 
     public ICommand TabChangedCommand { get; }
+    public ICommand ExportLogCommand { get; }
 
     public MainViewModel()
     {
@@ -47,8 +48,29 @@ public class MainViewModel : ViewModelBase
         DiskImages = new DiskImagesViewModel(_processRunner, _wmiService, Log, _dialog);
 
         TabChangedCommand = new AsyncRelayCommand(OnTabChangedAsync);
+        ExportLogCommand = new RelayCommand(_ => ExportLog());
 
         Log.Log("PartitionPilot ready.");
+    }
+
+    private void ExportLog()
+    {
+        try
+        {
+            var path = Log.Export();
+            Log.Log($"Log exported to: {path}");
+            _dialog.ShowInfo($"Log exported to:\n{path}", "Export Complete");
+        }
+        catch (Exception ex)
+        {
+            Log.Log($"Log export failed: {ex.Message}");
+            _dialog.ShowError($"Failed to export log:\n{ex.Message}", "Export Error");
+        }
+    }
+
+    public void OnClosing()
+    {
+        Log.AutoSave();
     }
 
     private async Task OnTabChangedAsync(object? parameter)

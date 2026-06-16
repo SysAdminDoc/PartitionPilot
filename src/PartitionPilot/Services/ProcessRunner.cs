@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 
 namespace PartitionPilot;
 
-public class ProcessRunner
+public class ProcessRunner : IProcessRunner
 {
     private static readonly Regex DiskpartErrorPattern = new(
         @"\b(error|failed|cannot|unable to|not found|access is denied|the specified .+ does not exist)\b",
