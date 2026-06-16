@@ -69,7 +69,8 @@
                             <Button Content="Convert Volume"
                                     Style="{StaticResource PrimaryButton}"
                                     Command="{Binding ConvertFat32Command}"
-                                    HorizontalAlignment="Left"/>
+                                    HorizontalAlignment="Left"
+                                    AutomationProperties.Name="Convert FAT32 to NTFS"/>
                         </StackPanel>
                     </GroupBox>
 
@@ -82,7 +83,8 @@
                             <ComboBox ItemsSource="{Binding CheckVolumes}"
                                       SelectedItem="{Binding SelectedCheckVolume}"
                                       Height="34"
-                                      Margin="0,0,0,10"/>
+                                      Margin="0,0,0,10"
+                                      AutomationProperties.Name="Filesystem check volume selector"/>
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
                                 <RadioButton Content="Scan" IsChecked="{Binding CheckIsScan}"/>
                                 <RadioButton Content="SpotFix" IsChecked="{Binding CheckIsSpotFix}"/>
@@ -91,7 +93,8 @@
                             <Button Content="Run Check"
                                     Style="{StaticResource PrimaryButton}"
                                     Command="{Binding RunFsCheckCommand}"
-                                    HorizontalAlignment="Left"/>
+                                    HorizontalAlignment="Left"
+                                    AutomationProperties.Name="Run filesystem check"/>
                         </StackPanel>
                     </GroupBox>
 
@@ -104,7 +107,8 @@
                             <ComboBox ItemsSource="{Binding OptVolumes}"
                                       SelectedItem="{Binding SelectedOptVolume}"
                                       Height="34"
-                                      Margin="0,0,0,10"/>
+                                      Margin="0,0,0,10"
+                                      AutomationProperties.Name="Optimize volume selector"/>
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
                                 <RadioButton Content="Analyze" IsChecked="{Binding OptIsAnalyze}"/>
                                 <RadioButton Content="Defrag" IsChecked="{Binding OptIsDefrag}"/>
@@ -113,7 +117,8 @@
                             <Button Content="Run Optimize"
                                     Style="{StaticResource PrimaryButton}"
                                     Command="{Binding RunOptimizeCommand}"
-                                    HorizontalAlignment="Left"/>
+                                    HorizontalAlignment="Left"
+                                    AutomationProperties.Name="Run optimize"/>
                         </StackPanel>
                     </GroupBox>
 
@@ -133,7 +138,8 @@
                                     <ComboBox ItemsSource="{Binding WipeVolumes}"
                                               SelectedItem="{Binding SelectedWipeVolume}"
                                               DisplayMemberPath="DisplayText"
-                                              Height="34"/>
+                                              Height="34"
+                                              AutomationProperties.Name="Wipe volume selector"/>
                                 </StackPanel>
 
                                 <StackPanel Visibility="{Binding WipeIsFullDisk, Converter={StaticResource BoolVis}}">
@@ -141,14 +147,16 @@
                                     <ComboBox ItemsSource="{Binding AllDisks}"
                                               SelectedItem="{Binding SelectedWipeDrive}"
                                               DisplayMemberPath="DisplayText"
-                                              Height="34"/>
+                                              Height="34"
+                                              AutomationProperties.Name="Wipe disk selector"/>
                                 </StackPanel>
                             </Grid>
 
                             <Button Content="Start Wipe"
                                     Style="{StaticResource DangerButton}"
                                     Command="{Binding RunWipeCommand}"
-                                    HorizontalAlignment="Left"/>
+                                    HorizontalAlignment="Left"
+                                    AutomationProperties.Name="Start secure wipe"/>
                         </StackPanel>
                     </GroupBox>
 
@@ -161,11 +169,13 @@
                             <ComboBox ItemsSource="{Binding WindowsInstalls}"
                                       SelectedItem="{Binding SelectedWindowsInstall}"
                                       Height="34"
-                                      Margin="0,0,0,10"/>
+                                      Margin="0,0,0,10"
+                                      AutomationProperties.Name="Windows volume selector"/>
                             <Button Content="Repair Bootloader"
                                     Style="{StaticResource PrimaryButton}"
                                     Command="{Binding RunBootRepairCommand}"
-                                    HorizontalAlignment="Left"/>
+                                    HorizontalAlignment="Left"
+                                    AutomationProperties.Name="Repair bootloader"/>
                         </StackPanel>
                     </GroupBox>
 
@@ -178,12 +188,14 @@
                             <ComboBox ItemsSource="{Binding SurfaceTestVolumes}"
                                       SelectedItem="{Binding SelectedSurfaceTestVolume}"
                                       Height="34"
-                                      Margin="0,0,0,10"/>
+                                      Margin="0,0,0,10"
+                                      AutomationProperties.Name="Surface test volume selector"/>
                             <Button Content="Run Surface Test"
                                     Style="{StaticResource PrimaryButton}"
                                     Command="{Binding RunSurfaceTestCommand}"
                                     HorizontalAlignment="Left"
-                                    Margin="0,0,0,10"/>
+                                    Margin="0,0,0,10"
+                                    AutomationProperties.Name="Run surface test"/>
                             <TextBox Text="{Binding SurfaceTestResults, Mode=OneWay}"
                                      IsReadOnly="True"
                                      FontFamily="Consolas"
@@ -204,12 +216,14 @@
                             <ComboBox ItemsSource="{Binding BenchDrives}"
                                       SelectedItem="{Binding SelectedBenchDrive}"
                                       Height="34"
-                                      Margin="0,0,0,10"/>
+                                      Margin="0,0,0,10"
+                                      AutomationProperties.Name="Benchmark drive selector"/>
                             <Button Content="Run Benchmark"
                                     Style="{StaticResource PrimaryButton}"
                                     Command="{Binding RunBenchmarkCommand}"
                                     HorizontalAlignment="Left"
-                                    Margin="0,0,0,10"/>
+                                    Margin="0,0,0,10"
+                                    AutomationProperties.Name="Run benchmark"/>
                             <TextBox Text="{Binding BenchmarkResults, Mode=OneWay}"
                                      IsReadOnly="True"
                                      FontFamily="Consolas"
@@ -244,7 +258,8 @@
                         Command="{Binding CancelCommand}"
                         Style="{StaticResource ToolbarButton}"
                         HorizontalAlignment="Center"
-                        Margin="0,12,0,0"/>
+                        Margin="0,12,0,0"
+                        AutomationProperties.Name="Cancel tool operation"/>
             </StackPanel>
         </Border>
     </Grid>
