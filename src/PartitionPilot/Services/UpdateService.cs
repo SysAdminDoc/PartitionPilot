@@ -24,7 +24,9 @@ public static class UpdateService
             var htmlUrl = root.GetProperty("html_url").GetString() ?? "";
 
             var latestVersion = tagName.TrimStart('v', 'V');
-            if (string.Compare(latestVersion, CurrentVersion, StringComparison.OrdinalIgnoreCase) > 0)
+            if (Version.TryParse(latestVersion, out var latest) &&
+                Version.TryParse(CurrentVersion, out var current) &&
+                latest > current)
                 return (true, latestVersion, htmlUrl);
 
             return (false, CurrentVersion, "");

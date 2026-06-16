@@ -57,14 +57,8 @@
                                                 CornerRadius="3"/>
                                         <Border Background="{StaticResource PrimaryBrush}"
                                                 CornerRadius="3"
-                                                HorizontalAlignment="Left">
-                                            <Border.Width>
-                                                <MultiBinding Converter="{StaticResource InverseBool}"
-                                                              FallbackValue="0">
-                                                    <Binding Path="Proportion"/>
-                                                </MultiBinding>
-                                            </Border.Width>
-                                        </Border>
+                                                HorizontalAlignment="Left"
+                                                Width="{Binding Proportion, Converter={StaticResource ProportionToWidth}}"/>
                                         <TextBlock Text="{Binding Proportion, StringFormat='{}{0:P0}'}"
                                                    Foreground="{StaticResource TextBrush}"
                                                    FontSize="10"

@@ -5,6 +5,7 @@
     <BooleanToVisibilityConverter x:Key="BoolVis"/>
     <local:InverseBooleanToVisibilityConverter x:Key="BoolVisInverse"/>
     <local:InverseBooleanConverter x:Key="InverseBool"/>
+    <local:ProportionToWidthConverter x:Key="ProportionToWidth" MaxWidth="140"/>
 
     <!-- Typography -->
     <Style TargetType="TextBlock">
@@ -174,10 +175,10 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsHighlighted" Value="True">
-                            <Setter TargetName="ItemBorder" Property="Background" Value="#263845"/>
+                            <Setter TargetName="ItemBorder" Property="Background" Value="{StaticResource DropdownHighlightBrush}"/>
                         </Trigger>
                         <Trigger Property="IsSelected" Value="True">
-                            <Setter TargetName="ItemBorder" Property="Background" Value="#20303B"/>
+                            <Setter TargetName="ItemBorder" Property="Background" Value="{StaticResource DropdownSelectedBrush}"/>
                             <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
@@ -247,13 +248,13 @@
 
     <Style x:Key="PrimaryButton" TargetType="Button" BasedOn="{StaticResource BaseButton}">
         <Setter Property="Background" Value="{StaticResource PrimaryBrush}"/>
-        <Setter Property="Foreground" Value="#071116"/>
+        <Setter Property="Foreground" Value="{StaticResource PrimaryBtnFgBrush}"/>
         <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
     </Style>
 
     <Style x:Key="DangerButton" TargetType="Button" BasedOn="{StaticResource BaseButton}">
-        <Setter Property="Background" Value="#3A2024"/>
-        <Setter Property="Foreground" Value="#FFEDEE"/>
+        <Setter Property="Background" Value="{StaticResource DangerBtnBgBrush}"/>
+        <Setter Property="Foreground" Value="{StaticResource DangerBtnFgBrush}"/>
         <Setter Property="BorderBrush" Value="{StaticResource DangerBrush}"/>
     </Style>
 
@@ -261,7 +262,7 @@
         <Setter Property="MinWidth" Value="92"/>
         <Setter Property="Height" Value="34"/>
         <Setter Property="Margin" Value="0,0,6,6"/>
-        <Setter Property="Background" Value="#1A1E23"/>
+        <Setter Property="Background" Value="{StaticResource ToolbarBtnBrush}"/>
         <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
     </Style>
 
@@ -295,7 +296,7 @@
                             <Setter Property="FontWeight" Value="SemiBold"/>
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Bd" Property="Background" Value="#1D2228"/>
+                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource NavHoverBrush}"/>
                             <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
@@ -369,17 +370,17 @@
         <Setter Property="FocusVisualStyle" Value="{StaticResource ControlFocusVisual}"/>
         <Style.Triggers>
             <Trigger Property="IsSelected" Value="True">
-                <Setter Property="Background" Value="#263845"/>
+                <Setter Property="Background" Value="{StaticResource ItemSelectedBrush}"/>
                 <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
             </Trigger>
             <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Background" Value="#242A31"/>
+                <Setter Property="Background" Value="{StaticResource ItemHoverBrush}"/>
             </Trigger>
         </Style.Triggers>
     </Style>
 
     <Style TargetType="GridViewColumnHeader">
-        <Setter Property="Background" Value="#171A1F"/>
+        <Setter Property="Background" Value="{StaticResource HeaderBgBrush}"/>
         <Setter Property="Foreground" Value="{StaticResource SubtextBrush}"/>
         <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
         <Setter Property="BorderThickness" Value="0,0,1,1"/>
@@ -395,7 +396,7 @@
 
     <!-- Busy overlay -->
     <Style x:Key="BusyOverlay" TargetType="Border">
-        <Setter Property="Background" Value="#B8111315"/>
+        <Setter Property="Background" Value="{StaticResource OverlayBrush}"/>
         <Setter Property="Visibility" Value="{Binding IsBusy, Converter={StaticResource BoolVis}}"/>
         <Setter Property="Panel.ZIndex" Value="50"/>
         <Setter Property="CornerRadius" Value="6"/>
