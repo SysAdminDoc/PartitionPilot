@@ -1,0 +1,85 @@
+using System.Windows.Input;
+
+namespace PartitionPilot;
+
+public class MainViewModel : ViewModelBase
+{
+    private readonly ProcessRunner _processRunner;
+    private readonly WmiDiskService _wmiService;
+
+    public ActivityLog Log { get; }
+    public PartitionsViewModel Partitions { get; }
+    public DiskHealthViewModel DiskHealth { get; }
+    public ToolsViewModel Tools { get; }
+    public DiskImagesViewModel DiskImages { get; }
+
+    private string _statusText = "Ready";
+    public string StatusText
+    {
+        get => _statusText;
+        set => SetProperty(ref _statusText, value);
+    }
+
+    private int _selectedTabIndex;
+    public int SelectedTabIndex
+    {
+        get => _selectedTabIndex;
+        set
+        {
+            if (SetProperty(ref _selectedTabIndex, value))
+                TabChangedCommand.Execute(value);
+        }
+    }
+
+    public ICommand TabChangedCommand { get; }
+
+    public MainViewModel()
+    {
+        _processRunner = new ProcessRunner();
+        _wmiService = new WmiDiskService(_processRunner);
+        Log = new ActivityLog();
+
+        Partitions = new PartitionsViewModel(_wmiService, _processRunner, Log);
+        DiskHealth = new DiskHealthViewModel(_wmiService, Log);
+        Tools = new ToolsViewModel(_wmiService, _processRunner, Log);
+        DiskImages = new DiskImagesViewModel(_processRunner, _wmiService, Log);
+
+        TabChangedCommand = new AsyncRelayCommand(OnTabChangedAsync);
+
+        Log.Log("PartitionPilot ready.");
+    }
+
+    private async Task OnTabChangedAsync(object? parameter)
+    {
+        try
+        {
+            var index = parameter is int i ? i : _selectedTabIndex;
+
+            switch (index)
+            {
+                case 0:
+                    // Partitions tab is loaded on demand via its own RefreshCommand
+                    break;
+                case 1:
+                    StatusText = "Loading disk health data...";
+                    await DiskHealth.RefreshAsync();
+                    break;
+                case 2:
+                    StatusText = "Loading tools drive lists...";
+                    await Tools.RefreshDriveListsAsync();
+                    break;
+                case 3:
+                    StatusText = "Loading disk images...";
+                    await DiskImages.RefreshAsync();
+                    break;
+            }
+
+            StatusText = "Ready";
+        }
+        catch (Exception ex)
+        {
+            StatusText = $"Error: {ex.Message}";
+            Log.Log($"Tab switch error: {ex.Message}");
+        }
+    }
+}

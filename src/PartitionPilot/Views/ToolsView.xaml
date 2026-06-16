@@ -1,0 +1,210 @@
+<UserControl x:Class="PartitionPilot.Views.ToolsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid>
+        <DockPanel IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}">
+            <Border DockPanel.Dock="Top" Style="{StaticResource PanelCard}" Margin="0,0,0,10">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel>
+                        <TextBlock Text="Maintenance Tools" Style="{StaticResource SectionTitleText}"/>
+                        <TextBlock Text="Run native Windows disk utilities with clearer targeting and logged output."
+                                   Style="{StaticResource CaptionText}"
+                                   Margin="0,3,0,0"/>
+                    </StackPanel>
+                    <Button Grid.Column="1"
+                            Content="Refresh Lists"
+                            Command="{Binding RefreshCommand}"
+                            Style="{StaticResource ToolbarButton}"
+                            Margin="12,0,0,0"/>
+                </Grid>
+            </Border>
+
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <WrapPanel Margin="0,0,8,0">
+
+                    <GroupBox Header="Convert MBR to GPT" Style="{StaticResource ToolGroup}">
+                        <StackPanel>
+                            <TextBlock Text="Validate first, then convert a compatible system disk without deleting partitions."
+                                       Style="{StaticResource CaptionText}"
+                                       Margin="0,0,0,10"/>
+                            <TextBlock Text="Disk" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
+                            <ComboBox ItemsSource="{Binding MbrDisks}"
+                                      SelectedItem="{Binding SelectedMbrDisk}"
+                                      DisplayMemberPath="DisplayText"
+                                      Height="34"
+                                      Margin="0,0,0,10"/>
+                            <WrapPanel>
+                                <Button Content="Validate"
+                                        Style="{StaticResource ToolbarButton}"
+                                        Command="{Binding ValidateMbrToGptCommand}"/>
+                                <Button Content="Convert"
+                                        Style="{StaticResource PrimaryButton}"
+                                        MinWidth="92"
+                                        Height="34"
+                                        Margin="0,0,6,6"
+                                        Command="{Binding ConvertMbrToGptCommand}"/>
+                            </WrapPanel>
+                        </StackPanel>
+                    </GroupBox>
+
+                    <GroupBox Header="Convert FAT32 to NTFS" Style="{StaticResource ToolGroup}">
+                        <StackPanel>
+                            <TextBlock Text="One-way conversion for FAT32 volumes that need NTFS features."
+                                       Style="{StaticResource CaptionText}"
+                                       Margin="0,0,0,10"/>
+                            <TextBlock Text="Volume" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
+                            <ComboBox ItemsSource="{Binding Fat32Volumes}"
+                                      SelectedItem="{Binding SelectedFat32Volume}"
+                                      Height="34"
+                                      Margin="0,0,0,10"/>
+                            <Button Content="Convert Volume"
+                                    Style="{StaticResource PrimaryButton}"
+                                    Command="{Binding ConvertFat32Command}"
+                                    HorizontalAlignment="Left"/>
+                        </StackPanel>
+                    </GroupBox>
+
+                    <GroupBox Header="Filesystem Check and Repair" Style="{StaticResource ToolGroup}">
+                        <StackPanel>
+                            <TextBlock Text="Scan for file-system errors or run a repair mode on the selected volume."
+                                       Style="{StaticResource CaptionText}"
+                                       Margin="0,0,0,10"/>
+                            <TextBlock Text="Volume" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
+                            <ComboBox ItemsSource="{Binding CheckVolumes}"
+                                      SelectedItem="{Binding SelectedCheckVolume}"
+                                      Height="34"
+                                      Margin="0,0,0,10"/>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                <RadioButton Content="Scan" IsChecked="{Binding CheckIsScan}"/>
+                                <RadioButton Content="SpotFix" IsChecked="{Binding CheckIsSpotFix}"/>
+                                <RadioButton Content="Offline repair" IsChecked="{Binding CheckIsOffline}"/>
+                            </StackPanel>
+                            <Button Content="Run Check"
+                                    Style="{StaticResource PrimaryButton}"
+                                    Command="{Binding RunFsCheckCommand}"
+                                    HorizontalAlignment="Left"/>
+                        </StackPanel>
+                    </GroupBox>
+
+                    <GroupBox Header="Optimize and TRIM" Style="{StaticResource ToolGroup}">
+                        <StackPanel>
+                            <TextBlock Text="Analyze or optimize HDDs, and send retrim to SSD-backed volumes."
+                                       Style="{StaticResource CaptionText}"
+                                       Margin="0,0,0,10"/>
+                            <TextBlock Text="Volume" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
+                            <ComboBox ItemsSource="{Binding OptVolumes}"
+                                      SelectedItem="{Binding SelectedOptVolume}"
+                                      Height="34"
+                                      Margin="0,0,0,10"/>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                <RadioButton Content="Analyze" IsChecked="{Binding OptIsAnalyze}"/>
+                                <RadioButton Content="Defrag" IsChecked="{Binding OptIsDefrag}"/>
+                                <RadioButton Content="TRIM" IsChecked="{Binding OptIsTrim}"/>
+                            </StackPanel>
+                            <Button Content="Run Optimize"
+                                    Style="{StaticResource PrimaryButton}"
+                                    Command="{Binding RunOptimizeCommand}"
+                                    HorizontalAlignment="Left"/>
+                        </StackPanel>
+                    </GroupBox>
+
+                    <GroupBox Header="Secure Wipe" Style="{StaticResource ToolGroup}">
+                        <StackPanel>
+                            <TextBlock Text="Choose a volume for free-space wipe or a disk for full destructive wipe."
+                                       Style="{StaticResource CaptionText}"
+                                       Margin="0,0,0,10"/>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                <RadioButton Content="Free space" IsChecked="{Binding WipeIsFreeSpace}"/>
+                                <RadioButton Content="Entire disk" IsChecked="{Binding WipeIsFullDisk}" Foreground="{StaticResource DangerBrush}"/>
+                            </StackPanel>
+
+                            <Grid Margin="0,0,0,10">
+                                <StackPanel Visibility="{Binding WipeIsFreeSpace, Converter={StaticResource BoolVis}}">
+                                    <TextBlock Text="Volume" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
+                                    <ComboBox ItemsSource="{Binding WipeVolumes}"
+                                              SelectedItem="{Binding SelectedWipeVolume}"
+                                              DisplayMemberPath="DisplayText"
+                                              Height="34"/>
+                                </StackPanel>
+
+                                <StackPanel Visibility="{Binding WipeIsFullDisk, Converter={StaticResource BoolVis}}">
+                                    <TextBlock Text="Disk" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
+                                    <ComboBox ItemsSource="{Binding AllDisks}"
+                                              SelectedItem="{Binding SelectedWipeDrive}"
+                                              DisplayMemberPath="DisplayText"
+                                              Height="34"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <Button Content="Start Wipe"
+                                    Style="{StaticResource DangerButton}"
+                                    Command="{Binding RunWipeCommand}"
+                                    HorizontalAlignment="Left"/>
+                        </StackPanel>
+                    </GroupBox>
+
+                    <GroupBox Header="Bootloader Repair" Style="{StaticResource ToolGroup}">
+                        <StackPanel>
+                            <TextBlock Text="Rebuild boot files for a detected Windows installation."
+                                       Style="{StaticResource CaptionText}"
+                                       Margin="0,0,0,10"/>
+                            <TextBlock Text="Windows Volume" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
+                            <ComboBox ItemsSource="{Binding WindowsInstalls}"
+                                      SelectedItem="{Binding SelectedWindowsInstall}"
+                                      Height="34"
+                                      Margin="0,0,0,10"/>
+                            <Button Content="Repair Bootloader"
+                                    Style="{StaticResource PrimaryButton}"
+                                    Command="{Binding RunBootRepairCommand}"
+                                    HorizontalAlignment="Left"/>
+                        </StackPanel>
+                    </GroupBox>
+
+                    <GroupBox Header="Disk Benchmark" Style="{StaticResource ToolGroup}">
+                        <StackPanel>
+                            <TextBlock Text="Measure sequential and random 4K throughput using a 256 MB temporary file."
+                                       Style="{StaticResource CaptionText}"
+                                       Margin="0,0,0,10"/>
+                            <TextBlock Text="Drive" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
+                            <ComboBox ItemsSource="{Binding BenchDrives}"
+                                      SelectedItem="{Binding SelectedBenchDrive}"
+                                      Height="34"
+                                      Margin="0,0,0,10"/>
+                            <Button Content="Run Benchmark"
+                                    Style="{StaticResource PrimaryButton}"
+                                    Command="{Binding RunBenchmarkCommand}"
+                                    HorizontalAlignment="Left"
+                                    Margin="0,0,0,10"/>
+                            <TextBox Text="{Binding BenchmarkResults, Mode=OneWay}"
+                                     IsReadOnly="True"
+                                     FontFamily="Consolas"
+                                     FontSize="12"
+                                     Height="116"
+                                     VerticalScrollBarVisibility="Auto"
+                                     TextWrapping="Wrap"
+                                     AutomationProperties.Name="Benchmark results"/>
+                        </StackPanel>
+                    </GroupBox>
+                </WrapPanel>
+            </ScrollViewer>
+        </DockPanel>
+
+        <Border Style="{StaticResource BusyOverlay}">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                <TextBlock Text="Running tool"
+                           Foreground="{StaticResource TextBrush}"
+                           FontSize="16"
+                           FontWeight="SemiBold"
+                           HorizontalAlignment="Center"/>
+                <TextBlock Text="Output is being captured in the activity log."
+                           Style="{StaticResource CaptionText}"
+                           Margin="0,6,0,0"
+                           TextAlignment="Center"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

@@ -1,0 +1,165 @@
+<UserControl x:Class="PartitionPilot.Views.DiskImagesView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid>
+        <DockPanel IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}">
+            <Border DockPanel.Dock="Top" Style="{StaticResource PanelCard}" Margin="0,0,0,10">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel>
+                        <TextBlock Text="Disk Images" Style="{StaticResource SectionTitleText}"/>
+                        <TextBlock Text="Mount, dismount, and create ISO, VHD, and VHDX images."
+                                   Style="{StaticResource CaptionText}"
+                                   Margin="0,3,0,0"/>
+                    </StackPanel>
+                    <Button Grid.Column="1"
+                            Content="Refresh"
+                            Command="{Binding RefreshCommand}"
+                            Style="{StaticResource ToolbarButton}"
+                            Margin="12,0,0,0"/>
+                </Grid>
+            </Border>
+
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <WrapPanel Margin="0,0,8,0">
+
+                    <GroupBox Header="Mount Disk Image" Style="{StaticResource ToolGroup}">
+                        <StackPanel>
+                            <TextBlock Text="Select an ISO, VHD, or VHDX file and mount it as a drive."
+                                       Style="{StaticResource CaptionText}"
+                                       Margin="0,0,0,10"/>
+                            <TextBlock Text="Image path" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
+                            <Grid Margin="0,0,0,10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox Grid.Column="0"
+                                         Text="{Binding MountPath, UpdateSourceTrigger=PropertyChanged}"
+                                         Height="34"
+                                         FontSize="13"
+                                         AutomationProperties.Name="Image path"/>
+                                <Button Grid.Column="1"
+                                        Content="Browse"
+                                        Command="{Binding BrowseMountCommand}"
+                                        Style="{StaticResource ToolbarButton}"
+                                        Margin="8,0,0,0"/>
+                            </Grid>
+                            <Button Content="Mount Image"
+                                    Style="{StaticResource PrimaryButton}"
+                                    Command="{Binding MountCommand}"
+                                    HorizontalAlignment="Left"/>
+                        </StackPanel>
+                    </GroupBox>
+
+                    <GroupBox Header="Currently Mounted Images" Style="{StaticResource ToolGroup}">
+                        <StackPanel>
+                            <Grid Margin="0,0,0,10">
+                                <ListView ItemsSource="{Binding MountedImages}"
+                                          SelectedItem="{Binding SelectedMountedImage}"
+                                          Height="172"
+                                          FontSize="12.5"
+                                          BorderThickness="0"
+                                          AutomationProperties.Name="Mounted images table">
+                                    <ListView.View>
+                                        <GridView>
+                                            <GridViewColumn Header="Path" Width="250" DisplayMemberBinding="{Binding ImagePath}"/>
+                                            <GridViewColumn Header="Type" Width="64" DisplayMemberBinding="{Binding StorageType}"/>
+                                            <GridViewColumn Header="Size" Width="90" DisplayMemberBinding="{Binding SizeText}"/>
+                                            <GridViewColumn Header="Drive" Width="62" DisplayMemberBinding="{Binding LetterDisplay}"/>
+                                        </GridView>
+                                    </ListView.View>
+                                </ListView>
+
+                                <TextBlock Text="No mounted images found."
+                                           IsHitTestVisible="False">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock" BasedOn="{StaticResource EmptyStateText}">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding MountedImages.Count}" Value="0">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </Grid>
+                            <Button Content="Dismount Selected"
+                                    Style="{StaticResource PrimaryButton}"
+                                    Command="{Binding DismountCommand}"
+                                    HorizontalAlignment="Left"/>
+                        </StackPanel>
+                    </GroupBox>
+
+                    <GroupBox Header="Create Virtual Hard Disk" Style="{StaticResource ToolGroup}">
+                        <StackPanel>
+                            <TextBlock Text="Create a VHD or VHDX, initialize it, format it, and mount it."
+                                       Style="{StaticResource CaptionText}"
+                                       Margin="0,0,0,10"/>
+                            <TextBlock Text="File path" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
+                            <Grid Margin="0,0,0,10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox Grid.Column="0"
+                                         Text="{Binding VhdPath, UpdateSourceTrigger=PropertyChanged}"
+                                         Height="34"
+                                         FontSize="13"
+                                         AutomationProperties.Name="VHD path"/>
+                                <Button Grid.Column="1"
+                                        Content="Browse"
+                                        Command="{Binding BrowseVhdCommand}"
+                                        Style="{StaticResource ToolbarButton}"
+                                        Margin="8,0,0,0"/>
+                            </Grid>
+
+                            <TextBlock Text="Size" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
+                            <DockPanel Margin="0,0,0,10">
+                                <TextBlock DockPanel.Dock="Right"
+                                           Text="GB"
+                                           Style="{StaticResource CaptionText}"
+                                           VerticalAlignment="Center"
+                                           Margin="8,0,0,0"/>
+                                <TextBox Text="{Binding VhdSizeGB, UpdateSourceTrigger=PropertyChanged}"
+                                         Width="110"
+                                         Height="34"
+                                         FontSize="13"
+                                         HorizontalAlignment="Left"
+                                         AutomationProperties.Name="VHD size in GB"/>
+                            </DockPanel>
+
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                <RadioButton Content="Dynamic" IsChecked="{Binding VhdIsDynamic}"/>
+                                <RadioButton Content="Fixed"/>
+                            </StackPanel>
+
+                            <Button Content="Create VHD"
+                                    Style="{StaticResource PrimaryButton}"
+                                    Command="{Binding CreateVhdCommand}"
+                                    HorizontalAlignment="Left"/>
+                        </StackPanel>
+                    </GroupBox>
+                </WrapPanel>
+            </ScrollViewer>
+        </DockPanel>
+
+        <Border Style="{StaticResource BusyOverlay}">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                <TextBlock Text="Working with disk images"
+                           Foreground="{StaticResource TextBrush}"
+                           FontSize="16"
+                           FontWeight="SemiBold"
+                           HorizontalAlignment="Center"/>
+                <TextBlock Text="Mount, dismount, and VHD operations are being logged."
+                           Style="{StaticResource CaptionText}"
+                           Margin="0,6,0,0"
+                           TextAlignment="Center"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>
