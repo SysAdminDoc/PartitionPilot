@@ -3,7 +3,7 @@ using System.Text.Json;
 
 namespace PartitionPilot;
 
-public class WmiDiskService
+public class WmiDiskService : IWmiDiskService
 {
     private const string StorageScope = @"\\.\root\Microsoft\Windows\Storage";
     private const string CimScope = @"\\.\root\CIMV2";
