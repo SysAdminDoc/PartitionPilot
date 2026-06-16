@@ -1,5 +1,21 @@
 # Changelog
 
+## PartitionPilot v0.2.1 - 2026-06-16
+
+### Audit Fixes
+- Fixed update checker using lexicographic version comparison (0.10.0 < 0.2.0 was wrong); now uses System.Version for semantic comparison.
+- Fixed disk cloning crash: robocopy exit codes 1-7 are success (files copied), only >=8 is fatal. Every successful clone was throwing.
+- Fixed Disk Usage "Share" column always showing zero-width bars (was using InverseBool converter on a double proportion; replaced with ProportionToWidthConverter).
+- Fixed ActivityLog O(n^2) performance from string concatenation on every log call; replaced with StringBuilder.
+- Fixed 11 hardcoded dark-mode hex colors in AppStyles.xaml that broke light theme (invisible list selections, unreadable column headers, dark overlay on light background). Extracted semantic theme tokens (ItemHover, ItemSelected, DropdownHighlight, NavHover, HeaderBg, Overlay, ToolbarBtn, DangerBtnBg/Fg, PrimaryBtnFg).
+- Fixed NullReferenceException crash in Create Partition and Split Partition dialogs when no drive letters are available.
+- Fixed DiskBarControl empty-state text using hardcoded RGB instead of MutedTextBrush theme token.
+- Fixed theme toggle silently doing nothing (WPF StaticResource bindings don't re-resolve at runtime); now saves preference and informs user restart is needed.
+- Added filesystem allowlist validation (NTFS/FAT32/exFAT/ReFS) to prevent injection via fs parameter in diskpart scripts.
+- Added drive letter validation to resize operations.
+- Removed dead code in DiskCloningViewModel (unused cmd variable).
+- Added 13 new tests (version comparison, filesystem validation).
+
 ## PartitionPilot v0.2.0 - 2026-06-16
 
 ### P0 Fixes
