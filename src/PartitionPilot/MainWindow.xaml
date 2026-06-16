@@ -60,22 +60,22 @@
                     BorderThickness="0"
                     Background="Transparent"
                     Margin="0,0,0,14">
-            <TabItem Header="Partitions" Style="{StaticResource NavTabItem}">
+            <TabItem Header="Partitions" Style="{StaticResource NavTabItem}" AutomationProperties.Name="Partitions tab">
                 <views:PartitionsView DataContext="{Binding Partitions}"/>
             </TabItem>
-            <TabItem Header="Disk Health" Style="{StaticResource NavTabItem}">
+            <TabItem Header="Disk Health" Style="{StaticResource NavTabItem}" AutomationProperties.Name="Disk Health tab">
                 <views:DiskHealthView DataContext="{Binding DiskHealth}"/>
             </TabItem>
-            <TabItem Header="Tools" Style="{StaticResource NavTabItem}">
+            <TabItem Header="Tools" Style="{StaticResource NavTabItem}" AutomationProperties.Name="Tools tab">
                 <views:ToolsView DataContext="{Binding Tools}"/>
             </TabItem>
-            <TabItem Header="Disk Images" Style="{StaticResource NavTabItem}">
+            <TabItem Header="Disk Images" Style="{StaticResource NavTabItem}" AutomationProperties.Name="Disk Images tab">
                 <views:DiskImagesView DataContext="{Binding DiskImages}"/>
             </TabItem>
-            <TabItem Header="Disk Usage" Style="{StaticResource NavTabItem}">
+            <TabItem Header="Disk Usage" Style="{StaticResource NavTabItem}" AutomationProperties.Name="Disk Usage tab">
                 <views:DiskUsageView DataContext="{Binding DiskUsage}"/>
             </TabItem>
-            <TabItem Header="Disk Cloning" Style="{StaticResource NavTabItem}">
+            <TabItem Header="Disk Cloning" Style="{StaticResource NavTabItem}" AutomationProperties.Name="Disk Cloning tab">
                 <views:DiskCloningView DataContext="{Binding DiskCloning}"/>
             </TabItem>
         </TabControl>
