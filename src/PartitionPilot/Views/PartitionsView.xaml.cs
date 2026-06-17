@@ -7,7 +7,17 @@ namespace PartitionPilot.Views;
 
 public partial class PartitionsView : UserControl
 {
-    public PartitionsView() => InitializeComponent();
+    private readonly IDialogService _dialog;
+
+    public PartitionsView() : this(new MessageBoxDialogService())
+    {
+    }
+
+    internal PartitionsView(IDialogService dialog)
+    {
+        _dialog = dialog;
+        InitializeComponent();
+    }
 
     private PartitionsViewModel? VM => DataContext as PartitionsViewModel;
 
@@ -25,7 +35,7 @@ public partial class PartitionsView : UserControl
         if (VM is not { SelectedDisk: not null } vm) return;
         var available = await vm.GetAvailableLettersAsync();
         var freeGB = Math.Round(vm.SelectedDisk.LargestFreeExtent / (double)(1L << 30), 2);
-        if (freeGB < 0.01) { MessageBox.Show("No unallocated space.", "Create", MessageBoxButton.OK, MessageBoxImage.Warning); return; }
+        if (freeGB < 0.01) { _dialog.ShowWarning("No unallocated space is available on the selected disk.", "Create Partition"); return; }
         var dlg = new CreatePartitionDialog(freeGB, available) { Owner = Window.GetWindow(this) };
         if (dlg.ShowDialog() == true)
             await vm.ExecuteCreateAsync(dlg.SizeGB, dlg.SelectedLetter, dlg.FileSystem, dlg.VolumeLabel, dlg.QuickFormat);
@@ -33,28 +43,28 @@ public partial class PartitionsView : UserControl
 
     private async void OnFormat(object sender, RoutedEventArgs e)
     {
-        if (VM is not { SelectedPartition: { DriveLetter: not null } part } vm) { MessageBox.Show("Select a partition with a drive letter.", "Format", MessageBoxButton.OK, MessageBoxImage.Information); return; }
+        if (VM is not { SelectedPartition: { DriveLetter: not null } part } vm) { _dialog.ShowInfo("Select a partition with a drive letter before formatting.", "Format Partition"); return; }
         if (part.IsCritical)
         {
-            var warn = MessageBox.Show(
+            var warn = _dialog.ConfirmDanger(
                 $"CRITICAL: {part.DriveLetter}: is a {part.Type} partition" +
                 (part.IsBoot ? " (Boot)" : "") + (part.IsSystem ? " (System)" : "") +
                 ".\n\nFormatting may make the system unbootable.\n\nAre you absolutely sure?",
-                "Format Critical Partition", MessageBoxButton.YesNo, MessageBoxImage.Error, MessageBoxResult.No);
-            if (warn != MessageBoxResult.Yes) return;
+                "Format Critical Partition");
+            if (!warn) return;
         }
         var dlg = new FormatPartitionDialog(part.DriveLetter.Value, part.FileSystem, part.Size) { Owner = Window.GetWindow(this) };
         if (dlg.ShowDialog() != true) return;
-        var confirm = MessageBox.Show(
+        var confirm = _dialog.ConfirmWarning(
             $"Format {part.DriveLetter}: as {dlg.FileSystem}?\n\nALL DATA ON THIS VOLUME WILL BE ERASED.\n\nThis action cannot be undone.",
-            "Confirm Format", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
-        if (confirm == MessageBoxResult.Yes)
+            "Confirm Format");
+        if (confirm)
             await vm.ExecuteFormatAsync(part.DriveLetter.Value, dlg.FileSystem, dlg.VolumeLabel, dlg.QuickFormat, dlg.AllocationUnitSize);
     }
 
     private async void OnResize(object sender, RoutedEventArgs e)
     {
-        if (VM is not { SelectedPartition: { DriveLetter: not null } part } vm) { MessageBox.Show("Select a partition with a drive letter.", "Resize", MessageBoxButton.OK, MessageBoxImage.Information); return; }
+        if (VM is not { SelectedPartition: { DriveLetter: not null } part } vm) { _dialog.ShowInfo("Select a partition with a drive letter before resizing.", "Resize Partition"); return; }
         var (min, max) = await vm.GetSupportedSizeAsync(part.DriveLetter.Value);
         var dlg = new ResizePartitionDialog(part.DriveLetter.Value, part.Size, min, max) { Owner = Window.GetWindow(this) };
         if (dlg.ShowDialog() == true)
@@ -63,11 +73,11 @@ public partial class PartitionsView : UserControl
 
     private async void OnSplit(object sender, RoutedEventArgs e)
     {
-        if (VM is not { SelectedPartition: { DriveLetter: not null } part } vm) { MessageBox.Show("Select a partition with a drive letter.", "Split", MessageBoxButton.OK, MessageBoxImage.Information); return; }
+        if (VM is not { SelectedPartition: { DriveLetter: not null } part } vm) { _dialog.ShowInfo("Select a partition with a drive letter before splitting.", "Split Partition"); return; }
         var (min, _) = await vm.GetSupportedSizeAsync(part.DriveLetter.Value);
         var available = await vm.GetAvailableLettersAsync();
         var maxNewGB = Math.Floor((part.Size - min) / (double)(1L << 30));
-        if (maxNewGB < 1) { MessageBox.Show("Not enough space to split.", "Split", MessageBoxButton.OK, MessageBoxImage.Warning); return; }
+        if (maxNewGB < 1) { _dialog.ShowWarning("Not enough free space remains after the minimum supported size to create a new partition.", "Split Partition"); return; }
         var dlg = new SplitPartitionDialog(part.DriveLetter.Value, part.Size, min, maxNewGB, available) { Owner = Window.GetWindow(this) };
         if (dlg.ShowDialog() == true)
             await vm.ExecuteSplitAsync(part.DriveLetter.Value, dlg.NewPartSizeGB, dlg.NewLetter, dlg.FileSystem, dlg.VolumeLabel);
@@ -75,7 +85,7 @@ public partial class PartitionsView : UserControl
 
     private async void OnChangeLetter(object sender, RoutedEventArgs e)
     {
-        if (VM is not { SelectedPartition: { } part } vm) { MessageBox.Show("Select a partition.", "Letter", MessageBoxButton.OK, MessageBoxImage.Information); return; }
+        if (VM is not { SelectedPartition: { } part } vm) { _dialog.ShowInfo("Select a partition before changing its drive letter.", "Change Drive Letter"); return; }
         var available = await vm.GetAvailableLettersAsync();
         var dlg = new ChangeLetterDialog(part.DriveLetter, available) { Owner = Window.GetWindow(this) };
         if (dlg.ShowDialog() == true)

@@ -4,13 +4,21 @@ namespace PartitionPilot.Dialogs;
 
 public partial class SplitPartitionDialog : Window
 {
+    private readonly IDialogService _dialog;
+
     public double NewPartSizeGB { get; private set; }
     public char NewLetter { get; private set; }
     public string FileSystem { get; private set; } = "NTFS";
     public string VolumeLabel { get; private set; } = "";
 
     public SplitPartitionDialog(char driveLetter, long currentBytes, long minKeepBytes, double maxNewGB, IEnumerable<char> availableLetters)
+        : this(driveLetter, currentBytes, minKeepBytes, maxNewGB, availableLetters, new MessageBoxDialogService())
     {
+    }
+
+    internal SplitPartitionDialog(char driveLetter, long currentBytes, long minKeepBytes, double maxNewGB, IEnumerable<char> availableLetters, IDialogService dialog)
+    {
+        _dialog = dialog;
         InitializeComponent();
         var curGB = Math.Round(currentBytes / (double)(1L << 30), 2);
         var minKeepGB = Math.Ceiling(minKeepBytes / (double)(1L << 30));
@@ -24,12 +32,12 @@ public partial class SplitPartitionDialog : Window
     {
         if (!double.TryParse(txtNewSize.Text, out var size) || size <= 0)
         {
-            MessageBox.Show("Enter a valid size.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+            _dialog.ShowWarning("Enter a new partition size greater than 0 GB.", "Size Required");
             return;
         }
         if (cmbLetter.SelectedItem is not char letter)
         {
-            MessageBox.Show("Select a drive letter.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+            _dialog.ShowWarning("Select an available drive letter before continuing.", "Drive Letter Required");
             return;
         }
         NewPartSizeGB = size;
