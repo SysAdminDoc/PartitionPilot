@@ -4,6 +4,7 @@
 
 ### Release Trust
 - Fixed release metadata drift: the update checker now reads the app version from assembly metadata, the Inno installer reports v0.3.0, README uses a non-versioned screenshot path, and CI validates installer/README version consistency.
+- Made NuGet restores deterministic with lock files, explicit package versions, CI locked-mode restore, and migration of the test suite to xUnit v3.
 
 ### Safety & Reliability
 - Changed destructive volume operations to fail closed when exclusive volume locking cannot be acquired, including format, resize, split, delete, extend, clone restore, free-space wipe, and disk wipe flows.
