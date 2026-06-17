@@ -4,11 +4,19 @@ namespace PartitionPilot.Dialogs;
 
 public partial class ResizePartitionDialog : Window
 {
+    private readonly IDialogService _dialog;
+
     public long NewSizeBytes { get; private set; }
     private readonly long _min, _max;
 
     public ResizePartitionDialog(char driveLetter, long currentBytes, long minBytes, long maxBytes)
+        : this(driveLetter, currentBytes, minBytes, maxBytes, new MessageBoxDialogService())
     {
+    }
+
+    internal ResizePartitionDialog(char driveLetter, long currentBytes, long minBytes, long maxBytes, IDialogService dialog)
+    {
+        _dialog = dialog;
         InitializeComponent();
         _min = minBytes;
         _max = maxBytes;
@@ -23,7 +31,7 @@ public partial class ResizePartitionDialog : Window
     {
         if (!double.TryParse(txtSize.Text, out var sizeGB) || sizeGB <= 0)
         {
-            MessageBox.Show("Enter a valid size.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+            _dialog.ShowWarning("Enter a target size greater than 0 GB.", "Size Required");
             return;
         }
         NewSizeBytes = (long)Math.Round(sizeGB * (1L << 30));

@@ -4,6 +4,8 @@ namespace PartitionPilot.Dialogs;
 
 public partial class CreatePartitionDialog : Window
 {
+    private readonly IDialogService _dialog;
+
     public double SizeGB { get; private set; }
     public char SelectedLetter { get; private set; }
     public string FileSystem { get; private set; } = "NTFS";
@@ -11,7 +13,13 @@ public partial class CreatePartitionDialog : Window
     public bool QuickFormat { get; private set; } = true;
 
     public CreatePartitionDialog(double availableGB, IEnumerable<char> availableLetters)
+        : this(availableGB, availableLetters, new MessageBoxDialogService())
     {
+    }
+
+    internal CreatePartitionDialog(double availableGB, IEnumerable<char> availableLetters, IDialogService dialog)
+    {
+        _dialog = dialog;
         InitializeComponent();
         txtInfo.Text = $"{availableGB} GB";
         txtSize.Text = availableGB.ToString("F2");
@@ -23,12 +31,12 @@ public partial class CreatePartitionDialog : Window
     {
         if (!double.TryParse(txtSize.Text, out var size) || size <= 0)
         {
-            MessageBox.Show("Enter a valid size.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+            _dialog.ShowWarning("Enter a partition size greater than 0 GB.", "Size Required");
             return;
         }
         if (cmbLetter.SelectedItem is not char letter)
         {
-            MessageBox.Show("Select a drive letter.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+            _dialog.ShowWarning("Select an available drive letter before continuing.", "Drive Letter Required");
             return;
         }
         SizeGB = size;
