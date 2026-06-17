@@ -11,6 +11,7 @@
 - Fixed VHDX image create/restore success handling so missing mounted/source/destination drive letters now stop the operation instead of silently skipping copy work.
 - Added per-disk NVMe sanitize preflight so firmware erase is available only when the selected physical disk is verified as NVMe on a supported Windows build, with the UI showing the reason when unavailable.
 - Added a Windows RE guard that refuses Recovery partition delete/extend operations, records `reagentc /info`, and tells the user to use a dedicated recovery relocation workflow instead of leaving WinRE disabled.
+- Hardened WMI query filters with a shared WQL string literal helper and namespace/class-aware provider diagnostics that redact local paths from failure messages.
 
 ## PartitionPilot v0.3.0 - 2026-06-16
 
