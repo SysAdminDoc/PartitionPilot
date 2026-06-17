@@ -54,6 +54,19 @@ public static class VolumeLockService
         log?.Log($"Volume {driveLetter}: locked for exclusive access.");
         return new VolumeLock(handle, driveLetter, log);
     }
+
+    public static VolumeLock RequireLock(char driveLetter, ActivityLog? log = null)
+    {
+        var volumeLock = TryLock(driveLetter, log);
+        if (volumeLock is null)
+        {
+            throw new InvalidOperationException(
+                $"Volume {char.ToUpperInvariant(driveLetter)}: could not be locked for exclusive access. " +
+                "Close open files and apps using the volume, then retry.");
+        }
+
+        return volumeLock;
+    }
 }
 
 public sealed class VolumeLock : IDisposable

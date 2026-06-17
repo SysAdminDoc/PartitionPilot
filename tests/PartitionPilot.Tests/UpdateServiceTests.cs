@@ -10,9 +10,16 @@ public class UpdateServiceTests
     [InlineData("1.0.0", "0.2.0", true)]
     public void VersionComparison_IsSemanticNotLexicographic(string latest, string current, bool shouldBeNewer)
     {
-        var result = Version.TryParse(latest, out var latestV) &&
-                     Version.TryParse(current, out var currentV) &&
-                     latestV > currentV;
-        Assert.Equal(shouldBeNewer, result);
+        Assert.Equal(shouldBeNewer, UpdateService.IsNewerVersion(latest, current));
+    }
+
+    [Fact]
+    public void CurrentVersion_ComesFromAssemblyMetadata()
+    {
+        var current = UpdateService.GetCurrentVersion();
+
+        Assert.NotEqual("0.2.3", current);
+        Assert.True(Version.TryParse(current, out _));
+        Assert.StartsWith("0.3.0", current);
     }
 }

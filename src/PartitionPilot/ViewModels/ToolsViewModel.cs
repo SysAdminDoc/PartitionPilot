@@ -706,6 +706,7 @@ public class ToolsViewModel : ViewModelBase
         try
         {
             _log.Log($"Wiping free space on {letter}: with cipher /w...");
+            using var volumeLock = VolumeLockService.RequireLock(letter, _log);
             await _processRunner.RunExeAsync("cipher", $"/w:{letter}:\\", _log, ct: ct);
 
             _log.Log($"Free-space wipe complete on {letter}:.");
@@ -809,6 +810,7 @@ public class ToolsViewModel : ViewModelBase
             "Wipe Disk -- FINAL Confirmation")) return;
 
         var ct = BeginOperation($"Wiping Disk {SelectedWipeDrive.Number}...");
+        var locks = new List<VolumeLock>();
         try
         {
             int diskNum = SelectedWipeDrive.Number;
@@ -821,9 +823,8 @@ public class ToolsViewModel : ViewModelBase
                 .Where(p => p.DriveLetter.HasValue)
                 .Select(p => p.DriveLetter!.Value)
                 .ToList();
-            var locks = diskLetters
-                .Select(l => VolumeLockService.TryLock(l, _log))
-                .Where(l => l is not null)
+            locks = diskLetters
+                .Select(l => VolumeLockService.RequireLock(l, _log))
                 .ToList();
 
             StatusText = $"Clearing Disk {diskNum}...";

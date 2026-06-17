@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+### Release Trust
+- Fixed release metadata drift: the update checker now reads the app version from assembly metadata, the Inno installer reports v0.3.0, README uses a non-versioned screenshot path, and CI validates installer/README version consistency.
+
+### Safety & Reliability
+- Changed destructive volume operations to fail closed when exclusive volume locking cannot be acquired, including format, resize, split, delete, extend, clone restore, free-space wipe, and disk wipe flows.
+- Fixed VHDX image create/restore success handling so missing mounted/source/destination drive letters now stop the operation instead of silently skipping copy work.
+
 ## PartitionPilot v0.3.0 - 2026-06-16
 
 ### Security Hardening (P0)

@@ -380,7 +380,7 @@ public class PartitionsViewModel : ViewModelBase
 
             if (SelectedDisk is not null)
                 await _backup.SaveSnapshotAsync(SelectedDisk.Number);
-            using var volumeLock = VolumeLockService.TryLock(letter, _log);
+            using var volumeLock = VolumeLockService.RequireLock(letter, _log);
 
             var unitParam = !string.IsNullOrEmpty(allocationUnitSize) ? $"unit={allocationUnitSize} " : "";
             string script = $"""
@@ -410,6 +410,7 @@ public class PartitionsViewModel : ViewModelBase
         {
             letter = ProcessRunner.ValidateDriveLetter(letter);
             _log.Log($"Resizing {letter}: to {SizeUtil.Format(newSizeBytes)}...");
+            using var volumeLock = VolumeLockService.RequireLock(letter, _log);
 
             var cmd = $"Resize-Partition -DriveLetter '{letter}' -Size {newSizeBytes}";
             var result = await _processRunner.RunPowerShellAsync(cmd, _log);
@@ -439,6 +440,7 @@ public class PartitionsViewModel : ViewModelBase
             if (SelectedDisk is not null)
                 await _backup.SaveSnapshotAsync(SelectedDisk.Number);
             _log.Log($"Splitting {letter}: shrink by {newPartGB:F2} GB, new partition {newLetter}:...");
+            using var volumeLock = VolumeLockService.RequireLock(letter, _log);
 
             long shrinkMB = (long)(newPartGB * 1024);
 
@@ -545,7 +547,7 @@ public class PartitionsViewModel : ViewModelBase
             _log.Log($"Deleting partition {part.PartitionNumber} on Disk {SelectedDisk.Number}...");
 
             using var volumeLock = part.DriveLetter.HasValue
-                ? VolumeLockService.TryLock(part.DriveLetter.Value, _log)
+                ? VolumeLockService.RequireLock(part.DriveLetter.Value, _log)
                 : null;
 
             string script = $"""
@@ -597,6 +599,9 @@ public class PartitionsViewModel : ViewModelBase
         {
             await _backup.SaveSnapshotAsync(SelectedDisk.Number);
             _log.Log($"Extending partition {part.PartitionNumber} on Disk {SelectedDisk.Number}...");
+            using var volumeLock = part.DriveLetter.HasValue
+                ? VolumeLockService.RequireLock(part.DriveLetter.Value, _log)
+                : null;
 
             if (part.Type.Equals("Recovery", StringComparison.OrdinalIgnoreCase))
             {
