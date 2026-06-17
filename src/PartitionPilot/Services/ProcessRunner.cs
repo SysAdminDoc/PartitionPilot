@@ -36,8 +36,10 @@ public class ProcessRunner : IProcessRunner
     public async Task<string> RunPowerShellAsync(string command, ActivityLog? log = null, CancellationToken ct = default)
     {
         log?.Log($"powershell: {command}");
+        var bytes = System.Text.Encoding.Unicode.GetBytes(command);
+        var encoded = Convert.ToBase64String(bytes);
         return await RunExeAsync("powershell.exe",
-            $"-NoProfile -NonInteractive -Command \"{command.Replace("\"", "\\\"")}\"", log,
+            $"-NoProfile -NonInteractive -EncodedCommand {encoded}", log,
             ignoreStderrOnSuccess: true, ct: ct);
     }
 
@@ -92,7 +94,19 @@ public class ProcessRunner : IProcessRunner
 
     public static string SanitizeLabel(string label)
     {
-        return label.Replace("\"", "").Replace("\r", "").Replace("\n", "");
+        var sb = new System.Text.StringBuilder(label.Length);
+        foreach (var c in label)
+        {
+            if (c is '"' or '\r' or '\n' or ';' or '&' or '|' or '$' or '`' or '(' or ')')
+                continue;
+            sb.Append(c);
+        }
+        return sb.ToString();
+    }
+
+    public static string EscapePowerShellString(string value)
+    {
+        return "'" + value.Replace("'", "''") + "'";
     }
 
     public static char ValidateDriveLetter(char letter)

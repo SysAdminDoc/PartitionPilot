@@ -679,6 +679,18 @@ public class ToolsViewModel : ViewModelBase
             int diskNum = SelectedWipeDrive.Number;
             _log.Log($"Wiping Disk {diskNum} ({WipeMode})...");
 
+            // Best-effort lock on all known volumes of this disk
+            var volumes = await _wmiService.GetVolumesAsync();
+            var partitions = await _wmiService.GetPartitionsAsync(diskNum);
+            var diskLetters = partitions
+                .Where(p => p.DriveLetter.HasValue)
+                .Select(p => p.DriveLetter!.Value)
+                .ToList();
+            var locks = diskLetters
+                .Select(l => VolumeLockService.TryLock(l, _log))
+                .Where(l => l is not null)
+                .ToList();
+
             StatusText = $"Clearing Disk {diskNum}...";
             var clearCmd = $"Clear-Disk -Number {diskNum} -RemoveData -RemoveOEM -Confirm:$false";
             await _processRunner.RunPowerShellAsync(clearCmd, _log, ct);
@@ -726,6 +738,7 @@ public class ToolsViewModel : ViewModelBase
         }
         finally
         {
+            foreach (var l in locks) l?.Dispose();
             EndOperation();
         }
     }

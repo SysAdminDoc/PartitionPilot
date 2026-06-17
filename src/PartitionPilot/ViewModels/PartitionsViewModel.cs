@@ -362,6 +362,8 @@ public class PartitionsViewModel : ViewModelBase
             fs = ProcessRunner.ValidateFileSystem(fs);
             _log.Log($"Formatting {letter}: as {fs} (label=\"{label}\", quick={quick})...");
 
+            using var volumeLock = VolumeLockService.TryLock(letter, _log);
+
             string script = $"""
                 select volume {letter}
                 format fs={fs} label="{label}" {(quick ? "quick" : "")}
@@ -508,6 +510,10 @@ public class PartitionsViewModel : ViewModelBase
         try
         {
             _log.Log($"Deleting partition {part.PartitionNumber} on Disk {SelectedDisk.Number}...");
+
+            using var volumeLock = part.DriveLetter.HasValue
+                ? VolumeLockService.TryLock(part.DriveLetter.Value, _log)
+                : null;
 
             string script = $"""
                 select disk {SelectedDisk.Number}

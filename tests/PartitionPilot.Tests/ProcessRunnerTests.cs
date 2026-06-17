@@ -7,9 +7,24 @@ public class ProcessRunnerTests
     [InlineData("My\"Volume", "MyVolume")]
     [InlineData("Line\r\nBreak", "LineBreak")]
     [InlineData("", "")]
+    [InlineData("test;rm -rf", "testrm -rf")]
+    [InlineData("a&b|c$d`e(f)g", "abcdefg")]
     public void SanitizeLabel_RemovesDangerousChars(string input, string expected)
     {
         Assert.Equal(expected, ProcessRunner.SanitizeLabel(input));
+    }
+
+    [Theory]
+    [InlineData("simple", "'simple'")]
+    [InlineData("it's", "'it''s'")]
+    [InlineData("a'b'c", "'a''b''c'")]
+    [InlineData("", "''")]
+    [InlineData("C:\\Users\\test", "'C:\\Users\\test'")]
+    [InlineData("path with spaces", "'path with spaces'")]
+    [InlineData("inject'; Remove-Item C:\\ -Recurse; '", "'inject''; Remove-Item C:\\ -Recurse; '''")]
+    public void EscapePowerShellString_WrapsInSingleQuotes(string input, string expected)
+    {
+        Assert.Equal(expected, ProcessRunner.EscapePowerShellString(input));
     }
 
     [Theory]
