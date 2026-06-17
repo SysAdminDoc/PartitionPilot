@@ -21,6 +21,8 @@
 - Added empty-state guidance to Disk Usage tab with "Select a drive and click Scan" prompt.
 - Added portable mode — place a `portable.txt` file next to the exe to store settings, logs, and backups alongside the executable instead of in AppData/%TEMP%.
 - Enabled PublishReadyToRun for ~20-30% faster cold startup on published builds.
+- Prepared for Windows 11 Administrator Protection — theme preferences now mirror to ProgramData for shared access across elevation contexts.
+- Added Dev Drive (ReFS) creation in Tools tab — formats a volume as Dev Drive with `Format-Volume -DevDrive` and designates it as trusted via `fsutil devdrv trust`. Greyed out on unsupported Windows versions (requires build 22621+).
 
 ## PartitionPilot v0.2.3 - 2026-06-16
 
