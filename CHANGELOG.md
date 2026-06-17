@@ -24,6 +24,7 @@
 - Prepared for Windows 11 Administrator Protection — theme preferences now mirror to ProgramData for shared access across elevation contexts.
 - Added Dev Drive (ReFS) creation in Tools tab — formats a volume as Dev Drive with `Format-Volume -DevDrive` and designates it as trusted via `fsutil devdrv trust`. Greyed out on unsupported Windows versions (requires build 22621+).
 - Added NVMe firmware erase (NIST 800-88 Purge) — new wipe mode using `IOCTL_STORAGE_REINITIALIZE_MEDIA` for Block Erase or Crypto Erase. Targets the drive controller directly for reliable SSD sanitization. Requires Windows 11+.
+- Added squarified treemap visualization to Disk Usage tab — color-coded rectangles proportional to folder size, with click-to-select. Custom WPF control using DrawingContext for performance.
 
 ## PartitionPilot v0.2.3 - 2026-06-16
 

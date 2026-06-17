@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Windows;
 using System.Windows.Input;
+using PartitionPilot.Controls;
 
 namespace PartitionPilot;
 
@@ -12,6 +13,13 @@ public class DiskUsageViewModel : ViewModelBase
 
     public ObservableCollection<char> DriveLetters { get; } = new();
     public ObservableCollection<FolderSizeInfo> TopFolders { get; } = new();
+
+    private IReadOnlyList<TreemapItem>? _treemapItems;
+    public IReadOnlyList<TreemapItem>? TreemapItems
+    {
+        get => _treemapItems;
+        set => SetProperty(ref _treemapItems, value);
+    }
 
     private char _selectedDrive;
     public char SelectedDrive
@@ -112,6 +120,11 @@ public class DiskUsageViewModel : ViewModelBase
                 foreach (var f in results)
                     TopFolders.Add(f);
             });
+
+            TreemapItems = results
+                .Where(f => f.Size > 0)
+                .Select(f => new TreemapItem { Label = f.Name, Size = f.Size, Path = f.Path })
+                .ToList();
 
             SummaryText = $"Scanned {results.Count} top-level folders. Total: {SizeUtil.Format(totalScanned)}";
             _log.Log($"Disk usage scan complete on {SelectedDrive}:\\. {results.Count} folders, {SizeUtil.Format(totalScanned)} total.");
