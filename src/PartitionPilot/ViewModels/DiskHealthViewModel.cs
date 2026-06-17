@@ -8,6 +8,7 @@ public class DiskHealthViewModel : ViewModelBase
 {
     private readonly WmiDiskService _wmiService;
     private readonly ActivityLog _log;
+    private CancellationTokenSource? _healthCts;
 
     public ObservableCollection<PhysicalDiskInfo> PhysicalDisks { get; } = new();
     public ObservableCollection<AlignmentInfo> AlignmentEntries { get; } = new();
@@ -22,7 +23,10 @@ public class DiskHealthViewModel : ViewModelBase
             {
                 OnPropertyChanged(nameof(DiskSizeText));
                 OnPropertyChanged(nameof(SectorSizeText));
-                _ = LoadHealthDataAsync();
+                _healthCts?.Cancel();
+                _healthCts?.Dispose();
+                _healthCts = new CancellationTokenSource();
+                _ = LoadHealthDataAsync(_healthCts.Token);
             }
         }
     }
@@ -107,7 +111,7 @@ public class DiskHealthViewModel : ViewModelBase
     public async Task RefreshAsync()
     {
         await LoadPhysicalDisksAsync();
-        await LoadHealthDataAsync();
+        await LoadHealthDataAsync(CancellationToken.None);
     }
 
     private async Task LoadPhysicalDisksAsync()
@@ -140,7 +144,7 @@ public class DiskHealthViewModel : ViewModelBase
         }
     }
 
-    private async Task LoadHealthDataAsync()
+    private async Task LoadHealthDataAsync(CancellationToken ct)
     {
         if (SelectedDisk is null) return;
 
@@ -149,8 +153,8 @@ public class DiskHealthViewModel : ViewModelBase
         {
             _log.Log($"Loading health data for {SelectedDisk.FriendlyName}...");
 
-            // Load SMART data
             var smartData = await _wmiService.GetSmartDataAsync(SelectedDisk.DeviceId);
+            ct.ThrowIfCancellationRequested();
             Smart = smartData;
 
             if (smartData is not null)
@@ -164,9 +168,9 @@ public class DiskHealthViewModel : ViewModelBase
                 _log.Log("No SMART data available for this disk.");
             }
 
-            // Load alignment audit
             _log.Log("Running partition alignment audit...");
             var alignments = await _wmiService.GetAlignmentAuditAsync();
+            ct.ThrowIfCancellationRequested();
 
             Application.Current.Dispatcher.Invoke(() =>
             {
@@ -181,6 +185,7 @@ public class DiskHealthViewModel : ViewModelBase
             else
                 _log.Log($"Alignment audit: all {alignments.Count} partition(s) are properly aligned.");
         }
+        catch (OperationCanceledException) { }
         catch (Exception ex)
         {
             _log.Log($"Error loading health data: {ex.Message}");

@@ -35,7 +35,11 @@ public partial class PartitionsView : UserControl
     {
         if (VM is not { SelectedPartition: { DriveLetter: not null } part } vm) { MessageBox.Show("Select a partition with a drive letter.", "Format", MessageBoxButton.OK, MessageBoxImage.Information); return; }
         var dlg = new FormatPartitionDialog(part.DriveLetter.Value, part.FileSystem, part.Size) { Owner = Window.GetWindow(this) };
-        if (dlg.ShowDialog() == true)
+        if (dlg.ShowDialog() != true) return;
+        var confirm = MessageBox.Show(
+            $"Format {part.DriveLetter}: as {dlg.FileSystem}?\n\nALL DATA ON THIS VOLUME WILL BE ERASED.\n\nThis action cannot be undone.",
+            "Confirm Format", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
+        if (confirm == MessageBoxResult.Yes)
             await vm.ExecuteFormatAsync(part.DriveLetter.Value, dlg.FileSystem, dlg.VolumeLabel, dlg.QuickFormat);
     }
 
