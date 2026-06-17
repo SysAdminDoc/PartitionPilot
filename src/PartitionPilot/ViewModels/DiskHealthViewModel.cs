@@ -47,6 +47,9 @@ public class DiskHealthViewModel : ViewModelBase
                 OnPropertyChanged(nameof(WriteErrorsText));
                 OnPropertyChanged(nameof(ReadLatencyText));
                 OnPropertyChanged(nameof(WriteLatencyText));
+                OnPropertyChanged(nameof(HealthStatusText));
+                OnPropertyChanged(nameof(HealthStatusColor));
+                OnPropertyChanged(nameof(HealthReasonText));
             }
         }
     }
@@ -97,6 +100,24 @@ public class DiskHealthViewModel : ViewModelBase
     public string ReadLatencyText => Smart?.ReadLatencyMax is not null ? $"{Smart.ReadLatencyMax} ms" : "N/A";
 
     public string WriteLatencyText => Smart?.WriteLatencyMax is not null ? $"{Smart.WriteLatencyMax} ms" : "N/A";
+
+    public string HealthStatusText => Smart?.Health switch
+    {
+        HealthStatus.Good => "Good",
+        HealthStatus.Warning => "Warning",
+        HealthStatus.Critical => "Critical",
+        _ => "Unknown"
+    };
+
+    public string HealthStatusColor => Smart?.Health switch
+    {
+        HealthStatus.Good => "#5EE0A0",
+        HealthStatus.Warning => "#F4C96A",
+        HealthStatus.Critical => "#FF6B6B",
+        _ => "#8391A2"
+    };
+
+    public string HealthReasonText => Smart?.HealthReason ?? "No SMART data available";
 
     public ICommand RefreshCommand { get; }
 

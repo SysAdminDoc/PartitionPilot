@@ -1,5 +1,7 @@
 namespace PartitionPilot;
 
+public enum HealthStatus { Good, Warning, Critical, Unknown }
+
 public class SmartData
 {
     public int? Temperature { get; set; }
@@ -11,4 +13,39 @@ public class SmartData
     public long? WriteErrorsCorrected { get; set; }
     public long? ReadLatencyMax { get; set; }
     public long? WriteLatencyMax { get; set; }
+
+    public HealthStatus Health
+    {
+        get
+        {
+            if (Wear is not null && Wear <= 5) return HealthStatus.Critical;
+            if (Temperature is not null && Temperature >= 65) return HealthStatus.Critical;
+            if (Wear is not null && Wear <= 15) return HealthStatus.Warning;
+            if (Temperature is not null && Temperature >= 55) return HealthStatus.Warning;
+            if (ReadErrorsTotal is not null && ReadErrorsTotal > 0 && ReadErrorsCorrected != ReadErrorsTotal)
+                return HealthStatus.Warning;
+            if (WriteErrorsTotal is not null && WriteErrorsTotal > 0 && WriteErrorsCorrected != WriteErrorsTotal)
+                return HealthStatus.Warning;
+            if (Temperature is null && Wear is null && PowerOnHours is null)
+                return HealthStatus.Unknown;
+            return HealthStatus.Good;
+        }
+    }
+
+    public string HealthReason
+    {
+        get
+        {
+            if (Wear is not null && Wear <= 5) return $"SSD wear at {Wear}% — nearing end of life";
+            if (Temperature is not null && Temperature >= 65) return $"Temperature critically high ({Temperature}°C)";
+            if (Wear is not null && Wear <= 15) return $"SSD wear at {Wear}% — consider replacement planning";
+            if (Temperature is not null && Temperature >= 55) return $"Temperature elevated ({Temperature}°C)";
+            if (ReadErrorsTotal is not null && ReadErrorsTotal > 0 && ReadErrorsCorrected != ReadErrorsTotal)
+                return $"Uncorrected read errors detected ({ReadErrorsTotal - (ReadErrorsCorrected ?? 0)})";
+            if (WriteErrorsTotal is not null && WriteErrorsTotal > 0 && WriteErrorsCorrected != WriteErrorsTotal)
+                return $"Uncorrected write errors detected ({WriteErrorsTotal - (WriteErrorsCorrected ?? 0)})";
+            if (Health == HealthStatus.Unknown) return "SMART data not available for this drive";
+            return "All monitored attributes within normal range";
+        }
+    }
 }
