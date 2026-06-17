@@ -20,6 +20,26 @@ jobs:
       - name: Restore & Audit
         run: dotnet restore src\PartitionPilot\PartitionPilot.csproj && dotnet restore tests\PartitionPilot.Tests\PartitionPilot.Tests.csproj
 
+      - name: Validate release metadata
+        shell: pwsh
+        run: |
+          [xml]$project = Get-Content src\PartitionPilot\PartitionPilot.csproj
+          $version = $project.Project.PropertyGroup.Version
+          $installer = Get-Content installer\PartitionPilot.iss -Raw
+          $readme = Get-Content README.md -Raw
+
+          if ($installer -notmatch "AppVersion=$([regex]::Escape($version))") {
+            throw "installer/PartitionPilot.iss AppVersion does not match project Version $version"
+          }
+
+          if ($installer -notmatch "OutputBaseFilename=PartitionPilot-$([regex]::Escape($version))-Setup") {
+            throw "installer/PartitionPilot.iss OutputBaseFilename does not match project Version $version"
+          }
+
+          if ($readme -match 'partitionpilot-main-v\d') {
+            throw "README.md points at a versioned screenshot path; use assets/screenshots/partitionpilot-main.png"
+          }
+
       - name: Build
         run: dotnet build src\PartitionPilot\PartitionPilot.csproj --no-restore -c Release
 

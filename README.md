@@ -6,7 +6,7 @@
 
 PartitionPilot is a Windows disk partition management tool for power users and IT administrators. It provides a WPF interface for partition operations, disk health checks, maintenance tools, and disk image workflows.
 
-![PartitionPilot main window](assets/screenshots/partitionpilot-main-v0.2.3.png)
+![PartitionPilot main window](assets/screenshots/partitionpilot-main.png)
 
 ## Features
 

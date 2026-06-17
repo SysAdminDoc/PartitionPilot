@@ -188,11 +188,9 @@ public class DiskCloningViewModel : ViewModelBase
                 var safeFileName = ProcessRunner.EscapePowerShellString(Path.GetFileName(ImagePath));
                 var letterCmd = $"(Get-Disk | Where-Object {{ $_.Location -like ('*' + {safeFileName} + '*') }} | Get-Partition | Where-Object {{ $_.DriveLetter }} | Select-Object -First 1).DriveLetter";
                 var vhdLetter = (await _processRunner.RunPowerShellAsync(letterCmd, _log, ct)).Trim();
+                var mountedLetter = RequireDriveLetter(vhdLetter, "mounted VHDX target");
 
-                if (!string.IsNullOrEmpty(vhdLetter) && char.IsLetter(vhdLetter[0]))
-                {
-                    await _processRunner.RunExeAsync("robocopy", $"{SelectedSourceDrive}:\\ {vhdLetter}:\\ /MIR /R:0 /W:0 /NP /NDL /NFL", _log, ignoreStderrOnSuccess: true, ct: ct);
-                }
+                await _processRunner.RunExeAsync("robocopy", $"{SelectedSourceDrive}:\\ {mountedLetter}:\\ /MIR /R:0 /W:0 /NP /NDL /NFL", _log, ignoreStderrOnSuccess: true, ct: ct);
 
                 var detachScript = $"""
                     select vdisk file="{sanitizedImagePath}"
@@ -241,7 +239,7 @@ public class DiskCloningViewModel : ViewModelBase
         IsBusy = true;
         StatusText = $"Restoring image to Disk {SelectedTargetDisk.Number}...";
 
-        var targetLocks = new List<VolumeLock?>();
+        var targetLocks = new List<VolumeLock>();
         try
         {
             var ext = Path.GetExtension(RestoreImagePath).ToLowerInvariant();
@@ -251,8 +249,7 @@ public class DiskCloningViewModel : ViewModelBase
             var targetPartitions = await _wmiService.GetPartitionsAsync(diskNum);
             targetLocks = targetPartitions
                 .Where(p => p.DriveLetter.HasValue)
-                .Select(p => VolumeLockService.TryLock(p.DriveLetter!.Value, _log))
-                .Where(l => l is not null)
+                .Select(p => VolumeLockService.RequireLock(p.DriveLetter!.Value, _log))
                 .ToList();
 
             StatusText = "Clearing target disk...";
@@ -270,13 +267,11 @@ public class DiskCloningViewModel : ViewModelBase
 
                 var letterCmd = $"(Get-Partition -DiskNumber {diskNum} | Where-Object {{ $_.DriveLetter }} | Select-Object -First 1).DriveLetter";
                 var targetLetter = (await _processRunner.RunPowerShellAsync(letterCmd, _log, ct)).Trim();
-
-                if (string.IsNullOrEmpty(targetLetter) || !char.IsLetter(targetLetter[0]))
-                    throw new InvalidOperationException("Could not assign a drive letter to the target partition.");
+                var applyLetter = RequireDriveLetter(targetLetter, "target partition");
 
                 var escapedRestorePath = RestoreImagePath.Replace("\"", "");
                 await _processRunner.RunExeAsync("dism.exe",
-                    $"/Apply-Image /ImageFile:\"{escapedRestorePath}\" /ApplyDir:{targetLetter}:\\ /Index:1", _log, ct: ct);
+                    $"/Apply-Image /ImageFile:\"{escapedRestorePath}\" /ApplyDir:{applyLetter}:\\ /Index:1", _log, ct: ct);
             }
             else
             {
@@ -286,18 +281,17 @@ public class DiskCloningViewModel : ViewModelBase
 
                 var srcLetterCmd = $"(Get-DiskImage -ImagePath {ProcessRunner.EscapePowerShellString(RestoreImagePath)} | Get-Disk | Get-Partition | Where-Object {{ $_.DriveLetter }} | Select-Object -First 1).DriveLetter";
                 var srcLetter = (await _processRunner.RunPowerShellAsync(srcLetterCmd, _log, ct)).Trim();
+                var sourceLetter = RequireDriveLetter(srcLetter, "mounted source image");
 
                 var partCmd = $"New-Partition -DiskNumber {diskNum} -UseMaximumSize -AssignDriveLetter | Format-Volume -FileSystem NTFS -Confirm:$false";
                 await _processRunner.RunPowerShellAsync(partCmd, _log, ct);
 
                 var destLetterCmd = $"(Get-Partition -DiskNumber {diskNum} | Where-Object {{ $_.DriveLetter }} | Select-Object -First 1).DriveLetter";
                 var destLetter = (await _processRunner.RunPowerShellAsync(destLetterCmd, _log, ct)).Trim();
+                var destinationLetter = RequireDriveLetter(destLetter, "restore destination partition");
 
-                if (!string.IsNullOrEmpty(srcLetter) && !string.IsNullOrEmpty(destLetter))
-                {
-                    await _processRunner.RunExeAsync("robocopy",
-                        $"{srcLetter}:\\ {destLetter}:\\ /MIR /R:0 /W:0 /NP /NDL /NFL", _log, ignoreStderrOnSuccess: true, ct: ct);
-                }
+                await _processRunner.RunExeAsync("robocopy",
+                    $"{sourceLetter}:\\ {destinationLetter}:\\ /MIR /R:0 /W:0 /NP /NDL /NFL", _log, ignoreStderrOnSuccess: true, ct: ct);
 
                 var unmountCmd = $"Dismount-DiskImage -ImagePath {ProcessRunner.EscapePowerShellString(RestoreImagePath)}";
                 await _processRunner.RunPowerShellAsync(unmountCmd, _log, ct);
@@ -323,5 +317,14 @@ public class DiskCloningViewModel : ViewModelBase
             _cts?.Dispose();
             _cts = null;
         }
+    }
+
+    public static char RequireDriveLetter(string? value, string context)
+    {
+        var trimmed = value?.Trim();
+        if (string.IsNullOrEmpty(trimmed) || trimmed.Length != 1 || !char.IsLetter(trimmed[0]))
+            throw new InvalidOperationException($"Could not resolve a drive letter for the {context}.");
+
+        return char.ToUpperInvariant(trimmed[0]);
     }
 }
