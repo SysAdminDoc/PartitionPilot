@@ -112,6 +112,30 @@
                         </Grid>
                     </GroupBox>
 
+                    <Border Margin="0,0,0,10" Padding="12,8" CornerRadius="4"
+                            AutomationProperties.Name="Disk health status">
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Setter Property="Visibility" Value="Visible"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding SelectedDisk}" Value="{x:Null}">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <Border.Background>
+                            <SolidColorBrush Color="{Binding HealthStatusColor}"/>
+                        </Border.Background>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{Binding HealthStatusText}" FontWeight="Bold" FontSize="15"
+                                       Foreground="#111315" Margin="0,0,12,0"/>
+                            <TextBlock Text="{Binding HealthReasonText}" FontSize="13"
+                                       Foreground="#1A1D21" VerticalAlignment="Center"
+                                       ToolTip="{Binding HealthReasonText}"/>
+                        </StackPanel>
+                    </Border>
+
                     <GroupBox Header="SMART / Reliability Data">
                         <GroupBox.Style>
                             <Style TargetType="GroupBox" BasedOn="{StaticResource SectionGroup}">

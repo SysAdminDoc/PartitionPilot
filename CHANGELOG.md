@@ -17,6 +17,7 @@
 - Fixed concurrent `LoadPartitionsAsync` race — rapid disk selection now cancels any in-flight load via `CancellationTokenSource`, preventing overlapping collection updates and UI flicker. Same fix applied to `DiskHealthViewModel.LoadHealthDataAsync`.
 - Added critical partition protection — delete and format on System, Recovery, or Boot partitions now show an extra danger confirmation warning about unbootable risk before the standard confirmation.
 - Added device presets for Format dialog — Camera (FAT32/32KB), Nintendo Switch (FAT32/64KB), Raspberry Pi (FAT32), Large USB (exFAT), General NTFS. Presets auto-fill file system and allocation unit size.
+- Added disk health classification badge — colored Good (green) / Warning (yellow) / Critical (red) / Unknown (gray) badge on the Disk Health tab. Thresholds: Wear ≤5% or Temp ≥65°C = Critical; Wear ≤15% or Temp ≥55°C or uncorrected errors = Warning. Tooltip shows the specific reason.
 
 ## PartitionPilot v0.2.3 - 2026-06-16
 
