@@ -277,6 +277,55 @@ public class ToolsViewModel : ViewModelBase
         set => SetProperty(ref _surfaceTestResults, value);
     }
 
+    // ──────────────────────── Dev Drive ────────────────────────
+
+    private async Task CreateDevDriveAsync()
+    {
+        if (SelectedDevDriveLetter == default) return;
+
+        if (!IsDevDriveSupported)
+        {
+            _dialog.ShowError("Dev Drive requires Windows 11 build 22621 or later.", "Dev Drive Not Supported");
+            return;
+        }
+
+        if (!_dialog.ConfirmWarning(
+            $"Format {SelectedDevDriveLetter}: as a Dev Drive (ReFS)?\n\n" +
+            "ALL DATA ON THIS VOLUME WILL BE ERASED.\n\n" +
+            "Dev Drive uses ReFS with optimized I/O performance and allows configuring antivirus filter exclusions. " +
+            "Minimum 50 GB is recommended.",
+            "Create Dev Drive")) return;
+
+        var ct = BeginOperation($"Creating Dev Drive on {SelectedDevDriveLetter}:...");
+        try
+        {
+            _log.Log($"Formatting {SelectedDevDriveLetter}: as Dev Drive (ReFS)...");
+            var cmd = $"Format-Volume -DriveLetter '{SelectedDevDriveLetter}' -DevDrive -FileSystem ReFS -Confirm:$false";
+            var result = await _processRunner.RunPowerShellAsync(cmd, _log, ct);
+            _log.Log($"Dev Drive result: {result.Trim()}");
+
+            StatusText = "Designating as trusted Dev Drive...";
+            await _processRunner.RunExeAsync("fsutil", $"devdrv trust {SelectedDevDriveLetter}:", _log, ct: ct);
+            _log.Log($"Dev Drive {SelectedDevDriveLetter}: designated as trusted.");
+
+            _dialog.ShowInfo($"Dev Drive created on {SelectedDevDriveLetter}: (ReFS).\n\nThe volume is designated as trusted.", "Dev Drive Created");
+            await RefreshDriveListsAsync();
+        }
+        catch (OperationCanceledException)
+        {
+            _log.Log("Dev Drive creation cancelled.");
+        }
+        catch (Exception ex)
+        {
+            _log.Log($"Dev Drive creation failed: {ex.Message}");
+            _dialog.ShowError($"Dev Drive creation failed:\n{ex.Message}", "Dev Drive Error");
+        }
+        finally
+        {
+            EndOperation();
+        }
+    }
+
     // ──────────────────────── Benchmark ────────────────────────
 
     public ObservableCollection<char> BenchDrives => DriveLetters;
@@ -298,6 +347,21 @@ public class ToolsViewModel : ViewModelBase
         get => _benchmarkResults;
         set => SetProperty(ref _benchmarkResults, value);
     }
+
+    // ──────────────────────── Dev Drive ────────────────────────
+
+    private char _selectedDevDriveLetter;
+    public char SelectedDevDriveLetter
+    {
+        get => _selectedDevDriveLetter;
+        set
+        {
+            if (SetProperty(ref _selectedDevDriveLetter, value))
+                CommandManager.InvalidateRequerySuggested();
+        }
+    }
+
+    public bool IsDevDriveSupported { get; } = Environment.OSVersion.Version.Build >= 22621;
 
     // ──────────────────────── Shared ────────────────────────
 
@@ -332,6 +396,7 @@ public class ToolsViewModel : ViewModelBase
     public ICommand RunBootRepairCommand { get; }
     public ICommand RunBenchmarkCommand { get; }
     public ICommand RunSurfaceTestCommand { get; }
+    public ICommand CreateDevDriveCommand { get; }
     public ICommand RefreshCommand { get; }
     public ICommand CancelCommand { get; }
 
@@ -353,6 +418,7 @@ public class ToolsViewModel : ViewModelBase
         RunBootRepairCommand = new AsyncRelayCommand(_ => RunBootRepairAsync(), _ => SelectedBootDrive != default);
         RunBenchmarkCommand = new AsyncRelayCommand(_ => RunBenchmarkAsync(SelectedBenchDrive), _ => SelectedBenchDrive != default);
         RunSurfaceTestCommand = new AsyncRelayCommand(_ => RunSurfaceTestAsync(), _ => SelectedSurfaceTestVolume != default);
+        CreateDevDriveCommand = new AsyncRelayCommand(_ => CreateDevDriveAsync(), _ => IsDevDriveSupported && SelectedDevDriveLetter != default);
         RefreshCommand = new AsyncRelayCommand(_ => RefreshDriveListsAsync());
         CancelCommand = new RelayCommand(_ => CancelCurrentOperation(), _ => IsBusy && _cts is not null);
     }

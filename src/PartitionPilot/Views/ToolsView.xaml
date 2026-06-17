@@ -213,6 +213,25 @@
                         </StackPanel>
                     </GroupBox>
 
+                    <GroupBox Header="Dev Drive (ReFS)" Style="{StaticResource ToolGroup}"
+                              IsEnabled="{Binding IsDevDriveSupported}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource CaptionText}" Margin="0,0,0,10"
+                                       Text="Create a Dev Drive volume (ReFS) with optimized I/O and antivirus filter control. Requires Windows 11 23H2+."/>
+                            <TextBlock Text="Volume" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
+                            <ComboBox ItemsSource="{Binding DriveLetters}"
+                                      SelectedItem="{Binding SelectedDevDriveLetter}"
+                                      Height="34"
+                                      Margin="0,0,0,10"
+                                      AutomationProperties.Name="Dev Drive volume selector"/>
+                            <Button Content="Create Dev Drive"
+                                    Style="{StaticResource DangerButton}"
+                                    Command="{Binding CreateDevDriveCommand}"
+                                    HorizontalAlignment="Left"
+                                    AutomationProperties.Name="Create Dev Drive"/>
+                        </StackPanel>
+                    </GroupBox>
+
                     <GroupBox Header="Disk Benchmark" Style="{StaticResource ToolGroup}">
                         <StackPanel>
                             <TextBlock Text="Measure sequential and random 4K throughput using a 256 MB temporary file."

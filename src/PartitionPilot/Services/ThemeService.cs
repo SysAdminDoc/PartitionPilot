@@ -14,6 +14,14 @@ public static class ThemeService
         var portableMarker = Path.Combine(exeDir, "portable.txt");
         if (File.Exists(portableMarker))
             return exeDir;
+        // ProgramData is shared across elevation contexts (Windows 11 Administrator
+        // Protection isolates AppData per elevation level). Use it if our settings
+        // file already exists there; otherwise fall back to LocalAppData.
+        var programData = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "PartitionPilot");
+        var programDataSettings = Path.Combine(programData, "settings.txt");
+        if (File.Exists(programDataSettings))
+            return programData;
         return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "PartitionPilot");
     }
 
@@ -63,11 +71,22 @@ public static class ThemeService
 
     private static void SavePreference(bool dark)
     {
+        var value = dark ? "dark" : "light";
         try
         {
             Directory.CreateDirectory(SettingsDir);
-            File.WriteAllText(SettingsFile, dark ? "dark" : "light");
+            File.WriteAllText(SettingsFile, value);
         }
         catch { /* best-effort */ }
+
+        // Also write to ProgramData so settings persist across elevation contexts
+        try
+        {
+            var sharedDir = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "PartitionPilot");
+            Directory.CreateDirectory(sharedDir);
+            File.WriteAllText(Path.Combine(sharedDir, "settings.txt"), value);
+        }
+        catch { /* ProgramData write may fail when non-elevated — expected */ }
     }
 }
