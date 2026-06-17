@@ -130,6 +130,10 @@
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
                                 <RadioButton Content="Free space" IsChecked="{Binding WipeIsFreeSpace}"/>
                                 <RadioButton Content="Entire disk" IsChecked="{Binding WipeIsFullDisk}" Foreground="{DynamicResource DangerBrush}"/>
+                                <RadioButton Content="NVMe firmware erase" IsChecked="{Binding WipeIsNvmeSanitize}"
+                                             IsEnabled="{Binding IsNvmeSanitizeAvailable}"
+                                             Foreground="{DynamicResource DangerBrush}"
+                                             ToolTip="NIST 800-88 Purge via NVMe Sanitize command (Windows 11+)"/>
                             </StackPanel>
 
                             <Grid Margin="0,0,0,10">
@@ -149,6 +153,19 @@
                                               DisplayMemberPath="DisplayText"
                                               Height="34"
                                               AutomationProperties.Name="Wipe disk selector"/>
+                                </StackPanel>
+
+                                <StackPanel Visibility="{Binding WipeIsNvmeSanitize, Converter={StaticResource BoolVis}}">
+                                    <TextBlock Text="Disk (NVMe Sanitize)" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
+                                    <ComboBox ItemsSource="{Binding AllDisks}"
+                                              SelectedItem="{Binding SelectedWipeDrive}"
+                                              DisplayMemberPath="DisplayText"
+                                              Height="34"
+                                              AutomationProperties.Name="NVMe sanitize disk selector"/>
+                                    <CheckBox Content="Use Crypto Erase (fastest, requires self-encrypting drive)"
+                                              IsChecked="{Binding UseCryptoErase}"
+                                              Margin="0,6,0,0"
+                                              AutomationProperties.Name="Use crypto erase instead of block erase"/>
                                 </StackPanel>
                             </Grid>
 
