@@ -130,10 +130,10 @@
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
                                 <RadioButton Content="Free space" IsChecked="{Binding WipeIsFreeSpace}"/>
                                 <RadioButton Content="Entire disk" IsChecked="{Binding WipeIsFullDisk}" Foreground="{DynamicResource DangerBrush}"/>
-                                <RadioButton Content="NVMe firmware erase" IsChecked="{Binding WipeIsNvmeSanitize}"
-                                             IsEnabled="{Binding IsNvmeSanitizeAvailable}"
-                                             Foreground="{DynamicResource DangerBrush}"
-                                             ToolTip="NIST 800-88 Purge via NVMe Sanitize command (Windows 11+)"/>
+                                 <RadioButton Content="NVMe firmware erase" IsChecked="{Binding WipeIsNvmeSanitize}"
+                                              IsEnabled="{Binding IsNvmeSanitizeAvailable}"
+                                              Foreground="{DynamicResource DangerBrush}"
+                                              ToolTip="{Binding NvmeSanitizeAvailabilityText}"/>
                             </StackPanel>
 
                             <Grid Margin="0,0,0,10">
