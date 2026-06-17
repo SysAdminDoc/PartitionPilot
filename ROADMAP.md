@@ -25,6 +25,27 @@
   Acceptance: Installer version, output filename, README screenshot, assembly version, and release artifact names all resolve from the same current version; CI fails if they drift again.
   Complexity: S
 
+- [ ] P0 — Derive update-check version from assembly metadata
+  Why: `UpdateService` still hardcodes `CurrentVersion = "0.2.3"` while the app assembly is v0.3.0, so the app can falsely report updates or send stale User-Agent/version data.
+  Evidence: `src/PartitionPilot/Services/UpdateService.cs`, `src/PartitionPilot/PartitionPilot.csproj`, GitHub latest-release API docs
+  Touches: `src/PartitionPilot/Services/UpdateService.cs`, `src/PartitionPilot/ViewModels/MainViewModel.cs`, `tests/PartitionPilot.Tests/UpdateServiceTests.cs`, `.github/workflows/build.yml`
+  Acceptance: The update checker reads the current version from assembly/package metadata, tests fail if it drifts from `PartitionPilot.csproj`, and offline/API failures are logged without showing false update prompts.
+  Complexity: S
+
+- [ ] P0 — Fail image create/restore when copy prerequisites are unresolved
+  Why: VHDX image create/restore can skip `robocopy` when mounted source or destination letters cannot be resolved, then still show success.
+  Evidence: `src/PartitionPilot/ViewModels/DiskCloningViewModel.cs`, Microsoft `Mount-DiskImage` / `Dismount-DiskImage` docs
+  Touches: `src/PartitionPilot/ViewModels/DiskCloningViewModel.cs`, `src/PartitionPilot/Services/ProcessRunner.cs`, `tests/PartitionPilot.Tests/`
+  Acceptance: Image creation/restoration throws a clear error if required mounted-image, source, or destination drive letters are missing; success is shown only after copy/apply commands run and basic output/target validation passes.
+  Complexity: M
+
+- [ ] P0 — Guard WinRE lifecycle for Recovery partition operations
+  Why: Extending a Recovery partition disables Windows RE and deletes the Recovery partition, but the app does not re-enable WinRE, recreate the partition, or prove a safe final recovery state.
+  Evidence: `src/PartitionPilot/ViewModels/PartitionsViewModel.cs`, Microsoft REAgentC and Windows RE documentation
+  Touches: `src/PartitionPilot/ViewModels/PartitionsViewModel.cs`, new recovery-environment service, `src/PartitionPilot/Services/IDialogService.cs`, tests
+  Acceptance: Before any Recovery partition delete/extend flow, PartitionPilot records `reagentc /info`, shows an explicit recovery-environment plan, refuses unsupported states, and ends with WinRE enabled at a valid location or a clear rollback/recovery instruction.
+  Complexity: L
+
 
 ### P1 — Architecture & Quality
 
@@ -91,6 +112,27 @@
   Acceptance: All string WQL values pass through one escaping helper with tests for apostrophes/backslashes; WMI failures log namespace, class, sanitized query purpose, and provider error without leaking unnecessary user paths.
   Complexity: S
 
+- [ ] P1 — Add operation-scope cleanup for mounts, access paths, and attached VHDs
+  Why: VHD attach/detach, `Mount-DiskImage`, and EFI access-path assignment are cleanup-sensitive operations, but cleanup currently lives only on success paths or not at all.
+  Evidence: `src/PartitionPilot/ViewModels/DiskCloningViewModel.cs`, `src/PartitionPilot/ViewModels/ToolsViewModel.cs`, Microsoft `Dismount-DiskImage` and `Remove-PartitionAccessPath` docs
+  Touches: new operation-scope/cleanup service, `src/PartitionPilot/ViewModels/DiskCloningViewModel.cs`, `src/PartitionPilot/ViewModels/DiskImagesViewModel.cs`, `src/PartitionPilot/ViewModels/ToolsViewModel.cs`, tests
+  Acceptance: Temporary VHD attachments, mounted images, EFI drive letters, and temporary files are registered with cleanup actions that run in `finally` on success, failure, or cancellation; failures are logged with next-step recovery guidance.
+  Complexity: M
+
+- [ ] P1 — Add BitLocker-aware destructive-operation preflights
+  Why: BitLocker status is displayed but not used to block, suspend, unlock, or warn before resize, split, format, delete, clone, or wipe operations.
+  Evidence: `src/PartitionPilot/Models/PartitionInfo.cs`, `src/PartitionPilot/Services/WmiDiskService.cs`, `src/PartitionPilot/ViewModels/PartitionsViewModel.cs`, Microsoft BitLocker operations docs
+  Touches: `src/PartitionPilot/ViewModels/PartitionsViewModel.cs`, `src/PartitionPilot/ViewModels/DiskCloningViewModel.cs`, `src/PartitionPilot/ViewModels/ToolsViewModel.cs`, `src/PartitionPilot/Services/WmiDiskService.cs`, dialogs/tests
+  Acceptance: Locked/encrypted volumes produce operation-specific guidance; resize/split/clone flows require unlocked/suspended BitLocker where appropriate, destructive flows name encryption state in confirmation copy, and the app never silently clears BitLocker-protected data without a stronger confirmation.
+  Complexity: M
+
+- [ ] P1 — Preflight image destination safety and free space
+  Why: Image creation accepts arbitrary paths and does not prevent capturing a source volume into a file on that same volume or prove that the destination has enough free space before long-running DISM/VHDX/robocopy work.
+  Evidence: `src/PartitionPilot/ViewModels/DiskCloningViewModel.cs`, Microsoft DISM and Storage image-mount behavior
+  Touches: `src/PartitionPilot/ViewModels/DiskCloningViewModel.cs`, `src/PartitionPilot/Services/WmiDiskService.cs`, dialogs/tests
+  Acceptance: Creating an image blocks self-referential destinations, shows estimated required/free space, validates path/root availability before work begins, and surfaces a clear error before invoking DISM or DiskPart when the destination is unsafe.
+  Complexity: M
+
 
 ### P2 — Features & UX
 
@@ -146,6 +188,20 @@
   Evidence: `PartitionPilot.ps1`, `README.md`, `src/PartitionPilot/PartitionPilot.csproj`
   Touches: `PartitionPilot.ps1`, `README.md`, packaging scripts
   Acceptance: The legacy script is removed from release packaging and either deleted or moved into an explicitly deprecated tooling location with no user-facing claim that it is the current app.
+  Complexity: S
+
+- [ ] P2 — Add structured native-command audit records with redaction
+  Why: `ProcessRunner` logs raw command strings and full paths, which is useful for diagnosis but hard to correlate, redact, or include safely in support bundles.
+  Evidence: `src/PartitionPilot/Services/ProcessRunner.cs`, `src/PartitionPilot/Models/ActivityLog.cs`, support-bundle roadmap item
+  Touches: `src/PartitionPilot/Services/ProcessRunner.cs`, `src/PartitionPilot/Models/ActivityLog.cs`, support bundle exporter, tests
+  Acceptance: Every native command run has an operation ID, command kind, target disk/volume, redacted display command, exit code, duration, and cleanup status; support bundle export uses redacted records by default.
+  Complexity: M
+
+- [ ] P2 — Sync operator docs and blocked-roadmap dependencies after v0.3.0
+  Why: Agent/operator notes still describe four tabs and blocked signing/WinGet items without linking them to the now-active release packaging work, which can mislead future implementation passes.
+  Evidence: `CLAUDE.md`, `Roadmap_Blocked.md`, `README.md`, `ROADMAP.md`
+  Touches: `CLAUDE.md`, `Roadmap_Blocked.md`, `README.md`, release workflow docs
+  Acceptance: Internal working notes reflect current tabs/features, blocked items state the exact unblocking release artifact/signing prerequisites, and no future agent starts from stale v0.2.x assumptions.
   Complexity: S
 
 
