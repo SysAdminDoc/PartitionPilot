@@ -11,6 +11,11 @@
 - Added `VolumeLockService` using `FSCTL_LOCK_VOLUME` / `FSCTL_UNLOCK_VOLUME` P/Invoke. Destructive operations (format, delete, wipe, disk clone restore) now acquire exclusive volume locks before executing.
 - Updated CI workflow to restore and audit both main project and test project.
 
+### Safety & Reliability
+- Added partition table backup service — saves JSON snapshots of disk layout to `%TEMP%/PartitionPilot/backups/` before every destructive operation (delete, format, extend, split). Snapshots retained for 30 days.
+- Added format confirmation dialog — format now requires explicit "ALL DATA WILL BE ERASED" confirmation after parameter selection, matching the existing delete confirmation pattern.
+- Fixed concurrent `LoadPartitionsAsync` race — rapid disk selection now cancels any in-flight load via `CancellationTokenSource`, preventing overlapping collection updates and UI flicker. Same fix applied to `DiskHealthViewModel.LoadHealthDataAsync`.
+
 ## PartitionPilot v0.2.3 - 2026-06-16
 
 ### Reference-Driven Console Polish

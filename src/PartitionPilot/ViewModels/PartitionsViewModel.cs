@@ -10,6 +10,8 @@ public class PartitionsViewModel : ViewModelBase
     private readonly ProcessRunner _processRunner;
     private readonly ActivityLog _log;
     private readonly IDialogService _dialog;
+    private readonly PartitionTableBackup _backup;
+    private CancellationTokenSource? _loadCts;
 
     public ObservableCollection<DiskInfo> Disks { get; } = new();
     public ObservableCollection<PartitionInfo> Partitions { get; } = new();
@@ -29,7 +31,10 @@ public class PartitionsViewModel : ViewModelBase
                 OnPropertyChanged(nameof(DiskFreeExtentText));
                 OnPropertyChanged(nameof(DiskPartitionStyleText));
                 CommandManager.InvalidateRequerySuggested();
-                _ = LoadPartitionsAsync();
+                _loadCts?.Cancel();
+                _loadCts?.Dispose();
+                _loadCts = new CancellationTokenSource();
+                _ = LoadPartitionsAsync(_loadCts.Token);
             }
         }
     }
@@ -124,6 +129,7 @@ public class PartitionsViewModel : ViewModelBase
         _processRunner = processRunner;
         _log = log;
         _dialog = dialog;
+        _backup = new PartitionTableBackup(wmiService, log);
 
         RefreshCommand = new AsyncRelayCommand(_ => LoadDisksAsync());
         DeleteCommand = new AsyncRelayCommand(_ => ExecuteDeleteAsync(), _ => SelectedPartition is not null);
@@ -170,7 +176,9 @@ public class PartitionsViewModel : ViewModelBase
         }
     }
 
-    public async Task LoadPartitionsAsync()
+    public Task LoadPartitionsAsync() => LoadPartitionsAsync(CancellationToken.None);
+
+    private async Task LoadPartitionsAsync(CancellationToken ct)
     {
         if (SelectedDisk is null)
         {
@@ -189,11 +197,14 @@ public class PartitionsViewModel : ViewModelBase
             _log.Log($"Loading partitions for Disk {disk.Number}...");
 
             var parts = await _wmiService.GetPartitionsAsync(disk.Number);
+            ct.ThrowIfCancellationRequested();
             var vols = await _wmiService.GetVolumesAsync();
+            ct.ThrowIfCancellationRequested();
             WmiDiskService.EnrichPartitionsWithVolumes(parts, vols);
 
             var pagefileLetters = await _wmiService.GetPagefileLocationsAsync();
             var bitlockerStatus = await _wmiService.GetBitLockerStatusAsync();
+            ct.ThrowIfCancellationRequested();
             foreach (var p in parts)
             {
                 if (p.DriveLetter.HasValue)
@@ -205,6 +216,7 @@ public class PartitionsViewModel : ViewModelBase
                 }
             }
 
+            ct.ThrowIfCancellationRequested();
             Application.Current.Dispatcher.Invoke(() =>
             {
                 Partitions.Clear();
@@ -214,6 +226,10 @@ public class PartitionsViewModel : ViewModelBase
 
             ComputeDiskBarSegments(disk, parts);
             _log.Log($"Loaded {parts.Count} partition(s) for Disk {disk.Number}.");
+        }
+        catch (OperationCanceledException)
+        {
+            // Superseded by a newer load request — expected, don't log as error
         }
         catch (Exception ex)
         {
@@ -362,6 +378,8 @@ public class PartitionsViewModel : ViewModelBase
             fs = ProcessRunner.ValidateFileSystem(fs);
             _log.Log($"Formatting {letter}: as {fs} (label=\"{label}\", quick={quick})...");
 
+            if (SelectedDisk is not null)
+                await _backup.SaveSnapshotAsync(SelectedDisk.Number);
             using var volumeLock = VolumeLockService.TryLock(letter, _log);
 
             string script = $"""
@@ -417,6 +435,8 @@ public class PartitionsViewModel : ViewModelBase
             newLetter = ProcessRunner.ValidateDriveLetter(newLetter);
             label = ProcessRunner.SanitizeLabel(label);
             fs = ProcessRunner.ValidateFileSystem(fs);
+            if (SelectedDisk is not null)
+                await _backup.SaveSnapshotAsync(SelectedDisk.Number);
             _log.Log($"Splitting {letter}: shrink by {newPartGB:F2} GB, new partition {newLetter}:...");
 
             long shrinkMB = (long)(newPartGB * 1024);
@@ -509,6 +529,7 @@ public class PartitionsViewModel : ViewModelBase
         IsBusy = true;
         try
         {
+            await _backup.SaveSnapshotAsync(SelectedDisk.Number);
             _log.Log($"Deleting partition {part.PartitionNumber} on Disk {SelectedDisk.Number}...");
 
             using var volumeLock = part.DriveLetter.HasValue
@@ -562,6 +583,7 @@ public class PartitionsViewModel : ViewModelBase
         IsBusy = true;
         try
         {
+            await _backup.SaveSnapshotAsync(SelectedDisk.Number);
             _log.Log($"Extending partition {part.PartitionNumber} on Disk {SelectedDisk.Number}...");
 
             if (part.Type.Equals("Recovery", StringComparison.OrdinalIgnoreCase))
