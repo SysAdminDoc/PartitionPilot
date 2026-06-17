@@ -16,6 +16,18 @@
             <TextBlock Text="Current volume" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
             <TextBlock x:Name="txtInfo" Foreground="{DynamicResource PrimaryBrush}" FontSize="13" FontWeight="SemiBold" Margin="0,0,0,12"/>
 
+            <TextBlock Text="Device preset" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
+            <ComboBox x:Name="cmbPreset" Height="34" FontSize="13" Margin="0,0,0,10"
+                      SelectionChanged="OnPresetChanged"
+                      AutomationProperties.Name="Device preset">
+                <ComboBoxItem Content="Custom" IsSelected="True"/>
+                <ComboBoxItem Content="Camera (FAT32, 32 KB clusters)"/>
+                <ComboBoxItem Content="Nintendo Switch (FAT32, 64 KB clusters)"/>
+                <ComboBoxItem Content="Raspberry Pi (FAT32)"/>
+                <ComboBoxItem Content="Large USB (exFAT)"/>
+                <ComboBoxItem Content="General NTFS"/>
+            </ComboBox>
+
             <TextBlock Text="File system" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
             <ComboBox x:Name="cmbFS" Height="34" FontSize="13" Margin="0,0,0,10"
                       AutomationProperties.Name="File system">

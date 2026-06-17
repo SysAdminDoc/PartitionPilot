@@ -368,7 +368,7 @@ public class PartitionsViewModel : ViewModelBase
         }
     }
 
-    public async Task ExecuteFormatAsync(char letter, string fs, string label, bool quick)
+    public async Task ExecuteFormatAsync(char letter, string fs, string label, bool quick, string? allocationUnitSize = null)
     {
         IsBusy = true;
         try
@@ -382,9 +382,10 @@ public class PartitionsViewModel : ViewModelBase
                 await _backup.SaveSnapshotAsync(SelectedDisk.Number);
             using var volumeLock = VolumeLockService.TryLock(letter, _log);
 
+            var unitParam = !string.IsNullOrEmpty(allocationUnitSize) ? $"unit={allocationUnitSize} " : "";
             string script = $"""
                 select volume {letter}
-                format fs={fs} label="{label}" {(quick ? "quick" : "")}
+                format fs={fs} label="{label}" {unitParam}{(quick ? "quick" : "")}
                 """;
 
             var result = await _processRunner.RunDiskpartAsync(script, _log);
@@ -520,6 +521,17 @@ public class PartitionsViewModel : ViewModelBase
         if (SelectedPartition is null || SelectedDisk is null) return;
 
         var part = SelectedPartition;
+
+        if (part.IsCritical)
+        {
+            if (!_dialog.ConfirmDanger(
+                $"CRITICAL: Partition {part.PartitionNumber} is a {part.Type} partition" +
+                (part.IsBoot ? " (Boot)" : "") + (part.IsSystem ? " (System)" : "") +
+                $".\n\nDeleting it may make the system unbootable.\n\nDisk: {SelectedDisk.Number}, Letter: {part.LetterDisplay}, Size: {part.SizeText}\n\n" +
+                "Type YES to confirm this destructive action.",
+                "Delete Critical Partition")) return;
+        }
+
         if (!_dialog.ConfirmWarning(
             $"Delete partition {part.PartitionNumber} on Disk {SelectedDisk.Number}?\n" +
             $"Letter: {part.LetterDisplay}, Size: {part.SizeText}\n\n" +
