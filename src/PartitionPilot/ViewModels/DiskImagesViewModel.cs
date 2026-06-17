@@ -153,7 +153,7 @@ public class DiskImagesViewModel : ViewModelBase
         {
             _log.Log($"Mounting disk image: {MountPath}...");
 
-            var cmd = $"Mount-DiskImage -ImagePath '{MountPath.Replace("'", "''")}' -PassThru | Get-Volume";
+            var cmd = $"Mount-DiskImage -ImagePath {ProcessRunner.EscapePowerShellString(MountPath)} -PassThru | Get-Volume";
             var result = await _processRunner.RunPowerShellAsync(cmd, _log);
             _log.Log($"Mount result: {result.Trim()}");
 
@@ -182,7 +182,7 @@ public class DiskImagesViewModel : ViewModelBase
             string imagePath = SelectedMountedImage.ImagePath;
             _log.Log($"Dismounting disk image: {imagePath}...");
 
-            var cmd = $"Dismount-DiskImage -ImagePath '{imagePath.Replace("'", "''")}'";
+            var cmd = $"Dismount-DiskImage -ImagePath {ProcessRunner.EscapePowerShellString(imagePath)}";
             var result = await _processRunner.RunPowerShellAsync(cmd, _log);
             _log.Log($"Dismount result: {result.Trim()}");
 
@@ -218,9 +218,10 @@ public class DiskImagesViewModel : ViewModelBase
 
             _log.Log($"Creating {vdiskType.ToUpper()} ({diskType}): {VhdPath}, {VhdSizeGB:F1} GB...");
 
+            var sanitizedVhdPath = VhdPath.Replace("\"", "");
             string script = $"""
-                create vdisk file="{VhdPath}" maximum={sizeMB} type={diskType}
-                select vdisk file="{VhdPath}"
+                create vdisk file="{sanitizedVhdPath}" maximum={sizeMB} type={diskType}
+                select vdisk file="{sanitizedVhdPath}"
                 attach vdisk
                 create partition primary
                 format fs={VhdFileSystem} label="NewVHD" quick

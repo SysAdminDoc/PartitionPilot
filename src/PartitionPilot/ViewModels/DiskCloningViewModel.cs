@@ -164,8 +164,9 @@ public class DiskCloningViewModel : ViewModelBase
             if (ext == ".wim")
             {
                 _log.Log($"Creating WIM image of {SelectedSourceDrive}:\\ to {ImagePath}...");
+                var escapedPath = ImagePath.Replace("\"", "");
                 await _processRunner.RunExeAsync("dism.exe",
-                    $"/Capture-Image /ImageFile:\"{ImagePath}\" /CaptureDir:{SelectedSourceDrive}:\\ /Name:\"PartitionPilot Capture\" /Compress:Fast",
+                    $"/Capture-Image /ImageFile:\"{escapedPath}\" /CaptureDir:{SelectedSourceDrive}:\\ /Name:\"PartitionPilot Capture\" /Compress:Fast",
                     _log, ct: ct);
             }
             else
@@ -175,15 +176,17 @@ public class DiskCloningViewModel : ViewModelBase
                 var sizeResult = await _processRunner.RunPowerShellAsync(sizeCmd, _log, ct);
                 var sizeMB = long.TryParse(sizeResult.Trim(), out var sizeBytes) ? sizeBytes / (1024 * 1024) + 100 : 50000;
 
+                var sanitizedImagePath = ImagePath.Replace("\"", "");
                 var script = $"""
-                    create vdisk file="{ImagePath}" maximum={sizeMB} type=expandable
-                    select vdisk file="{ImagePath}"
+                    create vdisk file="{sanitizedImagePath}" maximum={sizeMB} type=expandable
+                    select vdisk file="{sanitizedImagePath}"
                     attach vdisk
                     """;
                 await _processRunner.RunDiskpartAsync(script, _log, ct);
 
                 StatusText = "VHDX created, capturing with DISM...";
-                var letterCmd = "(Get-Disk | Where-Object { $_.Location -like '*" + Path.GetFileName(ImagePath) + "*' } | Get-Partition | Where-Object { $_.DriveLetter } | Select-Object -First 1).DriveLetter";
+                var safeFileName = ProcessRunner.EscapePowerShellString(Path.GetFileName(ImagePath));
+                var letterCmd = $"(Get-Disk | Where-Object {{ $_.Location -like ('*' + {safeFileName} + '*') }} | Get-Partition | Where-Object {{ $_.DriveLetter }} | Select-Object -First 1).DriveLetter";
                 var vhdLetter = (await _processRunner.RunPowerShellAsync(letterCmd, _log, ct)).Trim();
 
                 if (!string.IsNullOrEmpty(vhdLetter) && char.IsLetter(vhdLetter[0]))
@@ -192,7 +195,7 @@ public class DiskCloningViewModel : ViewModelBase
                 }
 
                 var detachScript = $"""
-                    select vdisk file="{ImagePath}"
+                    select vdisk file="{sanitizedImagePath}"
                     detach vdisk
                     """;
                 await _processRunner.RunDiskpartAsync(detachScript, _log, ct);
@@ -238,10 +241,19 @@ public class DiskCloningViewModel : ViewModelBase
         IsBusy = true;
         StatusText = $"Restoring image to Disk {SelectedTargetDisk.Number}...";
 
+        var targetLocks = new List<VolumeLock?>();
         try
         {
             var ext = Path.GetExtension(RestoreImagePath).ToLowerInvariant();
             var diskNum = SelectedTargetDisk.Number;
+
+            // Best-effort lock volumes on target disk before clearing
+            var targetPartitions = await _wmiService.GetPartitionsAsync(diskNum);
+            targetLocks = targetPartitions
+                .Where(p => p.DriveLetter.HasValue)
+                .Select(p => VolumeLockService.TryLock(p.DriveLetter!.Value, _log))
+                .Where(l => l is not null)
+                .ToList();
 
             StatusText = "Clearing target disk...";
             var clearCmd = $"Clear-Disk -Number {diskNum} -RemoveData -RemoveOEM -Confirm:$false";
@@ -262,16 +274,17 @@ public class DiskCloningViewModel : ViewModelBase
                 if (string.IsNullOrEmpty(targetLetter) || !char.IsLetter(targetLetter[0]))
                     throw new InvalidOperationException("Could not assign a drive letter to the target partition.");
 
+                var escapedRestorePath = RestoreImagePath.Replace("\"", "");
                 await _processRunner.RunExeAsync("dism.exe",
-                    $"/Apply-Image /ImageFile:\"{RestoreImagePath}\" /ApplyDir:{targetLetter}:\\ /Index:1", _log, ct: ct);
+                    $"/Apply-Image /ImageFile:\"{escapedRestorePath}\" /ApplyDir:{targetLetter}:\\ /Index:1", _log, ct: ct);
             }
             else
             {
                 StatusText = "Mounting VHDX and copying...";
-                var mountCmd = $"Mount-DiskImage -ImagePath '{RestoreImagePath.Replace("'", "''")}'";
+                var mountCmd = $"Mount-DiskImage -ImagePath {ProcessRunner.EscapePowerShellString(RestoreImagePath)}";
                 await _processRunner.RunPowerShellAsync(mountCmd, _log, ct);
 
-                var srcLetterCmd = $"(Get-DiskImage -ImagePath '{RestoreImagePath.Replace("'", "''")}' | Get-Disk | Get-Partition | Where-Object {{ $_.DriveLetter }} | Select-Object -First 1).DriveLetter";
+                var srcLetterCmd = $"(Get-DiskImage -ImagePath {ProcessRunner.EscapePowerShellString(RestoreImagePath)} | Get-Disk | Get-Partition | Where-Object {{ $_.DriveLetter }} | Select-Object -First 1).DriveLetter";
                 var srcLetter = (await _processRunner.RunPowerShellAsync(srcLetterCmd, _log, ct)).Trim();
 
                 var partCmd = $"New-Partition -DiskNumber {diskNum} -UseMaximumSize -AssignDriveLetter | Format-Volume -FileSystem NTFS -Confirm:$false";
@@ -286,7 +299,7 @@ public class DiskCloningViewModel : ViewModelBase
                         $"{srcLetter}:\\ {destLetter}:\\ /MIR /R:0 /W:0 /NP /NDL /NFL", _log, ignoreStderrOnSuccess: true, ct: ct);
                 }
 
-                var unmountCmd = $"Dismount-DiskImage -ImagePath '{RestoreImagePath.Replace("'", "''")}'";
+                var unmountCmd = $"Dismount-DiskImage -ImagePath {ProcessRunner.EscapePowerShellString(RestoreImagePath)}";
                 await _processRunner.RunPowerShellAsync(unmountCmd, _log, ct);
             }
 
@@ -304,6 +317,7 @@ public class DiskCloningViewModel : ViewModelBase
         }
         finally
         {
+            foreach (var l in targetLocks) l?.Dispose();
             IsBusy = false;
             StatusText = "";
             _cts?.Dispose();

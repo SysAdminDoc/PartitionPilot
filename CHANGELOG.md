@@ -1,5 +1,16 @@
 # Changelog
 
+## PartitionPilot v0.3.0 - 2026-06-16
+
+### Security Hardening (P0)
+- Switched PowerShell execution from `-Command` to `-EncodedCommand` (Base64 UTF-16LE), eliminating shell metacharacter injection via outer argument parsing.
+- Added `EscapePowerShellString()` helper that wraps values in single quotes with proper `'` → `''` escaping. Applied to all user-influenced file paths in DiskCloningViewModel and DiskImagesViewModel.
+- Expanded `SanitizeLabel()` to strip shell metacharacters (`;`, `&`, `|`, `$`, `` ` ``, `(`, `)`) in addition to quotes and newlines.
+- Sanitized double-quote characters from file paths interpolated into diskpart scripts and DISM commands.
+- Pinned `System.Management` to explicit version `9.0.6` (was `9.*` wildcard). Enabled `<NuGetAudit>true</NuGetAudit>` for vulnerability scanning on restore.
+- Added `VolumeLockService` using `FSCTL_LOCK_VOLUME` / `FSCTL_UNLOCK_VOLUME` P/Invoke. Destructive operations (format, delete, wipe, disk clone restore) now acquire exclusive volume locks before executing.
+- Updated CI workflow to restore and audit both main project and test project.
+
 ## PartitionPilot v0.2.3 - 2026-06-16
 
 ### Reference-Driven Console Polish
