@@ -7,7 +7,16 @@ public class PartitionTableBackup
 {
     private readonly WmiDiskService _wmiService;
     private readonly ActivityLog _log;
-    private static readonly string BackupDir = Path.Combine(Path.GetTempPath(), "PartitionPilot", "backups");
+    private static readonly string BackupDir = ResolveBackupDir();
+
+    private static string ResolveBackupDir()
+    {
+        var exeDir = AppContext.BaseDirectory;
+        var portableMarker = Path.Combine(exeDir, "portable.txt");
+        if (File.Exists(portableMarker))
+            return Path.Combine(exeDir, "backups");
+        return Path.Combine(Path.GetTempPath(), "PartitionPilot", "backups");
+    }
 
     public PartitionTableBackup(WmiDiskService wmiService, ActivityLog log)
     {

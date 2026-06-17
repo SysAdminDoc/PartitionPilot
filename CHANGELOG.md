@@ -18,6 +18,9 @@
 - Added critical partition protection — delete and format on System, Recovery, or Boot partitions now show an extra danger confirmation warning about unbootable risk before the standard confirmation.
 - Added device presets for Format dialog — Camera (FAT32/32KB), Nintendo Switch (FAT32/64KB), Raspberry Pi (FAT32), Large USB (exFAT), General NTFS. Presets auto-fill file system and allocation unit size.
 - Added disk health classification badge — colored Good (green) / Warning (yellow) / Critical (red) / Unknown (gray) badge on the Disk Health tab. Thresholds: Wear ≤5% or Temp ≥65°C = Critical; Wear ≤15% or Temp ≥55°C or uncorrected errors = Warning. Tooltip shows the specific reason.
+- Added empty-state guidance to Disk Usage tab with "Select a drive and click Scan" prompt.
+- Added portable mode — place a `portable.txt` file next to the exe to store settings, logs, and backups alongside the executable instead of in AppData/%TEMP%.
+- Enabled PublishReadyToRun for ~20-30% faster cold startup on published builds.
 
 ## PartitionPilot v0.2.3 - 2026-06-16
 

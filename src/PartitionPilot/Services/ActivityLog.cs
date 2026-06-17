@@ -13,7 +13,16 @@ public class ActivityLog : INotifyPropertyChanged
     private readonly StringBuilder _sb = new();
     private const string AllFilter = "All";
 
-    private static readonly string LogDir = Path.Combine(Path.GetTempPath(), "PartitionPilot");
+    private static readonly string LogDir = ResolveLogDir();
+
+    private static string ResolveLogDir()
+    {
+        var exeDir = AppContext.BaseDirectory;
+        var portableMarker = Path.Combine(exeDir, "portable.txt");
+        if (File.Exists(portableMarker))
+            return Path.Combine(exeDir, "logs");
+        return Path.Combine(Path.GetTempPath(), "PartitionPilot");
+    }
 
     public ObservableCollection<LogEntry> Entries { get; } = new();
     public ICollectionView FilteredEntries { get; }
