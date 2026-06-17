@@ -12,6 +12,7 @@ public class ToolsViewModel : ViewModelBase
     private readonly ProcessRunner _processRunner;
     private readonly ActivityLog _log;
     private readonly IDialogService _dialog;
+    private List<PhysicalDiskInfo> _physicalDisks = new();
 
     // ──────────────────────── MBR → GPT ────────────────────────
 
@@ -198,7 +199,11 @@ public class ToolsViewModel : ViewModelBase
         set
         {
             if (SetProperty(ref _selectedWipeDrive, value))
+            {
+                OnPropertyChanged(nameof(IsNvmeSanitizeAvailable));
+                OnPropertyChanged(nameof(NvmeSanitizeAvailabilityText));
                 CommandManager.InvalidateRequerySuggested();
+            }
         }
     }
 
@@ -212,6 +217,8 @@ public class ToolsViewModel : ViewModelBase
             {
                 OnPropertyChanged(nameof(WipeIsFreeSpace));
                 OnPropertyChanged(nameof(WipeIsFullDisk));
+                OnPropertyChanged(nameof(IsNvmeSanitizeAvailable));
+                OnPropertyChanged(nameof(NvmeSanitizeAvailabilityText));
                 CommandManager.InvalidateRequerySuggested();
             }
         }
@@ -235,7 +242,17 @@ public class ToolsViewModel : ViewModelBase
         set { if (value) WipeMode = "NvmeBlockErase"; }
     }
 
-    public bool IsNvmeSanitizeAvailable => SecureEraseService.IsNvmeSanitizeSupported();
+    public bool IsNvmeSanitizeAvailable =>
+        SecureEraseService.CanSanitizeDisk(SelectedWipeDrive, _physicalDisks, out _);
+
+    public string NvmeSanitizeAvailabilityText
+    {
+        get
+        {
+            SecureEraseService.CanSanitizeDisk(SelectedWipeDrive, _physicalDisks, out var reason);
+            return reason;
+        }
+    }
 
     private bool _useCryptoErase;
     public bool UseCryptoErase
@@ -429,13 +446,24 @@ public class ToolsViewModel : ViewModelBase
         RunOptimizeCommand = new AsyncRelayCommand(_ => RunOptimizeAsync(), _ => SelectedOptVolume != default);
         RunWipeCommand = new AsyncRelayCommand(
             _ => RunWipeAsync(),
-            _ => WipeIsFreeSpace ? SelectedWipeVolume?.DriveLetter is not null : SelectedWipeDrive is not null);
+            _ => CanRunWipe());
         RunBootRepairCommand = new AsyncRelayCommand(_ => RunBootRepairAsync(), _ => SelectedBootDrive != default);
         RunBenchmarkCommand = new AsyncRelayCommand(_ => RunBenchmarkAsync(SelectedBenchDrive), _ => SelectedBenchDrive != default);
         RunSurfaceTestCommand = new AsyncRelayCommand(_ => RunSurfaceTestAsync(), _ => SelectedSurfaceTestVolume != default);
         CreateDevDriveCommand = new AsyncRelayCommand(_ => CreateDevDriveAsync(), _ => IsDevDriveSupported && SelectedDevDriveLetter != default);
         RefreshCommand = new AsyncRelayCommand(_ => RefreshDriveListsAsync());
         CancelCommand = new RelayCommand(_ => CancelCurrentOperation(), _ => IsBusy && _cts is not null);
+    }
+
+    private bool CanRunWipe()
+    {
+        if (WipeIsFreeSpace)
+            return SelectedWipeVolume?.DriveLetter is not null;
+
+        if (SelectedWipeDrive is null)
+            return false;
+
+        return !WipeIsNvmeSanitize || IsNvmeSanitizeAvailable;
     }
 
     private CancellationToken BeginOperation(string status)
@@ -474,6 +502,7 @@ public class ToolsViewModel : ViewModelBase
 
             var disks = await _wmiService.GetDisksAsync();
             var volumes = await _wmiService.GetVolumesAsync();
+            var physicalDisks = await _wmiService.GetPhysicalDisksAsync();
 
             var mbrOnly = disks.Where(d => d.PartitionStyle.Equals("MBR", StringComparison.OrdinalIgnoreCase)).ToList();
             var letters = volumes
@@ -490,6 +519,8 @@ public class ToolsViewModel : ViewModelBase
 
             Application.Current.Dispatcher.Invoke(() =>
             {
+                _physicalDisks = physicalDisks;
+
                 MbrDisks.Clear();
                 foreach (var d in mbrOnly)
                     MbrDisks.Add(d);
@@ -512,9 +543,11 @@ public class ToolsViewModel : ViewModelBase
 
                 SelectedWipeVolume ??= WipeVolumes.FirstOrDefault();
                 SelectedWipeDrive ??= AllDisks.FirstOrDefault();
+                OnPropertyChanged(nameof(IsNvmeSanitizeAvailable));
+                OnPropertyChanged(nameof(NvmeSanitizeAvailabilityText));
             });
 
-            _log.Log($"Tools refresh: {disks.Count} disk(s), {mbrOnly.Count} MBR, {letters.Count} volume(s).");
+            _log.Log($"Tools refresh: {disks.Count} disk(s), {physicalDisks.Count} physical disk(s), {mbrOnly.Count} MBR, {letters.Count} volume(s).");
         }
         catch (Exception ex)
         {
@@ -732,6 +765,12 @@ public class ToolsViewModel : ViewModelBase
     private async Task RunNvmeSanitizeAsync()
     {
         if (SelectedWipeDrive is null) return;
+
+        if (!SecureEraseService.CanSanitizeDisk(SelectedWipeDrive, _physicalDisks, out var availability))
+        {
+            _dialog.ShowError(availability, "NVMe Sanitize Not Available");
+            return;
+        }
 
         var method = UseCryptoErase
             ? SecureEraseService.SanitizeMethod.CryptoErase

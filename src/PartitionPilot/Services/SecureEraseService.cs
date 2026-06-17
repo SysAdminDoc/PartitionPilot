@@ -40,6 +40,53 @@ public static class SecureEraseService
         return Environment.OSVersion.Version.Build >= 22000;
     }
 
+    public static bool CanSanitizeDisk(DiskInfo? disk, IEnumerable<PhysicalDiskInfo> physicalDisks, out string reason)
+        => CanSanitizeDisk(disk, physicalDisks, IsNvmeSanitizeSupported(), out reason);
+
+    public static bool CanSanitizeDisk(
+        DiskInfo? disk,
+        IEnumerable<PhysicalDiskInfo> physicalDisks,
+        bool osSupportsNvmeSanitize,
+        out string reason)
+    {
+        if (!osSupportsNvmeSanitize)
+        {
+            reason = "NVMe sanitize requires Windows 11 or later.";
+            return false;
+        }
+
+        if (disk is null)
+        {
+            reason = "Select a disk before using NVMe sanitize.";
+            return false;
+        }
+
+        var physicalDisk = FindPhysicalDisk(disk, physicalDisks);
+        if (physicalDisk is null)
+        {
+            reason = $"Could not verify Disk {disk.Number} as an NVMe physical disk.";
+            return false;
+        }
+
+        if (!physicalDisk.BusType.Equals("NVMe", StringComparison.OrdinalIgnoreCase))
+        {
+            reason = $"Disk {disk.Number} is {physicalDisk.BusType}, not NVMe.";
+            return false;
+        }
+
+        reason = $"Disk {disk.Number} is an NVMe disk and can be preflighted for sanitize.";
+        return true;
+    }
+
+    private static PhysicalDiskInfo? FindPhysicalDisk(DiskInfo disk, IEnumerable<PhysicalDiskInfo> physicalDisks)
+    {
+        var diskNumber = disk.Number.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        return physicalDisks.FirstOrDefault(p => p.DeviceId == diskNumber)
+               ?? physicalDisks.FirstOrDefault(p =>
+                   p.Size == disk.Size &&
+                   p.FriendlyName.Equals(disk.FriendlyName, StringComparison.OrdinalIgnoreCase));
+    }
+
     public static void ExecuteNvmeSanitize(int diskNumber, SanitizeMethod method, ActivityLog? log = null)
     {
         var devicePath = $@"\\.\PhysicalDrive{diskNumber}";
