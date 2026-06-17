@@ -18,6 +18,8 @@ public class PartitionInfo
     public int DiskNumber { get; set; }
     public string EncryptionStatus { get; set; } = "";
 
+    public bool IsCritical => IsSystem || IsBoot || Type.Equals("System", StringComparison.OrdinalIgnoreCase) || Type.Equals("Recovery", StringComparison.OrdinalIgnoreCase);
+
     public string LetterDisplay => DriveLetter.HasValue ? $"{DriveLetter}:" : "-";
 
     public string PartitionDisplay

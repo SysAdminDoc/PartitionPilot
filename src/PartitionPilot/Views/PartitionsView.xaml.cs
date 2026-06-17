@@ -34,13 +34,22 @@ public partial class PartitionsView : UserControl
     private async void OnFormat(object sender, RoutedEventArgs e)
     {
         if (VM is not { SelectedPartition: { DriveLetter: not null } part } vm) { MessageBox.Show("Select a partition with a drive letter.", "Format", MessageBoxButton.OK, MessageBoxImage.Information); return; }
+        if (part.IsCritical)
+        {
+            var warn = MessageBox.Show(
+                $"CRITICAL: {part.DriveLetter}: is a {part.Type} partition" +
+                (part.IsBoot ? " (Boot)" : "") + (part.IsSystem ? " (System)" : "") +
+                ".\n\nFormatting may make the system unbootable.\n\nAre you absolutely sure?",
+                "Format Critical Partition", MessageBoxButton.YesNo, MessageBoxImage.Error, MessageBoxResult.No);
+            if (warn != MessageBoxResult.Yes) return;
+        }
         var dlg = new FormatPartitionDialog(part.DriveLetter.Value, part.FileSystem, part.Size) { Owner = Window.GetWindow(this) };
         if (dlg.ShowDialog() != true) return;
         var confirm = MessageBox.Show(
             $"Format {part.DriveLetter}: as {dlg.FileSystem}?\n\nALL DATA ON THIS VOLUME WILL BE ERASED.\n\nThis action cannot be undone.",
             "Confirm Format", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
         if (confirm == MessageBoxResult.Yes)
-            await vm.ExecuteFormatAsync(part.DriveLetter.Value, dlg.FileSystem, dlg.VolumeLabel, dlg.QuickFormat);
+            await vm.ExecuteFormatAsync(part.DriveLetter.Value, dlg.FileSystem, dlg.VolumeLabel, dlg.QuickFormat, dlg.AllocationUnitSize);
     }
 
     private async void OnResize(object sender, RoutedEventArgs e)
