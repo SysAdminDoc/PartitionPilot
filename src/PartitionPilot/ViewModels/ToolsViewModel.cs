@@ -229,6 +229,21 @@ public class ToolsViewModel : ViewModelBase
         set { if (value) WipeMode = "SinglePass"; }
     }
 
+    public bool WipeIsNvmeSanitize
+    {
+        get => WipeMode is "NvmeBlockErase" or "NvmeCryptoErase";
+        set { if (value) WipeMode = "NvmeBlockErase"; }
+    }
+
+    public bool IsNvmeSanitizeAvailable => SecureEraseService.IsNvmeSanitizeSupported();
+
+    private bool _useCryptoErase;
+    public bool UseCryptoErase
+    {
+        get => _useCryptoErase;
+        set => SetProperty(ref _useCryptoErase, value);
+    }
+
     // ──────────────────────── Boot Repair ────────────────────────
 
     public ObservableCollection<char> WindowsInstalls => DriveLetters;
@@ -713,11 +728,65 @@ public class ToolsViewModel : ViewModelBase
         }
     }
 
+    private async Task RunNvmeSanitizeAsync()
+    {
+        if (SelectedWipeDrive is null) return;
+
+        var method = UseCryptoErase
+            ? SecureEraseService.SanitizeMethod.CryptoErase
+            : SecureEraseService.SanitizeMethod.BlockErase;
+
+        if (!_dialog.ConfirmDanger(
+            $"NVMe FIRMWARE ERASE on Disk {SelectedWipeDrive.Number} ({SelectedWipeDrive.FriendlyName}).\n\n" +
+            $"Method: {method}\n\n" +
+            "This sends a firmware-level sanitize command directly to the drive controller. " +
+            "ALL DATA WILL BE PERMANENTLY AND IRREVERSIBLY DESTROYED.\n\n" +
+            "This operation cannot be cancelled once started.",
+            "NVMe Sanitize -- Confirmation 1 of 2")) return;
+
+        if (!_dialog.ConfirmDanger(
+            "FINAL WARNING: NVMe sanitize is a hardware-level operation that erases ALL data " +
+            "including data in over-provisioned and remapped sectors.\n\nProceed?",
+            "NVMe Sanitize -- FINAL Confirmation")) return;
+
+        var ct = BeginOperation($"NVMe sanitize ({method}) on Disk {SelectedWipeDrive.Number}...");
+        try
+        {
+            int diskNum = SelectedWipeDrive.Number;
+            _log.Log($"Starting NVMe sanitize ({method}) on Disk {diskNum}...");
+
+            await Task.Run(() => SecureEraseService.ExecuteNvmeSanitize(diskNum, method, _log), ct);
+
+            _log.Log($"NVMe sanitize ({method}) completed on Disk {diskNum}.");
+            _dialog.ShowInfo($"NVMe sanitize ({method}) completed on Disk {diskNum}.", "Sanitize Complete");
+            await RefreshDriveListsAsync();
+        }
+        catch (OperationCanceledException)
+        {
+            _log.Log("NVMe sanitize cancelled.");
+        }
+        catch (Exception ex)
+        {
+            _log.Log($"NVMe sanitize failed: {ex.Message}");
+            _dialog.ShowError($"NVMe sanitize failed:\n{ex.Message}\n\nThe drive may not support this sanitize method.", "Sanitize Error");
+        }
+        finally
+        {
+            EndOperation();
+        }
+    }
+
     private async Task RunWipeAsync()
     {
         if (WipeIsFreeSpace)
         {
             await RunFreeSpaceWipeAsync();
+            return;
+        }
+
+        if (WipeIsNvmeSanitize)
+        {
+            await RunNvmeSanitizeAsync();
             return;
         }
 
