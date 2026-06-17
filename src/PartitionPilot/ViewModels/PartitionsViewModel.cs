@@ -523,6 +523,8 @@ public class PartitionsViewModel : ViewModelBase
         if (SelectedPartition is null || SelectedDisk is null) return;
 
         var part = SelectedPartition;
+        if (!await GuardRecoveryPartitionOperationAsync(part, "delete"))
+            return;
 
         if (part.IsCritical)
         {
@@ -577,6 +579,8 @@ public class PartitionsViewModel : ViewModelBase
         if (SelectedPartition is null || SelectedDisk is null) return;
 
         var part = SelectedPartition;
+        if (!await GuardRecoveryPartitionOperationAsync(part, "extend"))
+            return;
 
         // Warn about recovery / pagefile / system partitions
         var warnings = new List<string>();
@@ -680,6 +684,34 @@ public class PartitionsViewModel : ViewModelBase
         {
             IsBusy = false;
         }
+    }
+
+    public static bool IsRecoveryPartition(PartitionInfo partition) =>
+        partition.Type.Equals("Recovery", StringComparison.OrdinalIgnoreCase);
+
+    private async Task<bool> GuardRecoveryPartitionOperationAsync(PartitionInfo partition, string operation)
+    {
+        if (!IsRecoveryPartition(partition))
+            return true;
+
+        string reagentInfo;
+        try
+        {
+            reagentInfo = (await _processRunner.RunExeAsync("reagentc", "/info", _log)).Trim();
+            _log.Log($"reagentc /info before Recovery partition {operation}: {reagentInfo}");
+        }
+        catch (Exception ex)
+        {
+            reagentInfo = $"Unable to read Windows RE status: {ex.Message}";
+            _log.Log(reagentInfo);
+        }
+
+        _dialog.ShowError(
+            $"PartitionPilot will not {operation} a Recovery partition automatically because that can disable Windows RE or remove the recovery environment.\n\n" +
+            "Use a dedicated recovery relocation workflow before changing this partition.\n\n" +
+            reagentInfo,
+            "Recovery Environment Guard");
+        return false;
     }
 
     private async Task ExecuteSetActiveAsync()
