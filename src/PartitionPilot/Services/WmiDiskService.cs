@@ -1,5 +1,6 @@
 using System.Management;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace PartitionPilot;
 
@@ -46,7 +47,7 @@ public class WmiDiskService : IWmiDiskService
                 }
             }
         }
-        catch (Exception ex) { _log.Log($"WMI GetDisks failed: {ex.Message}"); }
+        catch (Exception ex) { LogWmiFailure("List disks", StorageScope, "MSFT_Disk", ex); }
         return list;
     });
 
@@ -88,7 +89,7 @@ public class WmiDiskService : IWmiDiskService
                 }
             }
         }
-        catch (Exception ex) { _log.Log($"WMI GetPartitions failed: {ex.Message}"); }
+        catch (Exception ex) { LogWmiFailure("List partitions", StorageScope, "MSFT_Partition", ex); }
 
         list.Sort((a, b) => a.Offset.CompareTo(b.Offset));
         return list;
@@ -147,7 +148,7 @@ public class WmiDiskService : IWmiDiskService
                 }
             }
         }
-        catch (Exception ex) { _log.Log($"WMI GetVolumes failed: {ex.Message}"); }
+        catch (Exception ex) { LogWmiFailure("List volumes", StorageScope, "MSFT_Volume", ex); }
         return list;
     });
 
@@ -209,7 +210,7 @@ public class WmiDiskService : IWmiDiskService
                 }
             }
         }
-        catch (Exception ex) { _log.Log($"WMI GetPhysicalDisks failed: {ex.Message}"); }
+        catch (Exception ex) { LogWmiFailure("List physical disks", StorageScope, "MSFT_PhysicalDisk", ex); }
         return list;
     });
 
@@ -236,7 +237,7 @@ public class WmiDiskService : IWmiDiskService
                 var scope = new ManagementScope(StorageScope);
                 scope.Connect();
                 using var searcher = new ManagementObjectSearcher(scope,
-                    new ObjectQuery($"SELECT * FROM MSFT_StorageReliabilityCounter WHERE DeviceId = '{deviceId}'"));
+                    new ObjectQuery($"SELECT * FROM MSFT_StorageReliabilityCounter WHERE DeviceId = {WqlStringLiteral(deviceId)}"));
 
                 foreach (ManagementObject obj in searcher.Get())
                 {
@@ -259,7 +260,10 @@ public class WmiDiskService : IWmiDiskService
                 return null;
             });
         }
-        catch (Exception ex) { _log.Log($"WMI SMART query failed, trying PowerShell: {ex.Message}"); }
+        catch (Exception ex)
+        {
+            LogWmiFailure("Read SMART reliability counter; falling back to PowerShell", StorageScope, "MSFT_StorageReliabilityCounter", ex);
+        }
 
         // Attempt 2: PowerShell fallback
         try
@@ -320,7 +324,7 @@ public class WmiDiskService : IWmiDiskService
                 }
             }
         }
-        catch (Exception ex) { _log.Log($"WMI AlignmentAudit failed: {ex.Message}"); }
+        catch (Exception ex) { LogWmiFailure("Audit partition alignment", StorageScope, "MSFT_Partition", ex); }
         return list;
     });
 
@@ -346,7 +350,7 @@ public class WmiDiskService : IWmiDiskService
                 }
             }
         }
-        catch (Exception ex) { _log.Log($"WMI PagefileLocations failed: {ex.Message}"); }
+        catch (Exception ex) { LogWmiFailure("Read pagefile locations", CimScope, "Win32_PageFileUsage", ex); }
         return set;
     });
 
@@ -378,7 +382,7 @@ public class WmiDiskService : IWmiDiskService
             });
             partitions = allPartitions;
         }
-        catch (Exception ex) { _log.Log($"WMI GetAvailableLetters failed: {ex.Message}"); }
+        catch (Exception ex) { LogWmiFailure("List used drive letters", StorageScope, "MSFT_Partition", ex); }
 
         var usedSet = new HashSet<char>(partitions);
         var available = new List<char>();
@@ -435,22 +439,18 @@ public class WmiDiskService : IWmiDiskService
                         Size = Convert.ToInt64(obj["Size"] ?? 0L)
                     };
 
-                    // Try to find the associated drive letter via volumes
-                    try
-                    {
-                        info.DriveLetter = FindImageDriveLetter(scope, obj);
-                    }
-                    catch { /* leave null */ }
+                    // Try to find the associated drive letter via volumes.
+                    info.DriveLetter = FindImageDriveLetter(scope, obj);
 
                     list.Add(info);
                 }
             }
         }
-        catch (Exception ex) { _log.Log($"WMI GetMountedImages failed: {ex.Message}"); }
+        catch (Exception ex) { LogWmiFailure("List mounted disk images", StorageScope, "MSFT_DiskImage", ex); }
         return list;
     });
 
-    private static char? FindImageDriveLetter(ManagementScope scope, ManagementObject imageObj)
+    private char? FindImageDriveLetter(ManagementScope scope, ManagementObject imageObj)
     {
         try
         {
@@ -459,7 +459,7 @@ public class WmiDiskService : IWmiDiskService
 
             // MSFT_DiskImage.DevicePath maps to MSFT_Disk.Path — find the disk number
             using var diskSearcher = new ManagementObjectSearcher(scope,
-                new ObjectQuery($"SELECT Number FROM MSFT_Disk WHERE Path = '{devicePath.Replace("'", "''")}'"));
+                new ObjectQuery($"SELECT Number FROM MSFT_Disk WHERE Path = {WqlStringLiteral(devicePath)}"));
 
             int? diskNumber = null;
             foreach (ManagementObject disk in diskSearcher.Get())
@@ -484,7 +484,10 @@ public class WmiDiskService : IWmiDiskService
                 }
             }
         }
-        catch { /* leave null */ }
+        catch (Exception ex)
+        {
+            LogWmiFailure("Resolve mounted image drive letter", StorageScope, "MSFT_Disk/MSFT_Partition", ex);
+        }
         return null;
     }
 
@@ -524,11 +527,30 @@ public class WmiDiskService : IWmiDiskService
                 }
             }
         }
-        catch (Exception ex) { _log.Log($"BitLocker query failed (requires admin): {ex.Message}"); }
+        catch (Exception ex) { LogWmiFailure("Read BitLocker protection status", @"\\.\root\CIMV2\Security\MicrosoftVolumeEncryption", "Win32_EncryptableVolume", ex); }
         return result;
     });
 
     // ──────────────── WMI Helpers ────────────────────────
+
+    public static string WqlStringLiteral(string value)
+    {
+        ArgumentNullException.ThrowIfNull(value);
+        return $"'{value.Replace("'", "''")}'";
+    }
+
+    private void LogWmiFailure(string operation, string scope, string wmiClass, Exception ex)
+    {
+        _log.Log($"WMI {operation} failed (scope={scope}, class={wmiClass}, provider={ex.GetType().Name}): {SanitizeProviderMessage(ex)}");
+    }
+
+    private static string SanitizeProviderMessage(Exception ex)
+    {
+        var message = string.IsNullOrWhiteSpace(ex.Message) ? ex.GetType().Name : ex.Message;
+        message = Regex.Replace(message, """\\\\\?\\[^\s'"]+""", "[path]");
+        message = Regex.Replace(message, """[A-Za-z]:\\[^\s'"]+""", "[path]");
+        return message;
+    }
 
     private static int? GetNullableInt(ManagementObject obj, string property)
     {
