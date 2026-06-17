@@ -5,9 +5,17 @@ namespace PartitionPilot;
 
 public static class ThemeService
 {
-    private static readonly string SettingsDir = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "PartitionPilot");
+    private static readonly string SettingsDir = ResolveSettingsDir();
     private static readonly string SettingsFile = Path.Combine(SettingsDir, "settings.txt");
+
+    private static string ResolveSettingsDir()
+    {
+        var exeDir = AppContext.BaseDirectory;
+        var portableMarker = Path.Combine(exeDir, "portable.txt");
+        if (File.Exists(portableMarker))
+            return exeDir;
+        return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "PartitionPilot");
+    }
 
     public static bool IsDarkMode { get; private set; } = true;
     public static event EventHandler? ThemeChanged;
