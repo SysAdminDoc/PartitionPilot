@@ -144,8 +144,14 @@
                             </DockPanel>
 
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                                <RadioButton Content="Dynamic" IsChecked="{Binding VhdIsDynamic}"/>
-                                <RadioButton Content="Fixed"/>
+                                <RadioButton Content="Dynamic"
+                                             GroupName="VhdType"
+                                             IsChecked="{Binding VhdIsDynamic}"
+                                             AutomationProperties.Name="Create a dynamically expanding VHD"/>
+                                <RadioButton Content="Fixed"
+                                             GroupName="VhdType"
+                                             IsChecked="{Binding VhdIsFixed}"
+                                             AutomationProperties.Name="Create a fixed-size VHD"/>
                             </StackPanel>
 
                             <Button Content="Create VHD"

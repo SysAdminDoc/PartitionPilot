@@ -66,7 +66,17 @@ public class DiskImagesViewModel : ViewModelBase
     public bool VhdIsDynamic
     {
         get => _vhdIsDynamic;
-        set => SetProperty(ref _vhdIsDynamic, value);
+        set
+        {
+            if (SetProperty(ref _vhdIsDynamic, value))
+                OnPropertyChanged(nameof(VhdIsFixed));
+        }
+    }
+
+    public bool VhdIsFixed
+    {
+        get => !VhdIsDynamic;
+        set => VhdIsDynamic = !value;
     }
 
     private string _vhdFileSystem = "NTFS";

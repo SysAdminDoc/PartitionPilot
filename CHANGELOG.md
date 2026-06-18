@@ -21,6 +21,7 @@
 - Fixed the Disk Usage results panel showing duplicate empty-state overlays before a scan.
 - Improved Disk Usage feedback by preserving cancelled/failed scan summaries and selecting the first available drive after refresh.
 - Hardened native disk-tool path handling by rejecting quotes/control characters instead of silently rewriting WIM/VHD paths, and validated SMART fallback device numbers before PowerShell interpolation.
+- Fixed the Disk Images VHD type selector so choosing Fixed actually creates a fixed-size virtual disk instead of leaving the operation in dynamic mode.
 
 ## PartitionPilot v0.3.0 - 2026-06-16
 
