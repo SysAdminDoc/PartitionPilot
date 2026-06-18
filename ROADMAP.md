@@ -4,54 +4,11 @@
 
 ### P0 — Critical Fixes (ship-blocking)
 
-- [ ] P0 — Fail closed when exclusive volume locking fails
-  Why: Destructive volume operations currently continue when `VolumeLockService.TryLock` returns `null`, even though a failed `FSCTL_LOCK_VOLUME` means the target may still be mounted, open, or unsafe to modify.
-  Evidence: `src/PartitionPilot/Services/VolumeLockService.cs`, `src/PartitionPilot/ViewModels/PartitionsViewModel.cs`, Microsoft `FSCTL_LOCK_VOLUME` / `FSCTL_DISMOUNT_VOLUME` docs
-  Touches: `src/PartitionPilot/Services/VolumeLockService.cs`, `src/PartitionPilot/ViewModels/PartitionsViewModel.cs`, `src/PartitionPilot/ViewModels/DiskCloningViewModel.cs`, `src/PartitionPilot/ViewModels/ToolsViewModel.cs`, `src/PartitionPilot/Services/IDialogService.cs`
-  Acceptance: Format, delete, resize, split, clone-restore, and wipe flows block when a required target volume cannot be locked, show retry/cancel guidance, and only proceed through an explicit documented force path where Windows cannot lock system/page-file volumes.
-  Complexity: M
-
-- [ ] P0 — Gate NVMe sanitize by per-disk capability preflight
-  Why: NVMe sanitize is exposed based only on Windows build, but sanitize support depends on the selected disk, driver, and erase method; showing an unsupported destructive action reduces trust and can fail late.
-  Evidence: `src/PartitionPilot/Services/SecureEraseService.cs`, `src/PartitionPilot/ViewModels/ToolsViewModel.cs`, Microsoft `NVME_SECURE_ERASE_SETTINGS` docs, Microsoft NVMe sanitize Q&A
-  Touches: `src/PartitionPilot/Services/SecureEraseService.cs`, `src/PartitionPilot/Services/WmiDiskService.cs`, `src/PartitionPilot/ViewModels/ToolsViewModel.cs`, `src/PartitionPilot/Views/ToolsView.xaml`
-  Acceptance: The secure-wipe UI enables block erase or crypto erase only after the selected physical disk is confirmed as NVMe and method-capable; unsupported disks show a precise reason and no sanitize command is sent.
-  Complexity: M
-
-- [ ] P0 — Fix release metadata and installer version drift
-  Why: The app and README report v0.3.0, but the installer still emits v0.2.3 and the README screenshot points at a v0.2.3 image, making published builds look stale or untrustworthy.
-  Evidence: `src/PartitionPilot/PartitionPilot.csproj`, `installer/PartitionPilot.iss`, `README.md`
-  Touches: `installer/PartitionPilot.iss`, `README.md`, `.github/workflows/build.yml`, `assets/screenshots/`
-  Acceptance: Installer version, output filename, README screenshot, assembly version, and release artifact names all resolve from the same current version; CI fails if they drift again.
-  Complexity: S
-
-- [ ] P0 — Derive update-check version from assembly metadata
-  Why: `UpdateService` still hardcodes `CurrentVersion = "0.2.3"` while the app assembly is v0.3.0, so the app can falsely report updates or send stale User-Agent/version data.
-  Evidence: `src/PartitionPilot/Services/UpdateService.cs`, `src/PartitionPilot/PartitionPilot.csproj`, GitHub latest-release API docs
-  Touches: `src/PartitionPilot/Services/UpdateService.cs`, `src/PartitionPilot/ViewModels/MainViewModel.cs`, `tests/PartitionPilot.Tests/UpdateServiceTests.cs`, `.github/workflows/build.yml`
-  Acceptance: The update checker reads the current version from assembly/package metadata, tests fail if it drifts from `PartitionPilot.csproj`, and offline/API failures are logged without showing false update prompts.
-  Complexity: S
-
-- [ ] P0 — Fail image create/restore when copy prerequisites are unresolved
-  Why: VHDX image create/restore can skip `robocopy` when mounted source or destination letters cannot be resolved, then still show success.
-  Evidence: `src/PartitionPilot/ViewModels/DiskCloningViewModel.cs`, Microsoft `Mount-DiskImage` / `Dismount-DiskImage` docs
-  Touches: `src/PartitionPilot/ViewModels/DiskCloningViewModel.cs`, `src/PartitionPilot/Services/ProcessRunner.cs`, `tests/PartitionPilot.Tests/`
-  Acceptance: Image creation/restoration throws a clear error if required mounted-image, source, or destination drive letters are missing; success is shown only after copy/apply commands run and basic output/target validation passes.
-  Complexity: M
-
-- [ ] P0 — Guard WinRE lifecycle for Recovery partition operations
-  Why: Extending a Recovery partition disables Windows RE and deletes the Recovery partition, but the app does not re-enable WinRE, recreate the partition, or prove a safe final recovery state.
-  Evidence: `src/PartitionPilot/ViewModels/PartitionsViewModel.cs`, Microsoft REAgentC and Windows RE documentation
-  Touches: `src/PartitionPilot/ViewModels/PartitionsViewModel.cs`, new recovery-environment service, `src/PartitionPilot/Services/IDialogService.cs`, tests
-  Acceptance: Before any Recovery partition delete/extend flow, PartitionPilot records `reagentc /info`, shows an explicit recovery-environment plan, refuses unsupported states, and ends with WinRE enabled at a valid location or a clear rollback/recovery instruction.
-  Complexity: L
-
-
 ### P1 — Architecture & Quality
 
 - [ ] P1 — Add pending operations queue with preview-before-apply
-  Why: Every serious partition tool (GParted, EaseUS, MiniTool, AOMEI, OpenPart) queues changes and shows a preview before writing. PartitionPilot executes immediately, which is the #1 safety gap. This is table-stakes UX for partition management.
-  Evidence: GParted pending operations model, OpenPart SimulatedExecutor, all commercial competitors
+  Why: Every serious partition tool researched (GParted, EaseUS, MiniTool, AOMEI) queues changes and shows a preview before writing. PartitionPilot executes immediately, which is the #1 safety gap. This is table-stakes UX for partition management.
+  Evidence: GParted pending operations model, EaseUS/AOMEI/MiniTool user guides
   Touches: New `Services/OperationQueue.cs`, `ViewModels/PartitionsViewModel.cs`, `Views/PartitionsView.xaml`, new `Views/PendingOperationsPanel.xaml`
   Acceptance: Partition operations (create, delete, format, resize, extend, split) are queued, shown in a pending list with before/after preview, and only execute when user clicks Apply. Individual operations can be removed from the queue.
   Complexity: XL
@@ -77,27 +34,6 @@
   Acceptance: App checks for updates on startup, downloads delta package in background, prompts user to restart to apply. Update cycle verified with a test GitHub Release.
   Complexity: M
 
-- [ ] P1 — Add partition snapshot browser and recovery export
-  Why: Partition table snapshots are already saved before destructive operations, but users cannot find, compare, export, or use them when recovery matters.
-  Evidence: `src/PartitionPilot/Services/PartitionTableBackup.cs`, KDE Partition Manager backup/restore positioning, Paragon undelete/recovery positioning, EaseUS error-report/log support flow
-  Touches: `src/PartitionPilot/Services/PartitionTableBackup.cs`, new snapshot view model/view, `src/PartitionPilot/ViewModels/PartitionsViewModel.cs`, `src/PartitionPilot/Services/IDialogService.cs`
-  Acceptance: Users can open a read-only snapshot history, see disk/partition metadata, compare the latest snapshot to the current disk layout, export JSON, and copy guided recovery commands without PartitionPilot attempting an unsafe automatic restore.
-  Complexity: M
-
-- [ ] P1 — Route all confirmations through the dialog service
-  Why: Direct `MessageBox.Show` calls in dialog/view code bypass centralized copy, accessibility naming, severity styling, and test seams already present in `IDialogService`.
-  Evidence: `src/PartitionPilot/Dialogs/*.xaml.cs`, `src/PartitionPilot/Views/PartitionsView.xaml.cs`, `src/PartitionPilot/Services/IDialogService.cs`
-  Touches: `src/PartitionPilot/Services/IDialogService.cs`, `src/PartitionPilot/Services/MessageBoxDialogService.cs`, `src/PartitionPilot/Views/PartitionsView.xaml.cs`, `src/PartitionPilot/Dialogs/*.xaml.cs`, affected tests
-  Acceptance: `rg "MessageBox\\.Show" src/PartitionPilot` finds only `MessageBoxDialogService`; destructive confirmations use consistent target disk/partition labels and are unit-testable.
-  Complexity: M
-
-- [ ] P1 — Make NuGet restores deterministic and migrate off xUnit v2 wildcards
-  Why: Test dependencies use wildcard versions and `xunit` v2, while NuGet supports lock files/audit and NuGet marks xUnit v2 as legacy with future feature work moved to v3.
-  Evidence: `tests/PartitionPilot.Tests/PartitionPilot.Tests.csproj`, NuGet audit docs, NuGet lock-file docs, xUnit v3 migration docs
-  Touches: `tests/PartitionPilot.Tests/PartitionPilot.Tests.csproj`, `src/PartitionPilot/PartitionPilot.csproj`, lock files, `.github/workflows/build.yml`
-  Acceptance: Package versions are explicit, app and test restores use lock files in CI locked mode, `dotnet restore` audits both projects, and tests run under xUnit v3 or a consciously pinned supported runner.
-  Complexity: S
-
 - [ ] P1 — Add Administrator Protection compatibility validation
   Why: Windows Administrator Protection changes elevation profile behavior for admin apps, and PartitionPilot creates logs, backups, updates, and temporary command scripts while elevated.
   Evidence: Microsoft Administrator Protection docs, Windows app-security guidance, `src/PartitionPilot/ViewModels/MainViewModel.cs`, `src/PartitionPilot/Services/PartitionTableBackup.cs`, `src/PartitionPilot/Services/UpdateService.cs`
@@ -105,32 +41,11 @@
   Acceptance: A manual/automated checklist verifies app launch, portable mode, log export, snapshot location, update check, and destructive-operation prompts under legacy UAC and Administrator Protection; any profile-dependent paths are displayed clearly.
   Complexity: M
 
-- [ ] P1 — Harden WMI query construction and diagnostics
-  Why: WMI queries currently mix safe numeric interpolation with string interpolation; a shared WQL literal helper prevents fragile queries and makes storage provider failures easier to diagnose.
-  Evidence: `src/PartitionPilot/Services/WmiDiskService.cs`, Microsoft `MSFT_Disk` and `MSFT_Partition` docs
-  Touches: `src/PartitionPilot/Services/WmiDiskService.cs`, `tests/PartitionPilot.Tests/`
-  Acceptance: All string WQL values pass through one escaping helper with tests for apostrophes/backslashes; WMI failures log namespace, class, sanitized query purpose, and provider error without leaking unnecessary user paths.
-  Complexity: S
-
-- [ ] P1 — Add operation-scope cleanup for mounts, access paths, and attached VHDs
-  Why: VHD attach/detach, `Mount-DiskImage`, and EFI access-path assignment are cleanup-sensitive operations, but cleanup currently lives only on success paths or not at all.
-  Evidence: `src/PartitionPilot/ViewModels/DiskCloningViewModel.cs`, `src/PartitionPilot/ViewModels/ToolsViewModel.cs`, Microsoft `Dismount-DiskImage` and `Remove-PartitionAccessPath` docs
-  Touches: new operation-scope/cleanup service, `src/PartitionPilot/ViewModels/DiskCloningViewModel.cs`, `src/PartitionPilot/ViewModels/DiskImagesViewModel.cs`, `src/PartitionPilot/ViewModels/ToolsViewModel.cs`, tests
-  Acceptance: Temporary VHD attachments, mounted images, EFI drive letters, and temporary files are registered with cleanup actions that run in `finally` on success, failure, or cancellation; failures are logged with next-step recovery guidance.
-  Complexity: M
-
-- [ ] P1 — Add BitLocker-aware destructive-operation preflights
-  Why: BitLocker status is displayed but not used to block, suspend, unlock, or warn before resize, split, format, delete, clone, or wipe operations.
-  Evidence: `src/PartitionPilot/Models/PartitionInfo.cs`, `src/PartitionPilot/Services/WmiDiskService.cs`, `src/PartitionPilot/ViewModels/PartitionsViewModel.cs`, Microsoft BitLocker operations docs
-  Touches: `src/PartitionPilot/ViewModels/PartitionsViewModel.cs`, `src/PartitionPilot/ViewModels/DiskCloningViewModel.cs`, `src/PartitionPilot/ViewModels/ToolsViewModel.cs`, `src/PartitionPilot/Services/WmiDiskService.cs`, dialogs/tests
-  Acceptance: Locked/encrypted volumes produce operation-specific guidance; resize/split/clone flows require unlocked/suspended BitLocker where appropriate, destructive flows name encryption state in confirmation copy, and the app never silently clears BitLocker-protected data without a stronger confirmation.
-  Complexity: M
-
-- [ ] P1 — Preflight image destination safety and free space
-  Why: Image creation accepts arbitrary paths and does not prevent capturing a source volume into a file on that same volume or prove that the destination has enough free space before long-running DISM/VHDX/robocopy work.
-  Evidence: `src/PartitionPilot/ViewModels/DiskCloningViewModel.cs`, Microsoft DISM and Storage image-mount behavior
-  Touches: `src/PartitionPilot/ViewModels/DiskCloningViewModel.cs`, `src/PartitionPilot/Services/WmiDiskService.cs`, dialogs/tests
-  Acceptance: Creating an image blocks self-referential destinations, shows estimated required/free space, validates path/root availability before work begins, and surfaces a clear error before invoking DISM or DiskPart when the destination is unsafe.
+- [ ] P1 — Add unsigned release provenance and verification pack
+  Why: Code signing and WinGet are blocked on external credentials, but a public admin disk utility can still provide checksums, artifact attestations, and installer verification so users can trust unsigned prerelease artifacts.
+  Evidence: `.github/workflows/build.yml`, `installer/PartitionPilot.iss`, `Roadmap_Blocked.md`, GitHub artifact attestation docs
+  Touches: `.github/workflows/build.yml`, `installer/`, release artifact scripts, `README.md`
+  Acceptance: Release workflow produces installer artifacts, SHA256SUMS, and GitHub artifact attestations; CI verifies installer/version metadata before upload; README documents checksum and attestation verification without requiring a signing certificate.
   Complexity: M
 
 
@@ -176,12 +91,40 @@
   Acceptance: A user can export a zip containing app version, OS/build, recent activity log, selected redacted WMI disk/partition metadata, and chosen partition snapshots; serial numbers and full user profile paths are redacted by default.
   Complexity: M
 
+- [ ] P2 — Add mismatch-checked snapshot recovery plan export
+  Why: Snapshots are now visible and exportable, but recovery guidance stops at diagnostics; users need a safer, mismatch-checked recovery plan before any destructive restore work is considered.
+  Evidence: `src/PartitionPilot/Services/PartitionTableBackup.cs`, `src/PartitionPilot/Views/SnapshotBrowserView.xaml`, MiniTool partition recovery positioning, Clonezilla/Rescuezilla restore workflows
+  Touches: `src/PartitionPilot/Services/PartitionTableBackup.cs`, `src/PartitionPilot/ViewModels/SnapshotBrowserViewModel.cs`, `src/PartitionPilot/Views/SnapshotBrowserView.xaml`, tests
+  Acceptance: Selecting a snapshot can export a read-only recovery plan that verifies disk number/name/size/style against the current disk, highlights mismatches, lists safe diagnostic commands first, and refuses to generate executable destructive restore commands.
+  Complexity: M
+
+- [ ] P2 — Add deterministic simulation mode for UI QA and screenshots
+  Why: UI automation, screenshots, and accessibility checks should not depend on the operator's live disk layout or require destructive-capable services during test runs.
+  Evidence: `src/PartitionPilot/Services/WmiDiskService.cs`, `tests/PartitionPilot.Tests/PartitionPilot.Tests.csproj`, FlaUI README, Microsoft WPF UI Automation docs
+  Touches: `src/PartitionPilot/Services/IWmiDiskService.cs`, new simulated disk data provider, `src/PartitionPilot/App.xaml.cs`, view-model construction/tests
+  Acceptance: A test-only or command-line flag loads deterministic sample disks, partitions, SMART data, snapshots, and disk-usage entries; destructive execution remains disabled; UI tests and screenshot capture can run without touching live disks.
+  Complexity: M
+
+- [ ] P2 — Add WPF UI automation smoke coverage
+  Why: The app has unit coverage but no end-to-end UI smoke tests for shell navigation, destructive confirmation copy, or accessibility names across custom WPF controls.
+  Evidence: `tests/PartitionPilot.Tests/PartitionPilot.Tests.csproj`, `src/PartitionPilot/Controls/TreemapControl.cs`, `src/PartitionPilot/Controls/DiskBarControl.xaml.cs`, FlaUI README, Microsoft WPF UI Automation docs
+  Touches: new `tests/PartitionPilot.UiTests` project, app launch/test hooks, custom controls, `.github/workflows/build.yml`
+  Acceptance: A Windows UI test launches PartitionPilot in simulation mode, verifies the main tabs load, critical controls expose stable automation names, destructive dialogs can be cancelled, and disk map/treemap accessible semantics are present.
+  Complexity: M
+
 - [ ] P2 — Identify and protect unsupported or non-Windows partition types
   Why: PartitionPilot is Windows-focused, while competitors expose broad filesystem awareness; the safe parity move is accurate identification and guarded actions, not unsupported write support.
   Evidence: `src/PartitionPilot/Models/PartitionInfo.cs`, `src/PartitionPilot/Services/WmiDiskService.cs`, GParted/KDE filesystem support lists, Microsoft `CreatePartition` partition-type docs
   Touches: `src/PartitionPilot/Models/PartitionInfo.cs`, `src/PartitionPilot/Services/WmiDiskService.cs`, `src/PartitionPilot/ViewModels/PartitionsViewModel.cs`, `src/PartitionPilot/Views/PartitionsView.xaml`
   Acceptance: EFI/MSR/Recovery/Linux/Btrfs/LUKS/unknown GPT types are labeled distinctly where detectable, destructive actions are disabled or require stronger confirmation for unsupported types, and the UI explains that PartitionPilot will not edit unsupported filesystems.
   Complexity: M
+
+- [ ] P2 — Upgrade System.Management to 10.x with WMI compatibility smoke
+  Why: WMI is the app's core storage integration and the app package is behind the current stable `System.Management` release while vulnerability scanning currently reports clean.
+  Evidence: `src/PartitionPilot/PartitionPilot.csproj`, `src/PartitionPilot/packages.lock.json`, `dotnet list src\PartitionPilot\PartitionPilot.csproj package --outdated`, NuGet `System.Management` 10.0.9
+  Touches: `src/PartitionPilot/PartitionPilot.csproj`, `src/PartitionPilot/packages.lock.json`, `tests/PartitionPilot.Tests/packages.lock.json`, `src/PartitionPilot/Services/WmiDiskService.cs`, CI restore/test workflow
+  Acceptance: `System.Management` is updated to 10.x, lock files are regenerated, build/tests pass in locked mode, vulnerable-package scans remain clean, and a Windows smoke check verifies disk/partition/volume/SMART/BitLocker/image queries.
+  Complexity: S
 
 - [ ] P2 — Quarantine or remove the legacy PowerShell prototype
   Why: `PartitionPilot.ps1` remains at repo root even though the product is now a WPF app, creating ambiguity for users, packaging, and future research agents.
