@@ -551,8 +551,17 @@ public class ToolsViewModel : ViewModelBase
                 foreach (var l in fat32Letters)
                     Fat32Volumes.Add(l);
 
-                SelectedWipeVolume ??= WipeVolumes.FirstOrDefault();
-                SelectedWipeDrive ??= AllDisks.FirstOrDefault();
+                SelectedMbrDisk = PickDiskSelection(MbrDisks, SelectedMbrDisk, autoSelect: false);
+                SelectedFat32Volume = PickDriveSelection(Fat32Volumes, SelectedFat32Volume, autoSelect: false);
+                SelectedCheckVolume = PickDriveSelection(DriveLetters, SelectedCheckVolume, autoSelect: true);
+                SelectedOptVolume = PickDriveSelection(DriveLetters, SelectedOptVolume, autoSelect: true);
+                SelectedWindowsInstall = PickDriveSelection(DriveLetters, SelectedWindowsInstall, autoSelect: false);
+                SelectedSurfaceTestVolume = PickDriveSelection(DriveLetters, SelectedSurfaceTestVolume, autoSelect: true);
+                SelectedBenchDrive = PickDriveSelection(DriveLetters, SelectedBenchDrive, autoSelect: true);
+                SelectedDevDriveLetter = PickDriveSelection(DriveLetters, SelectedDevDriveLetter, autoSelect: false);
+                SelectedWipeVolume = PickVolumeSelection(WipeVolumes, SelectedWipeVolume, autoSelect: true);
+                SelectedWipeDrive = PickDiskSelection(AllDisks, SelectedWipeDrive, autoSelect: true);
+                SelectedWipeTarget = SelectedWipeDrive;
                 OnPropertyChanged(nameof(IsNvmeSanitizeAvailable));
                 OnPropertyChanged(nameof(NvmeSanitizeAvailabilityText));
             });
@@ -570,6 +579,58 @@ public class ToolsViewModel : ViewModelBase
     }
 
     // ──────────────────────── MBR → GPT ────────────────────────
+
+    public static char PickDriveSelection(IEnumerable<char> availableLetters, char current, bool autoSelect)
+    {
+        var letters = availableLetters
+            .Where(char.IsLetter)
+            .Select(char.ToUpperInvariant)
+            .Distinct()
+            .OrderBy(c => c)
+            .ToList();
+
+        if (current != default)
+        {
+            var normalizedCurrent = char.ToUpperInvariant(current);
+            if (letters.Contains(normalizedCurrent))
+                return normalizedCurrent;
+        }
+
+        return autoSelect ? letters.FirstOrDefault() : default;
+    }
+
+    public static DiskInfo? PickDiskSelection(IEnumerable<DiskInfo> disks, DiskInfo? current, bool autoSelect)
+    {
+        var list = disks.OrderBy(d => d.Number).ToList();
+        if (current is not null)
+        {
+            var match = list.FirstOrDefault(d => d.Number == current.Number);
+            if (match is not null)
+                return match;
+        }
+
+        return autoSelect ? list.FirstOrDefault() : null;
+    }
+
+    public static VolumeInfo? PickVolumeSelection(IEnumerable<VolumeInfo> volumes, VolumeInfo? current, bool autoSelect)
+    {
+        var list = volumes
+            .Where(v => v.DriveLetter.HasValue)
+            .OrderBy(v => v.DriveLetter)
+            .ToList();
+
+        if (current?.DriveLetter is char currentLetter)
+        {
+            var normalizedCurrent = char.ToUpperInvariant(currentLetter);
+            var match = list.FirstOrDefault(v =>
+                v.DriveLetter.HasValue &&
+                char.ToUpperInvariant(v.DriveLetter.Value) == normalizedCurrent);
+            if (match is not null)
+                return match;
+        }
+
+        return autoSelect ? list.FirstOrDefault() : null;
+    }
 
     private async Task ValidateMbrToGptAsync()
     {
