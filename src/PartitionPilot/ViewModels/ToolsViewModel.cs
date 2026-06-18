@@ -1013,6 +1013,7 @@ public class ToolsViewModel : ViewModelBase
         IsBusy = true;
         try
         {
+            await using var cleanup = new OperationCleanupScope(_log);
             _log.Log($"Running boot repair for {SelectedBootDrive}:...");
 
             // Detect firmware type
@@ -1035,6 +1036,17 @@ public class ToolsViewModel : ViewModelBase
                                     "Add-PartitionAccessPath -DiskNumber $esp.DiskNumber -PartitionNumber $esp.PartitionNumber -AssignDriveLetter; " +
                                     "(Get-Partition -DiskNumber $esp.DiskNumber -PartitionNumber $esp.PartitionNumber).DriveLetter";
                     efiLetter = (await _processRunner.RunPowerShellAsync(assignCmd, _log)).Trim();
+                    if (!string.IsNullOrEmpty(efiLetter) && char.IsLetter(efiLetter[0]))
+                    {
+                        var temporaryLetter = char.ToUpperInvariant(efiLetter[0]);
+                        var temporaryAccessPath = $"{temporaryLetter}:\\";
+                        var removeAccessPathCmd =
+                            $"Get-Partition -DriveLetter '{temporaryLetter}' | Remove-PartitionAccessPath -AccessPath {ProcessRunner.EscapePowerShellString(temporaryAccessPath)}";
+                        cleanup.Register(
+                            $"Remove temporary EFI access path {temporaryAccessPath}",
+                            () => _processRunner.RunPowerShellAsync(removeAccessPathCmd, _log),
+                            $"Run Remove-PartitionAccessPath for {temporaryAccessPath} from an elevated PowerShell session.");
+                    }
                 }
 
                 if (string.IsNullOrEmpty(efiLetter) || !char.IsLetter(efiLetter[0]))
@@ -1151,6 +1163,9 @@ public class ToolsViewModel : ViewModelBase
         const int random4KBlockSize = 4096;
 
         string tempPath = Path.Combine($"{driveLetter}:\\", $"pp_bench_{Guid.NewGuid():N}.tmp");
+        var cleanup = new OperationCleanupScope(_log);
+        cleanup.RegisterFileDelete(tempPath);
+
         var sw = new Stopwatch();
         var results = new System.Text.StringBuilder();
         var rng = new Random();
@@ -1242,7 +1257,7 @@ public class ToolsViewModel : ViewModelBase
         }
         finally
         {
-            try { File.Delete(tempPath); } catch { /* best-effort cleanup */ }
+            cleanup.Dispose();
         }
     }
 }

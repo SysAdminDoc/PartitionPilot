@@ -15,6 +15,7 @@
 - Routed remaining partition dialogs and code-behind prompts through `IDialogService` so validation, warnings, and destructive confirmations share one testable message surface.
 - Added create-image destination preflights that block same-volume captures, missing destination folders, existing image files, unsupported extensions, and insufficient free space before DISM or DiskPart runs.
 - Added BitLocker-aware preflights that block protected partition mutations until protection is suspended/unlocked and add stronger confirmations for encrypted format, delete, clone restore, Dev Drive, and wipe flows.
+- Added an operation cleanup scope for temporary VHD attachments, restore image mounts, EFI access paths, and benchmark temp files so failure/cancel paths log recovery guidance and attempt cleanup consistently.
 
 ## PartitionPilot v0.3.0 - 2026-06-16
 

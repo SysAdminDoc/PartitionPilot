@@ -203,6 +203,7 @@ public class DiskCloningViewModel : ViewModelBase
 
         try
         {
+            await using var cleanup = new OperationCleanupScope(_log);
             ImagePath = preflight.FullPath;
             _log.Log(
                 $"Image destination preflight passed: required {SizeUtil.Format(preflight.EstimatedRequiredBytes)}, destination free {SizeUtil.Format(preflight.DestinationFreeBytes)} on {preflight.DestinationRoot}.");
@@ -231,6 +232,15 @@ public class DiskCloningViewModel : ViewModelBase
                     """;
                 await _processRunner.RunDiskpartAsync(script, _log, ct);
 
+                var detachScript = $"""
+                    select vdisk file="{sanitizedImagePath}"
+                    detach vdisk
+                    """;
+                var detachCleanup = cleanup.Register(
+                    $"Detach temporary VHDX target {ImagePath}",
+                    () => _processRunner.RunDiskpartAsync(detachScript, _log),
+                    $"Run diskpart, select vdisk file=\"{sanitizedImagePath}\", then detach vdisk.");
+
                 StatusText = "VHDX created, capturing with DISM...";
                 var safeFileName = ProcessRunner.EscapePowerShellString(Path.GetFileName(ImagePath));
                 var letterCmd = $"(Get-Disk | Where-Object {{ $_.Location -like ('*' + {safeFileName} + '*') }} | Get-Partition | Where-Object {{ $_.DriveLetter }} | Select-Object -First 1).DriveLetter";
@@ -239,11 +249,8 @@ public class DiskCloningViewModel : ViewModelBase
 
                 await _processRunner.RunExeAsync("robocopy", $"{SelectedSourceDrive}:\\ {mountedLetter}:\\ /MIR /R:0 /W:0 /NP /NDL /NFL", _log, ignoreStderrOnSuccess: true, ct: ct);
 
-                var detachScript = $"""
-                    select vdisk file="{sanitizedImagePath}"
-                    detach vdisk
-                    """;
                 await _processRunner.RunDiskpartAsync(detachScript, _log, ct);
+                detachCleanup.Complete();
             }
 
             _log.Log($"Image created: {ImagePath}");
@@ -300,6 +307,7 @@ public class DiskCloningViewModel : ViewModelBase
         var targetLocks = new List<VolumeLock>();
         try
         {
+            await using var cleanup = new OperationCleanupScope(_log);
             var ext = Path.GetExtension(RestoreImagePath).ToLowerInvariant();
             var diskNum = SelectedTargetDisk.Number;
 
@@ -337,6 +345,12 @@ public class DiskCloningViewModel : ViewModelBase
                 var mountCmd = $"Mount-DiskImage -ImagePath {ProcessRunner.EscapePowerShellString(RestoreImagePath)}";
                 await _processRunner.RunPowerShellAsync(mountCmd, _log, ct);
 
+                var unmountCmd = $"Dismount-DiskImage -ImagePath {ProcessRunner.EscapePowerShellString(RestoreImagePath)}";
+                var mountCleanup = cleanup.Register(
+                    $"Dismount restore source image {RestoreImagePath}",
+                    () => _processRunner.RunPowerShellAsync(unmountCmd, _log),
+                    $"Run Dismount-DiskImage for {RestoreImagePath} from an elevated PowerShell session.");
+
                 var srcLetterCmd = $"(Get-DiskImage -ImagePath {ProcessRunner.EscapePowerShellString(RestoreImagePath)} | Get-Disk | Get-Partition | Where-Object {{ $_.DriveLetter }} | Select-Object -First 1).DriveLetter";
                 var srcLetter = (await _processRunner.RunPowerShellAsync(srcLetterCmd, _log, ct)).Trim();
                 var sourceLetter = RequireDriveLetter(srcLetter, "mounted source image");
@@ -351,8 +365,8 @@ public class DiskCloningViewModel : ViewModelBase
                 await _processRunner.RunExeAsync("robocopy",
                     $"{sourceLetter}:\\ {destinationLetter}:\\ /MIR /R:0 /W:0 /NP /NDL /NFL", _log, ignoreStderrOnSuccess: true, ct: ct);
 
-                var unmountCmd = $"Dismount-DiskImage -ImagePath {ProcessRunner.EscapePowerShellString(RestoreImagePath)}";
                 await _processRunner.RunPowerShellAsync(unmountCmd, _log, ct);
+                mountCleanup.Complete();
             }
 
             _log.Log($"Image restored to Disk {diskNum}.");
