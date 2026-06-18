@@ -217,6 +217,7 @@ public class ToolsViewModel : ViewModelBase
             {
                 OnPropertyChanged(nameof(WipeIsFreeSpace));
                 OnPropertyChanged(nameof(WipeIsFullDisk));
+                OnPropertyChanged(nameof(WipeIsNvmeSanitize));
                 OnPropertyChanged(nameof(IsNvmeSanitizeAvailable));
                 OnPropertyChanged(nameof(NvmeSanitizeAvailabilityText));
                 CommandManager.InvalidateRequerySuggested();

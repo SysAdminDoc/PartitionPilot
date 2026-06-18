@@ -31,6 +31,20 @@ public class ToolsViewModelTests
     }
 
     [Fact]
+    public void WipeMode_NotifiesAllModeFlags()
+    {
+        var viewModel = CreateViewModel();
+        var changed = new List<string?>();
+        viewModel.PropertyChanged += (_, e) => changed.Add(e.PropertyName);
+
+        viewModel.WipeIsNvmeSanitize = true;
+
+        Assert.Contains(nameof(ToolsViewModel.WipeIsFreeSpace), changed);
+        Assert.Contains(nameof(ToolsViewModel.WipeIsFullDisk), changed);
+        Assert.Contains(nameof(ToolsViewModel.WipeIsNvmeSanitize), changed);
+    }
+
+    [Fact]
     public void PickDriveSelection_PreservesValidCurrentLetter()
     {
         var selected = ToolsViewModel.PickDriveSelection(['C', 'D', 'E'], 'd', autoSelect: true);
