@@ -211,6 +211,7 @@ public class DiskImagesViewModel : ViewModelBase
         IsBusy = true;
         try
         {
+            await using var cleanup = new OperationCleanupScope(_log);
             long sizeMB = (long)(VhdSizeGB * 1024);
             string diskType = VhdIsDynamic ? "expandable" : "fixed";
             string ext = System.IO.Path.GetExtension(VhdPath).ToLowerInvariant();
@@ -219,17 +220,34 @@ public class DiskImagesViewModel : ViewModelBase
             _log.Log($"Creating {vdiskType.ToUpper()} ({diskType}): {VhdPath}, {VhdSizeGB:F1} GB...");
 
             var sanitizedVhdPath = VhdPath.Replace("\"", "");
-            string script = $"""
+            string attachScript = $"""
                 create vdisk file="{sanitizedVhdPath}" maximum={sizeMB} type={diskType}
                 select vdisk file="{sanitizedVhdPath}"
                 attach vdisk
+                """;
+
+            var attachResult = await _processRunner.RunDiskpartAsync(attachScript, _log);
+            _log.Log($"Create VHD attach result: {attachResult.Trim()}");
+
+            var detachScript = $"""
+                select vdisk file="{sanitizedVhdPath}"
+                detach vdisk
+                """;
+            var detachCleanup = cleanup.Register(
+                $"Detach VHD after failed create flow {VhdPath}",
+                () => _processRunner.RunDiskpartAsync(detachScript, _log),
+                $"Run diskpart, select vdisk file=\"{sanitizedVhdPath}\", then detach vdisk.");
+
+            string setupScript = $"""
+                select vdisk file="{sanitizedVhdPath}"
                 create partition primary
                 format fs={VhdFileSystem} label="NewVHD" quick
                 assign
                 """;
 
-            var result = await _processRunner.RunDiskpartAsync(script, _log);
+            var result = await _processRunner.RunDiskpartAsync(setupScript, _log);
             _log.Log($"Create VHD result: {result.Trim()}");
+            detachCleanup.Complete();
 
             await RefreshAsync();
 
