@@ -5,8 +5,6 @@ namespace PartitionPilot;
 
 public class MainViewModel : ViewModelBase
 {
-    public const string AppVersionText = "PartitionPilot v0.2.3";
-
     private readonly ProcessRunner _processRunner;
     private readonly WmiDiskService _wmiService;
     private readonly IDialogService _dialog;
@@ -47,7 +45,7 @@ public class MainViewModel : ViewModelBase
     public ICommand ToggleThemeCommand { get; }
     public ICommand RefreshCurrentCommand { get; }
 
-    public string VersionText => AppVersionText;
+    public string VersionText => GetVersionText();
     public string AdminSessionText { get; }
     public string AdminSessionDetail { get; }
     public string SessionStateText => "Session state";
@@ -198,4 +196,6 @@ public class MainViewModel : ViewModelBase
         var principal = new WindowsPrincipal(identity);
         return principal.IsInRole(WindowsBuiltInRole.Administrator);
     }
+
+    public static string GetVersionText() => $"PartitionPilot v{UpdateService.GetCurrentVersion()}";
 }
