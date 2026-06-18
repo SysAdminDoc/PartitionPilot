@@ -25,6 +25,7 @@
 - Hardened partition formatting and drive-letter operations by validating DiskPart allocation-unit and drive-letter inputs at the view-model command boundary.
 - Corrected SSD wear health classification so low wear percentages are treated as healthy and high wear percentages near the documented limit trigger warnings or critical status.
 - Fixed Secure Wipe mode state so Free space, Entire disk, and NVMe firmware erase behave as mutually exclusive choices with the correct target selector visible.
+- Improved Tools refresh behavior so removed disks/volumes no longer remain selected and low-risk tools receive sensible current-volume defaults after refresh.
 
 ## PartitionPilot v0.3.0 - 2026-06-16
 
