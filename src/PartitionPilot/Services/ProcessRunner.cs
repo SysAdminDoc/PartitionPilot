@@ -109,6 +109,17 @@ public class ProcessRunner : IProcessRunner
         return "'" + value.Replace("'", "''") + "'";
     }
 
+    public static string ValidateNativePathArgument(string path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+            throw new ArgumentException("Path is required.", nameof(path));
+
+        if (path.IndexOfAny(['"', '\r', '\n', '\0']) >= 0)
+            throw new ArgumentException("Path contains unsupported characters for native disk tools.", nameof(path));
+
+        return path;
+    }
+
     public static char ValidateDriveLetter(char letter)
     {
         letter = char.ToUpperInvariant(letter);

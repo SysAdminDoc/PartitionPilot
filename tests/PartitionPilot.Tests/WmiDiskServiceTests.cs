@@ -17,4 +17,21 @@ public class WmiDiskServiceTests
     {
         Assert.Throws<ArgumentNullException>(() => WmiDiskService.WqlStringLiteral(null!));
     }
+
+    [Theory]
+    [InlineData("0", 0)]
+    [InlineData("12", 12)]
+    public void ParseDeviceNumber_AcceptsNonNegativeNumbers(string deviceId, int expected)
+    {
+        Assert.Equal(expected, WmiDiskService.ParseDeviceNumber(deviceId));
+    }
+
+    [Theory]
+    [InlineData("-1")]
+    [InlineData("1; Remove-Item C:\\")]
+    [InlineData("")]
+    public void ParseDeviceNumber_RejectsInvalidDeviceIds(string deviceId)
+    {
+        Assert.Throws<ArgumentException>(() => WmiDiskService.ParseDeviceNumber(deviceId));
+    }
 }
