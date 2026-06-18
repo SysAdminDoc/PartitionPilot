@@ -87,6 +87,9 @@ public class DiskUsageViewModel : ViewModelBase
             DriveLetters.Clear();
             foreach (var l in letters)
                 DriveLetters.Add(l);
+
+            if (!letters.Contains(SelectedDrive))
+                SelectedDrive = letters.FirstOrDefault();
         });
     }
 
@@ -102,6 +105,7 @@ public class DiskUsageViewModel : ViewModelBase
         IsBusy = true;
         StatusText = $"Scanning {SelectedDrive}:\\...";
         SummaryText = "";
+        var clearStatusWhenDone = true;
 
         try
         {
@@ -133,16 +137,21 @@ public class DiskUsageViewModel : ViewModelBase
         {
             _log.Log("Disk usage scan cancelled.");
             StatusText = "Scan cancelled.";
+            SummaryText = "Disk usage scan cancelled.";
+            clearStatusWhenDone = false;
         }
         catch (Exception ex)
         {
             _log.Log($"Disk usage scan failed: {ex.Message}");
             StatusText = $"Scan failed: {ex.Message}";
+            SummaryText = $"Scan failed: {ex.Message}";
+            clearStatusWhenDone = false;
         }
         finally
         {
             IsBusy = false;
-            StatusText = "";
+            if (clearStatusWhenDone)
+                StatusText = "";
         }
     }
 
