@@ -216,10 +216,11 @@ public class DiskImagesViewModel : ViewModelBase
             string diskType = VhdIsDynamic ? "expandable" : "fixed";
             string ext = System.IO.Path.GetExtension(VhdPath).ToLowerInvariant();
             string vdiskType = ext == ".vhdx" ? "vhdx" : "vhd";
+            VhdFileSystem = ProcessRunner.ValidateFileSystem(VhdFileSystem);
 
             _log.Log($"Creating {vdiskType.ToUpper()} ({diskType}): {VhdPath}, {VhdSizeGB:F1} GB...");
 
-            var sanitizedVhdPath = VhdPath.Replace("\"", "");
+            var sanitizedVhdPath = ProcessRunner.ValidateNativePathArgument(VhdPath);
             string attachScript = $"""
                 create vdisk file="{sanitizedVhdPath}" maximum={sizeMB} type={diskType}
                 select vdisk file="{sanitizedVhdPath}"

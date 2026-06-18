@@ -20,6 +20,7 @@
 - Fixed shell version display drift by deriving the visible app version from assembly metadata instead of a hardcoded string.
 - Fixed the Disk Usage results panel showing duplicate empty-state overlays before a scan.
 - Improved Disk Usage feedback by preserving cancelled/failed scan summaries and selecting the first available drive after refresh.
+- Hardened native disk-tool path handling by rejecting quotes/control characters instead of silently rewriting WIM/VHD paths, and validated SMART fallback device numbers before PowerShell interpolation.
 
 ## PartitionPilot v0.3.0 - 2026-06-16
 

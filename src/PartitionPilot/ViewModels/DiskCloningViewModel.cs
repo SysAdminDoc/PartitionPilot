@@ -212,7 +212,7 @@ public class DiskCloningViewModel : ViewModelBase
             if (ext == ".wim")
             {
                 _log.Log($"Creating WIM image of {SelectedSourceDrive}:\\ to {ImagePath}...");
-                var escapedPath = ImagePath.Replace("\"", "");
+                var escapedPath = ProcessRunner.ValidateNativePathArgument(ImagePath);
                 await _processRunner.RunExeAsync("dism.exe",
                     $"/Capture-Image /ImageFile:\"{escapedPath}\" /CaptureDir:{SelectedSourceDrive}:\\ /Name:\"PartitionPilot Capture\" /Compress:Fast",
                     _log, ct: ct);
@@ -224,7 +224,7 @@ public class DiskCloningViewModel : ViewModelBase
                 var sizeResult = await _processRunner.RunPowerShellAsync(sizeCmd, _log, ct);
                 var sizeMB = long.TryParse(sizeResult.Trim(), out var sizeBytes) ? sizeBytes / (1024 * 1024) + 100 : 50000;
 
-                var sanitizedImagePath = ImagePath.Replace("\"", "");
+                var sanitizedImagePath = ProcessRunner.ValidateNativePathArgument(ImagePath);
                 var script = $"""
                     create vdisk file="{sanitizedImagePath}" maximum={sizeMB} type=expandable
                     select vdisk file="{sanitizedImagePath}"
@@ -335,7 +335,7 @@ public class DiskCloningViewModel : ViewModelBase
                 var targetLetter = (await _processRunner.RunPowerShellAsync(letterCmd, _log, ct)).Trim();
                 var applyLetter = RequireDriveLetter(targetLetter, "target partition");
 
-                var escapedRestorePath = RestoreImagePath.Replace("\"", "");
+                var escapedRestorePath = ProcessRunner.ValidateNativePathArgument(RestoreImagePath);
                 await _processRunner.RunExeAsync("dism.exe",
                     $"/Apply-Image /ImageFile:\"{escapedRestorePath}\" /ApplyDir:{applyLetter}:\\ /Index:1", _log, ct: ct);
             }

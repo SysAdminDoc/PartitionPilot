@@ -28,6 +28,25 @@ public class ProcessRunnerTests
     }
 
     [Theory]
+    [InlineData(@"C:\Images\capture.wim")]
+    [InlineData(@"D:\Folder With Spaces\disk.vhdx")]
+    public void ValidateNativePathArgument_AllowsNormalPaths(string path)
+    {
+        Assert.Equal(path, ProcessRunner.ValidateNativePathArgument(path));
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    [InlineData("C:\\bad\"path.vhdx")]
+    [InlineData("C:\\bad\r\nclean.vhdx")]
+    [InlineData("C:\\bad\0path.vhdx")]
+    public void ValidateNativePathArgument_RejectsUnsafeNativeToolPaths(string path)
+    {
+        Assert.Throws<ArgumentException>(() => ProcessRunner.ValidateNativePathArgument(path));
+    }
+
+    [Theory]
     [InlineData('c', 'C')]
     [InlineData('D', 'D')]
     [InlineData('z', 'Z')]

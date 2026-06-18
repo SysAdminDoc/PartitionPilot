@@ -268,8 +268,9 @@ public class WmiDiskService : IWmiDiskService
         // Attempt 2: PowerShell fallback
         try
         {
+            var deviceNumber = ParseDeviceNumber(deviceId);
             var json = await _runner.RunPowerShellAsync(
-                $"Get-StorageReliabilityCounter -PhysicalDisk (Get-PhysicalDisk -DeviceNumber {deviceId}) | ConvertTo-Json");
+                $"Get-StorageReliabilityCounter -PhysicalDisk (Get-PhysicalDisk -DeviceNumber {deviceNumber}) | ConvertTo-Json");
 
             if (string.IsNullOrWhiteSpace(json)) return null;
 
@@ -531,6 +532,14 @@ public class WmiDiskService : IWmiDiskService
     {
         ArgumentNullException.ThrowIfNull(value);
         return $"'{value.Replace("'", "''")}'";
+    }
+
+    public static int ParseDeviceNumber(string deviceId)
+    {
+        if (!int.TryParse(deviceId, out var deviceNumber) || deviceNumber < 0)
+            throw new ArgumentException($"Invalid physical disk device number: {deviceId}", nameof(deviceId));
+
+        return deviceNumber;
     }
 
     private void LogWmiFailure(string operation, string scope, string wmiClass, Exception ex)
