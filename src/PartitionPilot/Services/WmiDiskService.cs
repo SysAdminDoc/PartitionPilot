@@ -501,7 +501,7 @@ public class WmiDiskService : IWmiDiskService
             var scope = new ManagementScope(@"\\.\root\CIMV2\Security\MicrosoftVolumeEncryption");
             scope.Connect();
             using var searcher = new ManagementObjectSearcher(scope,
-                new ObjectQuery("SELECT DriveLetter, ProtectionStatus FROM Win32_EncryptableVolume"));
+                new ObjectQuery("SELECT DriveLetter, ProtectionStatus, LockStatus FROM Win32_EncryptableVolume"));
 
             foreach (ManagementObject obj in searcher.Get())
             {
@@ -514,13 +514,7 @@ public class WmiDiskService : IWmiDiskService
                     if (!char.IsLetter(letter)) continue;
 
                     var status = Convert.ToInt32(obj["ProtectionStatus"] ?? 0);
-                    var statusText = status switch
-                    {
-                        0 => "BitLocker: Off",
-                        1 => "BitLocker: On",
-                        2 => "BitLocker: Unknown",
-                        _ => ""
-                    };
+                    var statusText = BitLockerPreflight.MapStatus(status, GetNullableInt(obj, "LockStatus"));
 
                     if (!string.IsNullOrEmpty(statusText))
                         result[char.ToUpperInvariant(letter)] = statusText;

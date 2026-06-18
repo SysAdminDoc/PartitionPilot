@@ -13,6 +13,7 @@ public class DiskCloningViewModel : ViewModelBase
     private readonly ActivityLog _log;
     private readonly IDialogService _dialog;
     private readonly Dictionary<char, VolumeInfo> _volumeByLetter = new();
+    private readonly Dictionary<char, string> _sourceBitLockerByLetter = new();
 
     public ObservableCollection<DiskInfo> AllDisks { get; } = new();
     public ObservableCollection<char> DriveLetters { get; } = new();
@@ -124,6 +125,7 @@ public class DiskCloningViewModel : ViewModelBase
     {
         var disks = await _wmiService.GetDisksAsync();
         var volumes = await _wmiService.GetVolumesAsync();
+        var bitlockerStatus = await _wmiService.GetBitLockerStatusAsync();
         var letters = volumes
             .Where(v => v.DriveLetter.HasValue)
             .Select(v => v.DriveLetter!.Value)
@@ -137,7 +139,15 @@ public class DiskCloningViewModel : ViewModelBase
 
             _volumeByLetter.Clear();
             foreach (var v in volumes.Where(v => v.DriveLetter.HasValue))
+            {
+                if (bitlockerStatus.TryGetValue(v.DriveLetter!.Value, out var encryptionStatus))
+                    v.EncryptionStatus = encryptionStatus;
                 _volumeByLetter[char.ToUpperInvariant(v.DriveLetter!.Value)] = v;
+            }
+
+            _sourceBitLockerByLetter.Clear();
+            foreach (var pair in bitlockerStatus)
+                _sourceBitLockerByLetter[char.ToUpperInvariant(pair.Key)] = pair.Value;
 
             DriveLetters.Clear();
             foreach (var l in letters) DriveLetters.Add(l);
@@ -171,6 +181,19 @@ public class DiskCloningViewModel : ViewModelBase
     {
         if (SelectedSourceDrive == default || string.IsNullOrWhiteSpace(ImagePath)) return;
 
+        ImageDestinationPreflight preflight;
+        try
+        {
+            GuardSourceVolumeForImageCapture(SelectedSourceDrive);
+            preflight = PreflightSelectedImageDestination();
+        }
+        catch (Exception ex)
+        {
+            _log.Log($"Image creation preflight failed: {ex.Message}");
+            _dialog.ShowError($"Image creation cannot start:\n{ex.Message}", "Create Image Preflight");
+            return;
+        }
+
         _cts?.Cancel();
         _cts?.Dispose();
         _cts = new CancellationTokenSource();
@@ -180,7 +203,6 @@ public class DiskCloningViewModel : ViewModelBase
 
         try
         {
-            var preflight = PreflightSelectedImageDestination();
             ImagePath = preflight.FullPath;
             _log.Log(
                 $"Image destination preflight passed: required {SizeUtil.Format(preflight.EstimatedRequiredBytes)}, destination free {SizeUtil.Format(preflight.DestinationFreeBytes)} on {preflight.DestinationRoot}.");
@@ -248,6 +270,17 @@ public class DiskCloningViewModel : ViewModelBase
     private async Task RestoreImageAsync()
     {
         if (SelectedTargetDisk is null || string.IsNullOrWhiteSpace(RestoreImagePath)) return;
+
+        var protectedTargets = await GetBitLockerProtectedTargetsAsync(SelectedTargetDisk.Number);
+        if (protectedTargets.Count > 0 &&
+            !_dialog.ConfirmDanger(
+                BitLockerPreflight.BuildDestructiveConfirmation(
+                    $"Restore image to Disk {SelectedTargetDisk.Number}",
+                    protectedTargets),
+                "Confirm BitLocker-Protected Restore"))
+        {
+            return;
+        }
 
         if (!_dialog.ConfirmDanger(
             $"WARNING: Restoring to Disk {SelectedTargetDisk.Number} ({SelectedTargetDisk.FriendlyName}) will DESTROY ALL DATA on the target disk.\n\nContinue?",
@@ -396,6 +429,32 @@ public class DiskCloningViewModel : ViewModelBase
         return _volumeByLetter.TryGetValue(char.ToUpperInvariant(SelectedSourceDrive), out var volume)
             ? EstimateImageBytes(volume.Size, volume.SizeRemaining)
             : 0;
+    }
+
+    private void GuardSourceVolumeForImageCapture(char sourceDrive)
+    {
+        var key = char.ToUpperInvariant(sourceDrive);
+        if (!_sourceBitLockerByLetter.TryGetValue(key, out var status) || !BitLockerPreflight.RequiresUnlockForRead(status))
+            return;
+
+        throw new InvalidOperationException(
+            BitLockerPreflight.BuildUnlockRequiredMessage($"Create an image from {key}:", $"{key}:", status));
+    }
+
+    private async Task<List<string>> GetBitLockerProtectedTargetsAsync(int diskNumber)
+    {
+        var partitions = await _wmiService.GetPartitionsAsync(diskNumber);
+        var bitlockerStatus = await _wmiService.GetBitLockerStatusAsync();
+        foreach (var partition in partitions.Where(p => p.DriveLetter.HasValue))
+        {
+            if (bitlockerStatus.TryGetValue(partition.DriveLetter!.Value, out var status))
+                partition.EncryptionStatus = status;
+        }
+
+        return partitions
+            .Where(p => BitLockerPreflight.IsProtected(p.EncryptionStatus))
+            .Select(BitLockerPreflight.DescribePartitionTarget)
+            .ToList();
     }
 
     public static long EstimateImageBytes(long sourceSizeBytes, long sourceFreeBytes)
