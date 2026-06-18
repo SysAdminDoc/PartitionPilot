@@ -83,4 +83,24 @@ public class ProcessRunnerTests
     {
         Assert.Throws<ArgumentException>(() => ProcessRunner.ValidateFileSystem(fs));
     }
+
+    [Theory]
+    [InlineData(null, null)]
+    [InlineData("", null)]
+    [InlineData(" 32768 ", "32768")]
+    [InlineData("65536", "65536")]
+    public void ValidateAllocationUnitSize_AcceptsEmptyOrKnownClusterSizes(string? input, string? expected)
+    {
+        Assert.Equal(expected, ProcessRunner.ValidateAllocationUnitSize(input));
+    }
+
+    [Theory]
+    [InlineData("0")]
+    [InlineData("12345")]
+    [InlineData("32768 quick")]
+    [InlineData("65536\r\nclean")]
+    public void ValidateAllocationUnitSize_RejectsUnsafeOrUnsupportedValues(string input)
+    {
+        Assert.Throws<ArgumentException>(() => ProcessRunner.ValidateAllocationUnitSize(input));
+    }
 }

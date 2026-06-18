@@ -22,6 +22,7 @@
 - Improved Disk Usage feedback by preserving cancelled/failed scan summaries and selecting the first available drive after refresh.
 - Hardened native disk-tool path handling by rejecting quotes/control characters instead of silently rewriting WIM/VHD paths, and validated SMART fallback device numbers before PowerShell interpolation.
 - Fixed the Disk Images VHD type selector so choosing Fixed actually creates a fixed-size virtual disk instead of leaving the operation in dynamic mode.
+- Hardened partition formatting and drive-letter operations by validating DiskPart allocation-unit and drive-letter inputs at the view-model command boundary.
 
 ## PartitionPilot v0.3.0 - 2026-06-16
 

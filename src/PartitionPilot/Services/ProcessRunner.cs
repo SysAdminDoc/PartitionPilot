@@ -137,4 +137,19 @@ public class ProcessRunner : IProcessRunner
             throw new ArgumentException($"Unsupported file system: {fs}");
         return fs;
     }
+
+    private static readonly HashSet<string> AllowedAllocationUnitSizes = new(StringComparer.Ordinal)
+        { "512", "1024", "2048", "4096", "8192", "16384", "32768", "65536" };
+
+    public static string? ValidateAllocationUnitSize(string? allocationUnitSize)
+    {
+        if (string.IsNullOrWhiteSpace(allocationUnitSize))
+            return null;
+
+        var normalized = allocationUnitSize.Trim();
+        if (!AllowedAllocationUnitSizes.Contains(normalized))
+            throw new ArgumentException($"Unsupported allocation unit size: {allocationUnitSize}");
+
+        return normalized;
+    }
 }

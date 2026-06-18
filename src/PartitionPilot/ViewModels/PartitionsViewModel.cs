@@ -375,6 +375,7 @@ public class PartitionsViewModel : ViewModelBase
             letter = ProcessRunner.ValidateDriveLetter(letter);
             label = ProcessRunner.SanitizeLabel(label);
             fs = ProcessRunner.ValidateFileSystem(fs);
+            allocationUnitSize = ProcessRunner.ValidateAllocationUnitSize(allocationUnitSize);
             var partition = FindPartitionByLetter(letter);
             if (!ConfirmBitLockerDestructiveOperation(partition, $"Format {letter}:"))
                 return;
@@ -491,6 +492,10 @@ public class PartitionsViewModel : ViewModelBase
         IsBusy = true;
         try
         {
+            if (partNum <= 0)
+                throw new ArgumentException($"Invalid partition number: {partNum}", nameof(partNum));
+            newLetter = ProcessRunner.ValidateDriveLetter(newLetter);
+
             _log.Log($"Changing drive letter for Disk {SelectedDisk.Number}, Partition {partNum} to {newLetter}:...");
 
             var partition = Partitions.FirstOrDefault(p => p.PartitionNumber == partNum);
