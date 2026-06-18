@@ -55,8 +55,11 @@ public partial class PartitionsView : UserControl
         }
         var dlg = new FormatPartitionDialog(part.DriveLetter.Value, part.FileSystem, part.Size) { Owner = Window.GetWindow(this) };
         if (dlg.ShowDialog() != true) return;
+        var encryptionLine = string.IsNullOrWhiteSpace(part.EncryptionStatus)
+            ? ""
+            : $"\nEncryption: {part.EncryptionStatus}\n";
         var confirm = _dialog.ConfirmWarning(
-            $"Format {part.DriveLetter}: as {dlg.FileSystem}?\n\nALL DATA ON THIS VOLUME WILL BE ERASED.\n\nThis action cannot be undone.",
+            $"Format {part.DriveLetter}: as {dlg.FileSystem}?\n{encryptionLine}\nALL DATA ON THIS VOLUME WILL BE ERASED.\n\nThis action cannot be undone.",
             "Confirm Format");
         if (confirm)
             await vm.ExecuteFormatAsync(part.DriveLetter.Value, dlg.FileSystem, dlg.VolumeLabel, dlg.QuickFormat, dlg.AllocationUnitSize);

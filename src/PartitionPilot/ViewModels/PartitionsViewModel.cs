@@ -370,12 +370,16 @@ public class PartitionsViewModel : ViewModelBase
 
     public async Task ExecuteFormatAsync(char letter, string fs, string label, bool quick, string? allocationUnitSize = null)
     {
-        IsBusy = true;
         try
         {
             letter = ProcessRunner.ValidateDriveLetter(letter);
             label = ProcessRunner.SanitizeLabel(label);
             fs = ProcessRunner.ValidateFileSystem(fs);
+            var partition = FindPartitionByLetter(letter);
+            if (!ConfirmBitLockerDestructiveOperation(partition, $"Format {letter}:"))
+                return;
+
+            IsBusy = true;
             _log.Log($"Formatting {letter}: as {fs} (label=\"{label}\", quick={quick})...");
 
             if (SelectedDisk is not null)
@@ -405,10 +409,14 @@ public class PartitionsViewModel : ViewModelBase
 
     public async Task ExecuteResizeAsync(char letter, long newSizeBytes)
     {
-        IsBusy = true;
         try
         {
             letter = ProcessRunner.ValidateDriveLetter(letter);
+            var partition = FindPartitionByLetter(letter);
+            if (!GuardBitLockerMutation(partition, $"Resize {letter}:"))
+                return;
+
+            IsBusy = true;
             _log.Log($"Resizing {letter}: to {SizeUtil.Format(newSizeBytes)}...");
             using var volumeLock = VolumeLockService.RequireLock(letter, _log);
 
@@ -430,13 +438,17 @@ public class PartitionsViewModel : ViewModelBase
 
     public async Task ExecuteSplitAsync(char letter, double newPartGB, char newLetter, string fs, string label)
     {
-        IsBusy = true;
         try
         {
             letter = ProcessRunner.ValidateDriveLetter(letter);
             newLetter = ProcessRunner.ValidateDriveLetter(newLetter);
             label = ProcessRunner.SanitizeLabel(label);
             fs = ProcessRunner.ValidateFileSystem(fs);
+            var partition = FindPartitionByLetter(letter);
+            if (!GuardBitLockerMutation(partition, $"Split {letter}:"))
+                return;
+
+            IsBusy = true;
             if (SelectedDisk is not null)
                 await _backup.SaveSnapshotAsync(SelectedDisk.Number);
             _log.Log($"Splitting {letter}: shrink by {newPartGB:F2} GB, new partition {newLetter}:...");
@@ -526,19 +538,26 @@ public class PartitionsViewModel : ViewModelBase
         if (!await GuardRecoveryPartitionOperationAsync(part, "delete"))
             return;
 
+        var encryptionLine = string.IsNullOrWhiteSpace(part.EncryptionStatus)
+            ? ""
+            : $"\nEncryption: {part.EncryptionStatus}";
+
         if (part.IsCritical)
         {
             if (!_dialog.ConfirmDanger(
                 $"CRITICAL: Partition {part.PartitionNumber} is a {part.Type} partition" +
                 (part.IsBoot ? " (Boot)" : "") + (part.IsSystem ? " (System)" : "") +
-                $".\n\nDeleting it may make the system unbootable.\n\nDisk: {SelectedDisk.Number}, Letter: {part.LetterDisplay}, Size: {part.SizeText}\n\n" +
+                $".\n\nDeleting it may make the system unbootable.\n\nDisk: {SelectedDisk.Number}, Letter: {part.LetterDisplay}, Size: {part.SizeText}{encryptionLine}\n\n" +
                 "Type YES to confirm this destructive action.",
                 "Delete Critical Partition")) return;
         }
 
+        if (!ConfirmBitLockerDestructiveOperation(part, $"Delete partition {part.PartitionNumber}"))
+            return;
+
         if (!_dialog.ConfirmWarning(
             $"Delete partition {part.PartitionNumber} on Disk {SelectedDisk.Number}?\n" +
-            $"Letter: {part.LetterDisplay}, Size: {part.SizeText}\n\n" +
+            $"Letter: {part.LetterDisplay}, Size: {part.SizeText}{encryptionLine}\n\n" +
             "ALL DATA ON THIS PARTITION WILL BE LOST.",
             "Confirm Delete")) return;
 
@@ -580,6 +599,9 @@ public class PartitionsViewModel : ViewModelBase
 
         var part = SelectedPartition;
         if (!await GuardRecoveryPartitionOperationAsync(part, "extend"))
+            return;
+
+        if (!GuardBitLockerMutation(part, $"Extend partition {part.PartitionNumber}"))
             return;
 
         // Warn about recovery / pagefile / system partitions
@@ -712,6 +734,36 @@ public class PartitionsViewModel : ViewModelBase
             reagentInfo,
             "Recovery Environment Guard");
         return false;
+    }
+
+    private PartitionInfo? FindPartitionByLetter(char letter)
+    {
+        letter = char.ToUpperInvariant(letter);
+        return Partitions.FirstOrDefault(p => p.DriveLetter.HasValue && char.ToUpperInvariant(p.DriveLetter.Value) == letter);
+    }
+
+    private bool GuardBitLockerMutation(PartitionInfo? partition, string operation)
+    {
+        if (partition is null || !BitLockerPreflight.RequiresSuspensionForMutation(partition.EncryptionStatus))
+            return true;
+
+        _log.Log($"{operation} blocked by BitLocker state: {BitLockerPreflight.Describe(partition.EncryptionStatus)}");
+        _dialog.ShowError(
+            BitLockerPreflight.BuildMutationBlockedMessage(operation, partition.PartitionDisplay, partition.EncryptionStatus),
+            "BitLocker Protection Active");
+        return false;
+    }
+
+    private bool ConfirmBitLockerDestructiveOperation(PartitionInfo? partition, string operation)
+    {
+        if (partition is null || !BitLockerPreflight.IsProtected(partition.EncryptionStatus))
+            return true;
+
+        return _dialog.ConfirmDanger(
+            BitLockerPreflight.BuildDestructiveConfirmation(
+                operation,
+                new[] { BitLockerPreflight.DescribePartitionTarget(partition) }),
+            "Confirm BitLocker-Protected Data Loss");
     }
 
     private async Task ExecuteSetActiveAsync()

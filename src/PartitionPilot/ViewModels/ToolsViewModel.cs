@@ -328,6 +328,9 @@ public class ToolsViewModel : ViewModelBase
             "Minimum 50 GB is recommended.",
             "Create Dev Drive")) return;
 
+        if (!ConfirmBitLockerDestructiveVolume($"Create Dev Drive on {SelectedDevDriveLetter}:", SelectedDevDriveLetter))
+            return;
+
         var ct = BeginOperation($"Creating Dev Drive on {SelectedDevDriveLetter}:...");
         try
         {
@@ -503,6 +506,7 @@ public class ToolsViewModel : ViewModelBase
             var disks = await _wmiService.GetDisksAsync();
             var volumes = await _wmiService.GetVolumesAsync();
             var physicalDisks = await _wmiService.GetPhysicalDisksAsync();
+            var bitlockerStatus = await _wmiService.GetBitLockerStatusAsync();
 
             var mbrOnly = disks.Where(d => d.PartitionStyle.Equals("MBR", StringComparison.OrdinalIgnoreCase)).ToList();
             var letters = volumes
@@ -520,6 +524,12 @@ public class ToolsViewModel : ViewModelBase
             Application.Current.Dispatcher.Invoke(() =>
             {
                 _physicalDisks = physicalDisks;
+
+                foreach (var volume in volumes.Where(v => v.DriveLetter.HasValue))
+                {
+                    if (bitlockerStatus.TryGetValue(volume.DriveLetter!.Value, out var status))
+                        volume.EncryptionStatus = status;
+                }
 
                 MbrDisks.Clear();
                 foreach (var d in mbrOnly)
@@ -731,8 +741,21 @@ public class ToolsViewModel : ViewModelBase
     {
         if (SelectedWipeVolume?.DriveLetter is not char letter) return;
 
+        var encryptionStatus = SelectedWipeVolume.EncryptionStatus;
+        if (BitLockerPreflight.RequiresUnlockForRead(encryptionStatus))
+        {
+            _dialog.ShowError(
+                BitLockerPreflight.BuildUnlockRequiredMessage($"Wipe free space on {letter}:", $"{letter}:", encryptionStatus),
+                "BitLocker Volume Locked");
+            return;
+        }
+
+        if (!ConfirmBitLockerDestructiveVolume($"Wipe free space on {letter}:", letter, encryptionStatus))
+            return;
+
+        var encryptionLine = string.IsNullOrWhiteSpace(encryptionStatus) ? "" : $"\nEncryption: {encryptionStatus}\n";
         if (!_dialog.Confirm(
-            $"Wipe free space on {letter}:?\n\nExisting files remain in place. Previously deleted data in free space will be overwritten.",
+            $"Wipe free space on {letter}:?\n{encryptionLine}\nExisting files remain in place. Previously deleted data in free space will be overwritten.",
             "Confirm Free-Space Wipe")) return;
 
         var ct = BeginOperation($"Wiping free space on {letter}:...");
@@ -775,6 +798,17 @@ public class ToolsViewModel : ViewModelBase
         var method = UseCryptoErase
             ? SecureEraseService.SanitizeMethod.CryptoErase
             : SecureEraseService.SanitizeMethod.BlockErase;
+
+        var protectedTargets = await GetBitLockerProtectedTargetsAsync(SelectedWipeDrive.Number);
+        if (protectedTargets.Count > 0 &&
+            !_dialog.ConfirmDanger(
+                BitLockerPreflight.BuildDestructiveConfirmation(
+                    $"NVMe sanitize Disk {SelectedWipeDrive.Number}",
+                    protectedTargets),
+                "Confirm BitLocker-Protected Sanitize"))
+        {
+            return;
+        }
 
         if (!_dialog.ConfirmDanger(
             $"NVMe FIRMWARE ERASE on Disk {SelectedWipeDrive.Number} ({SelectedWipeDrive.FriendlyName}).\n\n" +
@@ -831,6 +865,17 @@ public class ToolsViewModel : ViewModelBase
         }
 
         if (SelectedWipeDrive is null) return;
+
+        var protectedTargets = await GetBitLockerProtectedTargetsAsync(SelectedWipeDrive.Number);
+        if (protectedTargets.Count > 0 &&
+            !_dialog.ConfirmDanger(
+                BitLockerPreflight.BuildDestructiveConfirmation(
+                    $"Wipe Disk {SelectedWipeDrive.Number}",
+                    protectedTargets),
+                "Confirm BitLocker-Protected Wipe"))
+        {
+            return;
+        }
 
         if (!_dialog.ConfirmWarning(
             $"WARNING: You are about to wipe Disk {SelectedWipeDrive.Number} ({SelectedWipeDrive.FriendlyName}).\n\n" +
@@ -916,6 +961,47 @@ public class ToolsViewModel : ViewModelBase
             foreach (var l in locks) l?.Dispose();
             EndOperation();
         }
+    }
+
+    private bool ConfirmBitLockerDestructiveVolume(string operation, char letter)
+    {
+        return ConfirmBitLockerDestructiveVolume(operation, letter, GetVolumeEncryptionStatus(letter));
+    }
+
+    private bool ConfirmBitLockerDestructiveVolume(string operation, char letter, string? encryptionStatus)
+    {
+        if (!BitLockerPreflight.IsProtected(encryptionStatus))
+            return true;
+
+        return _dialog.ConfirmDanger(
+            BitLockerPreflight.BuildDestructiveConfirmation(
+                operation,
+                new[] { $"{char.ToUpperInvariant(letter)}: {BitLockerPreflight.Describe(encryptionStatus)}" }),
+            "Confirm BitLocker-Protected Data Loss");
+    }
+
+    private string? GetVolumeEncryptionStatus(char letter)
+    {
+        letter = char.ToUpperInvariant(letter);
+        return WipeVolumes.FirstOrDefault(v =>
+            v.DriveLetter.HasValue &&
+            char.ToUpperInvariant(v.DriveLetter.Value) == letter)?.EncryptionStatus;
+    }
+
+    private async Task<List<string>> GetBitLockerProtectedTargetsAsync(int diskNumber)
+    {
+        var partitions = await _wmiService.GetPartitionsAsync(diskNumber);
+        var bitlockerStatus = await _wmiService.GetBitLockerStatusAsync();
+        foreach (var partition in partitions.Where(p => p.DriveLetter.HasValue))
+        {
+            if (bitlockerStatus.TryGetValue(partition.DriveLetter!.Value, out var status))
+                partition.EncryptionStatus = status;
+        }
+
+        return partitions
+            .Where(p => BitLockerPreflight.IsProtected(p.EncryptionStatus))
+            .Select(BitLockerPreflight.DescribePartitionTarget)
+            .ToList();
     }
 
     // ──────────────────────── Boot Repair ────────────────────────
