@@ -46,23 +46,6 @@
 
             <Border Style="{StaticResource Card}" Padding="0">
                 <Grid>
-                    <Border MinHeight="100">
-                        <Border.Style>
-                            <Style TargetType="Border" BasedOn="{StaticResource EmptyStatePanel}">
-                                <Setter Property="Visibility" Value="Collapsed"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding TopFolders.Count}" Value="0">
-                                        <Setter Property="Visibility" Value="Visible"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Border.Style>
-                        <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="No scan results" Style="{StaticResource EmptyStateTitle}"/>
-                            <TextBlock Text="Select a drive above and click Scan to analyze folder sizes."
-                                       Style="{StaticResource EmptyStateText}" Margin="0"/>
-                        </StackPanel>
-                    </Border>
                     <ListView ItemsSource="{Binding TopFolders}"
                               BorderThickness="0"
                               Background="Transparent"

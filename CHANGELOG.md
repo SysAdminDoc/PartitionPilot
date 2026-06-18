@@ -18,6 +18,8 @@
 - Added an operation cleanup scope for temporary VHD attachments, restore image mounts, EFI access paths, and benchmark temp files so failure/cancel paths log recovery guidance and attempt cleanup consistently.
 - Added a partition snapshot browser with read-only history, current-layout comparison, JSON export, and copyable non-destructive recovery guidance.
 - Fixed shell version display drift by deriving the visible app version from assembly metadata instead of a hardcoded string.
+- Fixed the Disk Usage results panel showing duplicate empty-state overlays before a scan.
+- Improved Disk Usage feedback by preserving cancelled/failed scan summaries and selecting the first available drive after refresh.
 
 ## PartitionPilot v0.3.0 - 2026-06-16
 
