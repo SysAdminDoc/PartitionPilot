@@ -11,6 +11,7 @@ PartitionPilot is a Windows disk partition management tool for power users and I
 ## Features
 
 - Partition overview with disk map, partition table, and contextual actions.
+- Partition snapshot history with JSON export, current-layout comparison, and guided recovery notes.
 - Create, delete, format, resize, extend, split, hide, and drive-letter operations.
 - Disk health and SMART reliability data with 4K alignment review.
 - BitLocker encryption status per volume.

@@ -121,6 +121,15 @@
                 </TabItem.Header>
                 <views:PartitionsView DataContext="{Binding Partitions}"/>
             </TabItem>
+            <TabItem Style="{StaticResource NavTabItem}" AutomationProperties.Name="Snapshots tab">
+                <TabItem.Header>
+                    <StackPanel>
+                        <TextBlock Text="Snapshots" Style="{StaticResource NavTitleText}"/>
+                        <TextBlock Text="Recovery evidence" Style="{StaticResource NavSubtitleText}"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <views:SnapshotBrowserView DataContext="{Binding Snapshots}"/>
+            </TabItem>
             <TabItem Style="{StaticResource NavTabItem}" AutomationProperties.Name="Disk Health tab">
                 <TabItem.Header>
                     <StackPanel>

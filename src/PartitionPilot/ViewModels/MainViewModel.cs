@@ -13,6 +13,7 @@ public class MainViewModel : ViewModelBase
 
     public ActivityLog Log { get; }
     public PartitionsViewModel Partitions { get; }
+    public SnapshotBrowserViewModel Snapshots { get; }
     public DiskHealthViewModel DiskHealth { get; }
     public ToolsViewModel Tools { get; }
     public DiskImagesViewModel DiskImages { get; }
@@ -67,6 +68,7 @@ public class MainViewModel : ViewModelBase
         _dialog = new MessageBoxDialogService();
 
         Partitions = new PartitionsViewModel(_wmiService, _processRunner, Log, _dialog);
+        Snapshots = new SnapshotBrowserViewModel(new PartitionTableBackup(_wmiService, Log), Log, _dialog);
         DiskHealth = new DiskHealthViewModel(_wmiService, Log);
         Tools = new ToolsViewModel(_wmiService, _processRunner, Log, _dialog);
         DiskImages = new DiskImagesViewModel(_processRunner, _wmiService, Log, _dialog);
@@ -164,22 +166,26 @@ public class MainViewModel : ViewModelBase
                 await Partitions.LoadDisksAsync();
                 break;
             case 1:
+                StatusText = "Loading partition snapshots...";
+                await Snapshots.RefreshAsync();
+                break;
+            case 2:
                 StatusText = "Loading disk health data...";
                 await DiskHealth.RefreshAsync();
                 break;
-            case 2:
+            case 3:
                 StatusText = "Loading tools drive lists...";
                 await Tools.RefreshDriveListsAsync();
                 break;
-            case 3:
+            case 4:
                 StatusText = "Loading disk images...";
                 await DiskImages.RefreshAsync();
                 break;
-            case 4:
+            case 5:
                 StatusText = "Loading drive list...";
                 await DiskUsage.RefreshDrivesAsync();
                 break;
-            case 5:
+            case 6:
                 StatusText = "Loading cloning data...";
                 await DiskCloning.RefreshAsync();
                 break;
