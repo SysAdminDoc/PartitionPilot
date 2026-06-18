@@ -65,6 +65,11 @@
                                          Height="34"
                                          AutomationProperties.Name="Image file path"/>
                             </DockPanel>
+                            <TextBlock Text="{Binding ImagePreflightSummary}"
+                                       Style="{StaticResource CaptionText}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,0,0,10"
+                                       AutomationProperties.Name="Image destination preflight"/>
                             <Button Content="Create Image"
                                     Style="{StaticResource PrimaryButton}"
                                     Command="{Binding CreateImageCommand}"
