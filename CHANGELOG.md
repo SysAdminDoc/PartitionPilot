@@ -17,6 +17,7 @@
 - Added BitLocker-aware preflights that block protected partition mutations until protection is suspended/unlocked and add stronger confirmations for encrypted format, delete, clone restore, Dev Drive, and wipe flows.
 - Added an operation cleanup scope for temporary VHD attachments, restore image mounts, EFI access paths, and benchmark temp files so failure/cancel paths log recovery guidance and attempt cleanup consistently.
 - Added a partition snapshot browser with read-only history, current-layout comparison, JSON export, and copyable non-destructive recovery guidance.
+- Fixed shell version display drift by deriving the visible app version from assembly metadata instead of a hardcoded string.
 
 ## PartitionPilot v0.3.0 - 2026-06-16
 
