@@ -23,6 +23,7 @@
 - Hardened native disk-tool path handling by rejecting quotes/control characters instead of silently rewriting WIM/VHD paths, and validated SMART fallback device numbers before PowerShell interpolation.
 - Fixed the Disk Images VHD type selector so choosing Fixed actually creates a fixed-size virtual disk instead of leaving the operation in dynamic mode.
 - Hardened partition formatting and drive-letter operations by validating DiskPart allocation-unit and drive-letter inputs at the view-model command boundary.
+- Corrected SSD wear health classification so low wear percentages are treated as healthy and high wear percentages near the documented limit trigger warnings or critical status.
 
 ## PartitionPilot v0.3.0 - 2026-06-16
 

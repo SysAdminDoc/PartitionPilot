@@ -167,7 +167,7 @@
 
                             <TextBlock Grid.Row="0" Grid.Column="0" Text="Temperature" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
                             <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding TemperatureText}" Margin="0,3"/>
-                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Wear Level" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Wear Used" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
                             <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding WearText}" Margin="0,3"/>
                             <TextBlock Grid.Row="2" Grid.Column="0" Text="Power-On Time" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
                             <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding PowerOnText}" Margin="0,3"/>
