@@ -128,12 +128,22 @@
                                        Style="{StaticResource CaptionText}"
                                        Margin="0,0,0,10"/>
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                                <RadioButton Content="Free space" IsChecked="{Binding WipeIsFreeSpace}"/>
-                                <RadioButton Content="Entire disk" IsChecked="{Binding WipeIsFullDisk}" Foreground="{DynamicResource DangerBrush}"/>
-                                 <RadioButton Content="NVMe firmware erase" IsChecked="{Binding WipeIsNvmeSanitize}"
-                                              IsEnabled="{Binding IsNvmeSanitizeAvailable}"
-                                              Foreground="{DynamicResource DangerBrush}"
-                                              ToolTip="{Binding NvmeSanitizeAvailabilityText}"/>
+                                <RadioButton Content="Free space"
+                                             GroupName="WipeMode"
+                                             IsChecked="{Binding WipeIsFreeSpace}"
+                                             AutomationProperties.Name="Wipe free space only"/>
+                                <RadioButton Content="Entire disk"
+                                             GroupName="WipeMode"
+                                             IsChecked="{Binding WipeIsFullDisk}"
+                                             Foreground="{DynamicResource DangerBrush}"
+                                             AutomationProperties.Name="Wipe entire disk"/>
+                                <RadioButton Content="NVMe firmware erase"
+                                             GroupName="WipeMode"
+                                             IsChecked="{Binding WipeIsNvmeSanitize}"
+                                             IsEnabled="{Binding IsNvmeSanitizeAvailable}"
+                                             Foreground="{DynamicResource DangerBrush}"
+                                             ToolTip="{Binding NvmeSanitizeAvailabilityText}"
+                                             AutomationProperties.Name="NVMe firmware erase"/>
                             </StackPanel>
 
                             <Grid Margin="0,0,0,10">

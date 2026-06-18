@@ -232,7 +232,7 @@ public class ToolsViewModel : ViewModelBase
 
     public bool WipeIsFullDisk
     {
-        get => WipeMode != "FreeSpace";
+        get => WipeMode == "SinglePass";
         set { if (value) WipeMode = "SinglePass"; }
     }
 
