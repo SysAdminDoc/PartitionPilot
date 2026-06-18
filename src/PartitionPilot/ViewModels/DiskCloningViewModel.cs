@@ -12,6 +12,7 @@ public class DiskCloningViewModel : ViewModelBase
     private readonly WmiDiskService _wmiService;
     private readonly ActivityLog _log;
     private readonly IDialogService _dialog;
+    private readonly Dictionary<char, VolumeInfo> _volumeByLetter = new();
 
     public ObservableCollection<DiskInfo> AllDisks { get; } = new();
     public ObservableCollection<char> DriveLetters { get; } = new();
@@ -24,7 +25,10 @@ public class DiskCloningViewModel : ViewModelBase
         set
         {
             if (SetProperty(ref _selectedSourceDrive, value))
+            {
+                UpdateImagePreflightSummary();
                 CommandManager.InvalidateRequerySuggested();
+            }
         }
     }
 
@@ -35,8 +39,18 @@ public class DiskCloningViewModel : ViewModelBase
         set
         {
             if (SetProperty(ref _imagePath, value))
+            {
+                UpdateImagePreflightSummary();
                 CommandManager.InvalidateRequerySuggested();
+            }
         }
+    }
+
+    private string _imagePreflightSummary = "Choose a source volume and destination path to check free space before capture.";
+    public string ImagePreflightSummary
+    {
+        get => _imagePreflightSummary;
+        set => SetProperty(ref _imagePreflightSummary, value);
     }
 
     // Restore Image
@@ -120,8 +134,14 @@ public class DiskCloningViewModel : ViewModelBase
         {
             AllDisks.Clear();
             foreach (var d in disks) AllDisks.Add(d);
+
+            _volumeByLetter.Clear();
+            foreach (var v in volumes.Where(v => v.DriveLetter.HasValue))
+                _volumeByLetter[char.ToUpperInvariant(v.DriveLetter!.Value)] = v;
+
             DriveLetters.Clear();
             foreach (var l in letters) DriveLetters.Add(l);
+            UpdateImagePreflightSummary();
         });
     }
 
@@ -160,6 +180,11 @@ public class DiskCloningViewModel : ViewModelBase
 
         try
         {
+            var preflight = PreflightSelectedImageDestination();
+            ImagePath = preflight.FullPath;
+            _log.Log(
+                $"Image destination preflight passed: required {SizeUtil.Format(preflight.EstimatedRequiredBytes)}, destination free {SizeUtil.Format(preflight.DestinationFreeBytes)} on {preflight.DestinationRoot}.");
+
             var ext = Path.GetExtension(ImagePath).ToLowerInvariant();
             if (ext == ".wim")
             {
@@ -327,4 +352,145 @@ public class DiskCloningViewModel : ViewModelBase
 
         return char.ToUpperInvariant(trimmed[0]);
     }
+
+    private void UpdateImagePreflightSummary()
+    {
+        if (SelectedSourceDrive == default)
+        {
+            ImagePreflightSummary = "Choose a source volume to estimate image size.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(ImagePath))
+        {
+            ImagePreflightSummary = "Choose a destination path to check available free space.";
+            return;
+        }
+
+        try
+        {
+            var preflight = PreflightSelectedImageDestination();
+            ImagePreflightSummary =
+                $"Estimated required: {SizeUtil.Format(preflight.EstimatedRequiredBytes)}. Destination free: {SizeUtil.Format(preflight.DestinationFreeBytes)}.";
+        }
+        catch (Exception ex)
+        {
+            ImagePreflightSummary = $"Destination check: {ex.Message}";
+        }
+    }
+
+    private ImageDestinationPreflight PreflightSelectedImageDestination()
+    {
+        var requiredBytes = EstimateSelectedImageBytes();
+        return PreflightImageDestination(
+            ImagePath,
+            SelectedSourceDrive,
+            requiredBytes,
+            Directory.Exists,
+            File.Exists,
+            root => new DriveInfo(root).AvailableFreeSpace);
+    }
+
+    private long EstimateSelectedImageBytes()
+    {
+        return _volumeByLetter.TryGetValue(char.ToUpperInvariant(SelectedSourceDrive), out var volume)
+            ? EstimateImageBytes(volume.Size, volume.SizeRemaining)
+            : 0;
+    }
+
+    public static long EstimateImageBytes(long sourceSizeBytes, long sourceFreeBytes)
+    {
+        if (sourceSizeBytes <= 0) return 0;
+
+        var hasUsableFreeSpace = sourceFreeBytes >= 0 && sourceFreeBytes <= sourceSizeBytes;
+        var usedBytes = hasUsableFreeSpace ? sourceSizeBytes - sourceFreeBytes : sourceSizeBytes;
+        var minimumImageBytes = 1L << 30;
+        var overheadBytes = 512L * 1024L * 1024L;
+        var estimatedBytes = Math.Max(usedBytes, minimumImageBytes);
+
+        return estimatedBytes > long.MaxValue - overheadBytes
+            ? long.MaxValue
+            : estimatedBytes + overheadBytes;
+    }
+
+    public static ImageDestinationPreflight PreflightImageDestination(
+        string imagePath,
+        char sourceDrive,
+        long estimatedRequiredBytes,
+        Func<string, bool> directoryExists,
+        Func<string, bool> fileExists,
+        Func<string, long> getAvailableFreeSpace)
+    {
+        if (sourceDrive == default)
+            throw new InvalidOperationException("Select a source volume before creating an image.");
+
+        if (string.IsNullOrWhiteSpace(imagePath))
+            throw new InvalidOperationException("Choose a destination path before creating an image.");
+
+        var trimmedPath = imagePath.Trim();
+        if (!Path.IsPathFullyQualified(trimmedPath))
+            throw new InvalidOperationException("Choose a fully qualified destination path.");
+
+        string fullPath;
+        try
+        {
+            fullPath = Path.GetFullPath(trimmedPath);
+        }
+        catch (Exception ex) when (ex is ArgumentException or NotSupportedException or PathTooLongException)
+        {
+            throw new InvalidOperationException($"The destination path is invalid: {ex.Message}", ex);
+        }
+
+        var extension = Path.GetExtension(fullPath).ToLowerInvariant();
+        if (extension is not ".wim" and not ".vhdx")
+            throw new InvalidOperationException("Choose a .wim or .vhdx destination file.");
+
+        var root = Path.GetPathRoot(fullPath);
+        if (string.IsNullOrWhiteSpace(root) || !directoryExists(root))
+            throw new InvalidOperationException("The destination drive or share is not available.");
+
+        var parent = Path.GetDirectoryName(fullPath);
+        if (string.IsNullOrWhiteSpace(parent) || !directoryExists(parent))
+            throw new InvalidOperationException("Create the destination folder before starting the image capture.");
+
+        if (fileExists(fullPath))
+            throw new InvalidOperationException("Choose a new image path or delete the existing file first.");
+
+        if (TryGetDriveLetter(root) is { } destinationDrive &&
+            char.ToUpperInvariant(destinationDrive) == char.ToUpperInvariant(sourceDrive))
+        {
+            throw new InvalidOperationException("Choose a destination outside the source volume; capturing a volume into itself is unsafe.");
+        }
+
+        long availableBytes;
+        try
+        {
+            availableBytes = getAvailableFreeSpace(root);
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException($"Could not read free space for the destination: {ex.Message}", ex);
+        }
+
+        if (estimatedRequiredBytes > 0 && availableBytes < estimatedRequiredBytes)
+        {
+            throw new InvalidOperationException(
+                $"The destination has {SizeUtil.Format(availableBytes)} free, but the image may require up to {SizeUtil.Format(estimatedRequiredBytes)}.");
+        }
+
+        return new ImageDestinationPreflight(fullPath, root, Math.Max(estimatedRequiredBytes, 0), availableBytes);
+    }
+
+    private static char? TryGetDriveLetter(string root)
+    {
+        return root.Length >= 2 && root[1] == ':' && char.IsLetter(root[0])
+            ? char.ToUpperInvariant(root[0])
+            : null;
+    }
+
+    public sealed record ImageDestinationPreflight(
+        string FullPath,
+        string DestinationRoot,
+        long EstimatedRequiredBytes,
+        long DestinationFreeBytes);
 }
