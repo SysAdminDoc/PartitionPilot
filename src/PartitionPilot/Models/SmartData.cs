@@ -18,9 +18,9 @@ public class SmartData
     {
         get
         {
-            if (Wear is not null && Wear <= 5) return HealthStatus.Critical;
+            if (Wear is not null && Wear >= 95) return HealthStatus.Critical;
             if (Temperature is not null && Temperature >= 65) return HealthStatus.Critical;
-            if (Wear is not null && Wear <= 15) return HealthStatus.Warning;
+            if (Wear is not null && Wear >= 85) return HealthStatus.Warning;
             if (Temperature is not null && Temperature >= 55) return HealthStatus.Warning;
             if (ReadErrorsTotal is not null && ReadErrorsTotal > 0 && ReadErrorsCorrected != ReadErrorsTotal)
                 return HealthStatus.Warning;
@@ -36,9 +36,9 @@ public class SmartData
     {
         get
         {
-            if (Wear is not null && Wear <= 5) return $"SSD wear at {Wear}% — nearing end of life";
+            if (Wear is not null && Wear >= 95) return $"SSD wear indicator at {Wear}% — nearing estimated wear limit";
             if (Temperature is not null && Temperature >= 65) return $"Temperature critically high ({Temperature}°C)";
-            if (Wear is not null && Wear <= 15) return $"SSD wear at {Wear}% — consider replacement planning";
+            if (Wear is not null && Wear >= 85) return $"SSD wear indicator at {Wear}% — consider replacement planning";
             if (Temperature is not null && Temperature >= 55) return $"Temperature elevated ({Temperature}°C)";
             if (ReadErrorsTotal is not null && ReadErrorsTotal > 0 && ReadErrorsCorrected != ReadErrorsTotal)
                 return $"Uncorrected read errors detected ({ReadErrorsTotal - (ReadErrorsCorrected ?? 0)})";

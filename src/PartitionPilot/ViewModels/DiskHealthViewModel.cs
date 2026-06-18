@@ -73,7 +73,7 @@ public class DiskHealthViewModel : ViewModelBase
 
     public string TemperatureText => Smart?.Temperature is not null ? $"{Smart.Temperature} C" : "N/A";
 
-    public string WearText => Smart?.Wear is not null ? $"{Smart.Wear}%" : "N/A";
+    public string WearText => Smart?.Wear is not null ? $"{Smart.Wear}% used" : "N/A";
 
     public string PowerOnText => Smart?.PowerOnHours is not null ? $"{Smart.PowerOnHours:N0} hours" : "N/A";
 
