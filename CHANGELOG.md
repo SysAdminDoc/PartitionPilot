@@ -16,6 +16,7 @@
 - Added create-image destination preflights that block same-volume captures, missing destination folders, existing image files, unsupported extensions, and insufficient free space before DISM or DiskPart runs.
 - Added BitLocker-aware preflights that block protected partition mutations until protection is suspended/unlocked and add stronger confirmations for encrypted format, delete, clone restore, Dev Drive, and wipe flows.
 - Added an operation cleanup scope for temporary VHD attachments, restore image mounts, EFI access paths, and benchmark temp files so failure/cancel paths log recovery guidance and attempt cleanup consistently.
+- Added a partition snapshot browser with read-only history, current-layout comparison, JSON export, and copyable non-destructive recovery guidance.
 
 ## PartitionPilot v0.3.0 - 2026-06-16
 
