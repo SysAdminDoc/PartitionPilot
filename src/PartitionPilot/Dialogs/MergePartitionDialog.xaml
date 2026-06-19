@@ -31,6 +31,7 @@
             <TextBlock Text="Primary Partition" Style="{StaticResource FieldLabelText}" VerticalAlignment="Center"/>
             <ComboBox x:Name="PrimaryCombo" Grid.Column="1" Height="34"
                       DisplayMemberPath="PartitionDisplay"
+                      SelectionChanged="OnPrimaryChanged"
                       AutomationProperties.Name="Primary partition selector"/>
         </Grid>
 
@@ -39,22 +40,23 @@
                 <ColumnDefinition Width="120"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <TextBlock Text="Merge Into" Style="{StaticResource FieldLabelText}" VerticalAlignment="Center"/>
+            <TextBlock Text="Partition to Remove" Style="{StaticResource FieldLabelText}" VerticalAlignment="Center"/>
             <ComboBox x:Name="SecondaryCombo" Grid.Column="1" Height="34"
                       DisplayMemberPath="PartitionDisplay"
-                      AutomationProperties.Name="Secondary partition to absorb"/>
+                      AutomationProperties.Name="Partition to remove during merge"/>
         </Grid>
 
-        <Border Grid.Row="4" Style="{StaticResource NoticePanel}" Margin="0,0,0,10">
-            <TextBlock Text="ALL DATA ON THE SECONDARY PARTITION WILL BE LOST. The primary partition will be extended into the freed space."
+        <Border Grid.Row="4" Style="{StaticResource DangerNoticePanel}" Margin="0,0,0,10">
+            <TextBlock x:Name="MergeHelpText"
+                       Text="The partition to remove will be deleted. The primary partition will be extended into the freed space when the queued operation is applied."
                        Style="{StaticResource CaptionText}" TextWrapping="Wrap"
-                       Foreground="{DynamicResource DangerBrush}"/>
+                       Foreground="{DynamicResource DangerBtnFgBrush}"/>
         </Border>
 
         <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Right">
             <Button Content="Cancel" Style="{StaticResource SecondaryButton}" Width="80" IsCancel="True" Margin="0,0,8,0"
                     AutomationProperties.Name="Cancel merge"/>
-            <Button x:Name="MergeButton" Content="Merge" Style="{StaticResource DangerButton}" Width="80" Click="OnMerge"
+            <Button x:Name="MergeButton" Content="Queue Merge" Style="{StaticResource DangerButton}" Width="108" Click="OnMerge"
                     AutomationProperties.Name="Confirm merge"/>
         </StackPanel>
     </Grid>
