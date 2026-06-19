@@ -1,9 +1,18 @@
 # Changelog
 
-## Unreleased
+## PartitionPilot v0.7.0 - 2026-06-19
 
 ### Architecture
 - Adopted .NET 10 Fluent theme with system dark/light tracking. Theme button now cycles Dark → Light → System, where System follows the OS Apps theme setting via registry change notifications. Removed ~95 lines of custom ScrollBar, RadioButton, CheckBox, and MenuItem templates now handled by the Fluent theme engine.
+- Extracted PartitionPilot.Core library: all models and non-WPF services (13 models, 15 services) now live in a standalone net10.0-windows class library with no WPF dependency. Introduced IActivityLog interface to decouple core services from the WPF-bound ActivityLog.
+
+### Features
+- Added CLI companion (pp.exe) for scripted disk management. Commands: disks, partitions, volumes, smart, health, alignment, snapshot. All support --json for automation.
+- Added SMART attribute history tracking with trend alerts. Records readings per device and analyzes the last 10 readings for degradation trends (reallocated sectors, NVMe media errors, wear, spare capacity, temperature). Trend alerts display in the Disk Health tab.
+- Added real-time disk temperature monitoring with threshold alerts. Polls all disks every 30 seconds with Warning at 55 C and Critical at 65 C. Live temperatures and alert history display in the Disk Health tab.
+- Added MFT-direct scanning for near-instant NTFS disk usage analysis via FSCTL_ENUM_USN_DATA. Automatically used on NTFS volumes with admin privileges; falls back to directory enumeration on non-NTFS or when unavailable.
+- Added i18n readiness with .resx resource infrastructure. 70+ localized string keys, LocExtension markup for XAML bindings, MainWindow tab headers converted. Add Strings.{culture}.resx for translations.
+- Added sector-level disk-to-disk clone. Raw sector copy with 1 MB buffer, progress reporting (rate, ETA), volume lock acquisition, triple-confirmation with BitLocker preflight, and cancel support.
 
 ### Safety & Reliability
 - Preserved failed and skipped pending operations after a queue apply failure so users can review, retry, or remove the remaining work instead of losing the queue.
