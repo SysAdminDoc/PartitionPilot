@@ -63,6 +63,7 @@ public class SnapshotBrowserViewModel : ViewModelBase
     public ICommand RefreshCommand { get; }
     public ICommand CompareCommand { get; }
     public ICommand ExportCommand { get; }
+    public ICommand ExportRecoveryPlanCommand { get; }
     public ICommand CopyRecoveryCommandsCommand { get; }
 
     public SnapshotBrowserViewModel(PartitionTableBackup backup, ActivityLog log, IDialogService dialog)
@@ -74,6 +75,7 @@ public class SnapshotBrowserViewModel : ViewModelBase
         RefreshCommand = new AsyncRelayCommand(_ => RefreshAsync());
         CompareCommand = new AsyncRelayCommand(_ => CompareAsync(), _ => SelectedSnapshot is not null);
         ExportCommand = new AsyncRelayCommand(_ => ExportSelectedAsync(), _ => SelectedSnapshot is not null);
+        ExportRecoveryPlanCommand = new AsyncRelayCommand(_ => ExportRecoveryPlanAsync(), _ => SelectedSnapshot is not null);
         CopyRecoveryCommandsCommand = new RelayCommand(_ => CopyRecoveryCommands(), _ => !string.IsNullOrWhiteSpace(RecoveryCommands));
     }
 
@@ -153,6 +155,34 @@ public class SnapshotBrowserViewModel : ViewModelBase
         {
             _log.Log($"Snapshot export failed: {ex.Message}");
             _dialog.ShowError($"Failed to export snapshot:\n{ex.Message}", "Export Snapshot");
+        }
+    }
+
+    private async Task ExportRecoveryPlanAsync()
+    {
+        if (SelectedSnapshot is null) return;
+
+        var dialog = new SaveFileDialog
+        {
+            Title = "Export Recovery Plan",
+            Filter = "Text Files (*.txt)|*.txt|All Files (*.*)|*.*",
+            FileName = $"recovery-plan-disk{SelectedSnapshot.DiskNumber}_{DateTime.Now:yyyyMMdd}.txt",
+            DefaultExt = ".txt"
+        };
+
+        if (dialog.ShowDialog() != true) return;
+
+        try
+        {
+            var plan = await _backup.BuildRecoveryPlanAsync(SelectedSnapshot);
+            await System.IO.File.WriteAllTextAsync(dialog.FileName, plan);
+            _log.Log($"Recovery plan exported to: {dialog.FileName}");
+            _dialog.ShowInfo($"Recovery plan exported to:\n{dialog.FileName}", "Recovery Plan Exported");
+        }
+        catch (Exception ex)
+        {
+            _log.Log($"Recovery plan export failed: {ex.Message}");
+            _dialog.ShowError($"Failed to export recovery plan:\n{ex.Message}", "Export Error");
         }
     }
 
