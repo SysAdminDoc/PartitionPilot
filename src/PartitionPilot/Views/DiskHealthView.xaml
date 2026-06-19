@@ -22,6 +22,7 @@
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
 
                         <TextBlock Grid.Column="0"
@@ -42,6 +43,12 @@
                                 Style="{StaticResource ToolbarButton}"
                                 Margin="10,0,0,0"
                                 AutomationProperties.Name="Refresh disk health"/>
+                        <Button Grid.Column="3"
+                                Content="{Binding MonitorButtonText}"
+                                Command="{Binding ToggleMonitorCommand}"
+                                Style="{StaticResource ToolbarButton}"
+                                Margin="6,0,0,0"
+                                AutomationProperties.Name="Toggle temperature monitoring"/>
                     </Grid>
                 </Grid>
             </Border>
@@ -146,6 +153,54 @@
                                        ToolTip="{Binding HealthReasonText}"/>
                         </StackPanel>
                     </Border>
+
+                    <Border Margin="0,0,0,10" Padding="12,8" CornerRadius="5">
+                        <Border.Style>
+                            <Style TargetType="Border" BasedOn="{StaticResource NoticePanel}">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsMonitoring}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <StackPanel>
+                            <TextBlock Text="Live Temperature Monitor" FontWeight="SemiBold" FontSize="13"
+                                       Foreground="{DynamicResource TextBrush}" Margin="0,0,0,4"/>
+                            <TextBlock Text="{Binding LiveTemperatureText}"
+                                       Foreground="{DynamicResource SubtextBrush}" FontSize="13"
+                                       AutomationProperties.Name="Live disk temperatures"/>
+                        </StackPanel>
+                    </Border>
+
+                    <GroupBox Header="Temperature Alerts">
+                        <GroupBox.Style>
+                            <Style TargetType="GroupBox" BasedOn="{StaticResource SectionGroup}">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasTemperatureAlerts}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </GroupBox.Style>
+                        <ListView ItemsSource="{Binding TemperatureAlerts}"
+                                  BorderThickness="0"
+                                  FontSize="12.5"
+                                  MaxHeight="200"
+                                  AutomationProperties.Name="Temperature alert history">
+                            <ListView.View>
+                                <GridView>
+                                    <GridViewColumn Header="Time" Width="80" DisplayMemberBinding="{Binding Timestamp, StringFormat=HH:mm:ss}"/>
+                                    <GridViewColumn Header="Severity" Width="80" DisplayMemberBinding="{Binding Severity}"/>
+                                    <GridViewColumn Header="Disk" Width="200" DisplayMemberBinding="{Binding DeviceName}"/>
+                                    <GridViewColumn Header="Temp" Width="60" DisplayMemberBinding="{Binding Temperature, StringFormat={}{0} C}"/>
+                                    <GridViewColumn Header="Details" Width="350" DisplayMemberBinding="{Binding Message}"/>
+                                </GridView>
+                            </ListView.View>
+                        </ListView>
+                    </GroupBox>
 
                     <GroupBox Header="SMART / Reliability Data">
                         <GroupBox.Style>
