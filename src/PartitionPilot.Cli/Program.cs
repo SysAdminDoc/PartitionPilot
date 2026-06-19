@@ -26,6 +26,7 @@ try
         "health" => await ShowHealthAsync(),
         "alignment" => await ShowAlignmentAsync(),
         "snapshot" => await CaptureSnapshotAsync(),
+        "diagnostics" or "diag" => await RunDiagnosticsAsync(),
         "version" => ShowVersion(),
         "help" or "--help" or "-h" => PrintUsage(),
         _ => PrintUnknown(command)
@@ -51,6 +52,7 @@ int PrintUsage()
     Console.WriteLine("  health                    Show health status for all physical disks");
     Console.WriteLine("  alignment                 Check 4K alignment for all partitions");
     Console.WriteLine("  snapshot --disk N         Capture partition layout snapshot to JSON");
+    Console.WriteLine("  diagnostics               Check environment prerequisites");
     Console.WriteLine("  version                   Show version");
     Console.WriteLine();
     Console.WriteLine("Options:");
@@ -314,6 +316,21 @@ async Task<int> CaptureSnapshotAsync()
     Console.WriteLine(JsonSerializer.Serialize(snapshot, new JsonSerializerOptions { WriteIndented = true }));
     Console.Error.WriteLine($"Snapshot saved to: {PartitionTableBackup.BackupDirectory}");
     return 0;
+}
+
+async Task<int> RunDiagnosticsAsync()
+{
+    var checks = await EnvironmentDiagnostics.RunAllAsync(runner, log);
+    if (json)
+    {
+        Console.WriteLine(EnvironmentDiagnostics.FormatJson(checks));
+    }
+    else
+    {
+        Console.Write(EnvironmentDiagnostics.FormatReport(checks));
+    }
+    var errorCount = checks.Count(c => c.Status == "Error");
+    return errorCount > 0 ? 1 : 0;
 }
 
 int ShowVersion()
