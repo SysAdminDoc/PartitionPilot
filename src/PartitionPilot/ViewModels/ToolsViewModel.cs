@@ -1260,7 +1260,7 @@ public class ToolsViewModel : ViewModelBase
         {
             _log.Log($"Starting disk benchmark on {driveLetter}:...");
 
-            var progress = new Progress<string>(msg =>
+            IProgress<string> progress = new Progress<string>(msg =>
             {
                 Application.Current.Dispatcher.Invoke(() =>
                 {
@@ -1269,7 +1269,20 @@ public class ToolsViewModel : ViewModelBase
                 });
             });
 
-            var result = await Task.Run(() => RunBenchmarkCore(driveLetter, progress, ct), ct);
+            BenchmarkResult result;
+
+            try
+            {
+                await DiskSpdService.EnsureAvailableAsync(_log, ct);
+                result = await DiskSpdService.RunProfilesAsync(driveLetter, _log, progress, ct);
+                _log.Log("DiskSpd benchmark complete.");
+            }
+            catch (Exception dsEx) when (dsEx is not OperationCanceledException)
+            {
+                _log.Log($"DiskSpd unavailable ({dsEx.Message}), falling back to built-in benchmark.");
+                progress.Report("DiskSpd unavailable. Running built-in benchmark...");
+                result = await Task.Run(() => RunBenchmarkCore(driveLetter, progress, ct), ct);
+            }
 
             var driveModel = "";
             long driveCapacity = 0;
