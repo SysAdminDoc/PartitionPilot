@@ -1,4 +1,4 @@
-![Version](https://img.shields.io/badge/version-0.7.0-4CC2FF)
+![Version](https://img.shields.io/badge/version-0.8.0-4CC2FF)
 ![License](https://img.shields.io/badge/license-MIT-5EE0A0)
 ![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-F4C96A)
 
@@ -71,7 +71,7 @@ dotnet run --project .\src\PartitionPilot.Cli\PartitionPilot.Cli.csproj -- parti
 dotnet run --project .\src\PartitionPilot.Cli\PartitionPilot.Cli.csproj -- health --json
 ```
 
-Commands: `disks`, `partitions`, `volumes`, `smart`, `health`, `alignment`, `snapshot`, `version`. All support `--json` for scripted automation.
+Commands: `disks`, `partitions`, `volumes`, `smart`, `health`, `alignment`, `snapshot`, `diagnostics`, `plan`, `recovery-scan`, `version`. All support `--json` for scripted automation.
 
 ## Safety
 
