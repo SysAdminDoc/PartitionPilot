@@ -80,9 +80,9 @@ public partial class MainViewModel : ViewModelBase
         DiskCloning = new DiskCloningViewModel(_processRunner, _wmiService, Log, _dialog);
 
         TabChangedCommand = new AsyncRelayCommand(OnTabChangedAsync);
-        ExportLogCommand = new RelayCommand(_ => ExportLog());
+        ExportLogCommand = new WpfRelayCommand(_ => ExportLog());
         ExportSupportBundleCommand = new AsyncRelayCommand(_ => ExportSupportBundleAsync());
-        ToggleThemeCommand = new RelayCommand(_ => ToggleTheme());
+        ToggleThemeCommand = new WpfRelayCommand(_ => ToggleTheme());
         RefreshCurrentCommand = new AsyncRelayCommand(_ => RefreshCurrentAsync());
 
         var isAdmin = IsRunningAsAdministrator();

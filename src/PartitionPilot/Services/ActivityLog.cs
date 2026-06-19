@@ -72,12 +72,12 @@ public class ActivityLog : INotifyPropertyChanged
     {
         FilteredEntries = CollectionViewSource.GetDefaultView(Entries);
         FilteredEntries.Filter = ShouldShowEntry;
-        SetFilterCommand = new RelayCommand(parameter =>
+        SetFilterCommand = new WpfRelayCommand(parameter =>
         {
             if (parameter is string level)
                 SelectedLevelFilter = level;
         });
-        ClearCommand = new RelayCommand(_ => Clear());
+        ClearCommand = new WpfRelayCommand(_ => Clear());
     }
 
     private void NotifyChanged(string propertyName) =>

@@ -76,7 +76,7 @@ public class SnapshotBrowserViewModel : ViewModelBase
         CompareCommand = new AsyncRelayCommand(_ => CompareAsync(), _ => SelectedSnapshot is not null);
         ExportCommand = new AsyncRelayCommand(_ => ExportSelectedAsync(), _ => SelectedSnapshot is not null);
         ExportRecoveryPlanCommand = new AsyncRelayCommand(_ => ExportRecoveryPlanAsync(), _ => SelectedSnapshot is not null);
-        CopyRecoveryCommandsCommand = new RelayCommand(_ => CopyRecoveryCommands(), _ => !string.IsNullOrWhiteSpace(RecoveryCommands));
+        CopyRecoveryCommandsCommand = new WpfRelayCommand(_ => CopyRecoveryCommands(), _ => !string.IsNullOrWhiteSpace(RecoveryCommands));
     }
 
     public async Task RefreshAsync()
