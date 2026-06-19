@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" msdata:Ordinal="0" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter</value></resheader>
+
+  <!-- App shell -->
+  <data name="AppTitle" xml:space="preserve"><value>PartitionPilot</value></data>
+  <data name="Refresh" xml:space="preserve"><value>Refresh</value></data>
+  <data name="ExportLog" xml:space="preserve"><value>Export Log</value></data>
+  <data name="SupportBundle" xml:space="preserve"><value>Support Bundle</value></data>
+  <data name="Elevate" xml:space="preserve"><value>Elevate</value></data>
+  <data name="ElevateTooltip" xml:space="preserve"><value>Re-launch as administrator for disk write operations</value></data>
+  <data name="Ready" xml:space="preserve"><value>Ready</value></data>
+  <data name="ActivityLog" xml:space="preserve"><value>Activity Log</value></data>
+  <data name="ActivityLogDescription" xml:space="preserve"><value>Operation feedback, warnings, and exported session evidence</value></data>
+
+  <!-- Tab headers -->
+  <data name="TabPartitions" xml:space="preserve"><value>Partitions</value></data>
+  <data name="TabPartitionsSubtitle" xml:space="preserve"><value>Manage storage layout</value></data>
+  <data name="TabSnapshots" xml:space="preserve"><value>Snapshots</value></data>
+  <data name="TabSnapshotsSubtitle" xml:space="preserve"><value>Recovery evidence</value></data>
+  <data name="TabDiskHealth" xml:space="preserve"><value>Disk Health</value></data>
+  <data name="TabDiskHealthSubtitle" xml:space="preserve"><value>SMART and alignment</value></data>
+  <data name="TabTools" xml:space="preserve"><value>Tools</value></data>
+  <data name="TabToolsSubtitle" xml:space="preserve"><value>Repair and maintenance</value></data>
+  <data name="TabDiskImages" xml:space="preserve"><value>Disk Images</value></data>
+  <data name="TabDiskImagesSubtitle" xml:space="preserve"><value>Mount and create VHDs</value></data>
+  <data name="TabDiskUsage" xml:space="preserve"><value>Disk Usage</value></data>
+  <data name="TabDiskUsageSubtitle" xml:space="preserve"><value>Find heavy folders</value></data>
+  <data name="TabDiskCloning" xml:space="preserve"><value>Disk Cloning</value></data>
+  <data name="TabDiskCloningSubtitle" xml:space="preserve"><value>Copy and restore images</value></data>
+
+  <!-- Status tiles -->
+  <data name="AdminSession" xml:space="preserve"><value>Admin session</value></data>
+  <data name="ReadOnlySession" xml:space="preserve"><value>Read-only session</value></data>
+  <data name="DiskChangesAvailable" xml:space="preserve"><value>Disk changes available</value></data>
+  <data name="RunAsAdminForWrite" xml:space="preserve"><value>Run as administrator for write operations</value></data>
+  <data name="SessionState" xml:space="preserve"><value>Session state</value></data>
+  <data name="StorageConsole" xml:space="preserve"><value>Storage console</value></data>
+  <data name="StorageConsoleEngines" xml:space="preserve"><value>WMI, diskpart, PowerShell</value></data>
+
+  <!-- Log filters -->
+  <data name="All" xml:space="preserve"><value>All</value></data>
+  <data name="Info" xml:space="preserve"><value>Info</value></data>
+  <data name="Warning" xml:space="preserve"><value>Warning</value></data>
+  <data name="Error" xml:space="preserve"><value>Error</value></data>
+  <data name="Clear" xml:space="preserve"><value>Clear</value></data>
+
+  <!-- Common actions -->
+  <data name="Apply" xml:space="preserve"><value>Apply</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="Create" xml:space="preserve"><value>Create</value></data>
+  <data name="Delete" xml:space="preserve"><value>Delete</value></data>
+  <data name="Format" xml:space="preserve"><value>Format</value></data>
+  <data name="Resize" xml:space="preserve"><value>Resize</value></data>
+  <data name="OK" xml:space="preserve"><value>OK</value></data>
+
+  <!-- Disk health -->
+  <data name="DiskHealthTitle" xml:space="preserve"><value>Disk Health</value></data>
+  <data name="DiskHealthDescription" xml:space="preserve"><value>Review physical disk status, reliability telemetry, and alignment.</value></data>
+  <data name="PhysicalDisk" xml:space="preserve"><value>Physical Disk</value></data>
+  <data name="StartMonitoring" xml:space="preserve"><value>Start Monitoring</value></data>
+  <data name="StopMonitoring" xml:space="preserve"><value>Stop Monitoring</value></data>
+  <data name="DiskInformation" xml:space="preserve"><value>Disk Information</value></data>
+  <data name="SmartReliabilityData" xml:space="preserve"><value>SMART / Reliability Data</value></data>
+  <data name="SmartTrendAlerts" xml:space="preserve"><value>SMART Trend Alerts</value></data>
+  <data name="AllSmartAttributes" xml:space="preserve"><value>All SMART Attributes</value></data>
+  <data name="AlignmentAudit" xml:space="preserve"><value>4K Alignment Audit</value></data>
+  <data name="TemperatureAlerts" xml:space="preserve"><value>Temperature Alerts</value></data>
+  <data name="Good" xml:space="preserve"><value>Good</value></data>
+  <data name="Critical" xml:space="preserve"><value>Critical</value></data>
+  <data name="Unknown" xml:space="preserve"><value>Unknown</value></data>
+
+  <!-- Dialog titles -->
+  <data name="ExportComplete" xml:space="preserve"><value>Export Complete</value></data>
+  <data name="ExportError" xml:space="preserve"><value>Export Error</value></data>
+  <data name="OperationFailed" xml:space="preserve"><value>Operation Failed</value></data>
+  <data name="OperationsComplete" xml:space="preserve"><value>Operations Complete</value></data>
+  <data name="SupportBundleExported" xml:space="preserve"><value>Support Bundle Exported</value></data>
+  <data name="Confirm" xml:space="preserve"><value>Confirm</value></data>
+  <data name="ConfirmDelete" xml:space="preserve"><value>Confirm Delete</value></data>
+  <data name="ConfirmFormat" xml:space="preserve"><value>Confirm Format</value></data>
+
+  <!-- SMART labels -->
+  <data name="Temperature" xml:space="preserve"><value>Temperature</value></data>
+  <data name="WearUsed" xml:space="preserve"><value>Wear Used</value></data>
+  <data name="PowerOnTime" xml:space="preserve"><value>Power-On Time</value></data>
+  <data name="ReadErrors" xml:space="preserve"><value>Read Errors</value></data>
+  <data name="WriteErrors" xml:space="preserve"><value>Write Errors</value></data>
+  <data name="ReallocatedSectors" xml:space="preserve"><value>Reallocated Sectors</value></data>
+  <data name="PendingSectors" xml:space="preserve"><value>Pending Sectors</value></data>
+  <data name="PowerCycles" xml:space="preserve"><value>Power Cycles</value></data>
+  <data name="TotalWritten" xml:space="preserve"><value>Total Written</value></data>
+  <data name="TotalRead" xml:space="preserve"><value>Total Read</value></data>
+  <data name="NvmeAvailableSpare" xml:space="preserve"><value>NVMe Available Spare</value></data>
+  <data name="NvmeMediaErrors" xml:space="preserve"><value>NVMe Media Errors</value></data>
+  <data name="NotAvailable" xml:space="preserve"><value>N/A</value></data>
+</root>
