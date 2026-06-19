@@ -563,9 +563,9 @@ public class WmiDiskService : IWmiDiskService
         {
             var scope = GetScope(StorageScope);
 
-            var pools = new Dictionary<string, string>();
+            var pools = new Dictionary<string, (string Name, string Health, string Status, bool ReadOnly)>();
             using (var poolSearcher = new ManagementObjectSearcher(scope,
-                new ObjectQuery("SELECT FriendlyName, ObjectId FROM MSFT_StoragePool WHERE IsPrimordial = False")))
+                new ObjectQuery("SELECT FriendlyName, ObjectId, HealthStatus, OperationalStatus, IsReadOnly FROM MSFT_StoragePool WHERE IsPrimordial = False")))
             {
                 foreach (ManagementObject obj in poolSearcher.Get())
                 {
@@ -573,32 +573,107 @@ public class WmiDiskService : IWmiDiskService
                     {
                         var objectId = obj["ObjectId"]?.ToString() ?? "";
                         var name = obj["FriendlyName"]?.ToString() ?? "Storage Pool";
+                        var health = MapHealthStatus(obj["HealthStatus"]);
+                        var opStatus = MapOperationalStatus(obj["OperationalStatus"]);
+                        var readOnly = obj["IsReadOnly"] is true;
                         if (!string.IsNullOrEmpty(objectId))
-                            pools[objectId] = name;
+                            pools[objectId] = (name, health, opStatus, readOnly);
                     }
                 }
             }
 
             if (pools.Count == 0) return result;
 
-            using var diskSearcher = new ManagementObjectSearcher(scope,
-                new ObjectQuery("SELECT DeviceId FROM MSFT_PhysicalDisk WHERE Usage != 1"));
-            foreach (ManagementObject obj in diskSearcher.Get())
+            foreach (var (poolId, poolInfo) in pools)
             {
-                using (obj)
+                try
                 {
-                    var deviceId = obj["DeviceId"]?.ToString();
-                    if (deviceId is not null && int.TryParse(deviceId, out var diskNum))
+                    var escaped = WqlStringLiteral(poolId);
+                    using var assocSearcher = new ManagementObjectSearcher(scope,
+                        new ObjectQuery($"SELECT DeviceId FROM MSFT_PhysicalDisk WHERE ObjectId IN (SELECT PhysicalDisk FROM MSFT_StoragePoolToPhysicalDisk WHERE StoragePool = '{escaped}')"));
+
+                    bool found = false;
+                    foreach (ManagementObject disk in assocSearcher.Get())
                     {
-                        var poolName = pools.Values.FirstOrDefault() ?? "Storage Pool";
-                        result[diskNum] = poolName;
+                        using (disk)
+                        {
+                            var deviceId = disk["DeviceId"]?.ToString();
+                            if (deviceId is not null && int.TryParse(deviceId, out var diskNum))
+                            {
+                                result[diskNum] = poolInfo.Name;
+                                found = true;
+                            }
+                        }
+                    }
+
+                    if (!found)
+                    {
+                        using var fallbackSearcher = new ManagementObjectSearcher(scope,
+                            new ObjectQuery("SELECT DeviceId, Usage FROM MSFT_PhysicalDisk WHERE Usage != 1"));
+                        foreach (ManagementObject disk in fallbackSearcher.Get())
+                        {
+                            using (disk)
+                            {
+                                var deviceId = disk["DeviceId"]?.ToString();
+                                if (deviceId is not null && int.TryParse(deviceId, out var diskNum) && !result.ContainsKey(diskNum))
+                                    result[diskNum] = poolInfo.Name;
+                            }
+                        }
                     }
                 }
+                catch { }
             }
         }
         catch (Exception ex) { LogWmiFailure("Detect storage pool membership", StorageScope, "MSFT_StoragePool", ex); }
         return result;
     });
+
+    public Task<Dictionary<string, (string Health, string Status, bool ReadOnly)>> GetStoragePoolHealthAsync() => Task.Run(() =>
+    {
+        var result = new Dictionary<string, (string Health, string Status, bool ReadOnly)>();
+        try
+        {
+            var scope = GetScope(StorageScope);
+            using var searcher = new ManagementObjectSearcher(scope,
+                new ObjectQuery("SELECT FriendlyName, HealthStatus, OperationalStatus, IsReadOnly FROM MSFT_StoragePool WHERE IsPrimordial = False"));
+            foreach (ManagementObject obj in searcher.Get())
+            {
+                using (obj)
+                {
+                    var name = obj["FriendlyName"]?.ToString() ?? "Storage Pool";
+                    var health = MapHealthStatus(obj["HealthStatus"]);
+                    var status = MapOperationalStatus(obj["OperationalStatus"]);
+                    var readOnly = obj["IsReadOnly"] is true;
+                    result[name] = (health, status, readOnly);
+                }
+            }
+        }
+        catch (Exception ex) { LogWmiFailure("Query storage pool health", StorageScope, "MSFT_StoragePool", ex); }
+        return result;
+    });
+
+    private static string MapHealthStatus(object? value) => value switch
+    {
+        0u or (ushort)0 => "Healthy",
+        1u or (ushort)1 => "Warning",
+        2u or (ushort)2 => "Unhealthy",
+        _ => "Unknown"
+    };
+
+    private static string MapOperationalStatus(object? value)
+    {
+        if (value is ushort[] arr && arr.Length > 0) value = arr[0];
+        return value switch
+        {
+            0u or (ushort)0 => "Unknown",
+            1u or (ushort)1 => "Other",
+            2u or (ushort)2 => "OK",
+            3u or (ushort)3 => "Degraded",
+            5u or (ushort)5 => "Predictive Failure",
+            6u or (ushort)6 => "Error",
+            _ => "Unknown"
+        };
+    }
 
     // ──────────────── SMART Merge ─────────────────────────
 

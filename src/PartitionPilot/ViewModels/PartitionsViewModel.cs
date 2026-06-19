@@ -185,10 +185,19 @@ public class PartitionsViewModel : ViewModelBase
             var priorDiskNumber = SelectedDisk?.Number;
             var disks = await _wmiService.GetDisksAsync();
             var poolMembership = await _wmiService.GetStoragePoolMembershipAsync();
+            var poolHealth = await _wmiService.GetStoragePoolHealthAsync();
             foreach (var disk in disks)
             {
                 if (poolMembership.TryGetValue(disk.Number, out var poolName))
+                {
                     disk.StoragePoolName = poolName;
+                    if (poolHealth.TryGetValue(poolName, out var health))
+                    {
+                        disk.StoragePoolHealth = health.Health;
+                        disk.StoragePoolStatus = health.Status;
+                        disk.StoragePoolReadOnly = health.ReadOnly;
+                    }
+                }
             }
 
             Application.Current.Dispatcher.Invoke(() =>

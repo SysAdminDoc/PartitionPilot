@@ -15,4 +15,5 @@ public interface IWmiDiskService
     Task<Dictionary<char, string>> GetBitLockerStatusAsync();
     Task<List<string>> GetBitLockerProtectedTargetsAsync(int diskNumber);
     Task<Dictionary<int, string>> GetStoragePoolMembershipAsync();
+    Task<Dictionary<string, (string Health, string Status, bool ReadOnly)>> GetStoragePoolHealthAsync();
 }

@@ -9,6 +9,9 @@ public class DiskInfo
     public long LargestFreeExtent { get; set; }
     public int NumberOfPartitions { get; set; }
     public string StoragePoolName { get; set; } = "";
+    public string StoragePoolHealth { get; set; } = "";
+    public string StoragePoolStatus { get; set; } = "";
+    public bool StoragePoolReadOnly { get; set; }
     public bool IsPooled => !string.IsNullOrEmpty(StoragePoolName);
     public bool IsRaw => PartitionStyle.Equals("RAW", StringComparison.OrdinalIgnoreCase);
     public string DisplayText => IsPooled
