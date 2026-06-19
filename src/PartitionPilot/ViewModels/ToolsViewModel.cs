@@ -384,6 +384,9 @@ public class ToolsViewModel : ViewModelBase
         set => SetProperty(ref _benchmarkResults, value);
     }
 
+    private BenchmarkResult? _lastBenchmarkResult;
+    public bool HasBenchmarkResult => _lastBenchmarkResult is not null;
+
     // ──────────────────────── Dev Drive ────────────────────────
 
     private char _selectedDevDriveLetter;
@@ -433,6 +436,7 @@ public class ToolsViewModel : ViewModelBase
     public ICommand RunBenchmarkCommand { get; }
     public ICommand RunSurfaceTestCommand { get; }
     public ICommand CreateDevDriveCommand { get; }
+    public ICommand ExportBenchmarkCommand { get; }
     public ICommand RefreshCommand { get; }
     public ICommand CancelCommand { get; }
 
@@ -455,6 +459,7 @@ public class ToolsViewModel : ViewModelBase
         RunBenchmarkCommand = new AsyncRelayCommand(_ => RunBenchmarkAsync(SelectedBenchDrive), _ => SelectedBenchDrive != default);
         RunSurfaceTestCommand = new AsyncRelayCommand(_ => RunSurfaceTestAsync(), _ => SelectedSurfaceTestVolume != default);
         CreateDevDriveCommand = new AsyncRelayCommand(_ => CreateDevDriveAsync(), _ => IsDevDriveSupported && SelectedDevDriveLetter != default);
+        ExportBenchmarkCommand = new RelayCommand(_ => ExportBenchmarkResult(), _ => _lastBenchmarkResult is not null);
         RefreshCommand = new AsyncRelayCommand(_ => RefreshDriveListsAsync());
         CancelCommand = new RelayCommand(_ => CancelCurrentOperation(), _ => IsBusy && _cts is not null);
     }
@@ -1183,7 +1188,24 @@ public class ToolsViewModel : ViewModelBase
                 });
             });
 
-            await Task.Run(() => RunBenchmarkCore(driveLetter, progress, ct), ct);
+            var result = await Task.Run(() => RunBenchmarkCore(driveLetter, progress, ct), ct);
+
+            var driveModel = "";
+            long driveCapacity = 0;
+            var physDisk = _physicalDisks.FirstOrDefault(p => p.DeviceId == "0") ?? _physicalDisks.FirstOrDefault();
+            if (physDisk is not null)
+            {
+                driveModel = physDisk.FriendlyName;
+                driveCapacity = physDisk.Size;
+            }
+
+            result.DriveLetter = driveLetter;
+            result.DriveModel = driveModel;
+            result.DriveCapacityBytes = driveCapacity;
+            result.Timestamp = DateTimeOffset.Now;
+            _lastBenchmarkResult = result;
+            OnPropertyChanged(nameof(HasBenchmarkResult));
+            CommandManager.InvalidateRequerySuggested();
 
             _log.Log($"Benchmark complete for {driveLetter}:.");
         }
@@ -1203,7 +1225,7 @@ public class ToolsViewModel : ViewModelBase
         }
     }
 
-    private void RunBenchmarkCore(char driveLetter, IProgress<string> progress, CancellationToken ct)
+    private BenchmarkResult RunBenchmarkCore(char driveLetter, IProgress<string> progress, CancellationToken ct)
     {
         const int fileSizeMB = 256;
         const int blockSize = 1024 * 1024; // 1 MB
@@ -1303,10 +1325,59 @@ public class ToolsViewModel : ViewModelBase
 
             _log.Log($"Benchmark {driveLetter}: SeqW={seqWriteMBs:F0} MB/s, SeqR={seqReadMBs:F0} MB/s, " +
                      $"Rnd4KW={rand4KWriteIOPS:F0} IOPS, Rnd4KR={rand4KReadIOPS:F0} IOPS");
+
+            return new BenchmarkResult
+            {
+                SeqWriteMBps = seqWriteMBs,
+                SeqReadMBps = seqReadMBs,
+                Rnd4kWriteIOPS = rand4KWriteIOPS,
+                Rnd4kReadIOPS = rand4KReadIOPS,
+                Rnd4kWriteMBps = rand4KWriteMBs,
+                Rnd4kReadMBps = rand4KReadMBs
+            };
         }
         finally
         {
             cleanup.Dispose();
+        }
+    }
+
+    private void ExportBenchmarkResult()
+    {
+        if (_lastBenchmarkResult is null) return;
+
+        var dlg = new Microsoft.Win32.SaveFileDialog
+        {
+            Title = "Export Benchmark Results",
+            Filter = "JSON (*.json)|*.json|Text (*.txt)|*.txt",
+            DefaultExt = ".json",
+            FileName = $"benchmark_{_lastBenchmarkResult.DriveLetter}_{_lastBenchmarkResult.Timestamp:yyyyMMdd_HHmmss}"
+        };
+
+        if (dlg.ShowDialog() != true) return;
+
+        try
+        {
+            var ext = System.IO.Path.GetExtension(dlg.FileName).ToLowerInvariant();
+            string content;
+            if (ext == ".json")
+            {
+                content = System.Text.Json.JsonSerializer.Serialize(_lastBenchmarkResult,
+                    new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+            }
+            else
+            {
+                content = _lastBenchmarkResult.ToExportText();
+            }
+
+            System.IO.File.WriteAllText(dlg.FileName, content);
+            _log.Log($"Benchmark exported to: {dlg.FileName}");
+            _dialog.ShowInfo($"Benchmark results exported to:\n{dlg.FileName}", "Export Complete");
+        }
+        catch (Exception ex)
+        {
+            _log.Log($"Benchmark export failed: {ex.Message}");
+            _dialog.ShowError($"Failed to export benchmark results:\n{ex.Message}", "Export Error");
         }
     }
 }
