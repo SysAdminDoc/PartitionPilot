@@ -11,11 +11,11 @@ public class WmiDiskService : IWmiDiskService
     private const string BitLockerScope = @"\\.\root\CIMV2\Security\MicrosoftVolumeEncryption";
 
     private readonly ProcessRunner _runner;
-    private readonly ActivityLog _log;
+    private readonly IActivityLog _log;
     private readonly Dictionary<string, ManagementScope> _scopeCache = new(StringComparer.OrdinalIgnoreCase);
     private readonly object _scopeLock = new();
 
-    public WmiDiskService(ProcessRunner runner, ActivityLog log)
+    public WmiDiskService(ProcessRunner runner, IActivityLog log)
     {
         _runner = runner;
         _log = log;

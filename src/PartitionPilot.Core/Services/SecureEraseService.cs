@@ -87,7 +87,7 @@ public static class SecureEraseService
                    p.FriendlyName.Equals(disk.FriendlyName, StringComparison.OrdinalIgnoreCase));
     }
 
-    public static async Task ExecuteMultiPassWipeAsync(int diskNumber, int passCount, ProcessRunner runner, ActivityLog log, CancellationToken ct)
+    public static async Task ExecuteMultiPassWipeAsync(int diskNumber, int passCount, ProcessRunner runner, IActivityLog log, CancellationToken ct)
     {
         var passes = passCount switch
         {
@@ -168,7 +168,7 @@ public static class SecureEraseService
         log.Log($"DoD {passes.Length}-pass wipe complete on Disk {diskNumber}.");
     }
 
-    public static void ExecuteNvmeSanitize(int diskNumber, SanitizeMethod method, ActivityLog? log = null)
+    public static void ExecuteNvmeSanitize(int diskNumber, SanitizeMethod method, IActivityLog? log = null)
     {
         var devicePath = $@"\\.\PhysicalDrive{diskNumber}";
         log?.Log($"Opening {devicePath} for NVMe sanitize ({method})...");
