@@ -173,6 +173,12 @@
                                    Style="{StaticResource CaptionText}"
                                    Margin="0,2,0,12"/>
 
+                        <Button Content="Initialize Disk"
+                                Style="{StaticResource ActionRailPrimaryButton}"
+                                Command="{Binding InitializeDiskCommand}"
+                                Visibility="{Binding IsSelectedDiskRaw, Converter={StaticResource BoolVis}}"
+                                ToolTip="Initialize this unpartitioned disk with a GPT partition table"
+                                AutomationProperties.Name="Initialize disk"/>
                         <Button Content="Create Partition"
                                 Style="{StaticResource ActionRailPrimaryButton}"
                                 Click="OnCreate"
