@@ -22,7 +22,20 @@ public class PartitionTableBackup
         var portableMarker = Path.Combine(exeDir, "portable.txt");
         if (File.Exists(portableMarker))
             return Path.Combine(exeDir, "backups");
-        return Path.Combine(Path.GetTempPath(), "PartitionPilot", "backups");
+        var programData = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
+            "PartitionPilot", "backups");
+        if (Directory.Exists(programData))
+            return programData;
+        try
+        {
+            Directory.CreateDirectory(programData);
+            return programData;
+        }
+        catch
+        {
+            return Path.Combine(Path.GetTempPath(), "PartitionPilot", "backups");
+        }
     }
 
     public PartitionTableBackup(WmiDiskService wmiService, ActivityLog log)

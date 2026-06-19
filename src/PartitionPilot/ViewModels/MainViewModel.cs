@@ -48,6 +48,7 @@ public class MainViewModel : ViewModelBase
     public string VersionText => GetVersionText();
     public string AdminSessionText { get; }
     public string AdminSessionDetail { get; }
+    public string ElevationContextText { get; }
     public string SessionStateText => "Session state";
     public string SessionStateDetail => StatusText;
 
@@ -81,6 +82,7 @@ public class MainViewModel : ViewModelBase
         var isAdmin = IsRunningAsAdministrator();
         AdminSessionText = isAdmin ? "Admin session" : "Standard session";
         AdminSessionDetail = isAdmin ? "Disk changes available" : "Run as administrator for write operations";
+        ElevationContextText = DetectElevationContext(isAdmin);
 
         Log.Log("PartitionPilot ready.");
         _ = CheckForUpdateAsync();
@@ -195,6 +197,17 @@ public class MainViewModel : ViewModelBase
         using var identity = WindowsIdentity.GetCurrent();
         var principal = new WindowsPrincipal(identity);
         return principal.IsInRole(WindowsBuiltInRole.Administrator);
+    }
+
+    private static string DetectElevationContext(bool isAdmin)
+    {
+        if (!isAdmin) return "Standard (unelevated)";
+
+        var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        var isAdminProtection = userProfile.Contains("ADMIN_", StringComparison.OrdinalIgnoreCase);
+        return isAdminProtection
+            ? "Administrator Protection (SMAA profile)"
+            : "Legacy UAC (elevated)";
     }
 
     public static string GetVersionText() => $"PartitionPilot v{UpdateService.GetCurrentVersion()}";

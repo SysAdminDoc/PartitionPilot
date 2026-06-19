@@ -21,7 +21,18 @@ public class ActivityLog : INotifyPropertyChanged
         var portableMarker = Path.Combine(exeDir, "portable.txt");
         if (File.Exists(portableMarker))
             return Path.Combine(exeDir, "logs");
-        return Path.Combine(Path.GetTempPath(), "PartitionPilot");
+        var programData = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
+            "PartitionPilot", "logs");
+        try
+        {
+            Directory.CreateDirectory(programData);
+            return programData;
+        }
+        catch
+        {
+            return Path.Combine(Path.GetTempPath(), "PartitionPilot");
+        }
     }
 
     public ObservableCollection<LogEntry> Entries { get; } = new();
