@@ -91,6 +91,22 @@ public class MainViewModel : ViewModelBase
 
     private async Task CheckForUpdateAsync()
     {
+        var veloUpdate = await UpdateService.CheckForVelopackUpdateAsync(Log);
+        if (veloUpdate is not null)
+        {
+            StatusText = $"Update available: v{veloUpdate.TargetFullRelease.Version}";
+            try
+            {
+                await UpdateService.DownloadAndApplyAsync(veloUpdate, Log);
+                StatusText = $"Update v{veloUpdate.TargetFullRelease.Version} ready — restart to apply";
+            }
+            catch
+            {
+                StatusText = $"Update v{veloUpdate.TargetFullRelease.Version} available (download failed)";
+            }
+            return;
+        }
+
         var result = await UpdateService.CheckForUpdateAsync();
         if (result is { available: true } update)
         {
