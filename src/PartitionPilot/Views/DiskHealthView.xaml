@@ -154,6 +154,9 @@
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="170"/>
                                 <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="30"/>
+                                <ColumnDefinition Width="170"/>
+                                <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
@@ -179,7 +182,48 @@
                             <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding ReadLatencyText}" Margin="0,3"/>
                             <TextBlock Grid.Row="6" Grid.Column="0" Text="Max Write Latency" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
                             <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding WriteLatencyText}" Margin="0,3"/>
+
+                            <TextBlock Grid.Row="0" Grid.Column="3" Text="Reallocated Sectors" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="0" Grid.Column="4" Text="{Binding ReallocatedSectorsText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="1" Grid.Column="3" Text="Pending Sectors" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="1" Grid.Column="4" Text="{Binding PendingSectorsText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="2" Grid.Column="3" Text="Power Cycles" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="2" Grid.Column="4" Text="{Binding PowerCycleText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="3" Grid.Column="3" Text="Total Written" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="3" Grid.Column="4" Text="{Binding TotalWrittenText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="4" Grid.Column="3" Text="Total Read" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="4" Grid.Column="4" Text="{Binding TotalReadText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="5" Grid.Column="3" Text="NVMe Available Spare" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="5" Grid.Column="4" Text="{Binding NvmeAvailableSpareText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="6" Grid.Column="3" Text="NVMe Media Errors" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="6" Grid.Column="4" Text="{Binding NvmeMediaErrorsText}" Margin="0,3"/>
                         </Grid>
+                    </GroupBox>
+
+                    <GroupBox Header="All SMART Attributes">
+                        <GroupBox.Style>
+                            <Style TargetType="GroupBox" BasedOn="{StaticResource SectionGroup}">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasExtendedSmartData}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </GroupBox.Style>
+                        <ListView ItemsSource="{Binding SmartAttributes}"
+                                  BorderThickness="0"
+                                  FontSize="12.5"
+                                  MaxHeight="300"
+                                  AutomationProperties.Name="SMART attributes table">
+                            <ListView.View>
+                                <GridView>
+                                    <GridViewColumn Header="ID" Width="50" DisplayMemberBinding="{Binding Id}"/>
+                                    <GridViewColumn Header="Attribute" Width="250" DisplayMemberBinding="{Binding Name}"/>
+                                    <GridViewColumn Header="Raw Value" Width="150" DisplayMemberBinding="{Binding RawDisplay}"/>
+                                </GridView>
+                            </ListView.View>
+                        </ListView>
                     </GroupBox>
 
                     <Border Margin="0,0,0,12">

@@ -251,10 +251,16 @@ public class WmiDiskService : IWmiDiskService
 
     public async Task<SmartData?> GetSmartDataAsync(string deviceId)
     {
-        // Attempt 1: direct WMI query
+        var diskNum = ParseDeviceNumber(deviceId);
+
+        // Attempt 1: LibreHardwareMonitor for extended SMART attributes
+        var lhmData = await Task.Run(() => SmartQueryService.QueryDisk(diskNum, _log));
+
+        // Attempt 2: direct WMI query (fills gaps LHM may miss)
+        SmartData? wmiData = null;
         try
         {
-            return await Task.Run(() =>
+            wmiData = await Task.Run(() =>
             {
                 var scope = GetScope(StorageScope);
                 using var searcher = new ManagementObjectSearcher(scope,
@@ -283,15 +289,21 @@ public class WmiDiskService : IWmiDiskService
         }
         catch (Exception ex)
         {
-            LogWmiFailure("Read SMART reliability counter; falling back to PowerShell", StorageScope, "MSFT_StorageReliabilityCounter", ex);
+            LogWmiFailure("Read SMART reliability counter", StorageScope, "MSFT_StorageReliabilityCounter", ex);
         }
 
-        // Attempt 2: PowerShell fallback
+        if (lhmData is not null && wmiData is not null)
+            return MergeSmartData(lhmData, wmiData);
+        if (lhmData is not null)
+            return lhmData;
+        if (wmiData is not null)
+            return wmiData;
+
+        // Attempt 3: PowerShell fallback
         try
         {
-            var deviceNumber = ParseDeviceNumber(deviceId);
             var json = await _runner.RunPowerShellAsync(
-                $"Get-StorageReliabilityCounter -PhysicalDisk (Get-PhysicalDisk -DeviceNumber {deviceNumber}) | ConvertTo-Json");
+                $"Get-StorageReliabilityCounter -PhysicalDisk (Get-PhysicalDisk -DeviceNumber {diskNum}) | ConvertTo-Json");
 
             if (string.IsNullOrWhiteSpace(json)) return null;
 
@@ -587,6 +599,22 @@ public class WmiDiskService : IWmiDiskService
         catch (Exception ex) { LogWmiFailure("Detect storage pool membership", StorageScope, "MSFT_StoragePool", ex); }
         return result;
     });
+
+    // ──────────────── SMART Merge ─────────────────────────
+
+    private static SmartData MergeSmartData(SmartData lhm, SmartData wmi)
+    {
+        lhm.Temperature ??= wmi.Temperature;
+        lhm.Wear ??= wmi.Wear;
+        lhm.PowerOnHours ??= wmi.PowerOnHours;
+        lhm.ReadErrorsTotal ??= wmi.ReadErrorsTotal;
+        lhm.ReadErrorsCorrected ??= wmi.ReadErrorsCorrected;
+        lhm.WriteErrorsTotal ??= wmi.WriteErrorsTotal;
+        lhm.WriteErrorsCorrected ??= wmi.WriteErrorsCorrected;
+        lhm.ReadLatencyMax ??= wmi.ReadLatencyMax;
+        lhm.WriteLatencyMax ??= wmi.WriteLatencyMax;
+        return lhm;
+    }
 
     // ──────────────── BitLocker Helpers ────────────────────
 
