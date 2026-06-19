@@ -13,6 +13,13 @@ public class ProcessRunner : IProcessRunner
     public async Task<string> RunDiskpartAsync(string script, ActivityLog? log = null, CancellationToken ct = default)
     {
         var tempFile = Path.Combine(Path.GetTempPath(), $"pp_diskpart_{Guid.NewGuid():N}.txt");
+        var record = new OperationRecord
+        {
+            CommandKind = "diskpart",
+            TargetIdentifier = "script",
+            RedactedCommand = OperationRecord.RedactPaths($"diskpart /s \"{tempFile}\"")
+        };
+        var sw = System.Diagnostics.Stopwatch.StartNew();
         try
         {
             await File.WriteAllTextAsync(tempFile, script, ct);
@@ -21,10 +28,16 @@ public class ProcessRunner : IProcessRunner
 
             if (DiskpartErrorPattern.IsMatch(output))
             {
+                record.ExitCode = -1;
+                record.DurationMs = sw.ElapsedMilliseconds;
+                log?.Log(record.ToLogLine());
                 log?.Log($"Diskpart reported error in output: {output.Trim()}");
                 throw new InvalidOperationException($"diskpart error: {output.Trim()}");
             }
 
+            record.ExitCode = 0;
+            record.DurationMs = sw.ElapsedMilliseconds;
+            log?.Log(record.ToLogLine());
             return output;
         }
         finally
@@ -35,12 +48,48 @@ public class ProcessRunner : IProcessRunner
 
     public async Task<string> RunPowerShellAsync(string command, ActivityLog? log = null, CancellationToken ct = default)
     {
+        var record = new OperationRecord
+        {
+            CommandKind = "powershell",
+            TargetIdentifier = ExtractPowerShellTarget(command),
+            RedactedCommand = OperationRecord.RedactPaths(command)
+        };
+        var sw = System.Diagnostics.Stopwatch.StartNew();
         log?.Log($"powershell: {command}");
         var bytes = System.Text.Encoding.Unicode.GetBytes(command);
         var encoded = Convert.ToBase64String(bytes);
-        return await RunExeAsync("powershell.exe",
-            $"-NoProfile -NonInteractive -EncodedCommand {encoded}", log,
-            ignoreStderrOnSuccess: true, ct: ct);
+        try
+        {
+            var result = await RunExeAsync("powershell.exe",
+                $"-NoProfile -NonInteractive -EncodedCommand {encoded}", log,
+                ignoreStderrOnSuccess: true, ct: ct);
+            record.ExitCode = 0;
+            record.DurationMs = sw.ElapsedMilliseconds;
+            log?.Log(record.ToLogLine());
+            return result;
+        }
+        catch
+        {
+            record.ExitCode = -1;
+            record.DurationMs = sw.ElapsedMilliseconds;
+            log?.Log(record.ToLogLine());
+            throw;
+        }
+    }
+
+    private static string ExtractPowerShellTarget(string command)
+    {
+        if (command.Contains("-DriveLetter", StringComparison.OrdinalIgnoreCase))
+        {
+            var match = Regex.Match(command, @"-DriveLetter\s+'?([A-Z])'?", RegexOptions.IgnoreCase);
+            if (match.Success) return $"Volume {match.Groups[1].Value}:";
+        }
+        if (command.Contains("-DiskNumber", StringComparison.OrdinalIgnoreCase) || command.Contains("-Number", StringComparison.OrdinalIgnoreCase))
+        {
+            var match = Regex.Match(command, @"-(?:DiskNumber|Number)\s+(\d+)", RegexOptions.IgnoreCase);
+            if (match.Success) return $"Disk {match.Groups[1].Value}";
+        }
+        return "system";
     }
 
     public async Task<string> RunExeAsync(string fileName, string arguments, ActivityLog? log = null,
