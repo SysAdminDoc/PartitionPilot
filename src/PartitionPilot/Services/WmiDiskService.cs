@@ -118,6 +118,15 @@ public class WmiDiskService : IWmiDiskService
         if (lower.Contains("c12a7328")) return "System";
         if (lower.Contains("de94bba4")) return "Recovery";
         if (lower.Contains("e3c9e316")) return "Reserved";
+        if (lower.Contains("e6d6d379")) return "LDM Metadata";
+        if (lower.Contains("af9b60a0")) return "LDM Data";
+        if (lower.Contains("0fc63daf")) return "Linux";
+        if (lower.Contains("0657fd6d")) return "Linux Swap";
+        if (lower.Contains("933ac7e1")) return "Linux Home";
+        if (lower.Contains("3b8f8425")) return "Linux Root (x86-64)";
+        if (lower.Contains("ca7d7ccb")) return "LUKS";
+        if (lower.Contains("48465300")) return "HFS+";
+        if (lower.Contains("7c3457ef")) return "APFS";
         return "Unknown";
     }
 

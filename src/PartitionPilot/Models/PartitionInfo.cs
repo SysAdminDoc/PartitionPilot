@@ -18,7 +18,12 @@ public class PartitionInfo
     public int DiskNumber { get; set; }
     public string EncryptionStatus { get; set; } = "";
 
+    private static readonly HashSet<string> UnsupportedTypes = new(StringComparer.OrdinalIgnoreCase)
+        { "Linux", "Linux Swap", "Linux Home", "Linux Root (x86-64)", "LUKS", "HFS+", "APFS", "LDM Metadata", "LDM Data" };
+
     public bool IsCritical => IsSystem || IsBoot || Type.Equals("System", StringComparison.OrdinalIgnoreCase) || Type.Equals("Recovery", StringComparison.OrdinalIgnoreCase);
+
+    public bool IsUnsupportedType => UnsupportedTypes.Contains(Type) || (Type.Equals("Unknown", StringComparison.OrdinalIgnoreCase) && !DriveLetter.HasValue);
 
     public string LetterDisplay => DriveLetter.HasValue ? $"{DriveLetter}:" : "-";
 

@@ -382,6 +382,8 @@ public class PartitionsViewModel : ViewModelBase
             fs = ProcessRunner.ValidateFileSystem(fs);
             allocationUnitSize = ProcessRunner.ValidateAllocationUnitSize(allocationUnitSize);
             var partition = FindPartitionByLetter(letter);
+            if (!GuardUnsupportedType(partition, $"Format {letter}:"))
+                return;
             if (!ConfirmBitLockerDestructiveOperation(partition, $"Format {letter}:"))
                 return;
 
@@ -583,6 +585,8 @@ public class PartitionsViewModel : ViewModelBase
 
         var part = SelectedPartition;
         if (!await GuardRecoveryPartitionOperationAsync(part, "delete"))
+            return;
+        if (!GuardUnsupportedType(part, $"Delete partition {part.PartitionNumber}"))
             return;
 
         var encryptionLine = string.IsNullOrWhiteSpace(part.EncryptionStatus)
@@ -787,6 +791,25 @@ public class PartitionsViewModel : ViewModelBase
     {
         letter = char.ToUpperInvariant(letter);
         return Partitions.FirstOrDefault(p => p.DriveLetter.HasValue && char.ToUpperInvariant(p.DriveLetter.Value) == letter);
+    }
+
+    private bool GuardUnsupportedType(PartitionInfo? partition, string operation)
+    {
+        if (partition is null || !partition.IsUnsupportedType)
+            return true;
+
+        if (!_dialog.ConfirmDanger(
+            $"{operation} targets a {partition.Type} partition that PartitionPilot cannot manage natively.\n\n" +
+            $"Partition: {partition.PartitionDisplay}, Size: {partition.SizeText}\n\n" +
+            "Modifying this partition may destroy data that Windows cannot read or recover. " +
+            "Proceed only if you are certain this partition is no longer needed.",
+            $"Unsupported Partition Type: {partition.Type}"))
+        {
+            _log.Log($"{operation} cancelled — unsupported partition type: {partition.Type}");
+            return false;
+        }
+
+        return true;
     }
 
     private bool GuardBitLockerMutation(PartitionInfo? partition, string operation)
