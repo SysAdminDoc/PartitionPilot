@@ -54,6 +54,9 @@ public partial class MainViewModel : ViewModelBase
     public string AdminSessionText { get; }
     public string AdminSessionDetail { get; }
     public string ElevationContextText { get; }
+    public bool IsElevated { get; }
+    public bool IsReadOnly => !IsElevated;
+    public ICommand ElevateCommand { get; }
     public string SessionStateText => "Session state";
     public string SessionStateDetail => StatusText;
 
@@ -86,9 +89,11 @@ public partial class MainViewModel : ViewModelBase
         RefreshCurrentCommand = new AsyncRelayCommand(_ => RefreshCurrentAsync());
 
         var isAdmin = IsRunningAsAdministrator();
-        AdminSessionText = isAdmin ? "Admin session" : "Standard session";
+        IsElevated = isAdmin;
+        AdminSessionText = isAdmin ? "Admin session" : "Read-only session";
         AdminSessionDetail = isAdmin ? "Disk changes available" : "Run as administrator for write operations";
         ElevationContextText = DetectElevationContext(isAdmin);
+        ElevateCommand = new WpfRelayCommand(_ => RelaunchElevated(), _ => !IsElevated);
 
         Log.Log("PartitionPilot ready.");
         _ = CheckForUpdateAsync();
@@ -323,6 +328,24 @@ public partial class MainViewModel : ViewModelBase
             var colonIdx = m.Value.IndexOf(':');
             return m.Value[..(colonIdx + 2)] + "\"[redacted]\"";
         });
+
+    private static void RelaunchElevated()
+    {
+        try
+        {
+            var exePath = Environment.ProcessPath;
+            if (string.IsNullOrEmpty(exePath)) return;
+            var psi = new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = exePath,
+                UseShellExecute = true,
+                Verb = "runas"
+            };
+            System.Diagnostics.Process.Start(psi);
+            System.Windows.Application.Current.Shutdown();
+        }
+        catch { }
+    }
 
     private static string DetectElevationContext(bool isAdmin)
     {

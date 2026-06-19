@@ -60,8 +60,14 @@
                     <Button Content="{Binding ThemeLabel}"
                             Command="{Binding ToggleThemeCommand}"
                             Style="{StaticResource CommandBarButton}"
-                            Margin="0"
                             AutomationProperties.Name="Toggle theme"/>
+                    <Button Content="Elevate"
+                            Command="{Binding ElevateCommand}"
+                            Style="{StaticResource CommandBarButton}"
+                            Margin="0"
+                            ToolTip="Re-launch as administrator for disk write operations"
+                            Visibility="{Binding IsReadOnly, Converter={StaticResource BoolVis}}"
+                            AutomationProperties.Name="Elevate to administrator"/>
                 </StackPanel>
             </Grid>
         </Border>
