@@ -8,6 +8,7 @@ public class DiskHealthViewModel : ViewModelBase
 {
     private readonly IWmiDiskService _wmiService;
     private readonly ActivityLog _log;
+    private readonly SmartHistoryService _history = new();
     private CancellationTokenSource? _healthCts;
 
     public ObservableCollection<PhysicalDiskInfo> PhysicalDisks { get; } = new();
@@ -127,6 +128,23 @@ public class DiskHealthViewModel : ViewModelBase
 
     public IReadOnlyList<SmartAttribute> SmartAttributes => Smart?.AllAttributes ?? new List<SmartAttribute>();
 
+    public ObservableCollection<SmartTrend> Trends { get; } = new();
+    public bool HasTrends => Trends.Count > 0;
+
+    private int _historyCount;
+    public int HistoryCount
+    {
+        get => _historyCount;
+        set => SetProperty(ref _historyCount, value);
+    }
+
+    public string HistoryCountText => HistoryCount switch
+    {
+        0 => "No history",
+        1 => "1 reading",
+        _ => $"{HistoryCount} readings"
+    };
+
     public string HealthStatusText => Smart?.Health switch
     {
         HealthStatus.Good => "Good",
@@ -201,10 +219,31 @@ public class DiskHealthViewModel : ViewModelBase
                 _log.Log($"SMART data loaded — Temperature: {smartData.Temperature?.ToString() ?? "N/A"}C, " +
                           $"Wear: {smartData.Wear?.ToString() ?? "N/A"}%, " +
                           $"Power-on hours: {smartData.PowerOnHours?.ToString() ?? "N/A"}");
+
+                await _history.RecordAsync(SelectedDisk.DeviceId, smartData);
+                var readings = await _history.GetHistoryAsync(SelectedDisk.DeviceId);
+                var trends = SmartHistoryService.AnalyzeTrends(readings);
+
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    Trends.Clear();
+                    foreach (var t in trends)
+                        Trends.Add(t);
+                });
+                HistoryCount = readings.Count;
+                OnPropertyChanged(nameof(HasTrends));
+                OnPropertyChanged(nameof(HistoryCountText));
+
+                if (trends.Count > 0)
+                    _log.Log($"SMART trends: {trends.Count} alert(s) — {string.Join("; ", trends.Select(t => t.Message))}");
             }
             else
             {
                 _log.Log("No SMART data available for this disk.");
+                Application.Current.Dispatcher.Invoke(() => Trends.Clear());
+                HistoryCount = 0;
+                OnPropertyChanged(nameof(HasTrends));
+                OnPropertyChanged(nameof(HistoryCountText));
             }
 
             _log.Log("Running partition alignment audit...");

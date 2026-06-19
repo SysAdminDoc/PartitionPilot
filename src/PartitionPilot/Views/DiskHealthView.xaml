@@ -211,6 +211,38 @@
                         </Grid>
                     </GroupBox>
 
+                    <GroupBox Header="SMART Trend Alerts">
+                        <GroupBox.Style>
+                            <Style TargetType="GroupBox" BasedOn="{StaticResource SectionGroup}">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasTrends}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </GroupBox.Style>
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource CaptionText}" Margin="0,0,0,8">
+                                <Run Text="History:"/>
+                                <Run Text="{Binding HistoryCountText, Mode=OneWay}"/>
+                            </TextBlock>
+                            <ListView ItemsSource="{Binding Trends}"
+                                      BorderThickness="0"
+                                      FontSize="12.5"
+                                      AutomationProperties.Name="SMART trend alerts">
+                                <ListView.View>
+                                    <GridView>
+                                        <GridViewColumn Header="Severity" Width="80" DisplayMemberBinding="{Binding Severity}"/>
+                                        <GridViewColumn Header="Attribute" Width="170" DisplayMemberBinding="{Binding Attribute}"/>
+                                        <GridViewColumn Header="Direction" Width="100" DisplayMemberBinding="{Binding Direction}"/>
+                                        <GridViewColumn Header="Details" Width="420" DisplayMemberBinding="{Binding Message}"/>
+                                    </GridView>
+                                </ListView.View>
+                            </ListView>
+                        </StackPanel>
+                    </GroupBox>
+
                     <GroupBox Header="All SMART Attributes">
                         <GroupBox.Style>
                             <Style TargetType="GroupBox" BasedOn="{StaticResource SectionGroup}">
