@@ -7,6 +7,21 @@
     <local:InverseBooleanConverter x:Key="InverseBool"/>
     <local:ProportionToWidthConverter x:Key="ProportionToWidth" MaxWidth="140"/>
 
+    <DataTemplate x:Key="DiskInfoComboTemplate">
+        <TextBlock Text="{Binding DisplayText}"
+                   TextTrimming="CharacterEllipsis"/>
+    </DataTemplate>
+
+    <DataTemplate x:Key="PhysicalDiskInfoComboTemplate">
+        <TextBlock Text="{Binding DisplayText}"
+                   TextTrimming="CharacterEllipsis"/>
+    </DataTemplate>
+
+    <DataTemplate x:Key="VolumeInfoComboTemplate">
+        <TextBlock Text="{Binding DisplayText}"
+                   TextTrimming="CharacterEllipsis"/>
+    </DataTemplate>
+
     <!-- Typography -->
     <Style TargetType="TextBlock">
         <Setter Property="FontFamily" Value="Segoe UI"/>
@@ -162,6 +177,9 @@
                         <ToggleButton x:Name="ToggleButton"
                                       Focusable="False"
                                       ClickMode="Press"
+                                      Content="{TemplateBinding SelectionBoxItem}"
+                                      ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                      ContentStringFormat="{TemplateBinding SelectionBoxItemStringFormat}"
                                       IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}">
                             <ToggleButton.Template>
                                 <ControlTemplate TargetType="ToggleButton">
@@ -181,9 +199,9 @@
                                                               VerticalAlignment="Center"
                                                               HorizontalAlignment="Left"
                                                               RecognizesAccessKey="True"
-                                                              Content="{Binding SelectionBoxItem, RelativeSource={RelativeSource AncestorType=ComboBox}}"
-                                                              ContentTemplate="{Binding SelectionBoxItemTemplate, RelativeSource={RelativeSource AncestorType=ComboBox}}"
-                                                              ContentStringFormat="{Binding SelectionBoxItemStringFormat, RelativeSource={RelativeSource AncestorType=ComboBox}}"/>
+                                                              Content="{TemplateBinding Content}"
+                                                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                                                              ContentStringFormat="{TemplateBinding ContentStringFormat}"/>
                                             <Path Grid.Column="1"
                                                   Data="M 0 0 L 4 4 L 8 0 Z"
                                                   Width="8"

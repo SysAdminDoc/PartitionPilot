@@ -67,6 +67,7 @@ public class OperationQueue
         var failed = 0;
         var total = Pending.Count;
         var snapshot = Pending.ToList();
+        var completedOperations = new List<PendingOperation>();
 
         try
         {
@@ -80,6 +81,7 @@ public class OperationQueue
                 {
                     await op.Execute();
                     completed++;
+                    completedOperations.Add(op);
                     log.Log($"Operation {i + 1} completed: {op.Description}");
                 }
                 catch (Exception ex)
@@ -88,18 +90,23 @@ public class OperationQueue
                     log.Log($"Operation {i + 1} failed: {op.Description} — {ex.Message}");
                     dialog.ShowError(
                         $"Operation failed: {op.Description}\n\n{ex.Message}\n\n" +
-                        $"Completed: {completed}/{total}, Failed: {failed}. Remaining operations skipped.",
+                        $"Completed: {completed}/{total}, Failed: {failed}. Failed and skipped operations remain in the pending queue.",
                         "Operation Failed");
                     break;
                 }
             }
 
-            Pending.Clear();
+            foreach (var op in completedOperations)
+                Pending.Remove(op);
 
             if (failed == 0)
             {
                 log.Log($"All {completed} operation(s) applied successfully.");
                 dialog.ShowInfo($"All {completed} operation(s) applied successfully.", "Operations Complete");
+            }
+            else
+            {
+                log.Log($"{Pending.Count} pending operation(s) preserved after failure.");
             }
         }
         finally

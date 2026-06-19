@@ -267,7 +267,7 @@ public partial class MainViewModel : ViewModelBase
 
                 await File.WriteAllTextAsync(
                     Path.Combine(tempDir, "activity-log.txt"),
-                    Log.FullText);
+                    RedactSupportBundleText(Log.FullText));
 
                 var disks = await _wmiService.GetDisksAsync();
                 var redactedDisks = disks.Select(d => new
@@ -291,7 +291,7 @@ public partial class MainViewModel : ViewModelBase
                     foreach (var file in Directory.EnumerateFiles(snapshotDir, "*.json").Take(10))
                     {
                         var content = await File.ReadAllTextAsync(file);
-                        content = RedactSerialNumbers(content);
+                        content = RedactSupportBundleText(content);
                         await File.WriteAllTextAsync(
                             Path.Combine(snapshotOut, Path.GetFileName(file)),
                             content);
@@ -321,15 +321,25 @@ public partial class MainViewModel : ViewModelBase
         }
     }
 
-    [GeneratedRegex("""(?i)"serial(?:number)?":\s*"[^"]*""")]
-    private static partial Regex SerialPattern();
+    [GeneratedRegex("""(?i)("serial(?:number)?"\s*:\s*")[^"]*(")""")]
+    private static partial Regex JsonSerialPattern();
 
-    private static string RedactSerialNumbers(string json) =>
-        SerialPattern().Replace(json, m =>
-        {
-            var colonIdx = m.Value.IndexOf(':');
-            return m.Value[..(colonIdx + 2)] + "\"[redacted]\"";
-        });
+    [GeneratedRegex("""(?i)(serial(?:number)?\s*[:=]\s*)[^\s,;]+""")]
+    private static partial Regex TextSerialPattern();
+
+    [GeneratedRegex("""(?i)[A-Z]:\\[^\r\n'"]+""")]
+    private static partial Regex SupportPathPattern();
+
+    public static string RedactSupportBundleText(string text)
+    {
+        if (string.IsNullOrEmpty(text))
+            return text;
+
+        var redacted = SupportPathPattern().Replace(text, "[path]");
+        redacted = JsonSerialPattern().Replace(redacted, "$1[redacted]$2");
+        redacted = TextSerialPattern().Replace(redacted, "$1[redacted]");
+        return redacted;
+    }
 
     private static void RelaunchElevated()
     {

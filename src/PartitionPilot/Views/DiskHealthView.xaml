@@ -31,7 +31,7 @@
                         <ComboBox Grid.Column="1"
                                   ItemsSource="{Binding PhysicalDisks}"
                                   SelectedItem="{Binding SelectedDisk}"
-                                  DisplayMemberPath="DisplayText"
+                                  ItemTemplate="{StaticResource PhysicalDiskInfoComboTemplate}"
                                   MinWidth="420"
                                   Height="34"
                                   FontSize="13"

@@ -35,7 +35,7 @@
                             <TextBlock Text="Disk" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
                             <ComboBox ItemsSource="{Binding MbrDisks}"
                                       SelectedItem="{Binding SelectedMbrDisk}"
-                                      DisplayMemberPath="DisplayText"
+                                      ItemTemplate="{StaticResource DiskInfoComboTemplate}"
                                       Height="34"
                                       Margin="0,0,0,10"
                                       AutomationProperties.Name="MBR disk selector"/>
@@ -163,7 +163,7 @@
                                     <TextBlock Text="Volume" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
                                     <ComboBox ItemsSource="{Binding WipeVolumes}"
                                               SelectedItem="{Binding SelectedWipeVolume}"
-                                              DisplayMemberPath="DisplayText"
+                                              ItemTemplate="{StaticResource VolumeInfoComboTemplate}"
                                               Height="34"
                                               AutomationProperties.Name="Wipe volume selector"/>
                                 </StackPanel>
@@ -172,7 +172,7 @@
                                     <TextBlock Text="Disk" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
                                     <ComboBox ItemsSource="{Binding AllDisks}"
                                               SelectedItem="{Binding SelectedWipeDrive}"
-                                              DisplayMemberPath="DisplayText"
+                                              ItemTemplate="{StaticResource DiskInfoComboTemplate}"
                                               Height="34"
                                               AutomationProperties.Name="Wipe disk selector"/>
                                 </StackPanel>
@@ -181,7 +181,7 @@
                                     <TextBlock Text="Disk (DoD 3-pass)" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
                                     <ComboBox ItemsSource="{Binding AllDisks}"
                                               SelectedItem="{Binding SelectedWipeDrive}"
-                                              DisplayMemberPath="DisplayText"
+                                              ItemTemplate="{StaticResource DiskInfoComboTemplate}"
                                               Height="34"
                                               AutomationProperties.Name="DoD 3-pass wipe disk selector"/>
                                 </StackPanel>
@@ -190,7 +190,7 @@
                                     <TextBlock Text="Disk (DoD 7-pass)" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
                                     <ComboBox ItemsSource="{Binding AllDisks}"
                                               SelectedItem="{Binding SelectedWipeDrive}"
-                                              DisplayMemberPath="DisplayText"
+                                              ItemTemplate="{StaticResource DiskInfoComboTemplate}"
                                               Height="34"
                                               AutomationProperties.Name="DoD 7-pass wipe disk selector"/>
                                 </StackPanel>
@@ -199,7 +199,7 @@
                                     <TextBlock Text="Disk (NVMe Sanitize)" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
                                     <ComboBox ItemsSource="{Binding AllDisks}"
                                               SelectedItem="{Binding SelectedWipeDrive}"
-                                              DisplayMemberPath="DisplayText"
+                                              ItemTemplate="{StaticResource DiskInfoComboTemplate}"
                                               Height="34"
                                               AutomationProperties.Name="NVMe sanitize disk selector"/>
                                     <CheckBox Content="Use Crypto Erase (fastest, requires self-encrypting drive)"
