@@ -77,6 +77,61 @@ public class DiskCloningViewModel : ViewModelBase
         }
     }
 
+    // Sector Clone
+    private DiskInfo? _cloneSourceDisk;
+    public DiskInfo? CloneSourceDisk
+    {
+        get => _cloneSourceDisk;
+        set
+        {
+            if (SetProperty(ref _cloneSourceDisk, value))
+            {
+                OnPropertyChanged(nameof(CloneSizeSummary));
+                CommandManager.InvalidateRequerySuggested();
+            }
+        }
+    }
+
+    private DiskInfo? _cloneDestDisk;
+    public DiskInfo? CloneDestDisk
+    {
+        get => _cloneDestDisk;
+        set
+        {
+            if (SetProperty(ref _cloneDestDisk, value))
+            {
+                OnPropertyChanged(nameof(CloneSizeSummary));
+                CommandManager.InvalidateRequerySuggested();
+            }
+        }
+    }
+
+    private string _cloneProgressText = "";
+    public string CloneProgressText
+    {
+        get => _cloneProgressText;
+        set => SetProperty(ref _cloneProgressText, value);
+    }
+
+    private double _cloneProgressPercent;
+    public double CloneProgressPercent
+    {
+        get => _cloneProgressPercent;
+        set => SetProperty(ref _cloneProgressPercent, value);
+    }
+
+    public string CloneSizeSummary
+    {
+        get
+        {
+            if (CloneSourceDisk is null) return "Select a source disk.";
+            if (CloneDestDisk is null) return $"Source: {SizeUtil.Format(CloneSourceDisk.Size)}. Select a destination disk.";
+            if (CloneDestDisk.Size < CloneSourceDisk.Size)
+                return $"Source: {SizeUtil.Format(CloneSourceDisk.Size)}, Destination: {SizeUtil.Format(CloneDestDisk.Size)} — destination too small.";
+            return $"Source: {SizeUtil.Format(CloneSourceDisk.Size)}, Destination: {SizeUtil.Format(CloneDestDisk.Size)} — ready.";
+        }
+    }
+
     private bool _isBusy;
     public bool IsBusy
     {
@@ -101,6 +156,7 @@ public class DiskCloningViewModel : ViewModelBase
     public ICommand BrowseRestoreImageCommand { get; }
     public ICommand CreateImageCommand { get; }
     public ICommand RestoreImageCommand { get; }
+    public ICommand SectorCloneCommand { get; }
     public ICommand CancelCommand { get; }
     public ICommand RefreshCommand { get; }
 
@@ -117,6 +173,8 @@ public class DiskCloningViewModel : ViewModelBase
             _ => SelectedSourceDrive != default && !string.IsNullOrWhiteSpace(ImagePath));
         RestoreImageCommand = new AsyncRelayCommand(_ => RestoreImageAsync(),
             _ => SelectedTargetDisk is not null && !string.IsNullOrWhiteSpace(RestoreImagePath));
+        SectorCloneCommand = new AsyncRelayCommand(_ => SectorCloneAsync(),
+            _ => CloneSourceDisk is not null && CloneDestDisk is not null);
         CancelCommand = new WpfRelayCommand(_ => _cts?.Cancel(), _ => IsBusy);
         RefreshCommand = new AsyncRelayCommand(_ => RefreshAsync());
     }
@@ -380,6 +438,94 @@ public class DiskCloningViewModel : ViewModelBase
         {
             _log.Log($"Image restore failed: {ex.Message}");
             _dialog.ShowError($"Image restore failed:\n{ex.Message}", "Restore Error");
+        }
+        finally
+        {
+            foreach (var l in targetLocks) l?.Dispose();
+            IsBusy = false;
+            StatusText = "";
+            _cts?.Dispose();
+            _cts = null;
+        }
+    }
+
+    private async Task SectorCloneAsync()
+    {
+        if (CloneSourceDisk is null || CloneDestDisk is null) return;
+
+        try
+        {
+            SectorCloneService.ValidateClone(CloneSourceDisk, CloneDestDisk);
+        }
+        catch (Exception ex)
+        {
+            _dialog.ShowError(ex.Message, "Clone Validation Failed");
+            return;
+        }
+
+        var protectedTargets = await GetBitLockerProtectedTargetsAsync(CloneDestDisk.Number);
+        if (protectedTargets.Count > 0 &&
+            !_dialog.ConfirmDanger(
+                BitLockerPreflight.BuildDestructiveConfirmation(
+                    $"Sector clone to Disk {CloneDestDisk.Number}", protectedTargets),
+                "Confirm BitLocker-Protected Clone"))
+            return;
+
+        if (!_dialog.ConfirmDanger(
+            $"WARNING: This will overwrite ALL data on Disk {CloneDestDisk.Number} ({CloneDestDisk.FriendlyName}, {SizeUtil.Format(CloneDestDisk.Size)}) with a sector-by-sector copy of Disk {CloneSourceDisk.Number}.\n\nThis operation cannot be undone. Continue?",
+            "Confirm Sector Clone"))
+            return;
+
+        if (!_dialog.ConfirmDanger(
+            "FINAL CONFIRMATION: All data on the destination disk will be permanently overwritten with a raw sector copy.",
+            "Confirm Clone"))
+            return;
+
+        _cts?.Cancel();
+        _cts?.Dispose();
+        _cts = new CancellationTokenSource();
+        var ct = _cts.Token;
+        IsBusy = true;
+        StatusText = $"Cloning Disk {CloneSourceDisk.Number} -> Disk {CloneDestDisk.Number}...";
+        CloneProgressText = "Starting sector clone...";
+        CloneProgressPercent = 0;
+
+        var targetLocks = new List<VolumeLock>();
+        try
+        {
+            var targetPartitions = await _wmiService.GetPartitionsAsync(CloneDestDisk.Number);
+            targetLocks = targetPartitions
+                .Where(p => p.DriveLetter.HasValue)
+                .Select(p => VolumeLockService.RequireLock(p.DriveLetter!.Value, _log))
+                .ToList();
+
+            var progress = new Progress<SectorCloneProgress>(p =>
+            {
+                CloneProgressText = $"{p.ProgressText}  {p.RateText}  ETA: {p.EstimatedRemaining:hh\\:mm\\:ss}";
+                CloneProgressPercent = p.PercentComplete;
+                StatusText = $"Cloning... {p.PercentComplete:F1}%";
+            });
+
+            await SectorCloneService.CloneAsync(
+                CloneSourceDisk.Number, CloneDestDisk.Number, CloneSourceDisk.Size,
+                _log, progress, ct);
+
+            CloneProgressText = "Clone complete.";
+            CloneProgressPercent = 100;
+            _dialog.ShowInfo(
+                $"Sector clone complete.\n\nDisk {CloneSourceDisk.Number} -> Disk {CloneDestDisk.Number}\n{SizeUtil.Format(CloneSourceDisk.Size)} copied.",
+                "Clone Complete");
+        }
+        catch (OperationCanceledException)
+        {
+            _log.Log("Sector clone cancelled.");
+            CloneProgressText = "Clone cancelled.";
+        }
+        catch (Exception ex)
+        {
+            _log.Log($"Sector clone failed: {ex.Message}");
+            _dialog.ShowError($"Sector clone failed:\n{ex.Message}", "Clone Error");
+            CloneProgressText = $"Failed: {ex.Message}";
         }
         finally
         {

@@ -112,6 +112,52 @@
                                     AutomationProperties.Name="Restore disk image"/>
                         </StackPanel>
                     </GroupBox>
+
+                    <GroupBox Header="Sector Clone" Style="{StaticResource ToolGroup}">
+                        <StackPanel>
+                            <TextBlock Text="Copy every sector from a source disk to a destination disk. Creates an exact byte-for-byte duplicate."
+                                       Style="{StaticResource CaptionText}"
+                                       Margin="0,0,0,10"/>
+                            <Border Style="{StaticResource DangerNoticePanel}">
+                                <TextBlock Text="Sector clone overwrites ALL data on the destination disk. The destination must be at least as large as the source."
+                                           Style="{StaticResource CaptionText}"
+                                           Foreground="{DynamicResource DangerBtnFgBrush}"/>
+                            </Border>
+                            <TextBlock Text="Source Disk" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
+                            <ComboBox ItemsSource="{Binding AllDisks}"
+                                      SelectedItem="{Binding CloneSourceDisk}"
+                                      ItemTemplate="{StaticResource DiskInfoComboTemplate}"
+                                      Height="34" Margin="0,0,0,10"
+                                      AutomationProperties.Name="Clone source disk"/>
+                            <TextBlock Text="Destination Disk" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
+                            <ComboBox ItemsSource="{Binding AllDisks}"
+                                      SelectedItem="{Binding CloneDestDisk}"
+                                      ItemTemplate="{StaticResource DiskInfoComboTemplate}"
+                                      Height="34" Margin="0,0,0,10"
+                                      AutomationProperties.Name="Clone destination disk"/>
+                            <TextBlock Text="{Binding CloneSizeSummary}"
+                                       Style="{StaticResource CaptionText}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,0,0,6"
+                                       AutomationProperties.Name="Clone size summary"/>
+                            <TextBlock Text="{Binding CloneProgressText}"
+                                       Style="{StaticResource CaptionText}"
+                                       Margin="0,0,0,6"
+                                       AutomationProperties.Name="Clone progress"/>
+                            <ProgressBar Value="{Binding CloneProgressPercent}"
+                                         Maximum="100"
+                                         Height="4"
+                                         Foreground="{DynamicResource PrimaryBrush}"
+                                         Background="{DynamicResource BorderBrush}"
+                                         BorderThickness="0"
+                                         Margin="0,0,0,10"/>
+                            <Button Content="Start Clone"
+                                    Style="{StaticResource DangerButton}"
+                                    Command="{Binding SectorCloneCommand}"
+                                    HorizontalAlignment="Left"
+                                    AutomationProperties.Name="Start sector clone"/>
+                        </StackPanel>
+                    </GroupBox>
                 </WrapPanel>
             </ScrollViewer>
         </DockPanel>
