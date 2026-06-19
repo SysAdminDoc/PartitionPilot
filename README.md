@@ -1,4 +1,4 @@
-![Version](https://img.shields.io/badge/version-0.6.0-4CC2FF)
+![Version](https://img.shields.io/badge/version-0.7.0-4CC2FF)
 ![License](https://img.shields.io/badge/license-MIT-5EE0A0)
 ![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-F4C96A)
 
@@ -28,7 +28,13 @@ PartitionPilot is a Windows disk partition management tool for power users and I
 - Privacy-preserving support bundle export (redacted serial numbers and user paths).
 - Structured native-command audit records with path redaction.
 - Auto-updates via Velopack with delta packages and GitHub Releases integration.
-- Dark and light theme with persistent preference.
+- .NET 10 Fluent theme with dark, light, and system (follows OS setting) modes.
+- CLI companion (pp.exe) for scripted disk management with JSON output.
+- SMART attribute history tracking with trend alerts for degradation detection.
+- Real-time disk temperature monitoring with configurable threshold alerts.
+- MFT-direct NTFS scanning for near-instant disk usage analysis.
+- Sector-level disk-to-disk clone with progress reporting and cancel support.
+- i18n-ready string resources with LocExtension markup for localization.
 - Activity log with export, filtering, and auto-save.
 - Cancellable long-running operations with progress and rate reporting.
 - Screen reader accessibility (AutomationProperties on all interactive controls).
@@ -56,6 +62,16 @@ dotnet run --project .\src\PartitionPilot\PartitionPilot.csproj
 ```
 
 For real disk operations, run the built executable from an elevated session so Windows storage APIs and native tools have the required permissions.
+
+## CLI
+
+```powershell
+dotnet run --project .\src\PartitionPilot.Cli\PartitionPilot.Cli.csproj -- disks
+dotnet run --project .\src\PartitionPilot.Cli\PartitionPilot.Cli.csproj -- partitions --disk 0
+dotnet run --project .\src\PartitionPilot.Cli\PartitionPilot.Cli.csproj -- health --json
+```
+
+Commands: `disks`, `partitions`, `volumes`, `smart`, `health`, `alignment`, `snapshot`, `version`. All support `--json` for scripted automation.
 
 ## Safety
 
