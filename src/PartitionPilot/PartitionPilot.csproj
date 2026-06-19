@@ -20,7 +20,7 @@
     <NuGetAuditLevel>low</NuGetAuditLevel>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="System.Management" Version="9.0.6" />
+    <PackageReference Include="System.Management" Version="10.0.9" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Assets\AppIcon.png" />
