@@ -120,7 +120,30 @@ public class DiskUsageViewModel : ViewModelBase
             var rootPath = $"{SelectedDrive}:\\";
 
             var scanSw = System.Diagnostics.Stopwatch.StartNew();
-            var results = await Task.Run(() => ScanTopFolders(rootPath, ct), ct);
+            List<FolderSizeInfo> results;
+            var usedMft = false;
+
+            var driveInfo = new DriveInfo(SelectedDrive.ToString());
+            if (driveInfo.IsReady && driveInfo.DriveFormat.Equals("NTFS", StringComparison.OrdinalIgnoreCase))
+            {
+                try
+                {
+                    StatusText = $"MFT scanning {SelectedDrive}:\\ (fast NTFS mode)...";
+                    results = await Task.Run(() => MftScanner.ScanVolume(SelectedDrive, 30, ct), ct);
+                    usedMft = true;
+                    _log.Log("Used MFT-direct scanning for fast NTFS analysis.");
+                }
+                catch (Exception mftEx)
+                {
+                    _log.Log($"MFT scan unavailable ({mftEx.Message}), falling back to directory enumeration.");
+                    StatusText = $"Scanning {SelectedDrive}:\\ (directory enumeration)...";
+                    results = await Task.Run(() => ScanTopFolders(rootPath, ct), ct);
+                }
+            }
+            else
+            {
+                results = await Task.Run(() => ScanTopFolders(rootPath, ct), ct);
+            }
             scanSw.Stop();
 
             long totalScanned = results.Sum(f => f.Size);
@@ -139,8 +162,9 @@ public class DiskUsageViewModel : ViewModelBase
                 .Select(f => new TreemapItem { Label = f.Name, Size = f.Size, Path = f.Path })
                 .ToList();
 
-            SummaryText = $"Scanned {results.Count} top-level folders. Total: {SizeUtil.Format(totalScanned)} in {scanSw.Elapsed.TotalSeconds:F1}s";
-            _log.Log($"Disk usage scan complete on {SelectedDrive}:\\. {results.Count} folders, {SizeUtil.Format(totalScanned)} total in {scanSw.Elapsed.TotalSeconds:F1}s.");
+            var method = usedMft ? "MFT" : "directory enumeration";
+            SummaryText = $"Scanned {results.Count} top-level folders via {method}. Total: {SizeUtil.Format(totalScanned)} in {scanSw.Elapsed.TotalSeconds:F1}s";
+            _log.Log($"Disk usage scan complete on {SelectedDrive}:\\ via {method}. {results.Count} folders, {SizeUtil.Format(totalScanned)} total in {scanSw.Elapsed.TotalSeconds:F1}s.");
         }
         catch (OperationCanceledException)
         {
