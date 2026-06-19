@@ -284,19 +284,6 @@
         </Setter>
     </Style>
 
-    <Style TargetType="RadioButton">
-        <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
-        <Setter Property="FontSize" Value="12.5"/>
-        <Setter Property="Margin" Value="0,0,16,6"/>
-        <Setter Property="FocusVisualStyle" Value="{StaticResource ControlFocusVisual}"/>
-    </Style>
-
-    <Style TargetType="CheckBox">
-        <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
-        <Setter Property="FontSize" Value="12.5"/>
-        <Setter Property="FocusVisualStyle" Value="{StaticResource ControlFocusVisual}"/>
-    </Style>
-
     <!-- Buttons -->
     <Style x:Key="BaseButton" TargetType="Button">
         <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
@@ -579,92 +566,6 @@
         <Setter Property="Height" Value="34"/>
         <Setter Property="FontSize" Value="12"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
-    </Style>
-
-    <Style TargetType="MenuItem">
-        <Setter Property="FontSize" Value="12.5"/>
-        <Setter Property="Padding" Value="10,6"/>
-    </Style>
-
-    <!-- Scrollbars -->
-    <Style x:Key="ScrollRepeatButton" TargetType="RepeatButton">
-        <Setter Property="Focusable" Value="False"/>
-        <Setter Property="IsTabStop" Value="False"/>
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="RepeatButton">
-                    <Border Background="Transparent"/>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
-
-    <Style x:Key="ScrollThumb" TargetType="Thumb">
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="Thumb">
-                    <Border x:Name="ThumbBorder"
-                            Background="{DynamicResource BorderStrongBrush}"
-                            BorderBrush="{DynamicResource BorderStrongBrush}"
-                            BorderThickness="1"
-                            CornerRadius="4"
-                            Margin="2"/>
-                    <ControlTemplate.Triggers>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="ThumbBorder" Property="Background" Value="{DynamicResource PrimaryBrush}"/>
-                            <Setter TargetName="ThumbBorder" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
-                        </Trigger>
-                        <Trigger Property="IsDragging" Value="True">
-                            <Setter TargetName="ThumbBorder" Property="Background" Value="{DynamicResource PrimaryPressedBrush}"/>
-                            <Setter TargetName="ThumbBorder" Property="BorderBrush" Value="{DynamicResource PrimaryPressedBrush}"/>
-                        </Trigger>
-                    </ControlTemplate.Triggers>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
-
-    <Style TargetType="ScrollBar">
-        <Setter Property="Width" Value="12"/>
-        <Setter Property="Height" Value="12"/>
-        <Setter Property="Background" Value="{DynamicResource StatusBgBrush}"/>
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="ScrollBar">
-                    <Grid x:Name="Root"
-                          Background="{TemplateBinding Background}"
-                          SnapsToDevicePixels="True">
-                        <Track x:Name="PART_Track"
-                               IsDirectionReversed="True">
-                            <Track.DecreaseRepeatButton>
-                                <RepeatButton Command="ScrollBar.PageUpCommand"
-                                              Style="{StaticResource ScrollRepeatButton}"/>
-                            </Track.DecreaseRepeatButton>
-                            <Track.Thumb>
-                                <Thumb Style="{StaticResource ScrollThumb}"/>
-                            </Track.Thumb>
-                            <Track.IncreaseRepeatButton>
-                                <RepeatButton Command="ScrollBar.PageDownCommand"
-                                              Style="{StaticResource ScrollRepeatButton}"/>
-                            </Track.IncreaseRepeatButton>
-                        </Track>
-                    </Grid>
-                    <ControlTemplate.Triggers>
-                        <Trigger Property="Orientation" Value="Horizontal">
-                            <Setter TargetName="Root" Property="LayoutTransform">
-                                <Setter.Value>
-                                    <RotateTransform Angle="-90"/>
-                                </Setter.Value>
-                            </Setter>
-                            <Setter TargetName="PART_Track" Property="IsDirectionReversed" Value="False"/>
-                        </Trigger>
-                        <Trigger Property="IsEnabled" Value="False">
-                            <Setter TargetName="Root" Property="Opacity" Value="0.35"/>
-                        </Trigger>
-                    </ControlTemplate.Triggers>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
     </Style>
 
     <!-- Busy overlay -->

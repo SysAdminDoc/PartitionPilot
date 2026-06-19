@@ -60,7 +60,7 @@ public partial class MainViewModel : ViewModelBase
     public string SessionStateText => "Session state";
     public string SessionStateDetail => StatusText;
 
-    private string _themeLabel = ThemeService.IsDarkMode ? "Light Mode" : "Dark Mode";
+    private string _themeLabel = ThemeService.GetLabel();
     public string ThemeLabel
     {
         get => _themeLabel;
@@ -130,10 +130,11 @@ public partial class MainViewModel : ViewModelBase
 
     private void ToggleTheme()
     {
-        ThemeService.Toggle();
-        ThemeLabel = ThemeService.IsDarkMode ? "Light Mode" : "Dark Mode";
-        Log.Log($"Theme applied: {(ThemeService.IsDarkMode ? "dark" : "light")} mode.");
-        StatusText = $"{(ThemeService.IsDarkMode ? "Dark" : "Light")} theme applied";
+        ThemeService.CycleTheme();
+        ThemeLabel = ThemeService.GetLabel();
+        var modeName = ThemeService.Preference.ToString().ToLowerInvariant();
+        Log.Log($"Theme applied: {modeName} mode.");
+        StatusText = $"{ThemeService.Preference} theme applied";
     }
 
     private void ExportLog()
