@@ -202,6 +202,12 @@
                                 IsEnabled="{Binding HasSelectedPartition}"
                                 ToolTip="Split the selected volume into two volumes"
                                 AutomationProperties.Name="Split partition"/>
+                        <Button Content="Merge"
+                                Style="{StaticResource ActionRailButton}"
+                                Click="OnMerge"
+                                IsEnabled="{Binding HasSelectedDisk}"
+                                ToolTip="Merge two adjacent partitions into one"
+                                AutomationProperties.Name="Merge partitions"/>
                         <Button Content="Format"
                                 Style="{StaticResource ActionRailButton}"
                                 Click="OnFormat"
@@ -242,13 +248,38 @@
                                 <DataTemplate>
                                     <Border Background="{DynamicResource SurfaceBrush}"
                                             BorderBrush="{DynamicResource TableRuleBrush}"
-                                            BorderThickness="1" CornerRadius="4"
-                                            Padding="8,5" Margin="0,0,0,3">
-                                        <TextBlock Text="{Binding Description}"
-                                                   TextTrimming="CharacterEllipsis"
-                                                   FontSize="11.5"
-                                                   ToolTip="{Binding Description}"
-                                                   AutomationProperties.Name="{Binding Description}"/>
+                                            BorderThickness="1" CornerRadius="5"
+                                            Padding="8" Margin="0,0,0,6">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding Description}"
+                                                           TextTrimming="CharacterEllipsis"
+                                                           FontSize="11.5"
+                                                           FontWeight="SemiBold"
+                                                           ToolTip="{Binding Description}"
+                                                           AutomationProperties.Name="{Binding Description}"/>
+                                                <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                                    <TextBlock Text="{Binding TypeDisplay}"
+                                                               Style="{StaticResource TinyLabelText}"
+                                                               Margin="0,0,8,0"/>
+                                                    <TextBlock Text="{Binding DiskTarget}"
+                                                               Style="{StaticResource TinyLabelText}"
+                                                               TextTrimming="CharacterEllipsis"/>
+                                                </StackPanel>
+                                            </StackPanel>
+                                            <Button Grid.Column="1"
+                                                    Content="Remove"
+                                                    Command="{Binding DataContext.RemoveQueuedOperationCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                    CommandParameter="{Binding}"
+                                                    Style="{StaticResource InlineButton}"
+                                                    Margin="8,0,0,0"
+                                                    VerticalAlignment="Top"
+                                                    AutomationProperties.Name="Remove pending operation"/>
+                                        </Grid>
                                     </Border>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
@@ -260,10 +291,10 @@
                                     Style="{StaticResource ActionRailPrimaryButton}"
                                     Width="100" Margin="0,0,6,0"
                                     AutomationProperties.Name="Apply all pending operations"/>
-                            <Button Content="Clear"
+                            <Button Content="Clear All"
                                     Command="{Binding ClearQueueCommand}"
                                     Style="{StaticResource ActionRailButton}"
-                                    Width="70"
+                                    Width="78"
                                     AutomationProperties.Name="Clear pending operations"/>
                         </StackPanel>
 
