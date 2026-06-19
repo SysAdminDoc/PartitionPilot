@@ -266,18 +266,45 @@ public class DiskCloningViewModel : ViewModelBase
             _log.Log(
                 $"Image destination preflight passed: required {SizeUtil.Format(preflight.EstimatedRequiredBytes)}, destination free {SizeUtil.Format(preflight.DestinationFreeBytes)} on {preflight.DestinationRoot}.");
 
+            var captureSource = $"{SelectedSourceDrive}:\\";
+            VssSnapshot? vssSnapshot = null;
+            try
+            {
+                StatusText = "Creating VSS snapshot for consistent capture...";
+                vssSnapshot = await VssSnapshotService.CreateSnapshotAsync(
+                    SelectedSourceDrive, _processRunner, _log, ct);
+                captureSource = vssSnapshot.ShadowCopyPath;
+                cleanup.Register(
+                    $"Delete VSS shadow copy {vssSnapshot.ShadowCopyId}",
+                    async () => await vssSnapshot.DisposeAsync(),
+                    $"Run vssadmin delete shadows /Shadow={vssSnapshot.ShadowCopyId} /Quiet");
+                _log.Log($"Using VSS snapshot {vssSnapshot.ShadowCopyId} for consistent capture.");
+            }
+            catch (Exception vssEx)
+            {
+                _log.Log($"VSS snapshot unavailable: {vssEx.Message}");
+                if (!_dialog.ConfirmWarning(
+                    $"VSS snapshot could not be created:\n{vssEx.Message}\n\n" +
+                    "Continue with live volume capture? Files in use may be inconsistent.",
+                    "VSS Unavailable"))
+                {
+                    _log.Log("Image creation cancelled — user declined live capture without VSS.");
+                    return;
+                }
+            }
+
             var ext = Path.GetExtension(ImagePath).ToLowerInvariant();
             if (ext == ".wim")
             {
-                _log.Log($"Creating WIM image of {SelectedSourceDrive}:\\ to {ImagePath}...");
+                _log.Log($"Creating WIM image of {captureSource} to {ImagePath}...");
                 var escapedPath = ProcessRunner.ValidateNativePathArgument(ImagePath);
                 await _processRunner.RunExeAsync("dism.exe",
-                    $"/Capture-Image /ImageFile:\"{escapedPath}\" /CaptureDir:{SelectedSourceDrive}:\\ /Name:\"PartitionPilot Capture\" /Compress:Fast",
+                    $"/Capture-Image /ImageFile:\"{escapedPath}\" /CaptureDir:{captureSource} /Name:\"PartitionPilot Capture\" /Compress:Fast",
                     _log, ct: ct);
             }
             else
             {
-                _log.Log($"Creating VHDX image of {SelectedSourceDrive}:\\ to {ImagePath}...");
+                _log.Log($"Creating VHDX image of {captureSource} to {ImagePath}...");
                 var sizeCmd = $"(Get-Partition -DriveLetter '{SelectedSourceDrive}' | Select-Object -ExpandProperty Size)";
                 var sizeResult = await _processRunner.RunPowerShellAsync(sizeCmd, _log, ct);
                 var sizeMB = long.TryParse(sizeResult.Trim(), out var sizeBytes) ? sizeBytes / (1024 * 1024) + 100 : 50000;
@@ -299,16 +326,22 @@ public class DiskCloningViewModel : ViewModelBase
                     () => _processRunner.RunDiskpartAsync(detachScript, _log),
                     $"Run diskpart, select vdisk file=\"{sanitizedImagePath}\", then detach vdisk.");
 
-                StatusText = "VHDX created, capturing with DISM...";
+                StatusText = "VHDX created, capturing with robocopy...";
                 var safeFileName = ProcessRunner.EscapePowerShellString(Path.GetFileName(ImagePath));
                 var letterCmd = $"(Get-Disk | Where-Object {{ $_.Location -like ('*' + {safeFileName} + '*') }} | Get-Partition | Where-Object {{ $_.DriveLetter }} | Select-Object -First 1).DriveLetter";
                 var vhdLetter = (await _processRunner.RunPowerShellAsync(letterCmd, _log, ct)).Trim();
                 var mountedLetter = RequireDriveLetter(vhdLetter, "mounted VHDX target");
 
-                await _processRunner.RunExeAsync("robocopy", $"{SelectedSourceDrive}:\\ {mountedLetter}:\\ /MIR /R:0 /W:0 /NP /NDL /NFL", _log, ignoreStderrOnSuccess: true, ct: ct);
+                await _processRunner.RunExeAsync("robocopy", $"{captureSource} {mountedLetter}:\\ /MIR /R:0 /W:0 /NP /NDL /NFL", _log, ignoreStderrOnSuccess: true, ct: ct);
 
                 await _processRunner.RunDiskpartAsync(detachScript, _log, ct);
                 detachCleanup.Complete();
+            }
+
+            if (vssSnapshot is not null)
+            {
+                await vssSnapshot.DisposeAsync();
+                _log.Log("VSS snapshot cleaned up after successful capture.");
             }
 
             _log.Log($"Image created: {ImagePath}");
