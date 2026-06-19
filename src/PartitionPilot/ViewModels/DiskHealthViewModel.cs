@@ -6,7 +6,7 @@ namespace PartitionPilot;
 
 public class DiskHealthViewModel : ViewModelBase
 {
-    private readonly WmiDiskService _wmiService;
+    private readonly IWmiDiskService _wmiService;
     private readonly ActivityLog _log;
     private CancellationTokenSource? _healthCts;
 
@@ -148,7 +148,7 @@ public class DiskHealthViewModel : ViewModelBase
 
     public ICommand RefreshCommand { get; }
 
-    public DiskHealthViewModel(WmiDiskService wmiService, ActivityLog log)
+    public DiskHealthViewModel(IWmiDiskService wmiService, ActivityLog log)
     {
         _wmiService = wmiService;
         _log = log;

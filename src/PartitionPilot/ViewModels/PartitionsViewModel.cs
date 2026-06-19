@@ -6,7 +6,7 @@ namespace PartitionPilot;
 
 public class PartitionsViewModel : ViewModelBase
 {
-    private readonly WmiDiskService _wmiService;
+    private readonly IWmiDiskService _wmiService;
     private readonly ProcessRunner _processRunner;
     private readonly ActivityLog _log;
     private readonly IDialogService _dialog;
@@ -132,7 +132,7 @@ public class PartitionsViewModel : ViewModelBase
     private const string DefaultColor = "#B18CFF";
     private const double MinProportion = 0.018;
 
-    public PartitionsViewModel(WmiDiskService wmiService, ProcessRunner processRunner, ActivityLog log, IDialogService dialog)
+    public PartitionsViewModel(IWmiDiskService wmiService, ProcessRunner processRunner, ActivityLog log, IDialogService dialog)
     {
         _wmiService = wmiService;
         _processRunner = processRunner;

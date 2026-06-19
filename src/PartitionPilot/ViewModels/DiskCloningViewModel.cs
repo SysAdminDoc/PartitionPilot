@@ -9,7 +9,7 @@ namespace PartitionPilot;
 public class DiskCloningViewModel : ViewModelBase
 {
     private readonly ProcessRunner _processRunner;
-    private readonly WmiDiskService _wmiService;
+    private readonly IWmiDiskService _wmiService;
     private readonly ActivityLog _log;
     private readonly IDialogService _dialog;
     private readonly Dictionary<char, VolumeInfo> _volumeByLetter = new();
@@ -104,7 +104,7 @@ public class DiskCloningViewModel : ViewModelBase
     public ICommand CancelCommand { get; }
     public ICommand RefreshCommand { get; }
 
-    public DiskCloningViewModel(ProcessRunner processRunner, WmiDiskService wmiService, ActivityLog log, IDialogService dialog)
+    public DiskCloningViewModel(ProcessRunner processRunner, IWmiDiskService wmiService, ActivityLog log, IDialogService dialog)
     {
         _processRunner = processRunner;
         _wmiService = wmiService;

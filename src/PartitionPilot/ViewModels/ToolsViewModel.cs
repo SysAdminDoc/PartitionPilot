@@ -8,7 +8,7 @@ namespace PartitionPilot;
 
 public class ToolsViewModel : ViewModelBase
 {
-    private readonly WmiDiskService _wmiService;
+    private readonly IWmiDiskService _wmiService;
     private readonly ProcessRunner _processRunner;
     private readonly ActivityLog _log;
     private readonly IDialogService _dialog;
@@ -454,7 +454,7 @@ public class ToolsViewModel : ViewModelBase
     public ICommand RefreshCommand { get; }
     public ICommand CancelCommand { get; }
 
-    public ToolsViewModel(WmiDiskService wmiService, ProcessRunner processRunner, ActivityLog log, IDialogService dialog)
+    public ToolsViewModel(IWmiDiskService wmiService, ProcessRunner processRunner, ActivityLog log, IDialogService dialog)
     {
         _wmiService = wmiService;
         _processRunner = processRunner;
