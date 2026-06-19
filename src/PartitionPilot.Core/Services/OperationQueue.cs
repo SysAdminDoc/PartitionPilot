@@ -69,6 +69,10 @@ public class OperationQueue
         var snapshot = Pending.ToList();
         var completedOperations = new List<PendingOperation>();
 
+        var journal = OperationJournalService.CreateJournal(snapshot);
+        try { await OperationJournalService.SaveAsync(journal); }
+        catch (Exception ex) { log.Log($"Journal write failed (non-fatal): {ex.Message}"); }
+
         try
         {
             for (int i = 0; i < snapshot.Count; i++)
@@ -77,17 +81,29 @@ public class OperationQueue
                 setStatus($"Applying {i + 1}/{total}: {op.Description}...");
                 log.Log($"Applying operation {i + 1}/{total}: {op.Description}");
 
+                OperationJournalService.UpdateEntry(journal, i, JournalEntryStatus.Applying);
+                try { await OperationJournalService.SaveAsync(journal); } catch { }
+
                 try
                 {
                     await op.Execute();
                     completed++;
                     completedOperations.Add(op);
                     log.Log($"Operation {i + 1} completed: {op.Description}");
+
+                    OperationJournalService.UpdateEntry(journal, i, JournalEntryStatus.Completed);
+                    try { await OperationJournalService.SaveAsync(journal); } catch { }
                 }
                 catch (Exception ex)
                 {
                     failed++;
                     log.Log($"Operation {i + 1} failed: {op.Description} — {ex.Message}");
+
+                    OperationJournalService.UpdateEntry(journal, i, JournalEntryStatus.Failed, ex.Message);
+                    for (int j = i + 1; j < snapshot.Count; j++)
+                        OperationJournalService.UpdateEntry(journal, j, JournalEntryStatus.Skipped);
+                    try { await OperationJournalService.SaveAsync(journal); } catch { }
+
                     dialog.ShowError(
                         $"Operation failed: {op.Description}\n\n{ex.Message}\n\n" +
                         $"Completed: {completed}/{total}, Failed: {failed}. Failed and skipped operations remain in the pending queue.",
@@ -98,6 +114,9 @@ public class OperationQueue
 
             foreach (var op in completedOperations)
                 Pending.Remove(op);
+
+            OperationJournalService.MarkCompleted(journal);
+            try { await OperationJournalService.SaveAsync(journal); } catch { }
 
             if (failed == 0)
             {
@@ -113,6 +132,7 @@ public class OperationQueue
         {
             setStatus(null);
             setBusy(false);
+            OperationJournalService.PurgeOldJournals();
         }
     }
 }

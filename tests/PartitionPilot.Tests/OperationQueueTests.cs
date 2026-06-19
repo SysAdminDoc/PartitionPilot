@@ -1,12 +1,21 @@
+using System.Text;
+
 namespace PartitionPilot.Tests;
 
 public class OperationQueueTests
 {
+    private sealed class TestLog : IActivityLog
+    {
+        private readonly StringBuilder _sb = new();
+        public string FullText => _sb.ToString();
+        public void Log(string message) => _sb.AppendLine(message);
+    }
+
     [Fact]
     public async Task ApplyAllAsync_WhenOperationFails_PreservesFailedAndSkippedOperations()
     {
         var queue = new OperationQueue();
-        var log = new ActivityLog();
+        var log = new TestLog();
         var dialog = new CapturingDialogService();
         var completed = new PendingOperation
         {
@@ -55,7 +64,7 @@ public class OperationQueueTests
             Execute = () => Task.CompletedTask
         });
 
-        await queue.ApplyAllAsync(new ActivityLog(), dialog, _ => { }, _ => { });
+        await queue.ApplyAllAsync(new TestLog(), dialog, _ => { }, _ => { });
 
         Assert.Empty(queue.Pending);
         Assert.Equal("All 2 operation(s) applied successfully.", dialog.LastInfo);
