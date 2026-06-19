@@ -10,7 +10,7 @@ namespace PartitionPilot;
 public partial class MainViewModel : ViewModelBase
 {
     private readonly ProcessRunner _processRunner;
-    private readonly WmiDiskService _wmiService;
+    private readonly IWmiDiskService _wmiService;
     private readonly IDialogService _dialog;
 
     public ActivityLog Log { get; }
@@ -71,7 +71,9 @@ public partial class MainViewModel : ViewModelBase
     {
         _processRunner = new ProcessRunner();
         Log = new ActivityLog();
-        _wmiService = new WmiDiskService(_processRunner, Log);
+        _wmiService = App.IsSimulationMode
+            ? new SimulatedDiskService()
+            : new WmiDiskService(_processRunner, Log);
         _dialog = new MessageBoxDialogService();
 
         Partitions = new PartitionsViewModel(_wmiService, _processRunner, Log, _dialog);

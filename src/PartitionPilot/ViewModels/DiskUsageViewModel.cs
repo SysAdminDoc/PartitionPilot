@@ -8,7 +8,7 @@ namespace PartitionPilot;
 
 public class DiskUsageViewModel : ViewModelBase
 {
-    private readonly WmiDiskService _wmiService;
+    private readonly IWmiDiskService _wmiService;
     private readonly ActivityLog _log;
 
     public ObservableCollection<char> DriveLetters { get; } = new();
@@ -63,7 +63,7 @@ public class DiskUsageViewModel : ViewModelBase
     public ICommand CancelCommand { get; }
     public ICommand RefreshCommand { get; }
 
-    public DiskUsageViewModel(WmiDiskService wmiService, ActivityLog log)
+    public DiskUsageViewModel(IWmiDiskService wmiService, ActivityLog log)
     {
         _wmiService = wmiService;
         _log = log;

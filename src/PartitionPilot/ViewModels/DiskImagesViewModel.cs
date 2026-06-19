@@ -8,7 +8,7 @@ namespace PartitionPilot;
 public class DiskImagesViewModel : ViewModelBase
 {
     private readonly ProcessRunner _processRunner;
-    private readonly WmiDiskService _wmiService;
+    private readonly IWmiDiskService _wmiService;
     private readonly ActivityLog _log;
     private readonly IDialogService _dialog;
 
@@ -108,7 +108,7 @@ public class DiskImagesViewModel : ViewModelBase
     public ICommand CreateVhdCommand { get; }
     public ICommand RefreshCommand { get; }
 
-    public DiskImagesViewModel(ProcessRunner processRunner, WmiDiskService wmiService, ActivityLog log, IDialogService dialog)
+    public DiskImagesViewModel(ProcessRunner processRunner, IWmiDiskService wmiService, ActivityLog log, IDialogService dialog)
     {
         _processRunner = processRunner;
         _wmiService = wmiService;
