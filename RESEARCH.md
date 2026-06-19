@@ -1,147 +1,88 @@
 # Research — PartitionPilot
 
 ## Executive Summary
-PartitionPilot is a Windows .NET 10 WPF disk administration tool for power users and IT admins. Its strongest shape is the integrated shell: partition operations with snapshots, disk health, maintenance tools, disk images, usage scanning, cloning, activity logging, and recently-hardened safety paths (WMI escaping, EncodedCommand, BitLocker preflights, volume locking, NVMe sanitize, operation cleanup scopes). The codebase is clean, well-tested (893 lines across 16 test files), and has no known vulnerable dependencies.
-
-Top 10 opportunities in priority order:
-1. **Pending operations queue** — table-stakes safety gap vs every competitor
-2. **Richer SMART via LibreHardwareMonitorLib** — 8 attributes vs CrystalDiskInfo's 30+
-3. **DiskSpd-backed benchmarking** — current custom I/O is incomparable to CrystalDiskMark
-4. **Velopack auto-updates** — current UpdateService only checks, doesn't download/apply
-5. **Partition merge** — every commercial tool supports merging adjacent NTFS volumes
-6. **.NET 10 Fluent theme** — eliminate ~830 lines of custom theme XAML
-7. **Standalone disk initialization** — new/raw disks need a clear initialization workflow
-8. **Multi-pass wipe patterns** — DoD 5220.22-M expected by security-conscious users
-9. **Benchmark result export** — results are display-only, no save/compare
-10. **Non-admin diagnostic mode** — read-only disk info without requiring elevation
+PartitionPilot is a Windows-only .NET 10 WPF disk administration console for power users and IT administrators, with a companion read-only CLI, a separated `PartitionPilot.Core`, queued partition changes, SMART monitoring, DiskSpd benchmarking, snapshots, support bundles, WIM/VHDX workflows, disk usage scanning, and sector cloning. Its strongest current shape is the integrated safety-first storage console: most earlier parity gaps are already shipped in v0.7.0. Highest-value direction: fix remaining release/data-safety root causes before adding more tools. Top opportunities: 1) fix installer/project version drift that breaks CI release validation, 2) make sector clone fail closed and add verification/rescue behavior, 3) persist queued-operation journals for crash recovery, 4) sign release artifacts and broaden provenance/SBOM coverage, 5) make image capture VSS-backed, 6) activate deterministic WPF UI/accessibility tests in CI, 7) version persisted JSON artifacts, 8) make Storage Spaces membership/health diagnostics precise, 9) move the CLI from read-only inventory to guarded plan/apply automation, 10) finish i18n coverage beyond shell strings.
 
 ## Product Map
-- Core workflows: inspect physical disks/partitions/volumes; create/resize/extend/split/format/delete/change letters; capture/compare/export partition snapshots; run SMART/alignment/benchmark/surface/wipe/boot/dev-drive tools; mount/create VHD/VHDX/ISO and clone/restore disk images; disk usage analysis with treemap.
-- User personas: Windows power users, homelab operators, help desk technicians, IT admins, recovery-focused users.
-- Platforms and distribution: Windows 10/11, elevated WPF desktop app targeting `net10.0-windows`, self-contained `win-x64`, Inno Setup installer, GitHub Actions CI, GitHub Releases update check.
-- Key integrations: WMI Storage/CIM/BitLocker providers (`Services/WmiDiskService.cs`); DiskPart/PowerShell/native process execution (`Services/ProcessRunner.cs`); partition snapshots (`Services/PartitionTableBackup.cs`); volume locking via FSCTL (`Services/VolumeLockService.cs`); NVMe sanitize via IOCTL (`Services/SecureEraseService.cs`).
+- Core workflows: inspect disks/partitions/volumes; queue and apply partition operations; inspect SMART/temperature/alignment; run repair, wipe, benchmark, boot, Dev Drive, and conversion tools; create/restore images and sector clones; review snapshots, disk usage, support bundles, and logs.
+- User personas: Windows power users, homelab operators, help desk technicians, endpoint/server admins, and recovery-oriented users who need transparent safeguards more than consumer upsell.
+- Platforms and distribution: Windows 10/11, elevated WPF desktop app targeting `net10.0-windows`, self-contained `win-x64`, Inno installer, Velopack updates from GitHub Releases, CLI companion `pp.exe`, CI build/test/publish artifacts.
+- Key integrations and data flows: WMI Storage/CIM/BitLocker providers in `src/PartitionPilot.Core/Services/WmiDiskService.cs`; native `diskpart`, PowerShell, DISM, robocopy, DiskSpd, cipher, chkdsk, bcdboot, mbr2gpt in `ProcessRunner.cs` and view models; ProgramData/portable JSON state in `PartitionTableBackup.cs`, `SmartHistoryService.cs`, and `ActivityLog.cs`; support ZIP redaction in `src/PartitionPilot/ViewModels/MainViewModel.cs`.
 
 ## Competitive Landscape
-
-### GParted
-Does well: pending operation queue with apply/undo, detailed operation logs, filesystem-specific operations. Learn: queue every destructive change before applying — this is the single biggest safety gap in PartitionPilot. Avoid: Linux live-media assumptions.
-
-### KDE Partition Manager / kpmcore
-Does well: separates core partition library from GUI, supports broad filesystem identification, plugin architecture for filesystem backends. Learn: extract core services before CLI or alternate frontends. The existing P3 core extraction roadmap item is correct. Avoid: claiming write support for unsupported Windows filesystems.
-
-### EaseUS Partition Master / AOMEI / MiniTool
-Does well: pending operations with preview, partition merge, disk-to-disk clone, CLI automation (AOMEI), multi-pass wipe patterns (DoD 5220.22-M), non-admin read-only mode. What they paywall: partition recovery, disk-to-disk clone, dynamic disk conversion, OS migration — these are the high-value features. Learn: merge adjacent partitions, DoD wipe patterns, benchmark export, and non-admin diagnostics are all missing from PartitionPilot. Avoid: paywall-like upsell patterns, opaque "repair" semantics.
-
-### CrystalDiskInfo / CrystalDiskMark
-Does well: 30+ SMART attributes with vendor-specific decoding, NVMe health data, temperature monitoring with system tray alerts, SMART history/trending, DiskSpd-backed benchmark profiles with standardized output. Learn: current PartitionPilot SMART coverage (8 attributes from WMI StorageReliabilityCounter) is far below user expectations. DiskSpd is MIT-licensed and produces XML output — the existing roadmap item to adopt it is well-evidenced. Avoid: building a standalone SMART monitor — keep it integrated.
-
-### DiskGenius / Paragon
-Does well: partition recovery scanning, bad sector mapping with block visualization, sector-level clone, UEFI/boot repair workflows. Learn: trust comes from diagnostics and clear repair boundaries. Avoid: destructive "repair bad sectors" without strong data-loss warnings.
-
-### WizTree
-Does well: NTFS MFT-direct scanning via FSCTL_ENUM_USN_DATA for near-instant disk usage analysis (seconds vs minutes). Learn: the existing P3 MFT scanning roadmap item is well-evidenced. This is a pure speed improvement — current `Directory.EnumerateFiles` approach takes minutes on large drives. Avoid: over-investing before the basic disk usage UX is polished.
-
-### Rescuezilla / Clonezilla
-Does well: backup/restore focus, clone-compatible formats, recovery-oriented UX. Learn: make recovery artifacts obvious and exportable. The existing snapshot recovery plan export roadmap item addresses this. Avoid: turning PartitionPilot into a rescue OS.
+- GParted / KDE Partition Manager: strong pending-operation model, operation detail logs, broad filesystem awareness, and clear backup/restore language. Learn: durable operation details and rollback-oriented evidence are table stakes. Avoid: Linux/live-media assumptions and claiming write support for Windows-unsupported filesystems.
+- AOMEI / EaseUS / MiniTool: strong Windows UX around apply queues, wizards, merge/split, recovery, migration, diagnostics, and CLI automation. Learn: guarded CLI write automation and guided flows are valuable. Avoid: opaque repair promises, upsells, and broad claims that exceed verified implementation.
+- DiskGenius: strong clone/recovery feature depth, including sector-copy controls for bad-sector handling. Learn: raw clone tools need explicit error policy, rescue modes, and verification. Avoid: turning PartitionPilot into a full data-recovery suite without the recovery engineering surface.
+- Clonezilla / Rescuezilla: strong imaging/recovery positioning and community scrutiny around bad-sector behavior and backup verification. Learn: clone and image workflows must expose integrity verification and failure detail. Avoid: bootable rescue OS scope until local release safety is mature.
+- CrystalDiskInfo / smartmontools: strong drive-health baseline with SMART detail, alerting, and device coverage. Learn: PartitionPilot's SMART history is on the right track; export/import and retention controls would make it more operational. Avoid: becoming a tray-first health monitor.
+- DiskSpd / CrystalDiskMark-style benchmarking: strong standardized workload output. Learn: keep DiskSpd results comparable and machine-readable; release dependency hashing matters because DiskSpd is downloaded at runtime. Avoid: custom benchmark semantics that users cannot compare.
+- TestDisk: strong lost-partition recovery niche. Learn: read-only lost-partition scanning is a future opportunity. Avoid: automatic destructive partition-table repair until identity checks, recovery UX, and testing are much deeper.
+- WizTree: strong proof that MFT-direct scanning is the expected fast path for NTFS usage analysis. Learn: the shipped MFT scanner should keep fallback messaging and exportability clear. Avoid: overinvesting in generic file cleanup features outside disk-management scope.
 
 ## Security, Privacy, and Reliability
-
-### Verified Safe
-- `ProcessRunner`: PowerShell uses `-EncodedCommand`, diskpart scripts use temp files with finally-block cleanup, `SanitizeLabel` strips shell metacharacters, `EscapePowerShellString` wraps in single quotes, `ValidateNativePathArgument` rejects quotes/control chars, filesystem and allocation unit allowlists enforced.
-- WMI: `WqlStringLiteral` helper for proper WQL escaping, `SanitizeProviderMessage` redacts local paths from error messages, consistent try/catch with `LogWmiFailure`.
-- Volume operations: `VolumeLockService.RequireLock` fails closed when exclusive access unavailable, `OperationCleanupScope` provides reliable cleanup for temp VHD attachments and EFI access paths.
-- NVMe sanitize: gated by disk capability check (`CanSanitizeDisk`), Windows build check, physical disk bus type verification, double confirmation dialog.
-- BitLocker: comprehensive preflight system blocks mutations on protected volumes, blocks reads on locked volumes, adds stronger confirmations for destructive operations on encrypted data.
-- Recovery partition: `GuardRecoveryPartitionOperationAsync` refuses delete/extend on Recovery partitions, records `reagentc /info` for diagnostics.
-- Dependencies: `dotnet list package --vulnerable --include-transitive` reports clean. NuGet audit enabled at `low` level. Package restores locked via `RestorePackagesWithLockFile`.
-
-### Risks Found
-- `WmiDiskService.cs`: Every WMI query creates a new `ManagementScope` and calls `.Connect()`. On systems with many disks, tab switching triggers 4-6 WMI connections per refresh. A cached scope pattern would reduce connection overhead and improve responsiveness.
-- `ToolsViewModel.cs` and `DiskCloningViewModel.cs`: `GetBitLockerProtectedTargetsAsync` is duplicated — both methods query partitions, fetch BitLocker status, and filter. A shared helper on WmiDiskService would reduce duplication and ensure consistent behavior.
-- `SmartData.cs`: Wear thresholds (85%=Warning, 95%=Critical) treat the `Wear` field as "percent used" — this matches WMI `MSFT_StorageReliabilityCounter.Wear` documentation. Verified correct after the threshold fix in commit `0df585f`.
-- `ThemeService.cs`: Settings writes to ProgramData catch and swallow exceptions silently — expected behavior when non-elevated, but could benefit from logging the failure path for support bundle diagnostics.
-
-### Missing Guardrails
-- No guard for Storage Spaces pools — operations on pooled disks could break pool integrity. WMI `MSFT_StoragePool` can detect pools.
-- No explicit disk initialization workflow — uninitialized disks (no partition table) require users to know to wipe first. A "Initialize Disk" action with GPT/MBR choice would be safer.
-- Benchmark results are ephemeral — no export or history. Users can't compare before/after an optimization or verify a new drive's performance baseline.
+- Verified: `installer/PartitionPilot.iss` still declares `AppVersion=0.6.0` and `OutputBaseFilename=PartitionPilot-0.6.0-Setup`, while project files and README are v0.7.0; `.github/workflows/build.yml` validates installer metadata against the project version, so release CI is currently blocked.
+- Verified: `src/PartitionPilot.Core/Services/SectorCloneService.cs` breaks out of the copy loop on failed or zero-byte `ReadFile` and still logs "Sector clone complete"; this can silently produce an incomplete clone. Add hard failure, final byte-count validation, optional verify, and rescue-mode policy.
+- Verified: `src/PartitionPilot.Core/Services/OperationQueue.cs` stores pending operations only in an in-memory `ObservableCollection`; a crash or elevation/session boundary loses the user's queued operation evidence.
+- Verified: `src/PartitionPilot/ViewModels/DiskCloningViewModel.cs` captures live volumes directly through DISM/robocopy/VHDX flows; Microsoft VSS exists specifically to coordinate point-in-time backup consistency.
+- Verified: `PartitionTableBackup.cs` writes anonymous snapshot payloads and `SmartHistoryService.cs` writes raw `List<SmartReading>` JSON without schema versions, migration policy, or corruption quarantine.
+- Likely: `WmiDiskService.GetStoragePoolMembershipAsync()` maps non-primordial pools imprecisely by assigning the first pool name to every non-auto-select physical disk; Storage Spaces exposes pool health, operational status, and read-only reasons that should be surfaced precisely.
+- Verified: CI generates SHA256SUMS and attests only `./publish/PartitionPilot.exe`; it does not sign the GUI, CLI, installer, updater packages, or attach an SBOM. NuGet vulnerability checks are clean today, but release trust is incomplete for an elevated disk utility.
+- Verified: `tests/PartitionPilot.UiTests/SmokeTests.cs` has all tests skipped, and `.github/workflows/build.yml` runs only unit tests. UIA coverage is therefore manual despite WPF custom controls and destructive-action surfaces.
 
 ## Architecture Assessment
-
-### Strengths
-- Clean MVVM separation with testable `IDialogService`, `IProcessRunner`, `IWmiDiskService` interfaces.
-- Consistent `IsBusy` + `CancellationTokenSource` pattern across all ViewModels.
-- `OperationCleanupScope` provides reliable cleanup with recovery hints — better than most OSS partition tools.
-- Good test coverage of safety-critical paths: ProcessRunner validation (106 lines), BitLocker preflight (57 lines), PartitionTableBackup (102 lines), DiskCloning preflights (143 lines).
-
-### Areas for Improvement
-- `Services/WmiDiskService.cs`: Single file handling all WMI queries (583 lines). Well-organized but will grow with LibreHardwareMonitorLib SMART and Storage Spaces detection. Extract to `PartitionPilot.Core` before adding new query surfaces.
-- `ViewModels/ToolsViewModel.cs`: 1325 lines — the largest file. Contains MBR→GPT, FAT32→NTFS, filesystem check, optimize, wipe (3 modes), boot repair, surface test, benchmark, Dev Drive. Each could be a focused tool service. Operation queue will touch most of these.
-- `ViewModels/PartitionsViewModel.cs`: 837 lines of partition operations. Operation queue will significantly restructure this — plan the queue architecture before any operation-specific changes.
-- `Controls/TreemapControl.cs`: Custom `FrameworkElement` with hardcoded palette, mouse-only selection, no automation peer, no keyboard navigation. The existing P2 accessibility roadmap item is correct and important.
-- `Controls/DiskBarControl.xaml.cs`: Sets `AutomationProperties.Name` on Border elements, which is good, but segments are not focusable/selectable — they're visual-only with tooltips.
-- No UI automation test project — only unit tests. Deterministic simulation mode (existing roadmap item) is prerequisite for reliable UI testing.
-
-### Test Gaps
-- No tests for disk initialization flow (doesn't exist yet).
-- No tests for partition merge (doesn't exist yet).
-- No WPF UI automation smoke tests (existing roadmap item).
-- No performance/stress tests for WMI connection overhead.
+- Strengths: the `PartitionPilot.Core` split is the right boundary for services, CLI, and tests; interfaces for WMI, dialogs, logs, and process execution keep safety logic testable; simulation mode exists and is the right foundation for deterministic UI tests.
+- Refactor candidates: move image/clone orchestration out of `DiskCloningViewModel.cs` into a core service; turn `OperationQueue.cs` into a serializable operation model plus execution journal; wrap snapshot/history/support data in versioned envelopes; extract support-bundle generation from `MainViewModel.cs`; tighten Storage Spaces association queries in `WmiDiskService.cs`.
+- Test gaps: UI tests are skipped; no test asserts sector clone incomplete-read failure; no crash-recovery/journal tests; no persistence migration tests; no CI gate for installer metadata outside the existing workflow script; no pseudo-locale/resource completeness gate.
+- Documentation gaps: README accurately lists many v0.7.0 features but still describes the CLI as "scripted disk management" while `src/PartitionPilot.Cli/Program.cs` exposes read-only inventory/health/snapshot commands only.
 
 ## Rejected Ideas
-
-- **Full Linux filesystem write support**: PartitionPilot is Windows-focused; identification and guarded read-only handling is sufficient. Source: KDE/GParted filesystem lists.
-- **Bootable rescue media / WinPE builder**: Clonezilla/Rescuezilla own that workflow. Adding a separate OS/distribution surface would dilute focus. Source: Clonezilla docs, Macrorit WinPE feature.
-- **Automatic destructive snapshot restore**: Premature until operation queue, disk identity checks, and recovery-plan export exist. Source: `PartitionTableBackup.BuildRecoveryCommands()`.
-- **VDS-first rewrite**: Microsoft documents VDS as superseded by Storage Management API. Keep as later exploration only. Source: Microsoft VDS transition docs.
-- **Plugin ecosystem**: The app is a high-risk local admin disk tool with no stable core/plugin boundary. Source: current single-project architecture.
-- **Mobile or multi-user/cloud features**: Product is a local elevated Windows desktop utility. Source: README platform claims, `net10.0-windows` TFM.
-- **Dynamic disk management**: Deprecated technology. Microsoft recommends Storage Spaces instead. Source: Microsoft deprecation notice.
-- **Disk scheduling / task automation**: Feature creep for a disk admin tool. CLI companion (existing roadmap item) covers scripted automation needs. Source: AOMEI scheduler feature (rarely used per community feedback).
-- **Built-in file recovery / undelete**: This is a separate product category (Recuva, TestDisk, R-Studio). Adding it would bloat scope and create liability. Source: r/DataHoarder consensus.
-- **Keyboard shortcuts**: Project rule prohibits them. Source: `Roadmap_Blocked.md`.
+- Full Linux/macOS filesystem write support: KDE/GParted support broad filesystems, but PartitionPilot is a Windows storage tool; keep identification and guarded read-only handling.
+- Bootable rescue media / WinPE builder now: EaseUS/AOMEI paywall this because it is high-value, but it adds a second OS/distribution/recovery surface before local release safety is mature.
+- Automatic destructive snapshot restore: `PartitionTableBackup.cs` intentionally emits non-destructive recovery guidance; automatic restore would be unsafe until durable journals and stronger disk identity checks exist.
+- Full file undelete suite: TestDisk/PhotoRec and DiskGenius own that product category; add read-only lost-partition scanning later, not file recovery.
+- Plugin ecosystem: local admin disk mutation is too risky without a stable sandbox, permission model, and compatibility contract.
+- Mobile, cloud, or multi-user workflows: current TFM, README, and privilege model define a local Windows admin utility.
+- Dynamic disk conversion priority: commercial tools advertise it, but PartitionPilot already targets modern Storage Management APIs and Storage Spaces warnings; dynamic-disk work is lower value than precise Storage Spaces diagnostics.
+- Commercial-style cleanup/optimizer bundles: AOMEI/MiniTool include broad PC optimization, but PartitionPilot should stay focused on transparent disk operations, diagnostics, and recovery evidence.
 
 ## Sources
-
 ### Repo
 - https://github.com/SysAdminDoc/PartitionPilot
 
-### OSS Tools
-- https://gparted.org/display-doc.php?name=help-manual
+### OSS and Community Tools
+- https://gparted.org/display-doc.php%3Fname%3Dhelp-manual
+- https://gparted.org/display-doc.php%3Fname%3Dgparted-live-manual
 - https://github.com/KDE/partitionmanager
 - https://github.com/KDE/kpmcore
-- https://github.com/GNOME/gnome-disk-utility
-- https://clonezilla.org/
-- https://rescuezilla.com/
-- https://github.com/pbatard/rufus
-- https://github.com/microsoft/diskspd
-- https://github.com/hiyohiyo/CrystalDiskInfo
-- https://github.com/smartmontools/smartmontools
-- https://github.com/LibreHardwareMonitor/LibreHardwareMonitor
-- https://github.com/awesome-foss/awesome-sysadmin
+- https://www.cgsecurity.org/wiki/TestDisk
+- https://clonezilla.org/fine-print-live-doc.php?path=clonezilla-live%2Fdoc%2F98_ocs_related_command_manpages
+- https://github.com/rescuezilla/rescuezilla
+- https://www.smartmontools.org/
+- https://sourceforge.net/projects/crystaldiskinfo/
+- https://github.com/microsoft/diskspd/wiki
+- https://diskanalyzer.com/
 
-### Commercial Tools
-- https://www.easeus.com/partition-manager/epm-free.html
+### Commercial Windows Tools
+- https://www.aomeitech.com/pa/
 - https://www.diskpart.com/help/cmd.html
+- https://kb.easeus.com/partition-master/20016.html
 - https://www.partitionwizard.com/
 - https://www.diskgenius.com/
-- https://www.paragon-software.com/us/home/hdm-windows/
-- https://www.wiztreefree.com/
+- https://www.diskgenius.com/manual/copy-sectors.php
 
-### Platform & Dependencies
-- https://learn.microsoft.com/en-us/dotnet/desktop/wpf/whats-new/net100
-- https://learn.microsoft.com/en-us/windows/security/application-security/application-control/administrator-protection/
-- https://learn.microsoft.com/en-us/windows-hardware/drivers/storage/msft-partition
-- https://learn.microsoft.com/en-us/windows/win32/api/winioctl/ni-winioctl-fsctl_lock_volume
-- https://learn.microsoft.com/en-us/windows/compatibility/vds-is-transitioning-to-windows-storage-management-api
+### Platform, Security, and Dependencies
+- https://learn.microsoft.com/en-us/windows-hardware/drivers/storage/storage-management-api-classes
+- https://learn.microsoft.com/en-us/windows-hardware/drivers/storage/msft-storagepool
+- https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilea
+- https://learn.microsoft.com/en-us/windows/win32/fileio/file-buffering
+- https://learn.microsoft.com/en-us/windows-server/storage/file-server/volume-shadow-copy-service
+- https://learn.microsoft.com/en-us/windows/apps/package-and-deploy/code-signing-options
+- https://docs.github.com/en/actions/how-tos/secure-your-work/use-artifact-attestations/use-artifact-attestations
+- https://github.com/CycloneDX/cyclonedx-dotnet
 - https://learn.microsoft.com/en-us/dotnet/desktop/wpf/controls/ui-automation-of-a-wpf-custom-control
-- https://www.nuget.org/packages/CommunityToolkit.Mvvm
-- https://www.nuget.org/packages/System.Management/
-- https://github.com/velopack/velopack
-- https://github.com/FlaUI/FlaUI
-- https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations
+- https://learn.microsoft.com/en-us/nuget/concepts/auditing-packages
+- https://csrc.nist.gov/pubs/sp/800/88/r1/final
+- https://github.com/microsoft/winget-create
 
 ## Open Questions
-- Needs live validation: exact Administrator Protection behavior on the target Windows 11 channel, especially elevated profile paths and update/snapshot locations.
-- Needs live validation: whether LibreHardwareMonitorLib admin ring driver requirement conflicts with PartitionPilot's existing elevation model on Windows 11 24H2+.
-- Needs operator decision: whether to ship unsigned public artifacts before Azure Trusted Signing is unblocked, or keep artifacts internal until signing is available.
+None that block prioritization or implementation.
