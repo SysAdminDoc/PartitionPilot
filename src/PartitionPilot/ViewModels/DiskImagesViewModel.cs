@@ -115,10 +115,10 @@ public class DiskImagesViewModel : ViewModelBase
         _log = log;
         _dialog = dialog;
 
-        BrowseMountCommand = new RelayCommand(_ => BrowseMountPath());
+        BrowseMountCommand = new WpfRelayCommand(_ => BrowseMountPath());
         MountCommand = new AsyncRelayCommand(_ => MountAsync(), _ => !string.IsNullOrWhiteSpace(MountPath));
         DismountCommand = new AsyncRelayCommand(_ => DismountAsync(), _ => SelectedMountedImage is not null);
-        BrowseVhdCommand = new RelayCommand(_ => BrowseVhdPath());
+        BrowseVhdCommand = new WpfRelayCommand(_ => BrowseVhdPath());
         CreateVhdCommand = new AsyncRelayCommand(_ => CreateVhdAsync(), _ => !string.IsNullOrWhiteSpace(VhdPath) && VhdSizeGB > 0);
         RefreshCommand = new AsyncRelayCommand(_ => RefreshAsync());
     }

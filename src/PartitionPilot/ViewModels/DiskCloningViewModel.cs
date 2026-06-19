@@ -111,13 +111,13 @@ public class DiskCloningViewModel : ViewModelBase
         _log = log;
         _dialog = dialog;
 
-        BrowseImageCommand = new RelayCommand(_ => BrowseImagePath());
-        BrowseRestoreImageCommand = new RelayCommand(_ => BrowseRestoreImagePath());
+        BrowseImageCommand = new WpfRelayCommand(_ => BrowseImagePath());
+        BrowseRestoreImageCommand = new WpfRelayCommand(_ => BrowseRestoreImagePath());
         CreateImageCommand = new AsyncRelayCommand(_ => CreateImageAsync(),
             _ => SelectedSourceDrive != default && !string.IsNullOrWhiteSpace(ImagePath));
         RestoreImageCommand = new AsyncRelayCommand(_ => RestoreImageAsync(),
             _ => SelectedTargetDisk is not null && !string.IsNullOrWhiteSpace(RestoreImagePath));
-        CancelCommand = new RelayCommand(_ => _cts?.Cancel(), _ => IsBusy);
+        CancelCommand = new WpfRelayCommand(_ => _cts?.Cancel(), _ => IsBusy);
         RefreshCommand = new AsyncRelayCommand(_ => RefreshAsync());
     }
 

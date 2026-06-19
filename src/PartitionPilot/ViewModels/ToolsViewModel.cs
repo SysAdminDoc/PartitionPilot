@@ -473,9 +473,9 @@ public class ToolsViewModel : ViewModelBase
         RunBenchmarkCommand = new AsyncRelayCommand(_ => RunBenchmarkAsync(SelectedBenchDrive), _ => SelectedBenchDrive != default);
         RunSurfaceTestCommand = new AsyncRelayCommand(_ => RunSurfaceTestAsync(), _ => SelectedSurfaceTestVolume != default);
         CreateDevDriveCommand = new AsyncRelayCommand(_ => CreateDevDriveAsync(), _ => IsDevDriveSupported && SelectedDevDriveLetter != default);
-        ExportBenchmarkCommand = new RelayCommand(_ => ExportBenchmarkResult(), _ => _lastBenchmarkResult is not null);
+        ExportBenchmarkCommand = new WpfRelayCommand(_ => ExportBenchmarkResult(), _ => _lastBenchmarkResult is not null);
         RefreshCommand = new AsyncRelayCommand(_ => RefreshDriveListsAsync());
-        CancelCommand = new RelayCommand(_ => CancelCurrentOperation(), _ => IsBusy && _cts is not null);
+        CancelCommand = new WpfRelayCommand(_ => CancelCurrentOperation(), _ => IsBusy && _cts is not null);
     }
 
     private bool CanRunWipe()

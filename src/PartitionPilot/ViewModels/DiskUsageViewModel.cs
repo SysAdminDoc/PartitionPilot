@@ -69,7 +69,7 @@ public class DiskUsageViewModel : ViewModelBase
         _log = log;
 
         ScanCommand = new AsyncRelayCommand(_ => ScanAsync(), _ => SelectedDrive != default);
-        CancelCommand = new RelayCommand(_ => _cts?.Cancel(), _ => IsBusy);
+        CancelCommand = new WpfRelayCommand(_ => _cts?.Cancel(), _ => IsBusy);
         RefreshCommand = new AsyncRelayCommand(_ => RefreshDrivesAsync());
     }
 

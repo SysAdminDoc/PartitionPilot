@@ -147,7 +147,7 @@ public class PartitionsViewModel : ViewModelBase
         HideCommand = new AsyncRelayCommand(_ => ExecuteHideToggleAsync(), _ => SelectedPartition is not null);
         InitializeDiskCommand = new AsyncRelayCommand(_ => ExecuteInitializeDiskAsync(), _ => SelectedDisk?.IsRaw == true);
         ApplyQueueCommand = new AsyncRelayCommand(_ => ApplyQueueAsync(), _ => Queue.HasPending);
-        ClearQueueCommand = new RelayCommand(_ => ClearQueue(), _ => Queue.HasPending);
+        ClearQueueCommand = new WpfRelayCommand(_ => ClearQueue(), _ => Queue.HasPending);
 
         Queue.Pending.CollectionChanged += (_, _) =>
         {
