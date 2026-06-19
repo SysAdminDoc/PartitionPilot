@@ -118,6 +118,7 @@ public class PartitionsViewModel : ViewModelBase
     public ICommand InitializeDiskCommand { get; }
     public ICommand ApplyQueueCommand { get; }
     public ICommand ClearQueueCommand { get; }
+    public ICommand RemoveQueuedOperationCommand { get; }
 
     // Color map for disk bar segments
     private static readonly Dictionary<string, string> SegmentColors = new(StringComparer.OrdinalIgnoreCase)
@@ -148,6 +149,9 @@ public class PartitionsViewModel : ViewModelBase
         InitializeDiskCommand = new AsyncRelayCommand(_ => ExecuteInitializeDiskAsync(), _ => SelectedDisk?.IsRaw == true);
         ApplyQueueCommand = new AsyncRelayCommand(_ => ApplyQueueAsync(), _ => Queue.HasPending);
         ClearQueueCommand = new WpfRelayCommand(_ => ClearQueue(), _ => Queue.HasPending);
+        RemoveQueuedOperationCommand = new WpfRelayCommand(
+            op => RemoveQueuedOperation(op as PendingOperation),
+            op => op is PendingOperation);
 
         Queue.Pending.CollectionChanged += (_, _) =>
         {
@@ -539,6 +543,49 @@ public class PartitionsViewModel : ViewModelBase
         return Task.CompletedTask;
     }
 
+    public Task ExecuteMergeAsync(PartitionInfo primary, PartitionInfo secondary)
+    {
+        if (SelectedDisk is null) return Task.CompletedTask;
+        if (!GuardStoragePool("Merge partitions")) return Task.CompletedTask;
+        if (!GuardBitLockerMutation(primary, $"Merge into {primary.LetterDisplay}")) return Task.CompletedTask;
+        if (!ConfirmBitLockerDestructiveOperation(secondary, $"Delete {secondary.LetterDisplay} to merge")) return Task.CompletedTask;
+
+        var diskNum = SelectedDisk.Number;
+        var primaryLetter = primary.DriveLetter!.Value;
+        var secondaryPartNum = secondary.PartitionNumber;
+        var secondaryLetter = secondary.DriveLetter;
+
+        Queue.Enqueue(new PendingOperation
+        {
+            Type = PendingOperationType.Delete,
+            Description = $"Merge: delete partition {secondaryPartNum} ({secondary.LetterDisplay}) then extend {primaryLetter}: on Disk {diskNum}",
+            DiskTarget = $"Disk {diskNum}",
+            RiskLevel = "Destructive",
+            Execute = async () =>
+            {
+                await _backup.SaveSnapshotAsync(diskNum);
+                _log.Log($"Merge: deleting secondary partition {secondaryPartNum} on Disk {diskNum}...");
+                using var secondaryLock = secondaryLetter.HasValue
+                    ? VolumeLockService.RequireLock(secondaryLetter.Value, _log)
+                    : null;
+                string deleteScript = $"""
+                    select disk {diskNum}
+                    select partition {secondaryPartNum}
+                    delete partition override
+                    """;
+                await _processRunner.RunDiskpartAsync(deleteScript, _log);
+                _log.Log($"Merge: extending {primaryLetter}: to fill freed space...");
+                var sizeInfo = await _wmiService.GetPartitionSupportedSizeAsync(primaryLetter);
+                var extendCmd = $"Resize-Partition -DriveLetter '{primaryLetter}' -Size {sizeInfo.Max}";
+                await _processRunner.RunPowerShellAsync(extendCmd, _log);
+                _log.Log($"Merge complete: {primaryLetter}: extended to {SizeUtil.Format(sizeInfo.Max)}.");
+            }
+        });
+
+        _log.Log($"Queued: Merge partition {secondaryPartNum} into {primaryLetter}: on Disk {diskNum}");
+        return Task.CompletedTask;
+    }
+
     // ──────────────────────── Queue Apply / Clear ────────────────────
 
     private async Task ApplyQueueAsync()
@@ -563,6 +610,13 @@ public class PartitionsViewModel : ViewModelBase
         if (!Queue.HasPending) return;
         Queue.Clear();
         _log.Log("Pending operations cleared.");
+    }
+
+    private void RemoveQueuedOperation(PendingOperation? op)
+    {
+        if (op is null) return;
+        Queue.Remove(op);
+        _log.Log($"Removed pending operation: {op.Description}");
     }
 
     // ──────────────────────── Initialize Disk ────────────────────────

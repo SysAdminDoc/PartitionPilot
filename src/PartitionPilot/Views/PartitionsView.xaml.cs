@@ -86,6 +86,14 @@ public partial class PartitionsView : UserControl
             await vm.ExecuteSplitAsync(part.DriveLetter.Value, dlg.NewPartSizeGB, dlg.NewLetter, dlg.FileSystem, dlg.VolumeLabel);
     }
 
+    private async void OnMerge(object sender, RoutedEventArgs e)
+    {
+        if (VM is not { } vm || vm.Partitions.Count < 2) { _dialog.ShowInfo("At least two partitions are needed for a merge.", "Merge Partitions"); return; }
+        var dlg = new MergePartitionDialog(vm.Partitions) { Owner = Window.GetWindow(this) };
+        if (dlg.ShowDialog() == true && dlg.PrimaryPartition is not null && dlg.SecondaryPartition is not null)
+            await vm.ExecuteMergeAsync(dlg.PrimaryPartition, dlg.SecondaryPartition);
+    }
+
     private async void OnChangeLetter(object sender, RoutedEventArgs e)
     {
         if (VM is not { SelectedPartition: { } part } vm) { _dialog.ShowInfo("Select a partition before changing its drive letter.", "Change Drive Letter"); return; }
