@@ -217,6 +217,8 @@ public class ToolsViewModel : ViewModelBase
             {
                 OnPropertyChanged(nameof(WipeIsFreeSpace));
                 OnPropertyChanged(nameof(WipeIsFullDisk));
+                OnPropertyChanged(nameof(WipeIsDod3Pass));
+                OnPropertyChanged(nameof(WipeIsDod7Pass));
                 OnPropertyChanged(nameof(WipeIsNvmeSanitize));
                 OnPropertyChanged(nameof(IsNvmeSanitizeAvailable));
                 OnPropertyChanged(nameof(NvmeSanitizeAvailabilityText));
@@ -235,6 +237,18 @@ public class ToolsViewModel : ViewModelBase
     {
         get => WipeMode == "SinglePass";
         set { if (value) WipeMode = "SinglePass"; }
+    }
+
+    public bool WipeIsDod3Pass
+    {
+        get => WipeMode == "DoD3Pass";
+        set { if (value) WipeMode = "DoD3Pass"; }
+    }
+
+    public bool WipeIsDod7Pass
+    {
+        get => WipeMode == "DoD7Pass";
+        set { if (value) WipeMode = "DoD7Pass"; }
     }
 
     public bool WipeIsNvmeSanitize
@@ -468,6 +482,9 @@ public class ToolsViewModel : ViewModelBase
     {
         if (WipeIsFreeSpace)
             return SelectedWipeVolume?.DriveLetter is not null;
+
+        if (WipeIsDod3Pass || WipeIsDod7Pass)
+            return SelectedWipeDrive is not null;
 
         if (SelectedWipeDrive is null)
             return false;
@@ -917,6 +934,64 @@ public class ToolsViewModel : ViewModelBase
         }
     }
 
+    private async Task RunDodWipeAsync(int passCount)
+    {
+        if (SelectedWipeDrive is null) return;
+
+        var protectedTargets = await GetBitLockerProtectedTargetsAsync(SelectedWipeDrive.Number);
+        if (protectedTargets.Count > 0 &&
+            !_dialog.ConfirmDanger(
+                BitLockerPreflight.BuildDestructiveConfirmation(
+                    $"DoD {passCount}-pass wipe Disk {SelectedWipeDrive.Number}",
+                    protectedTargets),
+                "Confirm BitLocker-Protected Wipe"))
+        {
+            return;
+        }
+
+        if (!_dialog.ConfirmWarning(
+            $"DoD 5220.22-M {passCount}-PASS WIPE on Disk {SelectedWipeDrive.Number} ({SelectedWipeDrive.FriendlyName}).\n\n" +
+            $"Size: {SizeUtil.Format(SelectedWipeDrive.Size)}\n\n" +
+            "ALL DATA WILL BE PERMANENTLY DESTROYED with multiple overwrite passes.\n\nContinue?",
+            $"DoD {passCount}-Pass Wipe -- Confirmation 1 of 2")) return;
+
+        if (!_dialog.ConfirmDanger(
+            $"FINAL WARNING: {passCount}-pass wipe will write the entire disk {passCount} times. " +
+            "This may take hours on large drives. Click Yes to begin.",
+            $"DoD {passCount}-Pass Wipe -- FINAL Confirmation")) return;
+
+        var ct = BeginOperation($"DoD {passCount}-pass wipe on Disk {SelectedWipeDrive.Number}...");
+        var locks = new List<VolumeLock>();
+        try
+        {
+            int diskNum = SelectedWipeDrive.Number;
+            var partitions = await _wmiService.GetPartitionsAsync(diskNum);
+            locks = partitions
+                .Where(p => p.DriveLetter.HasValue)
+                .Select(p => VolumeLockService.RequireLock(p.DriveLetter!.Value, _log))
+                .ToList();
+
+            await SecureEraseService.ExecuteMultiPassWipeAsync(diskNum, passCount, _processRunner, _log, ct);
+
+            _dialog.ShowInfo($"DoD {passCount}-pass wipe complete on Disk {diskNum}.", "Wipe Complete");
+            await RefreshDriveListsAsync();
+        }
+        catch (OperationCanceledException)
+        {
+            _log.Log("DoD wipe cancelled.");
+        }
+        catch (Exception ex)
+        {
+            _log.Log($"DoD wipe failed: {ex.Message}");
+            _dialog.ShowError($"DoD wipe failed:\n{ex.Message}", "Wipe Error");
+        }
+        finally
+        {
+            foreach (var l in locks) l?.Dispose();
+            EndOperation();
+        }
+    }
+
     private async Task RunWipeAsync()
     {
         if (WipeIsFreeSpace)
@@ -928,6 +1003,12 @@ public class ToolsViewModel : ViewModelBase
         if (WipeIsNvmeSanitize)
         {
             await RunNvmeSanitizeAsync();
+            return;
+        }
+
+        if (WipeIsDod3Pass || WipeIsDod7Pass)
+        {
+            await RunDodWipeAsync(WipeIsDod7Pass ? 7 : 3);
             return;
         }
 

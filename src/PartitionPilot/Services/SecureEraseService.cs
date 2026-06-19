@@ -87,6 +87,80 @@ public static class SecureEraseService
                    p.FriendlyName.Equals(disk.FriendlyName, StringComparison.OrdinalIgnoreCase));
     }
 
+    public static async Task ExecuteMultiPassWipeAsync(int diskNumber, int passCount, ProcessRunner runner, ActivityLog log, CancellationToken ct)
+    {
+        var passes = passCount switch
+        {
+            7 => new[] { 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, -1 },
+            _ => new[] { 0x00, 0xFF, -1 }
+        };
+
+        log.Log($"Starting DoD {passes.Length}-pass wipe on Disk {diskNumber}...");
+
+        var clearCmd = $"Clear-Disk -Number {diskNumber} -RemoveData -RemoveOEM -Confirm:$false";
+        await runner.RunPowerShellAsync(clearCmd, log, ct);
+
+        var initCmd = $"Initialize-Disk -Number {diskNumber} -PartitionStyle GPT -Confirm:$false";
+        await runner.RunPowerShellAsync(initCmd, log, ct);
+
+        var partCmd = $"New-Partition -DiskNumber {diskNumber} -UseMaximumSize -AssignDriveLetter | Format-Volume -FileSystem NTFS -Confirm:$false";
+        await runner.RunPowerShellAsync(partCmd, log, ct);
+
+        var letterCmd = $"(Get-Partition -DiskNumber {diskNumber} | Where-Object {{ $_.DriveLetter }} | Select-Object -First 1).DriveLetter";
+        var letterResult = (await runner.RunPowerShellAsync(letterCmd, log, ct)).Trim();
+
+        if (string.IsNullOrEmpty(letterResult) || !char.IsLetter(letterResult[0]))
+            throw new InvalidOperationException("Could not assign a drive letter for wipe passes.");
+
+        var driveLetter = letterResult[0];
+        var tempPath = $"{driveLetter}:\\pp_wipe_{Guid.NewGuid():N}.tmp";
+
+        for (int i = 0; i < passes.Length; i++)
+        {
+            ct.ThrowIfCancellationRequested();
+            var passLabel = passes[i] == -1 ? "random" : $"0x{passes[i]:X2}";
+            log.Log($"Pass {i + 1}/{passes.Length}: writing {passLabel}...");
+
+            await Task.Run(() =>
+            {
+                const int blockSize = 1024 * 1024;
+                var buffer = new byte[blockSize];
+                if (passes[i] >= 0)
+                    Array.Fill(buffer, (byte)passes[i]);
+                else
+                    Random.Shared.NextBytes(buffer);
+
+                using var fs = new System.IO.FileStream(tempPath,
+                    System.IO.FileMode.Create, System.IO.FileAccess.Write,
+                    System.IO.FileShare.None, blockSize, System.IO.FileOptions.WriteThrough);
+
+                long written = 0;
+                while (true)
+                {
+                    ct.ThrowIfCancellationRequested();
+                    try
+                    {
+                        if (passes[i] == -1)
+                            Random.Shared.NextBytes(buffer);
+                        fs.Write(buffer, 0, blockSize);
+                        written += blockSize;
+                    }
+                    catch (System.IO.IOException)
+                    {
+                        break;
+                    }
+                }
+
+                log.Log($"Pass {i + 1} complete: {SizeUtil.Format(written)} written.");
+            }, ct);
+
+            try { System.IO.File.Delete(tempPath); } catch { }
+        }
+
+        await runner.RunPowerShellAsync(clearCmd, log, ct);
+        log.Log($"DoD {passes.Length}-pass wipe complete on Disk {diskNumber}.");
+    }
+
     public static void ExecuteNvmeSanitize(int diskNumber, SanitizeMethod method, ActivityLog? log = null)
     {
         var devicePath = $@"\\.\PhysicalDrive{diskNumber}";

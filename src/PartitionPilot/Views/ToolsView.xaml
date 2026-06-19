@@ -137,6 +137,18 @@
                                              IsChecked="{Binding WipeIsFullDisk}"
                                              Foreground="{DynamicResource DangerBrush}"
                                              AutomationProperties.Name="Wipe entire disk"/>
+                                <RadioButton Content="DoD 3-pass"
+                                             GroupName="WipeMode"
+                                             IsChecked="{Binding WipeIsDod3Pass}"
+                                             Foreground="{DynamicResource DangerBrush}"
+                                             ToolTip="DoD 5220.22-M 3-pass overwrite (zeros, ones, random)"
+                                             AutomationProperties.Name="DoD 3-pass wipe"/>
+                                <RadioButton Content="DoD 7-pass"
+                                             GroupName="WipeMode"
+                                             IsChecked="{Binding WipeIsDod7Pass}"
+                                             Foreground="{DynamicResource DangerBrush}"
+                                             ToolTip="DoD 5220.22-M 7-pass overwrite"
+                                             AutomationProperties.Name="DoD 7-pass wipe"/>
                                 <RadioButton Content="NVMe firmware erase"
                                              GroupName="WipeMode"
                                              IsChecked="{Binding WipeIsNvmeSanitize}"
@@ -163,6 +175,24 @@
                                               DisplayMemberPath="DisplayText"
                                               Height="34"
                                               AutomationProperties.Name="Wipe disk selector"/>
+                                </StackPanel>
+
+                                <StackPanel Visibility="{Binding WipeIsDod3Pass, Converter={StaticResource BoolVis}}">
+                                    <TextBlock Text="Disk (DoD 3-pass)" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
+                                    <ComboBox ItemsSource="{Binding AllDisks}"
+                                              SelectedItem="{Binding SelectedWipeDrive}"
+                                              DisplayMemberPath="DisplayText"
+                                              Height="34"
+                                              AutomationProperties.Name="DoD 3-pass wipe disk selector"/>
+                                </StackPanel>
+
+                                <StackPanel Visibility="{Binding WipeIsDod7Pass, Converter={StaticResource BoolVis}}">
+                                    <TextBlock Text="Disk (DoD 7-pass)" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
+                                    <ComboBox ItemsSource="{Binding AllDisks}"
+                                              SelectedItem="{Binding SelectedWipeDrive}"
+                                              DisplayMemberPath="DisplayText"
+                                              Height="34"
+                                              AutomationProperties.Name="DoD 7-pass wipe disk selector"/>
                                 </StackPanel>
 
                                 <StackPanel Visibility="{Binding WipeIsNvmeSanitize, Converter={StaticResource BoolVis}}">
