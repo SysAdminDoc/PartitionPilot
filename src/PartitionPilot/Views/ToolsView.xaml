@@ -284,6 +284,12 @@
                                      VerticalScrollBarVisibility="Auto"
                                      TextWrapping="Wrap"
                                      AutomationProperties.Name="Benchmark results"/>
+                            <Button Content="Export Results"
+                                    Style="{StaticResource SecondaryButton}"
+                                    Command="{Binding ExportBenchmarkCommand}"
+                                    HorizontalAlignment="Left"
+                                    Margin="0,6,0,0"
+                                    AutomationProperties.Name="Export benchmark results"/>
                         </StackPanel>
                     </GroupBox>
                 </WrapPanel>
