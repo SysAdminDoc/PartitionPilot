@@ -24,6 +24,11 @@
                                 Command="{Binding ExportCommand}"
                                 Style="{StaticResource ToolbarButton}"
                                 AutomationProperties.Name="Export selected partition snapshot"/>
+                        <Button Content="Recovery Plan"
+                                Command="{Binding ExportRecoveryPlanCommand}"
+                                Style="{StaticResource ToolbarButton}"
+                                ToolTip="Export a mismatch-checked recovery plan for this snapshot"
+                                AutomationProperties.Name="Export recovery plan"/>
                         <Button Content="Copy Guidance"
                                 Command="{Binding CopyRecoveryCommandsCommand}"
                                 Style="{StaticResource ToolbarButton}"

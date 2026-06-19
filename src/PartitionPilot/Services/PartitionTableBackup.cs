@@ -203,6 +203,75 @@ public class PartitionTableBackup
         return string.Join(Environment.NewLine, lines);
     }
 
+    public async Task<string> BuildRecoveryPlanAsync(PartitionSnapshot snapshot)
+    {
+        var lines = new List<string>
+        {
+            "# PartitionPilot Recovery Plan",
+            $"# Snapshot: {snapshot.FileName}",
+            $"# Captured: {snapshot.CapturedAtText}",
+            $"# Target Disk: {snapshot.DiskSummary}",
+            ""
+        };
+
+        List<DiskInfo> currentDisks;
+        try { currentDisks = await _wmiService.GetDisksAsync(); }
+        catch { currentDisks = new List<DiskInfo>(); }
+
+        var currentDisk = currentDisks.FirstOrDefault(d => d.Number == snapshot.DiskNumber);
+        var mismatches = new List<string>();
+
+        if (currentDisk is null)
+        {
+            mismatches.Add($"Disk {snapshot.DiskNumber} is not currently connected.");
+        }
+        else
+        {
+            if (!string.IsNullOrEmpty(snapshot.DiskName) &&
+                !snapshot.DiskName.Equals(currentDisk.FriendlyName, StringComparison.OrdinalIgnoreCase))
+                mismatches.Add($"Name mismatch: snapshot=\"{snapshot.DiskName}\", current=\"{currentDisk.FriendlyName}\"");
+
+            if (snapshot.DiskSize > 0 && Math.Abs(snapshot.DiskSize - currentDisk.Size) > 1024 * 1024 * 10)
+                mismatches.Add($"Size mismatch: snapshot={SizeUtil.Format(snapshot.DiskSize)}, current={SizeUtil.Format(currentDisk.Size)}");
+
+            if (!string.IsNullOrEmpty(snapshot.PartitionStyle) &&
+                !snapshot.PartitionStyle.Equals(currentDisk.PartitionStyle, StringComparison.OrdinalIgnoreCase))
+                mismatches.Add($"Partition style mismatch: snapshot={snapshot.PartitionStyle}, current={currentDisk.PartitionStyle}");
+        }
+
+        if (mismatches.Count > 0)
+        {
+            lines.Add("## MISMATCHES DETECTED");
+            lines.Add("# The current disk does not match the snapshot. Review carefully before proceeding.");
+            foreach (var m in mismatches)
+                lines.Add($"# WARNING: {m}");
+            lines.Add("");
+        }
+        else
+        {
+            lines.Add("# Disk identity verified: name, size, and partition style match the snapshot.");
+            lines.Add("");
+        }
+
+        lines.Add("## Step 1: Diagnostic commands (safe, read-only)");
+        lines.Add($"Get-Disk -Number {snapshot.DiskNumber}");
+        lines.Add($"Get-Partition -DiskNumber {snapshot.DiskNumber} | Sort-Object PartitionNumber | Format-Table -AutoSize");
+        lines.Add("Get-Volume | Sort-Object DriveLetter | Format-Table -AutoSize");
+        lines.Add("");
+
+        lines.Add("## Step 2: Captured partition layout (reference only)");
+        foreach (var partition in snapshot.Partitions.OrderBy(p => p.PartitionNumber))
+        {
+            lines.Add(
+                $"# Partition {partition.PartitionNumber}: {partition.LetterDisplay} {partition.Type}, {partition.SizeText}, offset {partition.OffsetText}, fs={partition.FileSystem}, roles={partition.RoleText}");
+        }
+
+        lines.Add("");
+        lines.Add("# PartitionPilot does not generate destructive restore commands.");
+        lines.Add("# Use Windows recovery tools or a specialist partition editor for restore operations.");
+        return string.Join(Environment.NewLine, lines);
+    }
+
     public static string BuildRecoveryCommands(PartitionSnapshot snapshot)
     {
         var lines = new List<string>
