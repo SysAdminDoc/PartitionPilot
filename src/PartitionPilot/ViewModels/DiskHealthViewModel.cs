@@ -47,6 +47,15 @@ public class DiskHealthViewModel : ViewModelBase
                 OnPropertyChanged(nameof(WriteErrorsText));
                 OnPropertyChanged(nameof(ReadLatencyText));
                 OnPropertyChanged(nameof(WriteLatencyText));
+                OnPropertyChanged(nameof(ReallocatedSectorsText));
+                OnPropertyChanged(nameof(PendingSectorsText));
+                OnPropertyChanged(nameof(PowerCycleText));
+                OnPropertyChanged(nameof(TotalWrittenText));
+                OnPropertyChanged(nameof(TotalReadText));
+                OnPropertyChanged(nameof(NvmeAvailableSpareText));
+                OnPropertyChanged(nameof(NvmeMediaErrorsText));
+                OnPropertyChanged(nameof(HasExtendedSmartData));
+                OnPropertyChanged(nameof(SmartAttributes));
                 OnPropertyChanged(nameof(HealthStatusText));
                 OnPropertyChanged(nameof(HealthStatusColor));
                 OnPropertyChanged(nameof(HealthReasonText));
@@ -100,6 +109,24 @@ public class DiskHealthViewModel : ViewModelBase
     public string ReadLatencyText => Smart?.ReadLatencyMax is not null ? $"{Smart.ReadLatencyMax} ms" : "N/A";
 
     public string WriteLatencyText => Smart?.WriteLatencyMax is not null ? $"{Smart.WriteLatencyMax} ms" : "N/A";
+
+    public string ReallocatedSectorsText => Smart?.ReallocatedSectors is not null ? Smart.ReallocatedSectors.Value.ToString("N0") : "N/A";
+
+    public string PendingSectorsText => Smart?.PendingSectors is not null ? Smart.PendingSectors.Value.ToString("N0") : "N/A";
+
+    public string PowerCycleText => Smart?.PowerCycleCount is not null ? Smart.PowerCycleCount.Value.ToString("N0") : "N/A";
+
+    public string TotalWrittenText => Smart?.TotalBytesWritten is not null ? SizeUtil.Format(Smart.TotalBytesWritten.Value) : "N/A";
+
+    public string TotalReadText => Smart?.TotalBytesRead is not null ? SizeUtil.Format(Smart.TotalBytesRead.Value) : "N/A";
+
+    public string NvmeAvailableSpareText => Smart?.NvmeAvailableSpare is not null ? $"{Smart.NvmeAvailableSpare}%" : "N/A";
+
+    public string NvmeMediaErrorsText => Smart?.NvmeMediaErrors is not null ? Smart.NvmeMediaErrors.Value.ToString("N0") : "N/A";
+
+    public bool HasExtendedSmartData => Smart?.AllAttributes.Count > 0;
+
+    public IReadOnlyList<SmartAttribute> SmartAttributes => Smart?.AllAttributes ?? new List<SmartAttribute>();
 
     public string HealthStatusText => Smart?.Health switch
     {

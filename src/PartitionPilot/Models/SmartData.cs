@@ -2,6 +2,16 @@ namespace PartitionPilot;
 
 public enum HealthStatus { Good, Warning, Critical, Unknown }
 
+public class SmartAttribute
+{
+    public byte Id { get; set; }
+    public string Name { get; set; } = "";
+    public int Current { get; set; }
+    public int Worst { get; set; }
+    public long RawValue { get; set; }
+    public string RawDisplay => RawValue.ToString("N0");
+}
+
 public class SmartData
 {
     public int? Temperature { get; set; }
@@ -14,14 +24,30 @@ public class SmartData
     public long? ReadLatencyMax { get; set; }
     public long? WriteLatencyMax { get; set; }
 
+    public long? ReallocatedSectors { get; set; }
+    public long? PendingSectors { get; set; }
+    public long? PowerCycleCount { get; set; }
+    public long? TotalBytesWritten { get; set; }
+    public long? TotalBytesRead { get; set; }
+    public int? NvmeAvailableSpare { get; set; }
+    public long? NvmeMediaErrors { get; set; }
+
+    public List<SmartAttribute> AllAttributes { get; set; } = new();
+
     public HealthStatus Health
     {
         get
         {
             if (Wear is not null && Wear >= 95) return HealthStatus.Critical;
             if (Temperature is not null && Temperature >= 65) return HealthStatus.Critical;
+            if (ReallocatedSectors is not null && ReallocatedSectors > 100) return HealthStatus.Critical;
+            if (NvmeAvailableSpare is not null && NvmeAvailableSpare <= 5) return HealthStatus.Critical;
             if (Wear is not null && Wear >= 85) return HealthStatus.Warning;
             if (Temperature is not null && Temperature >= 55) return HealthStatus.Warning;
+            if (ReallocatedSectors is not null && ReallocatedSectors > 0) return HealthStatus.Warning;
+            if (PendingSectors is not null && PendingSectors > 0) return HealthStatus.Warning;
+            if (NvmeAvailableSpare is not null && NvmeAvailableSpare <= 20) return HealthStatus.Warning;
+            if (NvmeMediaErrors is not null && NvmeMediaErrors > 0) return HealthStatus.Warning;
             if (ReadErrorsTotal is not null && ReadErrorsTotal > 0 && ReadErrorsCorrected != ReadErrorsTotal)
                 return HealthStatus.Warning;
             if (WriteErrorsTotal is not null && WriteErrorsTotal > 0 && WriteErrorsCorrected != WriteErrorsTotal)
@@ -37,9 +63,15 @@ public class SmartData
         get
         {
             if (Wear is not null && Wear >= 95) return $"SSD wear indicator at {Wear}% — nearing estimated wear limit";
-            if (Temperature is not null && Temperature >= 65) return $"Temperature critically high ({Temperature}°C)";
+            if (Temperature is not null && Temperature >= 65) return $"Temperature critically high ({Temperature} C)";
+            if (ReallocatedSectors is not null && ReallocatedSectors > 100) return $"Critical: {ReallocatedSectors} reallocated sectors";
+            if (NvmeAvailableSpare is not null && NvmeAvailableSpare <= 5) return $"NVMe available spare critically low ({NvmeAvailableSpare}%)";
             if (Wear is not null && Wear >= 85) return $"SSD wear indicator at {Wear}% — consider replacement planning";
-            if (Temperature is not null && Temperature >= 55) return $"Temperature elevated ({Temperature}°C)";
+            if (Temperature is not null && Temperature >= 55) return $"Temperature elevated ({Temperature} C)";
+            if (ReallocatedSectors is not null && ReallocatedSectors > 0) return $"Warning: {ReallocatedSectors} reallocated sector(s) — early sign of surface degradation";
+            if (PendingSectors is not null && PendingSectors > 0) return $"Warning: {PendingSectors} pending sector(s) — awaiting reallocation";
+            if (NvmeAvailableSpare is not null && NvmeAvailableSpare <= 20) return $"NVMe available spare getting low ({NvmeAvailableSpare}%)";
+            if (NvmeMediaErrors is not null && NvmeMediaErrors > 0) return $"NVMe media errors detected ({NvmeMediaErrors})";
             if (ReadErrorsTotal is not null && ReadErrorsTotal > 0 && ReadErrorsCorrected != ReadErrorsTotal)
                 return $"Uncorrected read errors detected ({ReadErrorsTotal - (ReadErrorsCorrected ?? 0)})";
             if (WriteErrorsTotal is not null && WriteErrorsTotal > 0 && WriteErrorsCorrected != WriteErrorsTotal)
