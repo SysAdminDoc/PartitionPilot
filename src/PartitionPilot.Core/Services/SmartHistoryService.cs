@@ -32,6 +32,14 @@ public class SmartHistoryService
         }
     }
 
+    private const int CurrentSchemaVersion = 1;
+
+    private sealed class SmartHistoryEnvelope
+    {
+        public int SchemaVersion { get; set; }
+        public List<SmartReading> Readings { get; set; } = new();
+    }
+
     public async Task RecordAsync(string deviceId, SmartData data)
     {
         var reading = SmartReading.FromSmartData(data);
@@ -43,7 +51,12 @@ public class SmartHistoryService
 
         Directory.CreateDirectory(HistoryDir);
         var path = GetFilePath(deviceId);
-        var json = JsonSerializer.Serialize(readings, JsonOpts);
+        var envelope = new SmartHistoryEnvelope
+        {
+            SchemaVersion = CurrentSchemaVersion,
+            Readings = readings
+        };
+        var json = JsonSerializer.Serialize(envelope, JsonOpts);
         await File.WriteAllTextAsync(path, json);
     }
 
@@ -146,15 +159,38 @@ public class SmartHistoryService
         var path = GetFilePath(deviceId);
         if (!File.Exists(path)) return new List<SmartReading>();
 
+        string json;
+        try { json = await File.ReadAllTextAsync(path); }
+        catch { return new List<SmartReading>(); }
+
         try
         {
-            var json = await File.ReadAllTextAsync(path);
-            return JsonSerializer.Deserialize<List<SmartReading>>(json, JsonOpts) ?? new List<SmartReading>();
+            var envelope = JsonSerializer.Deserialize<SmartHistoryEnvelope>(json, JsonOpts);
+            if (envelope?.SchemaVersion >= 1 && envelope.Readings is not null)
+                return envelope.Readings;
         }
-        catch
+        catch { }
+
+        try
         {
-            return new List<SmartReading>();
+            var legacy = JsonSerializer.Deserialize<List<SmartReading>>(json, JsonOpts);
+            if (legacy is not null) return legacy;
         }
+        catch { }
+
+        QuarantineCorruptFile(path);
+        return new List<SmartReading>();
+    }
+
+    private static void QuarantineCorruptFile(string path)
+    {
+        try
+        {
+            var corruptPath = path + ".corrupt";
+            if (File.Exists(corruptPath)) File.Delete(corruptPath);
+            File.Move(path, corruptPath);
+        }
+        catch { }
     }
 
     private static string GetFilePath(string deviceId) =>

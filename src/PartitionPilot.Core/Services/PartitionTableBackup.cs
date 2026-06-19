@@ -44,6 +44,8 @@ public class PartitionTableBackup
         _log = log;
     }
 
+    private const int CurrentSchemaVersion = 1;
+
     public async Task SaveSnapshotAsync(int diskNumber)
     {
         try
@@ -54,6 +56,7 @@ public class PartitionTableBackup
 
             var snapshot = new
             {
+                SchemaVersion = CurrentSchemaVersion,
                 Timestamp = DateTime.UtcNow.ToString("o"),
                 DiskNumber = diskNumber,
                 DiskName = disk?.FriendlyName ?? "Unknown",
@@ -117,10 +120,18 @@ public class PartitionTableBackup
                 var json = await File.ReadAllTextAsync(file);
                 var snapshot = JsonSerializer.Deserialize<PartitionSnapshot>(json, SnapshotJsonOptions);
                 if (snapshot is null)
+                {
+                    QuarantineCorruptFile(file, "deserialized to null");
                     continue;
+                }
 
                 snapshot.FilePath = file;
                 snapshots.Add(snapshot);
+            }
+            catch (JsonException jex)
+            {
+                _log.Log($"Corrupt snapshot quarantined {Path.GetFileName(file)}: {jex.Message}");
+                QuarantineCorruptFile(file, jex.Message);
             }
             catch (Exception ex)
             {
@@ -132,6 +143,18 @@ public class PartitionTableBackup
             .OrderByDescending(s => s.CapturedAt ?? DateTimeOffset.MinValue)
             .ThenByDescending(s => s.FileName)
             .ToList();
+    }
+
+    private void QuarantineCorruptFile(string path, string reason)
+    {
+        try
+        {
+            var corruptPath = path + ".corrupt";
+            if (File.Exists(corruptPath)) File.Delete(corruptPath);
+            File.Move(path, corruptPath);
+            _log.Log($"Quarantined corrupt file: {Path.GetFileName(path)} — {reason}");
+        }
+        catch { }
     }
 
     public async Task ExportSnapshotAsync(PartitionSnapshot snapshot, string destinationPath)
