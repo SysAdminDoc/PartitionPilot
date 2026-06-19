@@ -52,6 +52,11 @@
                             Command="{Binding ExportLogCommand}"
                             Style="{StaticResource CommandBarButton}"
                             AutomationProperties.Name="Export activity log"/>
+                    <Button Content="Support Bundle"
+                            Command="{Binding ExportSupportBundleCommand}"
+                            Style="{StaticResource CommandBarButton}"
+                            ToolTip="Export a redacted diagnostic bundle for troubleshooting"
+                            AutomationProperties.Name="Export support bundle"/>
                     <Button Content="{Binding ThemeLabel}"
                             Command="{Binding ToggleThemeCommand}"
                             Style="{StaticResource CommandBarButton}"
