@@ -9,10 +9,12 @@ public class DiskHealthViewModel : ViewModelBase
     private readonly IWmiDiskService _wmiService;
     private readonly ActivityLog _log;
     private readonly SmartHistoryService _history = new();
+    private readonly TemperatureMonitorService _tempMonitor;
     private CancellationTokenSource? _healthCts;
 
     public ObservableCollection<PhysicalDiskInfo> PhysicalDisks { get; } = new();
     public ObservableCollection<AlignmentInfo> AlignmentEntries { get; } = new();
+    public ObservableCollection<TemperatureAlert> TemperatureAlerts { get; } = new();
 
     private PhysicalDiskInfo? _selectedDisk;
     public PhysicalDiskInfo? SelectedDisk
@@ -155,14 +157,44 @@ public class DiskHealthViewModel : ViewModelBase
 
     public string HealthReasonText => Smart?.HealthReason ?? "No SMART data available";
 
+    private bool _isMonitoring;
+    public bool IsMonitoring
+    {
+        get => _isMonitoring;
+        set
+        {
+            if (SetProperty(ref _isMonitoring, value))
+            {
+                OnPropertyChanged(nameof(MonitorButtonText));
+                OnPropertyChanged(nameof(HasTemperatureAlerts));
+            }
+        }
+    }
+
+    public string MonitorButtonText => IsMonitoring ? "Stop Monitoring" : "Start Monitoring";
+    public bool HasTemperatureAlerts => TemperatureAlerts.Count > 0;
+
+    private string _liveTemperatureText = "";
+    public string LiveTemperatureText
+    {
+        get => _liveTemperatureText;
+        set => SetProperty(ref _liveTemperatureText, value);
+    }
+
     public ICommand RefreshCommand { get; }
+    public ICommand ToggleMonitorCommand { get; }
 
     public DiskHealthViewModel(IWmiDiskService wmiService, ActivityLog log)
     {
         _wmiService = wmiService;
         _log = log;
+        _tempMonitor = new TemperatureMonitorService(wmiService, log);
+
+        _tempMonitor.AlertRaised += OnTemperatureAlert;
+        _tempMonitor.TemperaturesUpdated += OnTemperaturesUpdated;
 
         RefreshCommand = new AsyncRelayCommand(_ => RefreshAsync());
+        ToggleMonitorCommand = new WpfRelayCommand(_ => ToggleMonitoring());
     }
 
     public async Task RefreshAsync()
@@ -272,5 +304,39 @@ public class DiskHealthViewModel : ViewModelBase
         {
             IsBusy = false;
         }
+    }
+
+    private void ToggleMonitoring()
+    {
+        if (IsMonitoring)
+        {
+            _tempMonitor.Stop();
+            IsMonitoring = false;
+            LiveTemperatureText = "";
+        }
+        else
+        {
+            _tempMonitor.Start(TimeSpan.FromSeconds(30));
+            IsMonitoring = true;
+        }
+    }
+
+    private void OnTemperatureAlert(object? sender, TemperatureAlert alert)
+    {
+        Application.Current?.Dispatcher?.BeginInvoke(() =>
+        {
+            TemperatureAlerts.Insert(0, alert);
+            if (TemperatureAlerts.Count > 50)
+                TemperatureAlerts.RemoveAt(TemperatureAlerts.Count - 1);
+            OnPropertyChanged(nameof(HasTemperatureAlerts));
+        });
+    }
+
+    private void OnTemperaturesUpdated(object? sender, Dictionary<string, int> temps)
+    {
+        if (temps.Count == 0) return;
+        var parts = temps.Select(kv => $"Disk {kv.Key}: {kv.Value} C");
+        var text = string.Join("  |  ", parts);
+        Application.Current?.Dispatcher?.BeginInvoke(() => LiveTemperatureText = text);
     }
 }
