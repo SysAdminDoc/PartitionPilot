@@ -644,10 +644,8 @@ public class PartitionsViewModel : ViewModelBase
     {
         if (!Queue.HasPending) return;
 
-        var summary = string.Join("\n", Queue.Pending.Select((op, i) => $"  {i + 1}. {op.Description}"));
-        if (!_dialog.ConfirmWarning(
-            $"Apply {Queue.Count} pending operation(s)?\n\n{summary}\n\nOperations will execute in order. This cannot be undone.",
-            "Apply Pending Operations"))
+        var impactPreview = BuildImpactPreview();
+        if (!_dialog.ConfirmWarning(impactPreview, "Apply Pending Operations"))
             return;
 
         await Queue.ApplyAllAsync(_log, _dialog,
@@ -655,6 +653,51 @@ public class PartitionsViewModel : ViewModelBase
             status => PendingOperation = status);
 
         await LoadDisksAsync();
+    }
+
+    private string BuildImpactPreview()
+    {
+        var ops = Queue.Pending.ToList();
+        var sb = new System.Text.StringBuilder();
+
+        sb.AppendLine($"Apply {ops.Count} pending operation(s)?");
+        sb.AppendLine();
+
+        var highRisk = ops.Count(o => o.RiskLevel != "Normal");
+        var destructive = ops.Count(o => o.Type is PendingOperationType.Delete or PendingOperationType.Format);
+        var targets = ops.Select(o => o.DiskTarget).Where(t => !string.IsNullOrEmpty(t)).Distinct().ToList();
+
+        if (highRisk > 0 || destructive > 0)
+        {
+            sb.AppendLine("--- Risk Summary ---");
+            if (destructive > 0)
+                sb.AppendLine($"  {destructive} destructive operation(s) (data will be permanently lost)");
+            if (highRisk > 0)
+                sb.AppendLine($"  {highRisk} elevated-risk operation(s)");
+            sb.AppendLine();
+        }
+
+        if (targets.Count > 0)
+        {
+            sb.AppendLine("--- Affected Targets ---");
+            foreach (var target in targets)
+                sb.AppendLine($"  {target}");
+            sb.AppendLine();
+        }
+
+        sb.AppendLine("--- Operations ---");
+        for (int i = 0; i < ops.Count; i++)
+        {
+            var op = ops[i];
+            var risk = op.RiskLevel != "Normal" ? $" [{op.RiskLevel}]" : "";
+            sb.AppendLine($"  {i + 1}. [{op.TypeDisplay}]{risk} {op.Description}");
+        }
+
+        sb.AppendLine();
+        sb.AppendLine("Operations will execute in order. This cannot be undone.");
+        sb.AppendLine("Ensure you have a current backup before proceeding.");
+
+        return sb.ToString();
     }
 
     private async Task CheckInterruptedJournalsAsync()
