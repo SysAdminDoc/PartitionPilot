@@ -4,11 +4,11 @@ namespace PartitionPilot;
 
 public sealed class OperationCleanupScope : IDisposable, IAsyncDisposable
 {
-    private readonly ActivityLog _log;
+    private readonly IActivityLog _log;
     private readonly List<CleanupRegistration> _registrations = new();
     private bool _disposed;
 
-    public OperationCleanupScope(ActivityLog log)
+    public OperationCleanupScope(IActivityLog log)
     {
         _log = log;
     }

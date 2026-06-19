@@ -7,7 +7,7 @@ using System.Windows.Input;
 
 namespace PartitionPilot;
 
-public class ActivityLog : INotifyPropertyChanged
+public class ActivityLog : INotifyPropertyChanged, IActivityLog
 {
     public event PropertyChangedEventHandler? PropertyChanged;
     private readonly StringBuilder _sb = new();

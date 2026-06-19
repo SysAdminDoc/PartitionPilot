@@ -4,7 +4,7 @@ namespace PartitionPilot;
 
 public static class SmartQueryService
 {
-    public static SmartData? QueryDisk(int diskIndex, ActivityLog? log = null)
+    public static SmartData? QueryDisk(int diskIndex, IActivityLog? log = null)
     {
         Computer? computer = null;
         try

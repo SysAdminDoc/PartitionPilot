@@ -26,7 +26,7 @@ public static class VolumeLockService
         nint lpOutBuffer, uint nOutBufferSize,
         out uint lpBytesReturned, nint lpOverlapped);
 
-    public static VolumeLock? TryLock(char driveLetter, ActivityLog? log = null)
+    public static VolumeLock? TryLock(char driveLetter, IActivityLog? log = null)
     {
         driveLetter = char.ToUpperInvariant(driveLetter);
         var volumePath = $@"\\.\{driveLetter}:";
@@ -55,7 +55,7 @@ public static class VolumeLockService
         return new VolumeLock(handle, driveLetter, log);
     }
 
-    public static VolumeLock RequireLock(char driveLetter, ActivityLog? log = null)
+    public static VolumeLock RequireLock(char driveLetter, IActivityLog? log = null)
     {
         var volumeLock = TryLock(driveLetter, log);
         if (volumeLock is null)
@@ -75,10 +75,10 @@ public sealed class VolumeLock : IDisposable
 
     private readonly SafeFileHandle _handle;
     private readonly char _letter;
-    private readonly ActivityLog? _log;
+    private readonly IActivityLog? _log;
     private bool _disposed;
 
-    internal VolumeLock(SafeFileHandle handle, char letter, ActivityLog? log)
+    internal VolumeLock(SafeFileHandle handle, char letter, IActivityLog? log)
     {
         _handle = handle;
         _letter = letter;

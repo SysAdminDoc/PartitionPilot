@@ -10,7 +10,7 @@ public class ProcessRunner : IProcessRunner
         @"\b(error|failed|cannot|unable to|not found|access is denied|the specified .+ does not exist)\b",
         RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
-    public async Task<string> RunDiskpartAsync(string script, ActivityLog? log = null, CancellationToken ct = default)
+    public async Task<string> RunDiskpartAsync(string script, IActivityLog? log = null, CancellationToken ct = default)
     {
         var tempFile = Path.Combine(Path.GetTempPath(), $"pp_diskpart_{Guid.NewGuid():N}.txt");
         var record = new OperationRecord
@@ -46,7 +46,7 @@ public class ProcessRunner : IProcessRunner
         }
     }
 
-    public async Task<string> RunPowerShellAsync(string command, ActivityLog? log = null, CancellationToken ct = default)
+    public async Task<string> RunPowerShellAsync(string command, IActivityLog? log = null, CancellationToken ct = default)
     {
         var record = new OperationRecord
         {
@@ -92,7 +92,7 @@ public class ProcessRunner : IProcessRunner
         return "system";
     }
 
-    public async Task<string> RunExeAsync(string fileName, string arguments, ActivityLog? log = null,
+    public async Task<string> RunExeAsync(string fileName, string arguments, IActivityLog? log = null,
         bool ignoreStderrOnSuccess = false, CancellationToken ct = default)
     {
         log?.Log($"Run: {fileName} {arguments}");

@@ -27,7 +27,7 @@ public static class UpdateService
         Version.TryParse(currentVersion, out var current) &&
         latest > current;
 
-    public static async Task<UpdateInfo?> CheckForVelopackUpdateAsync(ActivityLog? log = null)
+    public static async Task<UpdateInfo?> CheckForVelopackUpdateAsync(IActivityLog? log = null)
     {
         try
         {
@@ -46,7 +46,7 @@ public static class UpdateService
         }
     }
 
-    public static async Task DownloadAndApplyAsync(UpdateInfo update, ActivityLog? log = null)
+    public static async Task DownloadAndApplyAsync(UpdateInfo update, IActivityLog? log = null)
     {
         try
         {
@@ -62,7 +62,7 @@ public static class UpdateService
         }
     }
 
-    public static void ApplyAndRestart(UpdateInfo update, ActivityLog? log = null)
+    public static void ApplyAndRestart(UpdateInfo update, IActivityLog? log = null)
     {
         try
         {

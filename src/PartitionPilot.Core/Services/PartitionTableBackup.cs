@@ -6,7 +6,7 @@ namespace PartitionPilot;
 public class PartitionTableBackup
 {
     private readonly IWmiDiskService _wmiService;
-    private readonly ActivityLog _log;
+    private readonly IActivityLog _log;
     private static readonly string BackupDir = ResolveBackupDir();
     private static readonly JsonSerializerOptions SnapshotJsonOptions = new()
     {
@@ -38,7 +38,7 @@ public class PartitionTableBackup
         }
     }
 
-    public PartitionTableBackup(IWmiDiskService wmiService, ActivityLog log)
+    public PartitionTableBackup(IWmiDiskService wmiService, IActivityLog log)
     {
         _wmiService = wmiService;
         _log = log;

@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Architecture
+- Adopted .NET 10 Fluent theme with system dark/light tracking. Theme button now cycles Dark → Light → System, where System follows the OS Apps theme setting via registry change notifications. Removed ~95 lines of custom ScrollBar, RadioButton, CheckBox, and MenuItem templates now handled by the Fluent theme engine.
+
 ### Safety & Reliability
 - Preserved failed and skipped pending operations after a queue apply failure so users can review, retry, or remove the remaining work instead of losing the queue.
 - Hardened DiskSpd benchmarking by verifying the downloaded ZIP and cached executable hashes, passing the required 1 GiB test-file creation argument, draining stderr, and falling back when all DiskSpd profiles fail.

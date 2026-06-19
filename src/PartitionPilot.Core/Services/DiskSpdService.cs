@@ -22,7 +22,7 @@ public static class DiskSpdService
 
     public static bool IsAvailable => HasExpectedFileHash(DiskSpdExe, DiskSpdExeSha256);
 
-    public static async Task EnsureAvailableAsync(ActivityLog log, CancellationToken ct)
+    public static async Task EnsureAvailableAsync(IActivityLog log, CancellationToken ct)
     {
         if (IsAvailable) return;
         if (File.Exists(DiskSpdExe))
@@ -78,7 +78,7 @@ public static class DiskSpdService
     ];
 
     public static async Task<BenchmarkResult> RunProfilesAsync(
-        char driveLetter, ActivityLog log, IProgress<string> progress, CancellationToken ct)
+        char driveLetter, IActivityLog log, IProgress<string> progress, CancellationToken ct)
     {
         var testFile = Path.Combine($"{driveLetter}:\\", $"pp_diskspd_{Guid.NewGuid():N}.dat");
         var result = new BenchmarkResult();

@@ -58,7 +58,7 @@ public class OperationQueue
         Pending.Clear();
     }
 
-    public async Task ApplyAllAsync(ActivityLog log, IDialogService dialog, Action<bool> setBusy, Action<string?> setStatus)
+    public async Task ApplyAllAsync(IActivityLog log, IDialogService dialog, Action<bool> setBusy, Action<string?> setStatus)
     {
         if (Pending.Count == 0) return;
 
