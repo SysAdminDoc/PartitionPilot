@@ -177,3 +177,93 @@
   Touches: `src/PartitionPilot/Views/`, `src/PartitionPilot/Dialogs/`, `src/PartitionPilot/Services/MessageBoxDialogService.cs`, resource files
   Acceptance: User-facing strings are extractable through resources or a string catalog, pseudo-localization catches clipping in major views/dialogs, and right-to-left layout is consciously documented as supported or unsupported.
   Complexity: M
+
+## Research-Driven Additions (2026-06-18)
+
+### P2 — Features & Safety
+
+- [ ] P2 — Add partition merge for adjacent NTFS volumes
+  Why: Every commercial partition tool (EaseUS, AOMEI, MiniTool) supports merging adjacent partitions. PartitionPilot has split but no merge. This is a frequently-requested table-stakes feature for partition management.
+  Evidence: EaseUS Partition Master merge feature, AOMEI Partition Assistant merge wizard, MiniTool Partition Wizard merge docs
+  Touches: `src/PartitionPilot/ViewModels/PartitionsViewModel.cs`, new `Dialogs/MergePartitionDialog.xaml`, `src/PartitionPilot/Services/ProcessRunner.cs`
+  Acceptance: User can select two adjacent partitions on the same disk (at least one NTFS), merge them into one partition preserving data from the primary, with partition table backup taken before execution. Merge blocked for system/recovery/BitLocker-protected partitions.
+  Complexity: L
+
+- [ ] P2 — Add standalone disk initialization workflow
+  Why: New or wiped disks arrive with no partition table. PartitionPilot's wipe flow initializes internally, but there's no standalone "Initialize Disk" action for a raw disk. Users shouldn't need to find the wipe tool or use Disk Management to initialize a blank drive.
+  Evidence: Windows Disk Management "Initialize Disk" dialog, EaseUS/AOMEI disk initialization, GNOME Disks new-disk workflow
+  Touches: `src/PartitionPilot/ViewModels/PartitionsViewModel.cs` or `ToolsViewModel.cs`, new dialog or inline UI
+  Acceptance: When a RAW disk is selected, a prominent "Initialize Disk" action appears offering GPT (default) or MBR. Executes `Initialize-Disk -Number N -PartitionStyle GPT`. Refreshes partition list after completion. Blocked on non-RAW disks.
+  Complexity: S
+
+- [ ] P2 — Add DoD 5220.22-M multi-pass wipe patterns
+  Why: Security-conscious users and compliance workflows expect recognized wipe standards beyond single-pass. NIST 800-88 covers NVMe sanitize (already implemented), but HDD users need DoD 3-pass or 7-pass options. EaseUS, AOMEI, and Paragon all offer these patterns.
+  Evidence: DoD 5220.22-M standard, NIST 800-88 Rev. 1, EaseUS wipe patterns, AOMEI wipe patterns
+  Touches: `src/PartitionPilot/ViewModels/ToolsViewModel.cs` (RunBenchmarkCore-adjacent wipe flow), `src/PartitionPilot/Views/ToolsView.xaml` (wipe mode selector)
+  Acceptance: Secure Wipe offers "Single Pass (fast)", "DoD 3-Pass", and "DoD 7-Pass" modes for full-disk wipe. Each pass writes the correct pattern (zeros, ones, random). Progress updates show current pass and estimated time. NVMe sanitize remains the recommended method for SSDs.
+  Complexity: M
+
+- [ ] P2 — Add benchmark result export and history
+  Why: Current benchmark results are shown in a text box and lost on navigation. Users cannot save results, compare before/after an optimization, or verify a new drive's performance baseline. CrystalDiskMark and AS SSD both support result export.
+  Evidence: CrystalDiskMark result export, AS SSD benchmark export, r/homelab feedback on benchmark comparison needs
+  Touches: `src/PartitionPilot/ViewModels/ToolsViewModel.cs`, `src/PartitionPilot/Models/BenchmarkResult.cs`, `src/PartitionPilot/Views/ToolsView.xaml`
+  Acceptance: After benchmark completes, an "Export" button saves results as JSON (structured) or text (human-readable) to a user-chosen location. JSON includes drive letter, model, capacity, date, and all profile results. Previous results from the session are retained in the UI for comparison.
+  Complexity: S
+
+- [ ] P2 — Add Storage Spaces pool detection and guarded operations
+  Why: Windows Storage Spaces pools are increasingly common in homelab and enterprise environments. Operating on a pooled disk without awareness could break pool integrity. PartitionPilot currently shows pooled disks without any pool awareness or warnings.
+  Evidence: WMI `MSFT_StoragePool` class, Microsoft Storage Spaces docs, r/homelab Storage Spaces usage patterns
+  Touches: `src/PartitionPilot/Services/WmiDiskService.cs` (add `GetStoragePoolsAsync`), `src/PartitionPilot/ViewModels/PartitionsViewModel.cs`, `src/PartitionPilot/Views/PartitionsView.xaml`
+  Acceptance: Disks belonging to a Storage Spaces pool are labeled with the pool name. Destructive operations on pooled disks show an additional warning about pool integrity. Pool membership is shown in disk details.
+  Complexity: M
+
+- [ ] P2 — Add non-admin diagnostic read-only mode
+  Why: IT admins and help desk technicians often need to inspect disk layout, health, and usage on machines where they don't have (or don't want to use) admin rights. Current behavior requires elevation for all functionality, even read-only WMI queries. EaseUS and Paragon both offer limited non-admin modes.
+  Evidence: EaseUS non-admin partition viewing, Paragon read-only mode, r/sysadmin feedback on diagnostic-without-admin workflows
+  Touches: `src/PartitionPilot/ViewModels/MainViewModel.cs`, `src/PartitionPilot/App.xaml.cs`, all ViewModels (conditional command availability)
+  Acceptance: App launches without admin and shows disk/partition/volume/SMART data in read-only mode. All destructive actions are visually disabled with tooltip explaining elevation requirement. An "Elevate" button re-launches as admin. Activity log clearly states the session mode.
+  Complexity: M
+
+- [ ] P2 — Cache WMI scope connections for faster tab refresh
+  Why: Every WMI query in `WmiDiskService.cs` creates a new `ManagementScope` and calls `.Connect()`. Tab switching triggers 4-6 WMI connections per refresh. On systems with many disks or slow WMI providers, this adds noticeable latency.
+  Evidence: `src/PartitionPilot/Services/WmiDiskService.cs` (lines 28-30, 60-62, 116-118, 185-187, 300-302, etc.), Microsoft `ManagementScope` docs on connection reuse
+  Touches: `src/PartitionPilot/Services/WmiDiskService.cs`, `src/PartitionPilot/Services/IWmiDiskService.cs`
+  Acceptance: WmiDiskService caches connected scopes per namespace (Storage, CIMV2, BitLocker) and reuses them across queries. Scopes are reconnected on failure. Tab switch latency measurably reduced (before/after timing in activity log).
+  Complexity: S
+
+- [ ] P2 — Deduplicate BitLocker status resolution into shared helper
+  Why: `GetBitLockerProtectedTargetsAsync` is copy-pasted identically in `ToolsViewModel.cs` and `DiskCloningViewModel.cs`. Both query partitions, fetch BitLocker status, enrich, and filter. Divergence risk increases with each edit.
+  Evidence: `src/PartitionPilot/ViewModels/ToolsViewModel.cs:1053-1067`, `src/PartitionPilot/ViewModels/DiskCloningViewModel.cs:458-472`
+  Touches: `src/PartitionPilot/Services/WmiDiskService.cs` or new shared helper, `src/PartitionPilot/ViewModels/ToolsViewModel.cs`, `src/PartitionPilot/ViewModels/DiskCloningViewModel.cs`
+  Acceptance: Single implementation of `GetBitLockerProtectedTargetsAsync` shared by both ViewModels. Existing BitLockerPreflight tests still pass.
+  Complexity: S
+
+### P3 — Future Considerations
+
+- [ ] P3 — Add SMART attribute history tracking with trend alerts
+  Why: CrystalDiskInfo's primary value is SMART history over time — users can see when a drive starts degrading before failure. PartitionPilot's single-snapshot SMART view catches current problems but misses trends. Tracking wear/temperature/error progression enables proactive replacement planning.
+  Evidence: CrystalDiskInfo SMART history/trending, smartmontools `-l selftest`, r/DataHoarder failure prediction discussions
+  Touches: `src/PartitionPilot/Models/SmartData.cs`, `src/PartitionPilot/Services/PartitionTableBackup.cs` (reuse snapshot storage pattern), `src/PartitionPilot/ViewModels/DiskHealthViewModel.cs`, `src/PartitionPilot/Views/DiskHealthView.xaml`
+  Acceptance: SMART data is saved to a local JSON store on each health load. History view shows wear/temperature/error trends over last 30 days. Alert if wear rate suggests drive will reach critical threshold within 90 days.
+  Complexity: L
+
+- [ ] P3 — Add real-time disk temperature monitoring with threshold alerts
+  Why: CrystalDiskInfo's tray icon with temperature display and overheat alerts is its most-used feature. PartitionPilot already shows temperature on the health tab but only on manual refresh. Background polling with an alert would catch thermal throttling or cooling failures.
+  Evidence: CrystalDiskInfo tray temperature, HWMonitor temperature alerts, r/homelab temperature monitoring discussions
+  Touches: `src/PartitionPilot/Services/WmiDiskService.cs` (periodic polling), `src/PartitionPilot/ViewModels/DiskHealthViewModel.cs`, `src/PartitionPilot/App.xaml.cs` (system tray integration)
+  Acceptance: Optional background temperature poll (configurable interval, default 5 minutes). Toast notification when any drive exceeds warning (55C) or critical (65C) thresholds. Temperature history visible in health tab. Minimal CPU/WMI overhead when polling.
+  Complexity: L
+
+- [ ] P3 — Add sector-level disk-to-disk clone
+  Why: Current cloning creates/restores WIM/VHDX images, which requires intermediate storage. Direct disk-to-disk clone (sector copy) is faster and requires no extra disk space. Rufus, Clonezilla, and DiskGenius all offer this. Most useful for drive upgrades and migrations.
+  Evidence: Clonezilla device-to-device clone, DiskGenius disk clone, Rufus sector copy, r/homelab drive upgrade workflows
+  Touches: New `Services/DiskCloneService.cs`, `src/PartitionPilot/ViewModels/DiskCloningViewModel.cs`, `src/PartitionPilot/Views/DiskCloningView.xaml`
+  Acceptance: User selects source and target physical disks. Target must be >= source size. Sector-by-sector copy with progress reporting. Partition table is adjusted if target is larger. Target disk locked before write. Source disk read-only.
+  Complexity: XL
+
+- [ ] P3 — Add estimated time remaining for long operations
+  Why: Wipe, benchmark, surface test, and disk usage scan show progress text but no estimated completion time. Users cannot plan around long operations. EaseUS, AOMEI, and MiniTool all show ETAs.
+  Evidence: EaseUS/AOMEI operation progress with ETA, CrystalDiskMark benchmark progress
+  Touches: `src/PartitionPilot/ViewModels/ToolsViewModel.cs`, `src/PartitionPilot/ViewModels/DiskUsageViewModel.cs`, `src/PartitionPilot/ViewModels/DiskCloningViewModel.cs`
+  Acceptance: Operations that take >10 seconds show "Estimated time remaining: X min" based on progress rate. ETA updates every 5 seconds. Displayed in status text alongside current operation description.
+  Complexity: M
