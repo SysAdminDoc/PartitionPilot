@@ -2,6 +2,50 @@
 
 ## Unreleased
 
+### Safety & Reliability
+- Preserved failed and skipped pending operations after a queue apply failure so users can review, retry, or remove the remaining work instead of losing the queue.
+- Hardened DiskSpd benchmarking by verifying the downloaded ZIP and cached executable hashes, passing the required 1 GiB test-file creation argument, draining stderr, and falling back when all DiskSpd profiles fail.
+- Fixed the fallback GitHub release update check to call the GitHub API endpoint instead of parsing the HTML release page.
+- Redacted support-bundle activity logs and snapshots for user paths plus JSON/plain-text serial numbers before export.
+
+### UX & Polish
+- Fixed object-backed disk selectors so they show readable disk and volume labels instead of CLR type names.
+- Cleared stale Disk Usage results at scan start so cancelled or failed scans do not leave old treemap data visible as if current.
+
+## PartitionPilot v0.5.0 - 2026-06-19
+
+### Architecture & Quality
+- Added pending operations queue: partition operations (create, delete, format, resize, split, change letter) are now queued, previewed in the action rail, and executed only on Apply. Individual operations can be removed. Execution stops on first failure with a status report. This closes the #1 safety gap vs GParted/EaseUS/AOMEI.
+- Expanded SMART monitoring via LibreHardwareMonitorLib 0.9.6: Disk Health tab now shows Reallocated Sectors, Pending Sectors, Power Cycles, Total Written/Read, NVMe Available Spare, NVMe Media Errors, and a full SMART attribute table. Health classification includes reallocated-sector and NVMe-spare thresholds. WMI data fills gaps.
+- Replaced custom benchmark with DiskSpd-backed methodology: 8 standard profiles (SEQ1M Q1/Q8, RND4K Q1/Q32, read+write) with XML output parsing. DiskSpd auto-downloads from GitHub on first use. Falls back to built-in benchmark if unavailable.
+- Synced operator docs, README, and blocked-roadmap items to reflect v0.5.0 architecture (7 tabs, pending queue, SMART expansion, DiskSpd).
+
+## PartitionPilot v0.4.0 - 2026-06-18
+
+### Architecture & Quality
+- Integrated Velopack 1.2.0 for auto-updates with delta packages via GitHub Releases. Falls back to the existing version-check API when Velopack releases aren't published yet.
+- Cached WMI scope connections per namespace (Storage, CIMV2, BitLocker) with automatic reconnect on failure, reducing 4-6 WMI connections per tab switch to at most 3.
+- Deduplicated BitLocker status resolution into a shared WmiDiskService helper, removing identical copies from ToolsViewModel and DiskCloningViewModel.
+- Upgraded System.Management 9.0.6 to 10.0.9 to match .NET 10 TFM.
+- Added structured native-command audit records with path/profile redaction for every diskpart and PowerShell execution. Records include operation ID, command kind, target, exit code, and duration.
+- Added CI release provenance with SHA256SUMS generation and GitHub artifact attestation via Sigstore.
+
+### Safety & Reliability
+- Added Administrator Protection compatibility: partition snapshots and activity logs now use ProgramData instead of %TEMP% so data persists across elevation contexts under SMAA. Elevation context detection (legacy UAC vs Administrator Protection) added to session info.
+- Added Storage Spaces pool detection via MSFT_StoragePool. Pooled disks are labeled with pool name and destructive operations show pool integrity warnings.
+- Expanded GPT type mapping to recognize Linux, Linux Swap, Linux Home, Linux Root, LUKS, HFS+, APFS, and LDM partitions. Destructive operations on unsupported types require stronger confirmation.
+- Added DoD 5220.22-M 3-pass (zeros, ones, random) and 7-pass wipe patterns with per-pass progress and throughput reporting.
+- Added mismatch-checked snapshot recovery plan export that verifies disk name/size/style against the current disk before generating recovery guidance.
+- Added disk initialization workflow for RAW/unpartitioned disks (GPT partition table via Initialize-Disk).
+
+### Features
+- Added privacy-preserving support bundle export: ZIP containing redacted system info, activity log, disk summary, and up to 10 partition snapshots with serial numbers stripped.
+- Added benchmark result export as JSON or text with drive metadata (letter, model, capacity, timestamp).
+- Added progress rate and duration reporting for DoD wipe passes and disk usage scans.
+- Removed legacy 1436-line PowerShell prototype (PartitionPilot.ps1) from the repository.
+
+## Unreleased (pre-v0.3.0)
+
 ### Release Trust
 - Fixed release metadata drift: the update checker now reads the app version from assembly metadata, the Inno installer reports v0.3.0, README uses a non-versioned screenshot path, and CI validates installer/README version consistency.
 - Made NuGet restores deterministic with lock files, explicit package versions, CI locked-mode restore, and migration of the test suite to xUnit v3.

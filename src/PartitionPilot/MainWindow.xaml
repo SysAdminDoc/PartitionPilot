@@ -27,7 +27,6 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
@@ -43,7 +42,10 @@
                     </StackPanel>
                 </StackPanel>
 
-                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                <WrapPanel Grid.Column="1"
+                           Orientation="Horizontal"
+                           HorizontalAlignment="Right"
+                           VerticalAlignment="Center">
                     <Button Content="Refresh"
                             Command="{Binding RefreshCurrentCommand}"
                             Style="{StaticResource CommandBarButton}"
@@ -68,7 +70,7 @@
                             ToolTip="Re-launch as administrator for disk write operations"
                             Visibility="{Binding IsReadOnly, Converter={StaticResource BoolVis}}"
                             AutomationProperties.Name="Elevate to administrator"/>
-                </StackPanel>
+                </WrapPanel>
             </Grid>
         </Border>
 

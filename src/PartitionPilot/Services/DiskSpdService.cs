@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Net.Http;
+using System.Security.Cryptography;
 using System.Text;
 using System.Xml.Linq;
 
@@ -10,6 +11,8 @@ namespace PartitionPilot;
 public static class DiskSpdService
 {
     private const string DiskSpdUrl = "https://github.com/microsoft/diskspd/releases/download/v2.2/DiskSpd.zip";
+    private const string DiskSpdZipSha256 = "496DF11E6375C1D564AF3F8F2990734D9AFC2B558469FD57B1BFFA9313A5A6CE";
+    private const string DiskSpdExeSha256 = "8F3B2F0909549C54253EDEE26C9A8D239B8B6C817B076BCD7EFB1BDA6571AEE9";
 
     private static string DiskSpdDir => Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
@@ -17,13 +20,15 @@ public static class DiskSpdService
 
     private static string DiskSpdExe => Path.Combine(DiskSpdDir, "diskspd.exe");
 
-    public static bool IsAvailable => File.Exists(DiskSpdExe);
+    public static bool IsAvailable => HasExpectedFileHash(DiskSpdExe, DiskSpdExeSha256);
 
     public static async Task EnsureAvailableAsync(ActivityLog log, CancellationToken ct)
     {
         if (IsAvailable) return;
+        if (File.Exists(DiskSpdExe))
+            log.Log("Existing DiskSpd executable did not match the expected hash. Reinstalling...");
 
-        log.Log("DiskSpd not found. Downloading from GitHub...");
+        log.Log("Downloading verified DiskSpd release from GitHub...");
         Directory.CreateDirectory(DiskSpdDir);
 
         var zipPath = Path.Combine(DiskSpdDir, "diskspd.zip");
@@ -31,6 +36,11 @@ public static class DiskSpdService
         {
             using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(60) };
             var bytes = await client.GetByteArrayAsync(DiskSpdUrl, ct);
+            var actualHash = ComputeSha256Hex(bytes);
+            if (!string.Equals(actualHash, DiskSpdZipSha256, StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException(
+                    $"DiskSpd download hash mismatch. Expected {DiskSpdZipSha256}, got {actualHash}.");
+
             await File.WriteAllBytesAsync(zipPath, bytes, ct);
 
             using var archive = System.IO.Compression.ZipFile.OpenRead(zipPath);
@@ -42,6 +52,9 @@ public static class DiskSpdService
                 throw new FileNotFoundException("diskspd.exe not found in the downloaded archive.");
 
             entry.ExtractToFile(DiskSpdExe, overwrite: true);
+            if (!HasExpectedFileHash(DiskSpdExe, DiskSpdExeSha256))
+                throw new InvalidOperationException("Extracted DiskSpd executable did not match the expected hash.");
+
             log.Log($"DiskSpd installed to: {DiskSpdExe}");
         }
         finally
@@ -74,7 +87,7 @@ public static class DiskSpdService
         try
         {
             progress.Report("Preparing 1 GiB test file...");
-            var createArgs = $"-c1G {testFile}";
+            var successfulProfiles = 0;
 
             foreach (var profile in StandardProfiles)
             {
@@ -82,16 +95,16 @@ public static class DiskSpdService
                 progress.Report($"{profile.Name}...\n{output}");
                 log.Log($"DiskSpd: {profile.Name}");
 
-                var args = $"{profile.Args} {testFile}";
                 var psi = new ProcessStartInfo
                 {
                     FileName = DiskSpdExe,
-                    Arguments = args,
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
                     CreateNoWindow = true
                 };
+                foreach (var arg in BuildProfileArguments(profile, testFile))
+                    psi.ArgumentList.Add(arg);
 
                 using var process = new Process { StartInfo = psi };
                 process.Start();
@@ -101,20 +114,28 @@ public static class DiskSpdService
                     try { process.Kill(entireProcessTree: true); } catch { }
                 });
 
-                var xmlOutput = await process.StandardOutput.ReadToEndAsync(ct);
+                var stdoutTask = process.StandardOutput.ReadToEndAsync(ct);
+                var stderrTask = process.StandardError.ReadToEndAsync(ct);
                 await process.WaitForExitAsync(ct);
+                var xmlOutput = await stdoutTask;
+                var stderr = await stderrTask;
 
                 if (process.ExitCode != 0)
                 {
-                    log.Log($"DiskSpd {profile.Name} exited with code {process.ExitCode}");
+                    var detail = string.IsNullOrWhiteSpace(stderr) ? xmlOutput.Trim() : stderr.Trim();
+                    log.Log($"DiskSpd {profile.Name} exited with code {process.ExitCode}: {detail}");
                     continue;
                 }
 
+                successfulProfiles++;
                 var (mbps, iops) = ParseDiskSpdXml(xmlOutput);
                 output.AppendLine($"{profile.Name,-22} {mbps,10:F1} MB/s  {iops,10:F0} IOPS");
 
                 MapProfileResult(result, profile.Name, mbps, iops);
             }
+
+            if (successfulProfiles == 0)
+                throw new InvalidOperationException("DiskSpd did not complete any benchmark profile.");
 
             output.AppendLine();
             output.AppendLine("DiskSpd benchmark complete.");
@@ -124,6 +145,37 @@ public static class DiskSpdService
         finally
         {
             try { File.Delete(testFile); } catch { }
+        }
+    }
+
+    public static IReadOnlyList<string> BuildProfileArguments(DiskSpdProfile profile, string targetPath)
+    {
+        if (string.IsNullOrWhiteSpace(targetPath))
+            throw new ArgumentException("A benchmark target path is required.", nameof(targetPath));
+
+        var args = new List<string> { "-c1G" };
+        args.AddRange(profile.Args.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
+        args.Add(targetPath);
+        return args;
+    }
+
+    public static string ComputeSha256Hex(byte[] bytes) => Convert.ToHexString(SHA256.HashData(bytes));
+
+    private static string ComputeSha256Hex(Stream stream) => Convert.ToHexString(SHA256.HashData(stream));
+
+    private static bool HasExpectedFileHash(string path, string expectedHash)
+    {
+        try
+        {
+            if (!File.Exists(path))
+                return false;
+
+            using var stream = File.OpenRead(path);
+            return string.Equals(ComputeSha256Hex(stream), expectedHash, StringComparison.OrdinalIgnoreCase);
+        }
+        catch
+        {
+            return false;
         }
     }
 

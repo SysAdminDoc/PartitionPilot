@@ -111,6 +111,7 @@ public class DiskUsageViewModel : ViewModelBase
         IsBusy = true;
         StatusText = $"Scanning {SelectedDrive}:\\...";
         SummaryText = "";
+        ClearResults();
         var clearStatusWhenDone = true;
 
         try
@@ -161,6 +162,23 @@ public class DiskUsageViewModel : ViewModelBase
             if (clearStatusWhenDone)
                 StatusText = "";
         }
+    }
+
+    private void ClearResults()
+    {
+        if (Application.Current?.Dispatcher is { } dispatcher && !dispatcher.CheckAccess())
+        {
+            dispatcher.Invoke(ClearResultsCore);
+            return;
+        }
+
+        ClearResultsCore();
+    }
+
+    private void ClearResultsCore()
+    {
+        TopFolders.Clear();
+        TreemapItems = [];
     }
 
     private static List<FolderSizeInfo> ScanTopFolders(string rootPath, CancellationToken ct)

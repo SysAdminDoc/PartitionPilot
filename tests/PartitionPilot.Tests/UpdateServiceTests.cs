@@ -22,4 +22,20 @@ public class UpdateServiceTests
         Assert.True(Version.TryParse(current, out _));
         Assert.StartsWith("0.6.0", current);
     }
+
+    [Fact]
+    public void BuildLatestReleaseApiUrl_ConvertsGitHubRepoUrlToApiEndpoint()
+    {
+        var url = UpdateService.BuildLatestReleaseApiUrl("https://github.com/SysAdminDoc/PartitionPilot");
+
+        Assert.Equal("https://api.github.com/repos/SysAdminDoc/PartitionPilot/releases/latest", url);
+    }
+
+    [Theory]
+    [InlineData("https://example.com/SysAdminDoc/PartitionPilot")]
+    [InlineData("https://github.com/SysAdminDoc")]
+    public void BuildLatestReleaseApiUrl_RejectsInvalidRepoUrls(string repoUrl)
+    {
+        Assert.Throws<ArgumentException>(() => UpdateService.BuildLatestReleaseApiUrl(repoUrl));
+    }
 }

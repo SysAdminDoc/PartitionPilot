@@ -7,6 +7,7 @@ namespace PartitionPilot;
 public static class UpdateService
 {
     private const string RepoUrl = "https://github.com/SysAdminDoc/PartitionPilot";
+    private static readonly string LatestReleaseApiUrl = BuildLatestReleaseApiUrl(RepoUrl);
 
     public static string GetCurrentVersion()
     {
@@ -85,7 +86,7 @@ public static class UpdateService
             client.DefaultRequestHeaders.UserAgent.ParseAdd("PartitionPilot/" + currentVersion);
             client.Timeout = TimeSpan.FromSeconds(10);
 
-            var json = await client.GetStringAsync(RepoUrl + "/releases/latest".Replace("github.com", "api.github.com/repos"));
+            var json = await client.GetStringAsync(LatestReleaseApiUrl);
             using var doc = System.Text.Json.JsonDocument.Parse(json);
             var root = doc.RootElement;
 
@@ -102,5 +103,20 @@ public static class UpdateService
         {
             return null;
         }
+    }
+
+    public static string BuildLatestReleaseApiUrl(string repoUrl)
+    {
+        if (!Uri.TryCreate(repoUrl, UriKind.Absolute, out var uri) ||
+            !uri.Host.Equals("github.com", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ArgumentException("A GitHub repository URL is required.", nameof(repoUrl));
+        }
+
+        var parts = uri.AbsolutePath.Trim('/').Split('/', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length < 2)
+            throw new ArgumentException("The GitHub repository URL must include owner and repository name.", nameof(repoUrl));
+
+        return $"https://api.github.com/repos/{parts[0]}/{parts[1]}/releases/latest";
     }
 }

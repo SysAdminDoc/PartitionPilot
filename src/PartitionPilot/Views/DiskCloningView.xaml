@@ -102,7 +102,7 @@
                             <TextBlock Text="Target Disk" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
                             <ComboBox ItemsSource="{Binding AllDisks}"
                                       SelectedItem="{Binding SelectedTargetDisk}"
-                                      DisplayMemberPath="DisplayText"
+                                      ItemTemplate="{StaticResource DiskInfoComboTemplate}"
                                       Height="34" Margin="0,0,0,10"
                                       AutomationProperties.Name="Target disk"/>
                             <Button Content="Restore Image"
