@@ -22,6 +22,9 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
+      - name: Install CycloneDX tool
+        run: dotnet tool install --global CycloneDX
+
       - name: Restore & Audit
         run: dotnet restore src\PartitionPilot\PartitionPilot.csproj --locked-mode && dotnet restore src\PartitionPilot.Cli\PartitionPilot.Cli.csproj --locked-mode && dotnet restore tests\PartitionPilot.Tests\PartitionPilot.Tests.csproj --locked-mode
 
@@ -46,22 +49,38 @@ jobs:
           }
 
       - name: Build
-        run: dotnet build src\PartitionPilot\PartitionPilot.csproj --no-restore -c Release
+        run: dotnet build src\PartitionPilot\PartitionPilot.csproj --no-restore -c Release && dotnet build src\PartitionPilot.Cli\PartitionPilot.Cli.csproj --no-restore -c Release
 
       - name: Test
         run: dotnet test tests\PartitionPilot.Tests\PartitionPilot.Tests.csproj --no-restore -c Release
 
-      - name: Publish
+      - name: Publish GUI
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: dotnet publish src\PartitionPilot\PartitionPilot.csproj -c Release -o ./publish
+        run: dotnet publish src\PartitionPilot\PartitionPilot.csproj -c Release -o ./publish/gui
+
+      - name: Publish CLI
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: dotnet publish src\PartitionPilot.Cli\PartitionPilot.Cli.csproj -c Release -o ./publish/cli
+
+      - name: Generate SBOM
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          dotnet CycloneDX src\PartitionPilot\PartitionPilot.csproj -o ./publish -f sbom-gui.json -j
+          dotnet CycloneDX src\PartitionPilot.Cli\PartitionPilot.Cli.csproj -o ./publish -f sbom-cli.json -j
 
       - name: Generate SHA256SUMS
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         shell: pwsh
         run: |
-          $hashes = Get-ChildItem ./publish -File | ForEach-Object {
+          $files = @(
+            (Get-ChildItem ./publish/gui -File),
+            (Get-ChildItem ./publish/cli -File),
+            (Get-ChildItem ./publish -File -Filter 'sbom-*.json')
+          ) | ForEach-Object { $_ }
+          $hashes = $files | ForEach-Object {
+            $rel = $_.FullName.Replace((Resolve-Path ./publish).Path + '\', '')
             $hash = (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLower()
-            "$hash  $($_.Name)"
+            "$hash  $rel"
           }
           $hashes | Out-File -FilePath ./publish/SHA256SUMS -Encoding utf8
 
@@ -72,8 +91,26 @@ jobs:
           name: PartitionPilot-publish
           path: ./publish/
 
-      - name: Attest build provenance
+      - name: Attest GUI provenance
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: actions/attest@v4
         with:
-          subject-path: './publish/PartitionPilot.exe'
+          subject-path: './publish/gui/PartitionPilot.exe'
+
+      - name: Attest CLI provenance
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/attest@v4
+        with:
+          subject-path: './publish/cli/pp.exe'
+
+      - name: Attest SBOM provenance
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/attest@v4
+        with:
+          subject-path: './publish/sbom-*.json'
+
+      - name: Attest checksums provenance
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/attest@v4
+        with:
+          subject-path: './publish/SHA256SUMS'
