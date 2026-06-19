@@ -14,4 +14,5 @@ public interface IWmiDiskService
     Task<List<MountedImageInfo>> GetMountedImagesAsync();
     Task<Dictionary<char, string>> GetBitLockerStatusAsync();
     Task<List<string>> GetBitLockerProtectedTargetsAsync(int diskNumber);
+    Task<Dictionary<int, string>> GetStoragePoolMembershipAsync();
 }

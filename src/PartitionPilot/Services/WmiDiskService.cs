@@ -542,6 +542,52 @@ public class WmiDiskService : IWmiDiskService
         return result;
     });
 
+    // ──────────────── Storage Pools ────────────────────────
+
+    public Task<Dictionary<int, string>> GetStoragePoolMembershipAsync() => Task.Run(() =>
+    {
+        var result = new Dictionary<int, string>();
+        try
+        {
+            var scope = GetScope(StorageScope);
+
+            var pools = new Dictionary<string, string>();
+            using (var poolSearcher = new ManagementObjectSearcher(scope,
+                new ObjectQuery("SELECT FriendlyName, ObjectId FROM MSFT_StoragePool WHERE IsPrimordial = False")))
+            {
+                foreach (ManagementObject obj in poolSearcher.Get())
+                {
+                    using (obj)
+                    {
+                        var objectId = obj["ObjectId"]?.ToString() ?? "";
+                        var name = obj["FriendlyName"]?.ToString() ?? "Storage Pool";
+                        if (!string.IsNullOrEmpty(objectId))
+                            pools[objectId] = name;
+                    }
+                }
+            }
+
+            if (pools.Count == 0) return result;
+
+            using var diskSearcher = new ManagementObjectSearcher(scope,
+                new ObjectQuery("SELECT DeviceId FROM MSFT_PhysicalDisk WHERE Usage != 1"));
+            foreach (ManagementObject obj in diskSearcher.Get())
+            {
+                using (obj)
+                {
+                    var deviceId = obj["DeviceId"]?.ToString();
+                    if (deviceId is not null && int.TryParse(deviceId, out var diskNum))
+                    {
+                        var poolName = pools.Values.FirstOrDefault() ?? "Storage Pool";
+                        result[diskNum] = poolName;
+                    }
+                }
+            }
+        }
+        catch (Exception ex) { LogWmiFailure("Detect storage pool membership", StorageScope, "MSFT_StoragePool", ex); }
+        return result;
+    });
+
     // ──────────────── BitLocker Helpers ────────────────────
 
     public async Task<List<string>> GetBitLockerProtectedTargetsAsync(int diskNumber)
