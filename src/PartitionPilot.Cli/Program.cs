@@ -28,6 +28,7 @@ try
         "snapshot" => await CaptureSnapshotAsync(),
         "diagnostics" or "diag" => await RunDiagnosticsAsync(),
         "plan" => await PlanOperationAsync(),
+        "recovery-scan" => await RecoveryScanAsync(),
         "version" => ShowVersion(),
         "help" or "--help" or "-h" => PrintUsage(),
         _ => PrintUnknown(command)
@@ -55,6 +56,7 @@ int PrintUsage()
     Console.WriteLine("  snapshot --disk N         Capture partition layout snapshot to JSON");
     Console.WriteLine("  diagnostics               Check environment prerequisites");
     Console.WriteLine("  plan <op> [args]          Preview a partition operation (add --apply to execute)");
+    Console.WriteLine("  recovery-scan --disk N    Scan for lost partition signatures (read-only)");
     Console.WriteLine("  version                   Show version");
     Console.WriteLine();
     Console.WriteLine("Plan operations:");
@@ -469,6 +471,39 @@ long ParseSizeMB(string sizeStr)
     if (sizeStr.EndsWith("GB")) return (long)(double.Parse(sizeStr.Replace("GB", "")) * 1024);
     if (sizeStr.EndsWith("MB")) return (long)double.Parse(sizeStr.Replace("MB", ""));
     return long.Parse(sizeStr);
+}
+
+async Task<int> RecoveryScanAsync()
+{
+    var diskNum = ParseDiskArg();
+    if (!diskNum.HasValue)
+    {
+        Console.Error.WriteLine("--disk N is required for recovery-scan.");
+        return 1;
+    }
+
+    var disks = await wmi.GetDisksAsync();
+    var disk = disks.FirstOrDefault(d => d.Number == diskNum.Value);
+    if (disk is null)
+    {
+        Console.Error.WriteLine($"Disk {diskNum.Value} not found.");
+        return 1;
+    }
+
+    var progress = new Progress<double>(p =>
+        Console.Error.Write($"\rScanning... {p:F1}%"));
+
+    var result = await PartitionRecoveryScanner.ScanAsync(
+        disk.Number, disk.Size, log, progress);
+
+    Console.Error.WriteLine();
+
+    if (json)
+        Console.WriteLine(PartitionRecoveryScanner.FormatJson(result));
+    else
+        Console.Write(PartitionRecoveryScanner.FormatReport(result));
+
+    return 0;
 }
 
 async Task<int> RunDiagnosticsAsync()
