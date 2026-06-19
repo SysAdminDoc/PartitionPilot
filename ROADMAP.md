@@ -3,20 +3,6 @@
 ## Research-Driven Additions
 
 ### P0
-- [ ] P0 — Fix release version metadata drift
-  Why: The installer still advertises v0.6.0 while project files and README are v0.7.0, so the existing CI metadata gate will fail and shipped installers would misrepresent the build.
-  Evidence: `installer/PartitionPilot.iss`; `.github/workflows/build.yml`; `src/PartitionPilot/PartitionPilot.csproj`
-  Touches: `installer/PartitionPilot.iss`, `.github/workflows/build.yml`, release metadata tests
-  Acceptance: Release metadata validation passes and installer `AppVersion` plus `OutputBaseFilename` match the project `Version`.
-  Complexity: S
-
-- [ ] P0 — Make sector clone fail closed and verifiable
-  Why: The raw copy loop can stop on a failed or zero-byte read and still report clone completion, risking silent incomplete clones.
-  Evidence: `src/PartitionPilot.Core/Services/SectorCloneService.cs`; DiskGenius Copy Sectors; Clonezilla `--rescue`
-  Touches: `src/PartitionPilot.Core/Services/SectorCloneService.cs`, `src/PartitionPilot/ViewModels/DiskCloningViewModel.cs`, `tests/PartitionPilot.Tests`
-  Acceptance: Clone throws if copied bytes differ from source size, read/write failures are surfaced with offsets, optional post-copy verification is available, and tests cover short-read/error paths.
-  Complexity: M
-
 - [ ] P0 — Persist operation queue journals for crash recovery
   Why: Pending destructive operations currently live only in memory, so a crash or elevation/session boundary loses what was queued, completed, failed, or skipped.
   Evidence: `src/PartitionPilot.Core/Services/OperationQueue.cs`; GParted pending-operation details log
