@@ -193,6 +193,93 @@ public class SmartHistoryService
         catch { }
     }
 
+    public async Task<string> ExportAsync(string deviceId, string destinationPath)
+    {
+        var readings = await LoadReadingsAsync(deviceId);
+        if (readings.Count == 0)
+            throw new InvalidOperationException($"No SMART history for device {deviceId}.");
+
+        var envelope = new SmartHistoryEnvelope
+        {
+            SchemaVersion = CurrentSchemaVersion,
+            Readings = readings
+        };
+
+        var redacted = System.Text.RegularExpressions.Regex.Replace(
+            JsonSerializer.Serialize(envelope, JsonOpts),
+            @"(?i)[A-Z]:\\[^\s""]+", "[path]");
+
+        Directory.CreateDirectory(Path.GetDirectoryName(destinationPath) ?? ".");
+        await File.WriteAllTextAsync(destinationPath, redacted);
+        return destinationPath;
+    }
+
+    public async Task<int> ImportAsync(string sourcePath, string deviceId)
+    {
+        if (!File.Exists(sourcePath))
+            throw new FileNotFoundException("Import file not found.", sourcePath);
+
+        var json = await File.ReadAllTextAsync(sourcePath);
+
+        List<SmartReading>? imported = null;
+
+        try
+        {
+            var envelope = JsonSerializer.Deserialize<SmartHistoryEnvelope>(json, JsonOpts);
+            if (envelope?.Readings is not null)
+                imported = envelope.Readings;
+        }
+        catch { }
+
+        if (imported is null)
+        {
+            try { imported = JsonSerializer.Deserialize<List<SmartReading>>(json, JsonOpts); }
+            catch { }
+        }
+
+        if (imported is null || imported.Count == 0)
+            throw new InvalidOperationException("Import file contains no valid SMART readings.");
+
+        var existing = await LoadReadingsAsync(deviceId);
+        var existingTimestamps = new HashSet<long>(existing.Select(r => r.Timestamp.ToUnixTimeSeconds()));
+        var newReadings = imported.Where(r => !existingTimestamps.Contains(r.Timestamp.ToUnixTimeSeconds())).ToList();
+
+        existing.AddRange(newReadings);
+        existing.Sort((a, b) => a.Timestamp.CompareTo(b.Timestamp));
+
+        if (existing.Count > MaxReadingsPerDevice)
+            existing.RemoveRange(0, existing.Count - MaxReadingsPerDevice);
+
+        Directory.CreateDirectory(HistoryDir);
+        var path = GetFilePath(deviceId);
+        var saveEnvelope = new SmartHistoryEnvelope
+        {
+            SchemaVersion = CurrentSchemaVersion,
+            Readings = existing
+        };
+        await File.WriteAllTextAsync(path, JsonSerializer.Serialize(saveEnvelope, JsonOpts));
+
+        return newReadings.Count;
+    }
+
+    public async Task SetRetentionAsync(string deviceId, int maxDays)
+    {
+        var readings = await LoadReadingsAsync(deviceId);
+        var cutoff = DateTimeOffset.UtcNow.AddDays(-maxDays);
+        var filtered = readings.Where(r => r.Timestamp >= cutoff).ToList();
+
+        if (filtered.Count == readings.Count) return;
+
+        Directory.CreateDirectory(HistoryDir);
+        var path = GetFilePath(deviceId);
+        var envelope = new SmartHistoryEnvelope
+        {
+            SchemaVersion = CurrentSchemaVersion,
+            Readings = filtered
+        };
+        await File.WriteAllTextAsync(path, JsonSerializer.Serialize(envelope, JsonOpts));
+    }
+
     private static string GetFilePath(string deviceId) =>
         Path.Combine(HistoryDir, $"device_{SanitizeDeviceId(deviceId)}.json");
 
