@@ -1,9 +1,13 @@
+using System.IO;
+using System.IO.Compression;
 using System.Security.Principal;
+using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Windows.Input;
 
 namespace PartitionPilot;
 
-public class MainViewModel : ViewModelBase
+public partial class MainViewModel : ViewModelBase
 {
     private readonly ProcessRunner _processRunner;
     private readonly WmiDiskService _wmiService;
@@ -42,6 +46,7 @@ public class MainViewModel : ViewModelBase
 
     public ICommand TabChangedCommand { get; }
     public ICommand ExportLogCommand { get; }
+    public ICommand ExportSupportBundleCommand { get; }
     public ICommand ToggleThemeCommand { get; }
     public ICommand RefreshCurrentCommand { get; }
 
@@ -76,6 +81,7 @@ public class MainViewModel : ViewModelBase
 
         TabChangedCommand = new AsyncRelayCommand(OnTabChangedAsync);
         ExportLogCommand = new RelayCommand(_ => ExportLog());
+        ExportSupportBundleCommand = new AsyncRelayCommand(_ => ExportSupportBundleAsync());
         ToggleThemeCommand = new RelayCommand(_ => ToggleTheme());
         RefreshCurrentCommand = new AsyncRelayCommand(_ => RefreshCurrentAsync());
 
@@ -214,6 +220,109 @@ public class MainViewModel : ViewModelBase
         var principal = new WindowsPrincipal(identity);
         return principal.IsInRole(WindowsBuiltInRole.Administrator);
     }
+
+    private async Task ExportSupportBundleAsync()
+    {
+        var dlg = new Microsoft.Win32.SaveFileDialog
+        {
+            Title = "Export Support Bundle",
+            Filter = "ZIP Archive (*.zip)|*.zip",
+            FileName = $"PartitionPilot-support-{DateTime.Now:yyyyMMdd-HHmmss}.zip",
+            DefaultExt = ".zip"
+        };
+
+        if (dlg.ShowDialog() != true) return;
+
+        try
+        {
+            StatusText = "Generating support bundle...";
+            Log.Log("Generating support bundle...");
+
+            var tempDir = Path.Combine(Path.GetTempPath(), $"pp_support_{Guid.NewGuid():N}");
+            Directory.CreateDirectory(tempDir);
+
+            try
+            {
+                var info = new
+                {
+                    AppVersion = GetVersionText(),
+                    OSVersion = Environment.OSVersion.VersionString,
+                    OSBuild = Environment.OSVersion.Version.Build,
+                    Is64Bit = Environment.Is64BitOperatingSystem,
+                    IsAdmin = IsRunningAsAdministrator(),
+                    ElevationContext = ElevationContextText,
+                    DotNetVersion = Environment.Version.ToString(),
+                    Timestamp = DateTimeOffset.Now.ToString("o")
+                };
+                await File.WriteAllTextAsync(
+                    Path.Combine(tempDir, "system-info.json"),
+                    JsonSerializer.Serialize(info, new JsonSerializerOptions { WriteIndented = true }));
+
+                await File.WriteAllTextAsync(
+                    Path.Combine(tempDir, "activity-log.txt"),
+                    Log.FullText);
+
+                var disks = await _wmiService.GetDisksAsync();
+                var redactedDisks = disks.Select(d => new
+                {
+                    d.Number,
+                    d.FriendlyName,
+                    Size = SizeUtil.Format(d.Size),
+                    d.PartitionStyle,
+                    d.NumberOfPartitions,
+                    d.StoragePoolName
+                });
+                await File.WriteAllTextAsync(
+                    Path.Combine(tempDir, "disk-summary.json"),
+                    JsonSerializer.Serialize(redactedDisks, new JsonSerializerOptions { WriteIndented = true }));
+
+                var snapshotDir = PartitionTableBackup.BackupDirectory;
+                if (Directory.Exists(snapshotDir))
+                {
+                    var snapshotOut = Path.Combine(tempDir, "snapshots");
+                    Directory.CreateDirectory(snapshotOut);
+                    foreach (var file in Directory.EnumerateFiles(snapshotDir, "*.json").Take(10))
+                    {
+                        var content = await File.ReadAllTextAsync(file);
+                        content = RedactSerialNumbers(content);
+                        await File.WriteAllTextAsync(
+                            Path.Combine(snapshotOut, Path.GetFileName(file)),
+                            content);
+                    }
+                }
+
+                if (File.Exists(dlg.FileName))
+                    File.Delete(dlg.FileName);
+                ZipFile.CreateFromDirectory(tempDir, dlg.FileName);
+
+                Log.Log($"Support bundle exported to: {dlg.FileName}");
+                _dialog.ShowInfo($"Support bundle exported to:\n{dlg.FileName}\n\nSerial numbers and user paths have been redacted.",
+                    "Support Bundle Exported");
+            }
+            finally
+            {
+                try { Directory.Delete(tempDir, recursive: true); } catch { }
+            }
+
+            StatusText = "Ready";
+        }
+        catch (Exception ex)
+        {
+            Log.Log($"Support bundle export failed: {ex.Message}");
+            _dialog.ShowError($"Failed to export support bundle:\n{ex.Message}", "Export Error");
+            StatusText = "Ready";
+        }
+    }
+
+    [GeneratedRegex("""(?i)"serial(?:number)?":\s*"[^"]*""")]
+    private static partial Regex SerialPattern();
+
+    private static string RedactSerialNumbers(string json) =>
+        SerialPattern().Replace(json, m =>
+        {
+            var colonIdx = m.Value.IndexOf(':');
+            return m.Value[..(colonIdx + 2)] + "\"[redacted]\"";
+        });
 
     private static string DetectElevationContext(bool isAdmin)
     {
