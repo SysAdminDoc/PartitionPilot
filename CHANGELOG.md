@@ -1,13 +1,26 @@
 # Changelog
 
-## Unreleased
+## PartitionPilot v0.8.0 - 2026-06-19
 
 ### Safety & Reliability
-- Fixed sector clone fail-open bug: read failures and zero-byte reads now throw with byte offset context instead of silently reporting completion. Partial writes are handled correctly by copying the buffer tail. Added source-pooled-disk guard. Post-loop verification asserts copied bytes match source size.
-- Fixed release metadata drift: installer AppVersion and OutputBaseFilename now match project Version 0.7.0. CI restores the CLI project alongside the main and test projects.
+- Added operation queue journaling for crash recovery: every Apply batch writes a redacted JSON journal to ProgramData. On startup, interrupted journals are detected and shown with per-operation status. Journals auto-purge after 30 days.
+- Fixed Storage Spaces membership: replaced imprecise pool assignment with proper MSFT_StoragePoolToPhysicalDisk association query. Pool health, operational status, and read-only state are now exposed.
+- Added VSS-backed live volume image capture: WIM/VHDX capture creates a VSS shadow copy for point-in-time consistency, with explicit user confirmation before fallback to live capture.
+- Added operation impact preview before Apply: confirmation dialog now shows risk summary, affected targets, and per-operation type/risk breakdown.
+- Added versioned JSON schemas for persisted files: snapshot and SMART history files include schema version envelopes, v0 files load seamlessly, corrupt files are quarantined to .corrupt.
+- Fixed sector clone fail-open bug: read failures and zero-byte reads now throw with offset context. Partial writes handled correctly. Source pooled-disk guard added.
+
+### Features
+- Added CLI plan/apply automation: `pp plan create|delete|format|change-letter` with --apply flag, YES confirmation for destructive operations, and --json structured output.
+- Added read-only lost-partition scanning: scans raw disk sectors for NTFS, FAT32, FAT16/12, exFAT, and ReFS filesystem signatures. CLI: `pp recovery-scan --disk N`.
+- Added preflight environment diagnostics: checks elevation, .NET version, WMI providers, native tools, DiskSpd cache, and data directory. CLI: `pp diagnostics`.
+- Added SMART history export, import, and retention controls: timestamped dedup import, path-redacted export, configurable retention.
+- Expanded localization to 130+ resource keys with pseudo-locale (qps-ploc) for clipping testing.
+- Added CycloneDX SBOM generation and full artifact provenance in CI: attests GUI EXE, CLI EXE, SBOMs, and SHA256SUMS.
+- Activated WPF UI smoke tests in CI with screenshot capture and xUnit v3 runtime skip.
 
 ### Quality
-- Added 76 tests for v0.7.0 services (145 -> 221 total): 22 SMART trend analysis, 11 sector clone validation, 11 temperature monitor (with fake WMI), 32 localization key coverage.
+- Added 76 tests for v0.7.0 services (145 -> 231 total): SMART trend analysis, sector clone validation, temperature monitor, localization keys, operation journal.
 
 ## PartitionPilot v0.7.0 - 2026-06-19
 
