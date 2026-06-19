@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+### Safety & Reliability
+- Fixed sector clone fail-open bug: read failures and zero-byte reads now throw with byte offset context instead of silently reporting completion. Partial writes are handled correctly by copying the buffer tail. Added source-pooled-disk guard. Post-loop verification asserts copied bytes match source size.
+- Fixed release metadata drift: installer AppVersion and OutputBaseFilename now match project Version 0.7.0. CI restores the CLI project alongside the main and test projects.
+
+### Quality
+- Added 76 tests for v0.7.0 services (145 -> 221 total): 22 SMART trend analysis, 11 sector clone validation, 11 temperature monitor (with fake WMI), 32 localization key coverage.
+
 ## PartitionPilot v0.7.0 - 2026-06-19
 
 ### Architecture
