@@ -543,12 +543,23 @@ public class PartitionsViewModel : ViewModelBase
         return Task.CompletedTask;
     }
 
-    public Task ExecuteMergeAsync(PartitionInfo primary, PartitionInfo secondary)
+    public async Task ExecuteMergeAsync(PartitionInfo primary, PartitionInfo secondary)
     {
-        if (SelectedDisk is null) return Task.CompletedTask;
-        if (!GuardStoragePool("Merge partitions")) return Task.CompletedTask;
-        if (!GuardBitLockerMutation(primary, $"Merge into {primary.LetterDisplay}")) return Task.CompletedTask;
-        if (!ConfirmBitLockerDestructiveOperation(secondary, $"Delete {secondary.LetterDisplay} to merge")) return Task.CompletedTask;
+        if (SelectedDisk is null) return;
+        if (!IsForwardAdjacentMergePair(Partitions, primary, secondary))
+        {
+            _dialog.ShowWarning(
+                "Merge is available only when the primary partition is immediately followed by the partition that will be removed.",
+                "Merge Not Available");
+            return;
+        }
+        if (!await GuardRecoveryPartitionOperationAsync(primary, "merge")) return;
+        if (!await GuardRecoveryPartitionOperationAsync(secondary, "merge")) return;
+        if (!GuardUnsupportedType(primary, $"Merge into {primary.LetterDisplay}")) return;
+        if (!GuardUnsupportedType(secondary, $"Delete {secondary.LetterDisplay} to merge")) return;
+        if (!GuardStoragePool("Merge partitions")) return;
+        if (!GuardBitLockerMutation(primary, $"Merge into {primary.LetterDisplay}")) return;
+        if (!ConfirmBitLockerDestructiveOperation(secondary, $"Delete {secondary.LetterDisplay} to merge")) return;
 
         var diskNum = SelectedDisk.Number;
         var primaryLetter = primary.DriveLetter!.Value;
@@ -583,8 +594,33 @@ public class PartitionsViewModel : ViewModelBase
         });
 
         _log.Log($"Queued: Merge partition {secondaryPartNum} into {primaryLetter}: on Disk {diskNum}");
-        return Task.CompletedTask;
     }
+
+    public static bool IsForwardAdjacentMergePair(IEnumerable<PartitionInfo> partitions, PartitionInfo primary, PartitionInfo secondary)
+    {
+        if (ReferenceEquals(primary, secondary)) return false;
+        if (!primary.DriveLetter.HasValue || !secondary.DriveLetter.HasValue) return false;
+        if (primary.DiskNumber != secondary.DiskNumber) return false;
+        if (primary.Offset >= secondary.Offset) return false;
+
+        var ordered = partitions
+            .Where(p => p.DiskNumber == primary.DiskNumber)
+            .OrderBy(p => p.Offset)
+            .ThenBy(p => p.PartitionNumber)
+            .ToList();
+
+        var primaryIndex = ordered.FindIndex(p => IsSamePartition(p, primary));
+        if (primaryIndex < 0 || primaryIndex + 1 >= ordered.Count) return false;
+
+        var next = ordered[primaryIndex + 1];
+        return IsSamePartition(next, secondary) && primary.Offset + primary.Size <= secondary.Offset;
+    }
+
+    private static bool IsSamePartition(PartitionInfo left, PartitionInfo right) =>
+        ReferenceEquals(left, right) ||
+        left.DiskNumber == right.DiskNumber &&
+        left.PartitionNumber == right.PartitionNumber &&
+        left.Offset == right.Offset;
 
     // ──────────────────────── Queue Apply / Clear ────────────────────
 

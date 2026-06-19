@@ -20,6 +20,6 @@ public class UpdateServiceTests
 
         Assert.NotEqual("0.2.3", current);
         Assert.True(Version.TryParse(current, out _));
-        Assert.StartsWith("0.5.0", current);
+        Assert.StartsWith("0.6.0", current);
     }
 }
