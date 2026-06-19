@@ -17,6 +17,7 @@ public class PartitionsViewModel : ViewModelBase
     public ObservableCollection<PartitionInfo> Partitions { get; } = new();
     public ObservableCollection<DiskBarSegment> DiskBarSegments { get; } = new();
     public OperationQueue Queue { get; } = new();
+    private bool _journalCheckDone;
 
     private DiskInfo? _selectedDisk;
     public DiskInfo? SelectedDisk
@@ -174,6 +175,12 @@ public class PartitionsViewModel : ViewModelBase
         IsBusy = true;
         try
         {
+            if (!_journalCheckDone)
+            {
+                _journalCheckDone = true;
+                await CheckInterruptedJournalsAsync();
+            }
+
             _log.Log("Refreshing disk list...");
             var priorDiskNumber = SelectedDisk?.Number;
             var disks = await _wmiService.GetDisksAsync();
@@ -639,6 +646,39 @@ public class PartitionsViewModel : ViewModelBase
             status => PendingOperation = status);
 
         await LoadDisksAsync();
+    }
+
+    private async Task CheckInterruptedJournalsAsync()
+    {
+        try
+        {
+            var interrupted = await OperationJournalService.LoadInterruptedJournalsAsync();
+            if (interrupted.Count == 0) return;
+
+            foreach (var journal in interrupted)
+            {
+                var entries = journal.Entries;
+                var completedCount = entries.Count(e => e.Status == JournalEntryStatus.Completed);
+                var failedCount = entries.Count(e => e.Status == JournalEntryStatus.Failed);
+                var skippedCount = entries.Count(e => e.Status == JournalEntryStatus.Skipped || e.Status == JournalEntryStatus.Queued);
+
+                var summary = $"An interrupted operation journal was found from {journal.CreatedAt:g}.\n\n" +
+                    $"Completed: {completedCount}, Failed: {failedCount}, Skipped: {skippedCount}\n\n" +
+                    string.Join("\n", entries.Select(e => $"  [{e.Status}] {e.Description}")) +
+                    "\n\nThis journal has been preserved for review. Check the activity log for details.";
+
+                _log.Log($"Interrupted journal detected: {journal.Id} ({completedCount} completed, {failedCount} failed, {skippedCount} skipped)");
+                foreach (var entry in entries)
+                    _log.Log($"  Journal [{entry.Status}] {entry.Description}{(entry.ErrorMessage is not null ? $" — {entry.ErrorMessage}" : "")}");
+
+                _dialog.ShowWarning(summary, "Interrupted Operations Detected");
+                await OperationJournalService.DiscardJournalAsync(journal.Id);
+            }
+        }
+        catch (Exception ex)
+        {
+            _log.Log($"Journal check failed (non-fatal): {ex.Message}");
+        }
     }
 
     private void ClearQueue()
