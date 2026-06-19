@@ -26,6 +26,7 @@ public class PartitionsViewModel : ViewModelBase
             if (SetProperty(ref _selectedDisk, value))
             {
                 OnPropertyChanged(nameof(HasSelectedDisk));
+                OnPropertyChanged(nameof(IsSelectedDiskRaw));
                 OnPropertyChanged(nameof(SelectedDiskSummary));
                 OnPropertyChanged(nameof(DiskCapacityText));
                 OnPropertyChanged(nameof(DiskFreeExtentText));
@@ -103,12 +104,15 @@ public class PartitionsViewModel : ViewModelBase
         }
     }
 
+    public bool IsSelectedDiskRaw => SelectedDisk?.IsRaw == true;
+
     // Commands
     public ICommand RefreshCommand { get; }
     public ICommand DeleteCommand { get; }
     public ICommand ExtendCommand { get; }
     public ICommand SetActiveCommand { get; }
     public ICommand HideCommand { get; }
+    public ICommand InitializeDiskCommand { get; }
 
     // Color map for disk bar segments
     private static readonly Dictionary<string, string> SegmentColors = new(StringComparer.OrdinalIgnoreCase)
@@ -136,6 +140,7 @@ public class PartitionsViewModel : ViewModelBase
         ExtendCommand = new AsyncRelayCommand(_ => ExecuteExtendAsync(), _ => SelectedPartition is not null);
         SetActiveCommand = new AsyncRelayCommand(_ => ExecuteSetActiveAsync(), _ => SelectedPartition is not null);
         HideCommand = new AsyncRelayCommand(_ => ExecuteHideToggleAsync(), _ => SelectedPartition is not null);
+        InitializeDiskCommand = new AsyncRelayCommand(_ => ExecuteInitializeDiskAsync(), _ => SelectedDisk?.IsRaw == true);
     }
 
     // ──────────────────────── Delegate Methods ────────────────────────
@@ -526,6 +531,43 @@ public class PartitionsViewModel : ViewModelBase
         {
             _log.Log($"Change letter failed: {ex.Message}");
             _dialog.ShowError($"Failed to change drive letter:\n{ex.Message}", "Change Letter Error");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    // ──────────────────────── Initialize Disk ────────────────────────
+
+    private async Task ExecuteInitializeDiskAsync()
+    {
+        if (SelectedDisk is null || !SelectedDisk.IsRaw) return;
+
+        var diskNum = SelectedDisk.Number;
+        var diskName = SelectedDisk.FriendlyName;
+        var diskSize = SizeUtil.Format(SelectedDisk.Size);
+
+        if (!_dialog.Confirm(
+            $"Initialize Disk {diskNum} ({diskName}, {diskSize}) with a GPT partition table?\n\n" +
+            "This will write an empty GPT partition table to the disk. " +
+            "Use MBR only if legacy BIOS boot compatibility is required.",
+            "Initialize Disk")) return;
+
+        IsBusy = true;
+        try
+        {
+            _log.Log($"Initializing Disk {diskNum} as GPT...");
+            var cmd = $"Initialize-Disk -Number {diskNum} -PartitionStyle GPT -Confirm:$false";
+            await _processRunner.RunPowerShellAsync(cmd, _log);
+            _log.Log($"Disk {diskNum} initialized as GPT.");
+            _dialog.ShowInfo($"Disk {diskNum} initialized with a GPT partition table.", "Disk Initialized");
+            await LoadDisksAsync();
+        }
+        catch (Exception ex)
+        {
+            _log.Log($"Initialize disk failed: {ex.Message}");
+            _dialog.ShowError($"Failed to initialize disk:\n{ex.Message}", "Initialize Error");
         }
         finally
         {
