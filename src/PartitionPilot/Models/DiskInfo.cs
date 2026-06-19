@@ -8,6 +8,10 @@ public class DiskInfo
     public string PartitionStyle { get; set; } = ""; // "MBR", "GPT", "RAW"
     public long LargestFreeExtent { get; set; }
     public int NumberOfPartitions { get; set; }
+    public string StoragePoolName { get; set; } = "";
+    public bool IsPooled => !string.IsNullOrEmpty(StoragePoolName);
     public bool IsRaw => PartitionStyle.Equals("RAW", StringComparison.OrdinalIgnoreCase);
-    public string DisplayText => $"Disk {Number}: {FriendlyName}  ({SizeUtil.Format(Size)}, {PartitionStyle})";
+    public string DisplayText => IsPooled
+        ? $"Disk {Number}: {FriendlyName}  ({SizeUtil.Format(Size)}, {PartitionStyle}, Pool: {StoragePoolName})"
+        : $"Disk {Number}: {FriendlyName}  ({SizeUtil.Format(Size)}, {PartitionStyle})";
 }

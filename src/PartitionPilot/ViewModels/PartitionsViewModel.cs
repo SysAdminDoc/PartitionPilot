@@ -159,6 +159,12 @@ public class PartitionsViewModel : ViewModelBase
             _log.Log("Refreshing disk list...");
             var priorDiskNumber = SelectedDisk?.Number;
             var disks = await _wmiService.GetDisksAsync();
+            var poolMembership = await _wmiService.GetStoragePoolMembershipAsync();
+            foreach (var disk in disks)
+            {
+                if (poolMembership.TryGetValue(disk.Number, out var poolName))
+                    disk.StoragePoolName = poolName;
+            }
 
             Application.Current.Dispatcher.Invoke(() =>
             {
@@ -340,6 +346,7 @@ public class PartitionsViewModel : ViewModelBase
     public async Task ExecuteCreateAsync(double sizeGB, char letter, string fs, string label, bool quick)
     {
         if (SelectedDisk is null) return;
+        if (!GuardStoragePool("Create partition")) return;
 
         IsBusy = true;
         try
@@ -584,6 +591,8 @@ public class PartitionsViewModel : ViewModelBase
         if (SelectedPartition is null || SelectedDisk is null) return;
 
         var part = SelectedPartition;
+        if (!GuardStoragePool($"Delete partition {part.PartitionNumber}"))
+            return;
         if (!await GuardRecoveryPartitionOperationAsync(part, "delete"))
             return;
         if (!GuardUnsupportedType(part, $"Delete partition {part.PartitionNumber}"))
@@ -791,6 +800,18 @@ public class PartitionsViewModel : ViewModelBase
     {
         letter = char.ToUpperInvariant(letter);
         return Partitions.FirstOrDefault(p => p.DriveLetter.HasValue && char.ToUpperInvariant(p.DriveLetter.Value) == letter);
+    }
+
+    private bool GuardStoragePool(string operation)
+    {
+        if (SelectedDisk is null || !SelectedDisk.IsPooled)
+            return true;
+
+        return _dialog.ConfirmDanger(
+            $"{operation} targets Disk {SelectedDisk.Number} which belongs to Storage Spaces pool \"{SelectedDisk.StoragePoolName}\".\n\n" +
+            "Modifying pooled disks can break pool integrity and cause data loss across the entire pool. " +
+            "Use Windows Storage Spaces management to modify pooled disks.",
+            "Storage Spaces Pool Warning");
     }
 
     private bool GuardUnsupportedType(PartitionInfo? partition, string operation)
