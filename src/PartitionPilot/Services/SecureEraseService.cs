@@ -135,6 +135,7 @@ public static class SecureEraseService
                     System.IO.FileShare.None, blockSize, System.IO.FileOptions.WriteThrough);
 
                 long written = 0;
+                var passSw = System.Diagnostics.Stopwatch.StartNew();
                 while (true)
                 {
                     ct.ThrowIfCancellationRequested();
@@ -144,6 +145,12 @@ public static class SecureEraseService
                             Random.Shared.NextBytes(buffer);
                         fs.Write(buffer, 0, blockSize);
                         written += blockSize;
+
+                        if (written % (100 * blockSize) == 0 && passSw.Elapsed.TotalSeconds > 5)
+                        {
+                            var rateMBps = written / (1024.0 * 1024.0) / passSw.Elapsed.TotalSeconds;
+                            log.Log($"Pass {i + 1}/{passes.Length}: {SizeUtil.Format(written)} written ({rateMBps:F0} MB/s)");
+                        }
                     }
                     catch (System.IO.IOException)
                     {
@@ -151,7 +158,7 @@ public static class SecureEraseService
                     }
                 }
 
-                log.Log($"Pass {i + 1} complete: {SizeUtil.Format(written)} written.");
+                log.Log($"Pass {i + 1} complete: {SizeUtil.Format(written)} written in {passSw.Elapsed.TotalSeconds:F0}s.");
             }, ct);
 
             try { System.IO.File.Delete(tempPath); } catch { }

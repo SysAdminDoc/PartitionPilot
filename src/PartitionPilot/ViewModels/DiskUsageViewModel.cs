@@ -112,7 +112,9 @@ public class DiskUsageViewModel : ViewModelBase
             _log.Log($"Starting disk usage scan on {SelectedDrive}:\\...");
             var rootPath = $"{SelectedDrive}:\\";
 
+            var scanSw = System.Diagnostics.Stopwatch.StartNew();
             var results = await Task.Run(() => ScanTopFolders(rootPath, ct), ct);
+            scanSw.Stop();
 
             long totalScanned = results.Sum(f => f.Size);
             foreach (var f in results)
@@ -130,8 +132,8 @@ public class DiskUsageViewModel : ViewModelBase
                 .Select(f => new TreemapItem { Label = f.Name, Size = f.Size, Path = f.Path })
                 .ToList();
 
-            SummaryText = $"Scanned {results.Count} top-level folders. Total: {SizeUtil.Format(totalScanned)}";
-            _log.Log($"Disk usage scan complete on {SelectedDrive}:\\. {results.Count} folders, {SizeUtil.Format(totalScanned)} total.");
+            SummaryText = $"Scanned {results.Count} top-level folders. Total: {SizeUtil.Format(totalScanned)} in {scanSw.Elapsed.TotalSeconds:F1}s";
+            _log.Log($"Disk usage scan complete on {SelectedDrive}:\\. {results.Count} folders, {SizeUtil.Format(totalScanned)} total in {scanSw.Elapsed.TotalSeconds:F1}s.");
         }
         catch (OperationCanceledException)
         {
