@@ -1,6 +1,7 @@
 <Window x:Class="PartitionPilot.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:PartitionPilot"
         xmlns:views="clr-namespace:PartitionPilot.Views"
         Title="PartitionPilot" Width="1380" Height="860"
         Icon="Assets/AppIcon.png"
@@ -128,8 +129,8 @@
             <TabItem Style="{StaticResource NavTabItem}" AutomationProperties.Name="Partitions tab">
                 <TabItem.Header>
                     <StackPanel>
-                        <TextBlock Text="Partitions" Style="{StaticResource NavTitleText}"/>
-                        <TextBlock Text="Manage storage layout" Style="{StaticResource NavSubtitleText}"/>
+                        <TextBlock Text="{local:Loc TabPartitions}" Style="{StaticResource NavTitleText}"/>
+                        <TextBlock Text="{local:Loc TabPartitionsSubtitle}" Style="{StaticResource NavSubtitleText}"/>
                     </StackPanel>
                 </TabItem.Header>
                 <views:PartitionsView DataContext="{Binding Partitions}"/>
@@ -137,8 +138,8 @@
             <TabItem Style="{StaticResource NavTabItem}" AutomationProperties.Name="Snapshots tab">
                 <TabItem.Header>
                     <StackPanel>
-                        <TextBlock Text="Snapshots" Style="{StaticResource NavTitleText}"/>
-                        <TextBlock Text="Recovery evidence" Style="{StaticResource NavSubtitleText}"/>
+                        <TextBlock Text="{local:Loc TabSnapshots}" Style="{StaticResource NavTitleText}"/>
+                        <TextBlock Text="{local:Loc TabSnapshotsSubtitle}" Style="{StaticResource NavSubtitleText}"/>
                     </StackPanel>
                 </TabItem.Header>
                 <views:SnapshotBrowserView DataContext="{Binding Snapshots}"/>
@@ -146,8 +147,8 @@
             <TabItem Style="{StaticResource NavTabItem}" AutomationProperties.Name="Disk Health tab">
                 <TabItem.Header>
                     <StackPanel>
-                        <TextBlock Text="Disk Health" Style="{StaticResource NavTitleText}"/>
-                        <TextBlock Text="SMART and alignment" Style="{StaticResource NavSubtitleText}"/>
+                        <TextBlock Text="{local:Loc TabDiskHealth}" Style="{StaticResource NavTitleText}"/>
+                        <TextBlock Text="{local:Loc TabDiskHealthSubtitle}" Style="{StaticResource NavSubtitleText}"/>
                     </StackPanel>
                 </TabItem.Header>
                 <views:DiskHealthView DataContext="{Binding DiskHealth}"/>
@@ -155,8 +156,8 @@
             <TabItem Style="{StaticResource NavTabItem}" AutomationProperties.Name="Tools tab">
                 <TabItem.Header>
                     <StackPanel>
-                        <TextBlock Text="Tools" Style="{StaticResource NavTitleText}"/>
-                        <TextBlock Text="Repair and maintenance" Style="{StaticResource NavSubtitleText}"/>
+                        <TextBlock Text="{local:Loc TabTools}" Style="{StaticResource NavTitleText}"/>
+                        <TextBlock Text="{local:Loc TabToolsSubtitle}" Style="{StaticResource NavSubtitleText}"/>
                     </StackPanel>
                 </TabItem.Header>
                 <views:ToolsView DataContext="{Binding Tools}"/>
@@ -164,8 +165,8 @@
             <TabItem Style="{StaticResource NavTabItem}" AutomationProperties.Name="Disk Images tab">
                 <TabItem.Header>
                     <StackPanel>
-                        <TextBlock Text="Disk Images" Style="{StaticResource NavTitleText}"/>
-                        <TextBlock Text="Mount and create VHDs" Style="{StaticResource NavSubtitleText}"/>
+                        <TextBlock Text="{local:Loc TabDiskImages}" Style="{StaticResource NavTitleText}"/>
+                        <TextBlock Text="{local:Loc TabDiskImagesSubtitle}" Style="{StaticResource NavSubtitleText}"/>
                     </StackPanel>
                 </TabItem.Header>
                 <views:DiskImagesView DataContext="{Binding DiskImages}"/>
@@ -173,8 +174,8 @@
             <TabItem Style="{StaticResource NavTabItem}" AutomationProperties.Name="Disk Usage tab">
                 <TabItem.Header>
                     <StackPanel>
-                        <TextBlock Text="Disk Usage" Style="{StaticResource NavTitleText}"/>
-                        <TextBlock Text="Find heavy folders" Style="{StaticResource NavSubtitleText}"/>
+                        <TextBlock Text="{local:Loc TabDiskUsage}" Style="{StaticResource NavTitleText}"/>
+                        <TextBlock Text="{local:Loc TabDiskUsageSubtitle}" Style="{StaticResource NavSubtitleText}"/>
                     </StackPanel>
                 </TabItem.Header>
                 <views:DiskUsageView DataContext="{Binding DiskUsage}"/>
@@ -182,8 +183,8 @@
             <TabItem Style="{StaticResource NavTabItem}" AutomationProperties.Name="Disk Cloning tab">
                 <TabItem.Header>
                     <StackPanel>
-                        <TextBlock Text="Disk Cloning" Style="{StaticResource NavTitleText}"/>
-                        <TextBlock Text="Copy and restore images" Style="{StaticResource NavSubtitleText}"/>
+                        <TextBlock Text="{local:Loc TabDiskCloning}" Style="{StaticResource NavTitleText}"/>
+                        <TextBlock Text="{local:Loc TabDiskCloningSubtitle}" Style="{StaticResource NavSubtitleText}"/>
                     </StackPanel>
                 </TabItem.Header>
                 <views:DiskCloningView DataContext="{Binding DiskCloning}"/>
@@ -210,8 +211,8 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel>
-                            <TextBlock Text="Activity Log" Style="{StaticResource SectionTitleText}"/>
-                            <TextBlock Text="Operation feedback, warnings, and exported session evidence"
+                            <TextBlock Text="{local:Loc ActivityLog}" Style="{StaticResource SectionTitleText}"/>
+                            <TextBlock Text="{local:Loc ActivityLogDescription}"
                                        Style="{StaticResource CaptionText}"
                                        Margin="0,2,0,0"/>
                         </StackPanel>
