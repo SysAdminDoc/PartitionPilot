@@ -100,9 +100,11 @@ public partial class DiskBarControl : UserControl
                 Margin = new Thickness(2, 4, 2, 4),
                 CornerRadius = new CornerRadius(4),
                 ToolTip = $"{seg.Label} - {seg.Type}, {seg.SizeText}",
-                ClipToBounds = true
+                ClipToBounds = true,
+                Focusable = true
             };
             AutomationProperties.SetName(border, $"{seg.Label}, {seg.Type}, {seg.SizeText}");
+            AutomationProperties.SetHelpText(border, $"Partition segment: {seg.Label}, type {seg.Type}, size {seg.SizeText}");
 
             var contentGrid = new Grid();
             contentGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(4) });

@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Windows;
+using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -8,6 +9,10 @@ namespace PartitionPilot.Controls;
 
 public class TreemapControl : FrameworkElement
 {
+    public TreemapControl()
+    {
+        Focusable = true;
+    }
     public static readonly DependencyProperty ItemsProperty =
         DependencyProperty.Register(nameof(Items), typeof(IReadOnlyList<TreemapItem>),
             typeof(TreemapControl), new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.AffectsRender));
@@ -46,6 +51,7 @@ public class TreemapControl : FrameworkElement
     private static readonly Brush LabelBrush = new SolidColorBrush(Color.FromRgb(0x11, 0x13, 0x15));
     private static readonly Pen BorderPen = new(new SolidColorBrush(Color.FromRgb(0x20, 0x24, 0x2A)), 1);
     private static readonly Pen SelectedPen = new(SelectedStroke, 2);
+    private static readonly Pen FocusPen = new(new SolidColorBrush(Colors.DodgerBlue), 2) { DashStyle = DashStyles.Dash };
     private static readonly Typeface LabelTypeface = new("Segoe UI");
 
     private List<(Rect Bounds, TreemapItem Item)> _layout = new();
@@ -57,6 +63,7 @@ public class TreemapControl : FrameworkElement
         LabelBrush.Freeze();
         BorderPen.Freeze();
         SelectedPen.Freeze();
+        FocusPen.Freeze();
     }
 
     protected override void OnRender(DrawingContext dc)
@@ -78,7 +85,8 @@ public class TreemapControl : FrameworkElement
             _layout.Add((rect, item));
 
             var brush = Palette[i % Palette.Length];
-            var pen = item == SelectedItem ? SelectedPen : BorderPen;
+            var isSelected = item == SelectedItem;
+            var pen = isSelected ? (IsFocused ? FocusPen : SelectedPen) : BorderPen;
 
             dc.DrawRectangle(brush, pen, rect);
 
@@ -105,19 +113,59 @@ public class TreemapControl : FrameworkElement
 
     protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
     {
+        Focus();
         var pos = e.GetPosition(this);
         foreach (var (bounds, item) in _layout)
         {
             if (bounds.Contains(pos))
             {
-                SelectedItem = item;
-                ItemClicked?.Invoke(this, item);
-                InvalidateVisual();
+                SelectItem(item);
                 break;
             }
         }
         e.Handled = true;
     }
+
+    protected override void OnKeyDown(KeyEventArgs e)
+    {
+        if (_layout.Count == 0) { base.OnKeyDown(e); return; }
+
+        var currentIndex = SelectedItem is not null
+            ? _layout.FindIndex(l => l.Item == SelectedItem)
+            : -1;
+
+        int newIndex = e.Key switch
+        {
+            Key.Right or Key.Down => Math.Min(currentIndex + 1, _layout.Count - 1),
+            Key.Left or Key.Up => Math.Max(currentIndex - 1, 0),
+            Key.Home => 0,
+            Key.End => _layout.Count - 1,
+            _ => -2
+        };
+
+        if (newIndex >= 0)
+        {
+            SelectItem(_layout[newIndex].Item);
+            e.Handled = true;
+        }
+        else
+        {
+            base.OnKeyDown(e);
+        }
+    }
+
+    private void SelectItem(TreemapItem item)
+    {
+        SelectedItem = item;
+        ItemClicked?.Invoke(this, item);
+        InvalidateVisual();
+
+        var peer = UIElementAutomationPeer.FromElement(this);
+        peer?.RaiseAutomationEvent(AutomationEvents.SelectionItemPatternOnElementSelected);
+    }
+
+    protected override AutomationPeer OnCreateAutomationPeer() =>
+        new TreemapAutomationPeer(this);
 
     private static List<Rect> Squarify(List<TreemapItem> items, Rect bounds)
     {
@@ -239,4 +287,19 @@ public class TreemapItem
     public string Label { get; set; } = "";
     public long Size { get; set; }
     public string Path { get; set; } = "";
+}
+
+public class TreemapAutomationPeer(TreemapControl owner) : FrameworkElementAutomationPeer(owner)
+{
+    protected override string GetClassNameCore() => "TreemapControl";
+    protected override AutomationControlType GetAutomationControlTypeCore() => AutomationControlType.List;
+
+    protected override string GetNameCore()
+    {
+        var control = (TreemapControl)Owner;
+        var selected = control.SelectedItem;
+        if (selected is not null)
+            return $"Disk usage treemap, selected: {selected.Label} ({SizeUtil.Format(selected.Size)})";
+        return "Disk usage treemap";
+    }
 }
