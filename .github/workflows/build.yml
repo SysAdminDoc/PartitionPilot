@@ -54,6 +54,21 @@ jobs:
       - name: Test
         run: dotnet test tests\PartitionPilot.Tests\PartitionPilot.Tests.csproj --no-restore -c Release
 
+      - name: Build UI test project
+        run: dotnet build tests\PartitionPilot.UiTests\PartitionPilot.UiTests.csproj --no-restore -c Release
+
+      - name: Run UI smoke tests
+        continue-on-error: true
+        run: dotnet test tests\PartitionPilot.UiTests\PartitionPilot.UiTests.csproj --no-restore -c Release --logger "trx;LogFileName=uitests.trx"
+
+      - name: Upload UI test screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-test-screenshots
+          path: tests/PartitionPilot.UiTests/bin/Release/**/screenshots/
+          if-no-files-found: ignore
+
       - name: Publish GUI
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: dotnet publish src\PartitionPilot\PartitionPilot.csproj -c Release -o ./publish/gui

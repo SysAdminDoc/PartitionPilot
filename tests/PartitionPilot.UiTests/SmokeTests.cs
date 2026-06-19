@@ -1,6 +1,7 @@
 using FlaUI.Core;
 using FlaUI.Core.AutomationElements;
 using FlaUI.Core.Conditions;
+using FlaUI.Core.Capturing;
 using FlaUI.UIA3;
 
 namespace PartitionPilot.UiTests;
@@ -20,51 +21,120 @@ public class SmokeTests : IDisposable
         return exePath;
     }
 
-    [Fact(Skip = "Requires built exe and desktop session — run manually")]
+    private static bool HasDesktopSession()
+    {
+        try
+        {
+            return Environment.UserInteractive &&
+                   System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(
+                       System.Runtime.InteropServices.OSPlatform.Windows);
+        }
+        catch { return false; }
+    }
+
+    private (Application app, Window window) LaunchSimulation()
+    {
+        var exePath = GetExePath();
+        Assert.SkipWhen(!File.Exists(exePath), $"PartitionPilot.exe not found at {exePath}. Build first.");
+        Assert.SkipWhen(!HasDesktopSession(), "No interactive desktop session available.");
+
+        _automation = new UIA3Automation();
+        _app = Application.Launch(exePath, "--simulate");
+        var window = _app.GetMainWindow(_automation, TimeSpan.FromSeconds(20));
+        Assert.NotNull(window);
+        return (_app, window);
+    }
+
+    private void CaptureScreenshotOnFailure(Window? window, string testName)
+    {
+        if (window is null) return;
+        try
+        {
+            var dir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "screenshots");
+            Directory.CreateDirectory(dir);
+            var image = Capture.Element(window);
+            image.ToFile(Path.Combine(dir, $"{testName}_{DateTime.Now:yyyyMMdd_HHmmss}.png"));
+        }
+        catch { }
+    }
+
+    [Fact]
     public void App_Launches_InSimulationMode()
     {
-        var exePath = GetExePath();
-        if (!File.Exists(exePath))
+        var (app, window) = LaunchSimulation();
+        try
         {
-            Assert.Fail($"PartitionPilot.exe not found at {exePath}. Build first.");
-            return;
+            Assert.Contains("PartitionPilot", window.Title);
         }
-
-        _automation = new UIA3Automation();
-        _app = Application.Launch(exePath, "--simulate");
-        var window = _app.GetMainWindow(_automation, TimeSpan.FromSeconds(15));
-        Assert.NotNull(window);
-        Assert.Contains("PartitionPilot", window.Title);
+        catch
+        {
+            CaptureScreenshotOnFailure(window, nameof(App_Launches_InSimulationMode));
+            throw;
+        }
     }
 
-    [Fact(Skip = "Requires built exe and desktop session — run manually")]
+    [Fact]
     public void MainWindow_Has_ExpectedTabs()
     {
-        var exePath = GetExePath();
-        if (!File.Exists(exePath)) return;
-
-        _automation = new UIA3Automation();
-        _app = Application.Launch(exePath, "--simulate");
-        var window = _app.GetMainWindow(_automation, TimeSpan.FromSeconds(15));
-        Assert.NotNull(window);
-
-        var tabs = window.FindAllDescendants(cf => cf.ByControlType(FlaUI.Core.Definitions.ControlType.TabItem));
-        Assert.True(tabs.Length >= 7, $"Expected at least 7 tabs, found {tabs.Length}");
+        var (app, window) = LaunchSimulation();
+        try
+        {
+            var tabs = window.FindAllDescendants(cf => cf.ByControlType(FlaUI.Core.Definitions.ControlType.TabItem));
+            Assert.True(tabs.Length >= 7, $"Expected at least 7 tabs, found {tabs.Length}");
+        }
+        catch
+        {
+            CaptureScreenshotOnFailure(window, nameof(MainWindow_Has_ExpectedTabs));
+            throw;
+        }
     }
 
-    [Fact(Skip = "Requires built exe and desktop session — run manually")]
+    [Fact]
     public void RefreshButton_Has_AutomationName()
     {
-        var exePath = GetExePath();
-        if (!File.Exists(exePath)) return;
+        var (app, window) = LaunchSimulation();
+        try
+        {
+            var refreshBtn = window.FindFirstDescendant(cf => cf.ByName("Refresh current workspace"));
+            Assert.NotNull(refreshBtn);
+        }
+        catch
+        {
+            CaptureScreenshotOnFailure(window, nameof(RefreshButton_Has_AutomationName));
+            throw;
+        }
+    }
 
-        _automation = new UIA3Automation();
-        _app = Application.Launch(exePath, "--simulate");
-        var window = _app.GetMainWindow(_automation, TimeSpan.FromSeconds(15));
-        Assert.NotNull(window);
+    [Fact]
+    public void ActivityLog_Has_AutomationName()
+    {
+        var (app, window) = LaunchSimulation();
+        try
+        {
+            var logList = window.FindFirstDescendant(cf => cf.ByName("Activity log entries"));
+            Assert.NotNull(logList);
+        }
+        catch
+        {
+            CaptureScreenshotOnFailure(window, nameof(ActivityLog_Has_AutomationName));
+            throw;
+        }
+    }
 
-        var refreshBtn = window.FindFirstDescendant(cf => cf.ByName("Refresh current workspace"));
-        Assert.NotNull(refreshBtn);
+    [Fact]
+    public void ThemeToggle_Has_AutomationName()
+    {
+        var (app, window) = LaunchSimulation();
+        try
+        {
+            var themeBtn = window.FindFirstDescendant(cf => cf.ByName("Toggle theme"));
+            Assert.NotNull(themeBtn);
+        }
+        catch
+        {
+            CaptureScreenshotOnFailure(window, nameof(ThemeToggle_Has_AutomationName));
+            throw;
+        }
     }
 
     public void Dispose()
