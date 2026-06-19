@@ -234,6 +234,43 @@
                                 Background="{DynamicResource TableRuleBrush}"
                                 Margin="0,10,0,12"/>
 
+                        <TextBlock Text="{Binding PendingCountText}"
+                                   Style="{StaticResource SectionTitleText}"
+                                   Margin="0,0,0,6"/>
+                        <ItemsControl ItemsSource="{Binding Queue.Pending}" Margin="0,0,0,6">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="{DynamicResource SurfaceBrush}"
+                                            BorderBrush="{DynamicResource TableRuleBrush}"
+                                            BorderThickness="1" CornerRadius="4"
+                                            Padding="8,5" Margin="0,0,0,3">
+                                        <TextBlock Text="{Binding Description}"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   FontSize="11.5"
+                                                   ToolTip="{Binding Description}"
+                                                   AutomationProperties.Name="{Binding Description}"/>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,6"
+                                    Visibility="{Binding HasPendingOperations, Converter={StaticResource BoolVis}}">
+                            <Button Content="Apply All"
+                                    Command="{Binding ApplyQueueCommand}"
+                                    Style="{StaticResource ActionRailPrimaryButton}"
+                                    Width="100" Margin="0,0,6,0"
+                                    AutomationProperties.Name="Apply all pending operations"/>
+                            <Button Content="Clear"
+                                    Command="{Binding ClearQueueCommand}"
+                                    Style="{StaticResource ActionRailButton}"
+                                    Width="70"
+                                    AutomationProperties.Name="Clear pending operations"/>
+                        </StackPanel>
+
+                        <Border Height="1"
+                                Background="{DynamicResource TableRuleBrush}"
+                                Margin="0,4,0,12"/>
+
                         <TextBlock Text="Selection" Style="{StaticResource SectionTitleText}"/>
                         <TextBlock Text="{Binding SelectedPartitionName}"
                                    Style="{StaticResource CaptionText}"

@@ -16,6 +16,7 @@ public class PartitionsViewModel : ViewModelBase
     public ObservableCollection<DiskInfo> Disks { get; } = new();
     public ObservableCollection<PartitionInfo> Partitions { get; } = new();
     public ObservableCollection<DiskBarSegment> DiskBarSegments { get; } = new();
+    public OperationQueue Queue { get; } = new();
 
     private DiskInfo? _selectedDisk;
     public DiskInfo? SelectedDisk
@@ -105,6 +106,8 @@ public class PartitionsViewModel : ViewModelBase
     }
 
     public bool IsSelectedDiskRaw => SelectedDisk?.IsRaw == true;
+    public bool HasPendingOperations => Queue.HasPending;
+    public string PendingCountText => Queue.SummaryText;
 
     // Commands
     public ICommand RefreshCommand { get; }
@@ -113,6 +116,8 @@ public class PartitionsViewModel : ViewModelBase
     public ICommand SetActiveCommand { get; }
     public ICommand HideCommand { get; }
     public ICommand InitializeDiskCommand { get; }
+    public ICommand ApplyQueueCommand { get; }
+    public ICommand ClearQueueCommand { get; }
 
     // Color map for disk bar segments
     private static readonly Dictionary<string, string> SegmentColors = new(StringComparer.OrdinalIgnoreCase)
@@ -141,6 +146,15 @@ public class PartitionsViewModel : ViewModelBase
         SetActiveCommand = new AsyncRelayCommand(_ => ExecuteSetActiveAsync(), _ => SelectedPartition is not null);
         HideCommand = new AsyncRelayCommand(_ => ExecuteHideToggleAsync(), _ => SelectedPartition is not null);
         InitializeDiskCommand = new AsyncRelayCommand(_ => ExecuteInitializeDiskAsync(), _ => SelectedDisk?.IsRaw == true);
+        ApplyQueueCommand = new AsyncRelayCommand(_ => ApplyQueueAsync(), _ => Queue.HasPending);
+        ClearQueueCommand = new RelayCommand(_ => ClearQueue(), _ => Queue.HasPending);
+
+        Queue.Pending.CollectionChanged += (_, _) =>
+        {
+            OnPropertyChanged(nameof(HasPendingOperations));
+            OnPropertyChanged(nameof(PendingCountText));
+            CommandManager.InvalidateRequerySuggested();
+        };
     }
 
     // ──────────────────────── Delegate Methods ────────────────────────
@@ -343,208 +357,212 @@ public class PartitionsViewModel : ViewModelBase
 
     // ──────────────────────── Dialog-driven Operations ────────────────────────
 
-    public async Task ExecuteCreateAsync(double sizeGB, char letter, string fs, string label, bool quick)
+    public Task ExecuteCreateAsync(double sizeGB, char letter, string fs, string label, bool quick)
     {
-        if (SelectedDisk is null) return;
-        if (!GuardStoragePool("Create partition")) return;
+        if (SelectedDisk is null) return Task.CompletedTask;
+        if (!GuardStoragePool("Create partition")) return Task.CompletedTask;
 
-        IsBusy = true;
-        try
+        int diskNum = SelectedDisk.Number;
+        letter = ProcessRunner.ValidateDriveLetter(letter);
+        label = ProcessRunner.SanitizeLabel(label);
+        fs = ProcessRunner.ValidateFileSystem(fs);
+
+        Queue.Enqueue(new PendingOperation
         {
-            int diskNum = SelectedDisk.Number;
-            long sizeMB = (long)(sizeGB * 1024);
-            letter = ProcessRunner.ValidateDriveLetter(letter);
-            label = ProcessRunner.SanitizeLabel(label);
-            fs = ProcessRunner.ValidateFileSystem(fs);
-            _log.Log($"Creating partition on Disk {diskNum}: {sizeGB:F2} GB, {fs}, letter={letter}...");
-
-            string script = $"""
-                select disk {diskNum}
-                create partition primary size={sizeMB}
-                assign letter={letter}
-                format fs={fs} label="{label}" {(quick ? "quick" : "")}
-                """;
-
-            var result = await _processRunner.RunDiskpartAsync(script, _log);
-            _log.Log($"Create result: {result.Trim()}");
-            await LoadPartitionsAsync();
-        }
-        catch (Exception ex)
-        {
-            _log.Log($"Create failed: {ex.Message}");
-            _dialog.ShowError($"Failed to create partition:\n{ex.Message}", "Create Error");
-        }
-        finally
-        {
-            IsBusy = false;
-        }
-    }
-
-    public async Task ExecuteFormatAsync(char letter, string fs, string label, bool quick, string? allocationUnitSize = null)
-    {
-        try
-        {
-            letter = ProcessRunner.ValidateDriveLetter(letter);
-            label = ProcessRunner.SanitizeLabel(label);
-            fs = ProcessRunner.ValidateFileSystem(fs);
-            allocationUnitSize = ProcessRunner.ValidateAllocationUnitSize(allocationUnitSize);
-            var partition = FindPartitionByLetter(letter);
-            if (!GuardUnsupportedType(partition, $"Format {letter}:"))
-                return;
-            if (!ConfirmBitLockerDestructiveOperation(partition, $"Format {letter}:"))
-                return;
-
-            IsBusy = true;
-            _log.Log($"Formatting {letter}: as {fs} (label=\"{label}\", quick={quick})...");
-
-            if (SelectedDisk is not null)
-                await _backup.SaveSnapshotAsync(SelectedDisk.Number);
-            using var volumeLock = VolumeLockService.RequireLock(letter, _log);
-
-            var unitParam = !string.IsNullOrEmpty(allocationUnitSize) ? $"unit={allocationUnitSize} " : "";
-            string script = $"""
-                select volume {letter}
-                format fs={fs} label="{label}" {unitParam}{(quick ? "quick" : "")}
-                """;
-
-            var result = await _processRunner.RunDiskpartAsync(script, _log);
-            _log.Log($"Format result: {result.Trim()}");
-            await LoadPartitionsAsync();
-        }
-        catch (Exception ex)
-        {
-            _log.Log($"Format failed: {ex.Message}");
-            _dialog.ShowError($"Failed to format volume:\n{ex.Message}", "Format Error");
-        }
-        finally
-        {
-            IsBusy = false;
-        }
-    }
-
-    public async Task ExecuteResizeAsync(char letter, long newSizeBytes)
-    {
-        try
-        {
-            letter = ProcessRunner.ValidateDriveLetter(letter);
-            var partition = FindPartitionByLetter(letter);
-            if (!GuardBitLockerMutation(partition, $"Resize {letter}:"))
-                return;
-
-            IsBusy = true;
-            _log.Log($"Resizing {letter}: to {SizeUtil.Format(newSizeBytes)}...");
-            using var volumeLock = VolumeLockService.RequireLock(letter, _log);
-
-            var cmd = $"Resize-Partition -DriveLetter '{letter}' -Size {newSizeBytes}";
-            var result = await _processRunner.RunPowerShellAsync(cmd, _log);
-            _log.Log($"Resize result: {result.Trim()}");
-            await LoadPartitionsAsync();
-        }
-        catch (Exception ex)
-        {
-            _log.Log($"Resize failed: {ex.Message}");
-            _dialog.ShowError($"Failed to resize partition:\n{ex.Message}", "Resize Error");
-        }
-        finally
-        {
-            IsBusy = false;
-        }
-    }
-
-    public async Task ExecuteSplitAsync(char letter, double newPartGB, char newLetter, string fs, string label)
-    {
-        try
-        {
-            letter = ProcessRunner.ValidateDriveLetter(letter);
-            newLetter = ProcessRunner.ValidateDriveLetter(newLetter);
-            label = ProcessRunner.SanitizeLabel(label);
-            fs = ProcessRunner.ValidateFileSystem(fs);
-            var partition = FindPartitionByLetter(letter);
-            if (!GuardBitLockerMutation(partition, $"Split {letter}:"))
-                return;
-
-            IsBusy = true;
-            if (SelectedDisk is not null)
-                await _backup.SaveSnapshotAsync(SelectedDisk.Number);
-            _log.Log($"Splitting {letter}: shrink by {newPartGB:F2} GB, new partition {newLetter}:...");
-            using var volumeLock = VolumeLockService.RequireLock(letter, _log);
-
-            long shrinkMB = (long)(newPartGB * 1024);
-
-            // Step 1: Shrink existing partition
-            var shrinkCmd = $"Resize-Partition -DriveLetter '{letter}' -Size ((Get-Partition -DriveLetter '{letter}').Size - {shrinkMB * 1024 * 1024})";
-            await _processRunner.RunPowerShellAsync(shrinkCmd, _log);
-
-            // Step 2: Create new partition in the freed space
-            if (SelectedDisk is null) return;
-            string script = $"""
-                select disk {SelectedDisk.Number}
-                create partition primary size={shrinkMB}
-                assign letter={newLetter}
-                format fs={fs} label="{label}" quick
-                """;
-
-            var result = await _processRunner.RunDiskpartAsync(script, _log);
-            _log.Log($"Split result: {result.Trim()}");
-            await LoadPartitionsAsync();
-        }
-        catch (Exception ex)
-        {
-            _log.Log($"Split failed: {ex.Message}");
-            _dialog.ShowError($"Failed to split partition:\n{ex.Message}", "Split Error");
-        }
-        finally
-        {
-            IsBusy = false;
-        }
-    }
-
-    public async Task ExecuteChangeLetterAsync(int partNum, char newLetter)
-    {
-        if (SelectedDisk is null) return;
-
-        IsBusy = true;
-        try
-        {
-            if (partNum <= 0)
-                throw new ArgumentException($"Invalid partition number: {partNum}", nameof(partNum));
-            newLetter = ProcessRunner.ValidateDriveLetter(newLetter);
-
-            _log.Log($"Changing drive letter for Disk {SelectedDisk.Number}, Partition {partNum} to {newLetter}:...");
-
-            var partition = Partitions.FirstOrDefault(p => p.PartitionNumber == partNum);
-
-            string script;
-            if (partition?.DriveLetter.HasValue == true)
+            Type = PendingOperationType.Create,
+            Description = $"Create {sizeGB:F1} GB {fs} partition ({letter}:) on Disk {diskNum}",
+            DiskTarget = $"Disk {diskNum}",
+            Execute = async () =>
             {
-                script = $"""
-                    select volume {partition.DriveLetter}
-                    remove letter={partition.DriveLetter}
-                    assign letter={newLetter}
+                long sizeMB = (long)(sizeGB * 1024);
+                _log.Log($"Creating partition on Disk {diskNum}: {sizeGB:F2} GB, {fs}, letter={letter}...");
+                string script = $"""
+                    select disk {diskNum}
+                    create partition primary size={sizeMB}
+                    assign letter={letter}
+                    format fs={fs} label="{label}" {(quick ? "quick" : "")}
                     """;
+                await _processRunner.RunDiskpartAsync(script, _log);
             }
-            else
-            {
-                script = $"""
-                    select disk {SelectedDisk.Number}
-                    select partition {partNum}
-                    assign letter={newLetter}
-                    """;
-            }
+        });
 
-            var result = await _processRunner.RunDiskpartAsync(script, _log);
-            _log.Log($"Change letter result: {result.Trim()}");
-            await LoadPartitionsAsync();
-        }
-        catch (Exception ex)
+        _log.Log($"Queued: Create partition on Disk {diskNum}");
+        return Task.CompletedTask;
+    }
+
+    public Task ExecuteFormatAsync(char letter, string fs, string label, bool quick, string? allocationUnitSize = null)
+    {
+        letter = ProcessRunner.ValidateDriveLetter(letter);
+        label = ProcessRunner.SanitizeLabel(label);
+        fs = ProcessRunner.ValidateFileSystem(fs);
+        allocationUnitSize = ProcessRunner.ValidateAllocationUnitSize(allocationUnitSize);
+        var partition = FindPartitionByLetter(letter);
+        if (!GuardUnsupportedType(partition, $"Format {letter}:"))
+            return Task.CompletedTask;
+        if (!ConfirmBitLockerDestructiveOperation(partition, $"Format {letter}:"))
+            return Task.CompletedTask;
+
+        var diskNum = SelectedDisk?.Number;
+
+        Queue.Enqueue(new PendingOperation
         {
-            _log.Log($"Change letter failed: {ex.Message}");
-            _dialog.ShowError($"Failed to change drive letter:\n{ex.Message}", "Change Letter Error");
-        }
-        finally
+            Type = PendingOperationType.Format,
+            Description = $"Format {letter}: as {fs}",
+            DiskTarget = diskNum.HasValue ? $"Disk {diskNum}" : $"Volume {letter}:",
+            RiskLevel = "Destructive",
+            Execute = async () =>
+            {
+                _log.Log($"Formatting {letter}: as {fs} (label=\"{label}\", quick={quick})...");
+                if (diskNum.HasValue)
+                    await _backup.SaveSnapshotAsync(diskNum.Value);
+                using var volumeLock = VolumeLockService.RequireLock(letter, _log);
+                var unitParam = !string.IsNullOrEmpty(allocationUnitSize) ? $"unit={allocationUnitSize} " : "";
+                string script = $"""
+                    select volume {letter}
+                    format fs={fs} label="{label}" {unitParam}{(quick ? "quick" : "")}
+                    """;
+                await _processRunner.RunDiskpartAsync(script, _log);
+            }
+        });
+
+        _log.Log($"Queued: Format {letter}: as {fs}");
+        return Task.CompletedTask;
+    }
+
+    public Task ExecuteResizeAsync(char letter, long newSizeBytes)
+    {
+        letter = ProcessRunner.ValidateDriveLetter(letter);
+        var partition = FindPartitionByLetter(letter);
+        if (!GuardBitLockerMutation(partition, $"Resize {letter}:"))
+            return Task.CompletedTask;
+
+        Queue.Enqueue(new PendingOperation
         {
-            IsBusy = false;
-        }
+            Type = PendingOperationType.Resize,
+            Description = $"Resize {letter}: to {SizeUtil.Format(newSizeBytes)}",
+            DiskTarget = $"Volume {letter}:",
+            Execute = async () =>
+            {
+                _log.Log($"Resizing {letter}: to {SizeUtil.Format(newSizeBytes)}...");
+                using var volumeLock = VolumeLockService.RequireLock(letter, _log);
+                var cmd = $"Resize-Partition -DriveLetter '{letter}' -Size {newSizeBytes}";
+                await _processRunner.RunPowerShellAsync(cmd, _log);
+            }
+        });
+
+        _log.Log($"Queued: Resize {letter}: to {SizeUtil.Format(newSizeBytes)}");
+        return Task.CompletedTask;
+    }
+
+    public Task ExecuteSplitAsync(char letter, double newPartGB, char newLetter, string fs, string label)
+    {
+        letter = ProcessRunner.ValidateDriveLetter(letter);
+        newLetter = ProcessRunner.ValidateDriveLetter(newLetter);
+        label = ProcessRunner.SanitizeLabel(label);
+        fs = ProcessRunner.ValidateFileSystem(fs);
+        var partition = FindPartitionByLetter(letter);
+        if (!GuardBitLockerMutation(partition, $"Split {letter}:"))
+            return Task.CompletedTask;
+
+        var diskNum = SelectedDisk?.Number;
+
+        Queue.Enqueue(new PendingOperation
+        {
+            Type = PendingOperationType.Split,
+            Description = $"Split {letter}: — shrink by {newPartGB:F1} GB, new {newLetter}: ({fs})",
+            DiskTarget = diskNum.HasValue ? $"Disk {diskNum}" : $"Volume {letter}:",
+            Execute = async () =>
+            {
+                if (diskNum.HasValue)
+                    await _backup.SaveSnapshotAsync(diskNum.Value);
+                _log.Log($"Splitting {letter}: shrink by {newPartGB:F2} GB, new partition {newLetter}:...");
+                using var volumeLock = VolumeLockService.RequireLock(letter, _log);
+                long shrinkMB = (long)(newPartGB * 1024);
+                var shrinkCmd = $"Resize-Partition -DriveLetter '{letter}' -Size ((Get-Partition -DriveLetter '{letter}').Size - {shrinkMB * 1024 * 1024})";
+                await _processRunner.RunPowerShellAsync(shrinkCmd, _log);
+                if (!diskNum.HasValue) return;
+                string script = $"""
+                    select disk {diskNum}
+                    create partition primary size={shrinkMB}
+                    assign letter={newLetter}
+                    format fs={fs} label="{label}" quick
+                    """;
+                await _processRunner.RunDiskpartAsync(script, _log);
+            }
+        });
+
+        _log.Log($"Queued: Split {letter}:");
+        return Task.CompletedTask;
+    }
+
+    public Task ExecuteChangeLetterAsync(int partNum, char newLetter)
+    {
+        if (SelectedDisk is null) return Task.CompletedTask;
+        if (partNum <= 0)
+            throw new ArgumentException($"Invalid partition number: {partNum}", nameof(partNum));
+        newLetter = ProcessRunner.ValidateDriveLetter(newLetter);
+
+        var diskNum = SelectedDisk.Number;
+        var partition = Partitions.FirstOrDefault(p => p.PartitionNumber == partNum);
+        var oldLetter = partition?.DriveLetter;
+
+        Queue.Enqueue(new PendingOperation
+        {
+            Type = PendingOperationType.ChangeLetter,
+            Description = $"Change letter: partition {partNum} on Disk {diskNum} to {newLetter}:",
+            DiskTarget = $"Disk {diskNum}",
+            Execute = async () =>
+            {
+                _log.Log($"Changing drive letter for Disk {diskNum}, Partition {partNum} to {newLetter}:...");
+                string script;
+                if (oldLetter.HasValue)
+                {
+                    script = $"""
+                        select volume {oldLetter}
+                        remove letter={oldLetter}
+                        assign letter={newLetter}
+                        """;
+                }
+                else
+                {
+                    script = $"""
+                        select disk {diskNum}
+                        select partition {partNum}
+                        assign letter={newLetter}
+                        """;
+                }
+                await _processRunner.RunDiskpartAsync(script, _log);
+            }
+        });
+
+        _log.Log($"Queued: Change letter on Disk {diskNum} partition {partNum} to {newLetter}:");
+        return Task.CompletedTask;
+    }
+
+    // ──────────────────────── Queue Apply / Clear ────────────────────
+
+    private async Task ApplyQueueAsync()
+    {
+        if (!Queue.HasPending) return;
+
+        var summary = string.Join("\n", Queue.Pending.Select((op, i) => $"  {i + 1}. {op.Description}"));
+        if (!_dialog.ConfirmWarning(
+            $"Apply {Queue.Count} pending operation(s)?\n\n{summary}\n\nOperations will execute in order. This cannot be undone.",
+            "Apply Pending Operations"))
+            return;
+
+        await Queue.ApplyAllAsync(_log, _dialog,
+            busy => IsBusy = busy,
+            status => PendingOperation = status);
+
+        await LoadDisksAsync();
+    }
+
+    private void ClearQueue()
+    {
+        if (!Queue.HasPending) return;
+        Queue.Clear();
+        _log.Log("Pending operations cleared.");
     }
 
     // ──────────────────────── Initialize Disk ────────────────────────
@@ -591,6 +609,7 @@ public class PartitionsViewModel : ViewModelBase
         if (SelectedPartition is null || SelectedDisk is null) return;
 
         var part = SelectedPartition;
+        var diskNum = SelectedDisk.Number;
         if (!GuardStoragePool($"Delete partition {part.PartitionNumber}"))
             return;
         if (!await GuardRecoveryPartitionOperationAsync(part, "delete"))
@@ -607,7 +626,7 @@ public class PartitionsViewModel : ViewModelBase
             if (!_dialog.ConfirmDanger(
                 $"CRITICAL: Partition {part.PartitionNumber} is a {part.Type} partition" +
                 (part.IsBoot ? " (Boot)" : "") + (part.IsSystem ? " (System)" : "") +
-                $".\n\nDeleting it may make the system unbootable.\n\nDisk: {SelectedDisk.Number}, Letter: {part.LetterDisplay}, Size: {part.SizeText}{encryptionLine}\n\n" +
+                $".\n\nDeleting it may make the system unbootable.\n\nDisk: {diskNum}, Letter: {part.LetterDisplay}, Size: {part.SizeText}{encryptionLine}\n\n" +
                 "Type YES to confirm this destructive action.",
                 "Delete Critical Partition")) return;
         }
@@ -616,41 +635,37 @@ public class PartitionsViewModel : ViewModelBase
             return;
 
         if (!_dialog.ConfirmWarning(
-            $"Delete partition {part.PartitionNumber} on Disk {SelectedDisk.Number}?\n" +
+            $"Delete partition {part.PartitionNumber} on Disk {diskNum}?\n" +
             $"Letter: {part.LetterDisplay}, Size: {part.SizeText}{encryptionLine}\n\n" +
-            "ALL DATA ON THIS PARTITION WILL BE LOST.",
+            "ALL DATA ON THIS PARTITION WILL BE LOST.\n\n" +
+            "The deletion will be queued and applied when you click Apply.",
             "Confirm Delete")) return;
 
-        IsBusy = true;
-        try
-        {
-            await _backup.SaveSnapshotAsync(SelectedDisk.Number);
-            _log.Log($"Deleting partition {part.PartitionNumber} on Disk {SelectedDisk.Number}...");
+        var partNum = part.PartitionNumber;
+        var driveLetter = part.DriveLetter;
 
-            using var volumeLock = part.DriveLetter.HasValue
-                ? VolumeLockService.RequireLock(part.DriveLetter.Value, _log)
-                : null;
-
-            string script = $"""
-                select disk {SelectedDisk.Number}
-                select partition {part.PartitionNumber}
-                delete partition override
-                """;
-
-            var output = await _processRunner.RunDiskpartAsync(script, _log);
-            _log.Log($"Delete result: {output.Trim()}");
-            SelectedPartition = null;
-            await LoadPartitionsAsync();
-        }
-        catch (Exception ex)
+        Queue.Enqueue(new PendingOperation
         {
-            _log.Log($"Delete failed: {ex.Message}");
-            _dialog.ShowError($"Failed to delete partition:\n{ex.Message}", "Delete Error");
-        }
-        finally
-        {
-            IsBusy = false;
-        }
+            Type = PendingOperationType.Delete,
+            Description = $"Delete partition {partNum} ({part.LetterDisplay}) on Disk {diskNum}",
+            DiskTarget = $"Disk {diskNum}",
+            RiskLevel = "Destructive",
+            Execute = async () =>
+            {
+                await _backup.SaveSnapshotAsync(diskNum);
+                using var volumeLock = driveLetter.HasValue
+                    ? VolumeLockService.RequireLock(driveLetter.Value, _log)
+                    : null;
+                string script = $"""
+                    select disk {diskNum}
+                    select partition {partNum}
+                    delete partition override
+                    """;
+                await _processRunner.RunDiskpartAsync(script, _log);
+            }
+        });
+
+        _log.Log($"Queued: Delete partition {partNum} on Disk {diskNum}");
     }
 
     private async Task ExecuteExtendAsync()
