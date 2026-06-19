@@ -57,7 +57,6 @@ public class DiskHealthViewModel : ViewModelBase
                 OnPropertyChanged(nameof(HasExtendedSmartData));
                 OnPropertyChanged(nameof(SmartAttributes));
                 OnPropertyChanged(nameof(HealthStatusText));
-                OnPropertyChanged(nameof(HealthStatusColor));
                 OnPropertyChanged(nameof(HealthReasonText));
             }
         }
@@ -134,14 +133,6 @@ public class DiskHealthViewModel : ViewModelBase
         HealthStatus.Warning => "Warning",
         HealthStatus.Critical => "Critical",
         _ => "Unknown"
-    };
-
-    public string HealthStatusColor => Smart?.Health switch
-    {
-        HealthStatus.Good => "#5EE0A0",
-        HealthStatus.Warning => "#F4C96A",
-        HealthStatus.Critical => "#FF6B6B",
-        _ => "#8391A2"
     };
 
     public string HealthReasonText => Smart?.HealthReason ?? "No SMART data available";

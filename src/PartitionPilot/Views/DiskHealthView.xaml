@@ -112,26 +112,37 @@
                         </Grid>
                     </GroupBox>
 
-                    <Border Margin="0,0,0,10" Padding="12,8" CornerRadius="4"
+                    <Border Margin="0,0,0,10" Padding="12,10" CornerRadius="5"
                             AutomationProperties.Name="Disk health status">
                         <Border.Style>
-                            <Style TargetType="Border">
+                            <Style TargetType="Border" BasedOn="{StaticResource NoticePanel}">
                                 <Setter Property="Visibility" Value="Visible"/>
+                                <Setter Property="Background" Value="{DynamicResource SurfaceBrush}"/>
+                                <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding SelectedDisk}" Value="{x:Null}">
                                         <Setter Property="Visibility" Value="Collapsed"/>
                                     </DataTrigger>
+                                    <DataTrigger Binding="{Binding HealthStatusText}" Value="Good">
+                                        <Setter Property="Background" Value="{DynamicResource SuccessSoftBrush}"/>
+                                        <Setter Property="BorderBrush" Value="{DynamicResource SuccessBrush}"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding HealthStatusText}" Value="Warning">
+                                        <Setter Property="Background" Value="{DynamicResource WarningSoftBrush}"/>
+                                        <Setter Property="BorderBrush" Value="{DynamicResource WarningBrush}"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding HealthStatusText}" Value="Critical">
+                                        <Setter Property="Background" Value="{DynamicResource DangerSoftBrush}"/>
+                                        <Setter Property="BorderBrush" Value="{DynamicResource DangerBrush}"/>
+                                    </DataTrigger>
                                 </Style.Triggers>
                             </Style>
                         </Border.Style>
-                        <Border.Background>
-                            <SolidColorBrush Color="{Binding HealthStatusColor}"/>
-                        </Border.Background>
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="{Binding HealthStatusText}" FontWeight="Bold" FontSize="15"
-                                       Foreground="#111315" Margin="0,0,12,0"/>
+                                       Foreground="{DynamicResource TextBrush}" Margin="0,0,12,0"/>
                             <TextBlock Text="{Binding HealthReasonText}" FontSize="13"
-                                       Foreground="#1A1D21" VerticalAlignment="Center"
+                                       Foreground="{DynamicResource SubtextBrush}" VerticalAlignment="Center"
                                        ToolTip="{Binding HealthReasonText}"/>
                         </StackPanel>
                     </Border>

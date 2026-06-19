@@ -11,8 +11,11 @@ public class TreemapControl : FrameworkElement
 {
     public TreemapControl()
     {
+        Cursor = Cursors.Hand;
         Focusable = true;
+        KeyboardNavigation.SetIsTabStop(this, true);
     }
+
     public static readonly DependencyProperty ItemsProperty =
         DependencyProperty.Register(nameof(Items), typeof(IReadOnlyList<TreemapItem>),
             typeof(TreemapControl), new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.AffectsRender));
@@ -51,7 +54,6 @@ public class TreemapControl : FrameworkElement
     private static readonly Brush LabelBrush = new SolidColorBrush(Color.FromRgb(0x11, 0x13, 0x15));
     private static readonly Pen BorderPen = new(new SolidColorBrush(Color.FromRgb(0x20, 0x24, 0x2A)), 1);
     private static readonly Pen SelectedPen = new(SelectedStroke, 2);
-    private static readonly Pen FocusPen = new(new SolidColorBrush(Colors.DodgerBlue), 2) { DashStyle = DashStyles.Dash };
     private static readonly Typeface LabelTypeface = new("Segoe UI");
 
     private List<(Rect Bounds, TreemapItem Item)> _layout = new();
@@ -63,7 +65,6 @@ public class TreemapControl : FrameworkElement
         LabelBrush.Freeze();
         BorderPen.Freeze();
         SelectedPen.Freeze();
-        FocusPen.Freeze();
     }
 
     protected override void OnRender(DrawingContext dc)
@@ -86,7 +87,7 @@ public class TreemapControl : FrameworkElement
 
             var brush = Palette[i % Palette.Length];
             var isSelected = item == SelectedItem;
-            var pen = isSelected ? (IsFocused ? FocusPen : SelectedPen) : BorderPen;
+            var pen = isSelected ? (IsKeyboardFocused ? GetFocusPen() : SelectedPen) : BorderPen;
 
             dc.DrawRectangle(brush, pen, rect);
 
@@ -109,6 +110,9 @@ public class TreemapControl : FrameworkElement
                 dc.DrawText(sizeText, new Point(rect.X + 3, rect.Y + 16));
             }
         }
+
+        if (IsKeyboardFocused && ActualWidth > 3 && ActualHeight > 3)
+            dc.DrawRectangle(null, GetFocusPen(), new Rect(1, 1, ActualWidth - 2, ActualHeight - 2));
     }
 
     protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
@@ -140,6 +144,7 @@ public class TreemapControl : FrameworkElement
             Key.Left or Key.Up => Math.Max(currentIndex - 1, 0),
             Key.Home => 0,
             Key.End => _layout.Count - 1,
+            Key.Enter or Key.Space => currentIndex >= 0 ? currentIndex : 0,
             _ => -2
         };
 
@@ -166,6 +171,24 @@ public class TreemapControl : FrameworkElement
 
     protected override AutomationPeer OnCreateAutomationPeer() =>
         new TreemapAutomationPeer(this);
+
+    protected override void OnGotKeyboardFocus(KeyboardFocusChangedEventArgs e)
+    {
+        base.OnGotKeyboardFocus(e);
+        InvalidateVisual();
+    }
+
+    protected override void OnLostKeyboardFocus(KeyboardFocusChangedEventArgs e)
+    {
+        base.OnLostKeyboardFocus(e);
+        InvalidateVisual();
+    }
+
+    private Pen GetFocusPen()
+    {
+        var brush = TryFindResource("PrimaryBrush") as Brush ?? Brushes.DodgerBlue;
+        return new Pen(brush, 2) { DashStyle = DashStyles.Dash };
+    }
 
     private static List<Rect> Squarify(List<TreemapItem> items, Rect bounds)
     {
@@ -293,6 +316,8 @@ public class TreemapAutomationPeer(TreemapControl owner) : FrameworkElementAutom
 {
     protected override string GetClassNameCore() => "TreemapControl";
     protected override AutomationControlType GetAutomationControlTypeCore() => AutomationControlType.List;
+    protected override string GetHelpTextCore() => "Use arrow keys to move through folders and Enter or Space to select.";
+    protected override string GetLocalizedControlTypeCore() => "disk usage treemap";
 
     protected override string GetNameCore()
     {

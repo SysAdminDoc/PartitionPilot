@@ -85,11 +85,11 @@
                                       Height="34"
                                       Margin="0,0,0,10"
                                       AutomationProperties.Name="Filesystem check volume selector"/>
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                            <WrapPanel Margin="0,0,0,10">
                                 <RadioButton Content="Scan" IsChecked="{Binding CheckIsScan}"/>
                                 <RadioButton Content="SpotFix" IsChecked="{Binding CheckIsSpotFix}"/>
                                 <RadioButton Content="Offline repair" IsChecked="{Binding CheckIsOffline}"/>
-                            </StackPanel>
+                            </WrapPanel>
                             <Button Content="Run Check"
                                     Style="{StaticResource PrimaryButton}"
                                     Command="{Binding RunFsCheckCommand}"
@@ -109,11 +109,11 @@
                                       Height="34"
                                       Margin="0,0,0,10"
                                       AutomationProperties.Name="Optimize volume selector"/>
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                            <WrapPanel Margin="0,0,0,10">
                                 <RadioButton Content="Analyze" IsChecked="{Binding OptIsAnalyze}"/>
                                 <RadioButton Content="Defrag" IsChecked="{Binding OptIsDefrag}"/>
                                 <RadioButton Content="TRIM" IsChecked="{Binding OptIsTrim}"/>
-                            </StackPanel>
+                            </WrapPanel>
                             <Button Content="Run Optimize"
                                     Style="{StaticResource PrimaryButton}"
                                     Command="{Binding RunOptimizeCommand}"
@@ -127,7 +127,7 @@
                             <TextBlock Text="Choose a volume for free-space wipe or a disk for full destructive wipe."
                                        Style="{StaticResource CaptionText}"
                                        Margin="0,0,0,10"/>
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                            <WrapPanel Margin="0,0,0,10">
                                 <RadioButton Content="Free space"
                                              GroupName="WipeMode"
                                              IsChecked="{Binding WipeIsFreeSpace}"
@@ -156,7 +156,7 @@
                                              Foreground="{DynamicResource DangerBrush}"
                                              ToolTip="{Binding NvmeSanitizeAvailabilityText}"
                                              AutomationProperties.Name="NVMe firmware erase"/>
-                            </StackPanel>
+                            </WrapPanel>
 
                             <Grid Margin="0,0,0,10">
                                 <StackPanel Visibility="{Binding WipeIsFreeSpace, Converter={StaticResource BoolVis}}">
@@ -271,7 +271,9 @@
                     </GroupBox>
 
                     <GroupBox Header="Dev Drive (ReFS)" Style="{StaticResource ToolGroup}"
-                              IsEnabled="{Binding IsDevDriveSupported}">
+                              IsEnabled="{Binding IsDevDriveSupported}"
+                              ToolTip="Requires Windows 11 23H2 or newer with Dev Drive support."
+                              ToolTipService.ShowOnDisabled="True">
                         <StackPanel>
                             <TextBlock Style="{StaticResource CaptionText}" Margin="0,0,0,10"
                                        Text="Create a Dev Drive volume (ReFS) with optimized I/O and antivirus filter control. Requires Windows 11 23H2+."/>
@@ -291,7 +293,7 @@
 
                     <GroupBox Header="Disk Benchmark" Style="{StaticResource ToolGroup}">
                         <StackPanel>
-                            <TextBlock Text="Measure sequential and random 4K throughput using a 256 MB temporary file."
+                            <TextBlock Text="Run DiskSpd sequential and random profiles against a temporary test file, then export the evidence."
                                        Style="{StaticResource CaptionText}"
                                        Margin="0,0,0,10"/>
                             <TextBlock Text="Drive" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>

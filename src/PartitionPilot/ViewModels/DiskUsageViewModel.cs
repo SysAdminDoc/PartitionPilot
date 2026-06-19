@@ -18,8 +18,14 @@ public class DiskUsageViewModel : ViewModelBase
     public IReadOnlyList<TreemapItem>? TreemapItems
     {
         get => _treemapItems;
-        set => SetProperty(ref _treemapItems, value);
+        set
+        {
+            if (SetProperty(ref _treemapItems, value))
+                OnPropertyChanged(nameof(HasTreemapItems));
+        }
     }
+
+    public bool HasTreemapItems => TreemapItems?.Count > 0;
 
     private char _selectedDrive;
     public char SelectedDrive
