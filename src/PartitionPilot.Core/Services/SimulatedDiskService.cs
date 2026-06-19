@@ -88,4 +88,7 @@ public class SimulatedDiskService : IWmiDiskService
 
     public Task<Dictionary<int, string>> GetStoragePoolMembershipAsync() =>
         Task.FromResult(new Dictionary<int, string>());
+
+    public Task<Dictionary<string, (string Health, string Status, bool ReadOnly)>> GetStoragePoolHealthAsync() =>
+        Task.FromResult(new Dictionary<string, (string Health, string Status, bool ReadOnly)>());
 }

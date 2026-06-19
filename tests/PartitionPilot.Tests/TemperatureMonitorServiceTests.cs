@@ -28,6 +28,8 @@ public class TemperatureMonitorServiceTests
         public Task<Dictionary<char, string>> GetBitLockerStatusAsync() => Task.FromResult(new Dictionary<char, string>());
         public Task<List<string>> GetBitLockerProtectedTargetsAsync(int diskNumber) => Task.FromResult(new List<string>());
         public Task<Dictionary<int, string>> GetStoragePoolMembershipAsync() => Task.FromResult(new Dictionary<int, string>());
+        public Task<Dictionary<string, (string Health, string Status, bool ReadOnly)>> GetStoragePoolHealthAsync() =>
+            Task.FromResult(new Dictionary<string, (string Health, string Status, bool ReadOnly)>());
     }
 
     [Fact]
