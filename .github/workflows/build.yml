@@ -23,7 +23,7 @@ jobs:
           dotnet-version: '10.0.x'
 
       - name: Restore & Audit
-        run: dotnet restore src\PartitionPilot\PartitionPilot.csproj --locked-mode && dotnet restore tests\PartitionPilot.Tests\PartitionPilot.Tests.csproj --locked-mode
+        run: dotnet restore src\PartitionPilot\PartitionPilot.csproj --locked-mode && dotnet restore src\PartitionPilot.Cli\PartitionPilot.Cli.csproj --locked-mode && dotnet restore tests\PartitionPilot.Tests\PartitionPilot.Tests.csproj --locked-mode
 
       - name: Validate release metadata
         shell: pwsh
