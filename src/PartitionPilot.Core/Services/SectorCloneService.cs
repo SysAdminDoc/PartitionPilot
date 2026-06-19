@@ -64,6 +64,9 @@ public static class SectorCloneService
             throw new InvalidOperationException(
                 $"Destination disk ({SizeUtil.Format(destination.Size)}) is smaller than source ({SizeUtil.Format(source.Size)}).");
 
+        if (source.IsPooled)
+            throw new InvalidOperationException("Cannot clone from a Storage Spaces pooled disk.");
+
         if (destination.IsPooled)
             throw new InvalidOperationException("Cannot clone to a Storage Spaces pooled disk.");
     }
@@ -118,14 +121,37 @@ public static class SectorCloneService
             ct.ThrowIfCancellationRequested();
 
             int toRead = (int)Math.Min(BUFFER_SIZE, totalBytes - copied);
-            if (!ReadFile(source, buffer, toRead, out int bytesRead, IntPtr.Zero) || bytesRead == 0)
-                break;
+            if (!ReadFile(source, buffer, toRead, out int bytesRead, IntPtr.Zero))
+                throw new Win32Exception(Marshal.GetLastWin32Error(),
+                    $"Read failed at offset {copied} during sector clone");
+
+            if (bytesRead == 0)
+                throw new InvalidOperationException(
+                    $"Source returned zero bytes at offset {copied} of {totalBytes} — clone incomplete");
 
             int written = 0;
             while (written < bytesRead)
             {
-                if (!WriteFile(dest, buffer, bytesRead - written, out int bytesWritten, IntPtr.Zero))
-                    throw new Win32Exception(Marshal.GetLastWin32Error(), "Write failed during sector clone");
+                int remaining = bytesRead - written;
+                bool ok;
+                int bytesWritten;
+                if (written == 0)
+                {
+                    ok = WriteFile(dest, buffer, remaining, out bytesWritten, IntPtr.Zero);
+                }
+                else
+                {
+                    var tail = new byte[remaining];
+                    Buffer.BlockCopy(buffer, written, tail, 0, remaining);
+                    ok = WriteFile(dest, tail, remaining, out bytesWritten, IntPtr.Zero);
+                }
+
+                if (!ok)
+                    throw new Win32Exception(Marshal.GetLastWin32Error(),
+                        $"Write failed at offset {copied + written} during sector clone");
+                if (bytesWritten == 0)
+                    throw new InvalidOperationException(
+                        $"Write returned zero bytes at offset {copied + written} — clone incomplete");
                 written += bytesWritten;
             }
 
@@ -134,24 +160,28 @@ public static class SectorCloneService
             if (sw.Elapsed - lastReport > TimeSpan.FromSeconds(1))
             {
                 var rate = copied / sw.Elapsed.TotalSeconds;
-                var remaining = rate > 0 ? TimeSpan.FromSeconds((totalBytes - copied) / rate) : TimeSpan.Zero;
+                var remaining2 = rate > 0 ? TimeSpan.FromSeconds((totalBytes - copied) / rate) : TimeSpan.Zero;
                 progress?.Report(new SectorCloneProgress
                 {
                     BytesCopied = copied,
                     TotalBytes = totalBytes,
                     BytesPerSecond = rate,
                     Elapsed = sw.Elapsed,
-                    EstimatedRemaining = remaining
+                    EstimatedRemaining = remaining2
                 });
                 lastReport = sw.Elapsed;
             }
         }
 
+        if (copied != totalBytes)
+            throw new InvalidOperationException(
+                $"Sector clone incomplete: copied {copied} of {totalBytes} bytes");
+
         progress?.Report(new SectorCloneProgress
         {
             BytesCopied = copied,
             TotalBytes = totalBytes,
-            BytesPerSecond = copied / sw.Elapsed.TotalSeconds,
+            BytesPerSecond = sw.Elapsed.TotalSeconds > 0 ? copied / sw.Elapsed.TotalSeconds : 0,
             Elapsed = sw.Elapsed,
             EstimatedRemaining = TimeSpan.Zero
         });
