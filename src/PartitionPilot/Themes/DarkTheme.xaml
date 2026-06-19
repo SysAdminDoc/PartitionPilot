@@ -5,6 +5,7 @@
     <Color x:Key="PanelBgColor">#171A1F</Color>
     <Color x:Key="CardBgColor">#20242A</Color>
     <Color x:Key="CardElevatedColor">#252A31</Color>
+    <Color x:Key="SurfaceColor">#1A1F25</Color>
     <Color x:Key="BorderColor">#343A42</Color>
     <Color x:Key="BorderStrongColor">#4B5563</Color>
     <Color x:Key="TextColor">#F4F7FA</Color>
@@ -33,6 +34,7 @@
     <SolidColorBrush x:Key="PanelBgBrush" Color="{StaticResource PanelBgColor}"/>
     <SolidColorBrush x:Key="CardBgBrush" Color="{StaticResource CardBgColor}"/>
     <SolidColorBrush x:Key="CardElevatedBrush" Color="{StaticResource CardElevatedColor}"/>
+    <SolidColorBrush x:Key="SurfaceBrush" Color="{StaticResource SurfaceColor}"/>
     <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}"/>
     <SolidColorBrush x:Key="BorderStrongBrush" Color="{StaticResource BorderStrongColor}"/>
     <SolidColorBrush x:Key="TextBrush" Color="{StaticResource TextColor}"/>

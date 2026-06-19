@@ -42,6 +42,8 @@
                                  Items="{Binding TreemapItems}"
                                  Height="200"
                                  Margin="0,0,0,10"
+                                 Visibility="{Binding HasTreemapItems, Converter={StaticResource BoolVis}}"
+                                 ToolTip="Use arrow keys to inspect folders. Press Enter or Space to select."
                                  AutomationProperties.Name="Disk usage treemap"/>
 
             <Border Style="{StaticResource Card}" Padding="0">
