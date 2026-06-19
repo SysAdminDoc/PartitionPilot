@@ -27,6 +27,7 @@ try
         "alignment" => await ShowAlignmentAsync(),
         "snapshot" => await CaptureSnapshotAsync(),
         "diagnostics" or "diag" => await RunDiagnosticsAsync(),
+        "plan" => await PlanOperationAsync(),
         "version" => ShowVersion(),
         "help" or "--help" or "-h" => PrintUsage(),
         _ => PrintUnknown(command)
@@ -53,7 +54,14 @@ int PrintUsage()
     Console.WriteLine("  alignment                 Check 4K alignment for all partitions");
     Console.WriteLine("  snapshot --disk N         Capture partition layout snapshot to JSON");
     Console.WriteLine("  diagnostics               Check environment prerequisites");
+    Console.WriteLine("  plan <op> [args]          Preview a partition operation (add --apply to execute)");
     Console.WriteLine("  version                   Show version");
+    Console.WriteLine();
+    Console.WriteLine("Plan operations:");
+    Console.WriteLine("  plan delete --disk N --partition P");
+    Console.WriteLine("  plan format --disk N --partition P --fs NTFS [--label Name]");
+    Console.WriteLine("  plan change-letter --disk N --partition P --letter X");
+    Console.WriteLine("  plan create --disk N --size 50GB [--fs NTFS] [--label Name]");
     Console.WriteLine();
     Console.WriteLine("Options:");
     Console.WriteLine("  --json                    Output as JSON");
@@ -316,6 +324,151 @@ async Task<int> CaptureSnapshotAsync()
     Console.WriteLine(JsonSerializer.Serialize(snapshot, new JsonSerializerOptions { WriteIndented = true }));
     Console.Error.WriteLine($"Snapshot saved to: {PartitionTableBackup.BackupDirectory}");
     return 0;
+}
+
+async Task<int> PlanOperationAsync()
+{
+    if (args.Length < 2)
+    {
+        Console.Error.WriteLine("Usage: pp plan <operation> [args] [--apply]");
+        return 1;
+    }
+
+    var op = args[1].ToLowerInvariant();
+    var diskNum = ParseDiskArg();
+    var partNum = ParseIntArg("--partition");
+    var apply = args.Contains("--apply", StringComparer.OrdinalIgnoreCase);
+
+    var plan = new
+    {
+        Operation = op,
+        DiskNumber = diskNum,
+        PartitionNumber = partNum,
+        FileSystem = ParseStringArg("--fs"),
+        Label = ParseStringArg("--label"),
+        Letter = ParseStringArg("--letter"),
+        Size = ParseStringArg("--size"),
+        Apply = apply
+    };
+
+    string description;
+    string riskLevel;
+    string diskpartScript;
+
+    switch (op)
+    {
+        case "delete":
+            if (!diskNum.HasValue || !partNum.HasValue) { Console.Error.WriteLine("--disk N and --partition P required for delete."); return 1; }
+            description = $"Delete partition {partNum.Value} on disk {diskNum.Value}";
+            riskLevel = "High";
+            diskpartScript = $"select disk {diskNum.Value}\nselect partition {partNum.Value}\ndelete partition override";
+            break;
+
+        case "format":
+            if (!diskNum.HasValue || !partNum.HasValue) { Console.Error.WriteLine("--disk N and --partition P required for format."); return 1; }
+            var fs = ProcessRunner.ValidateFileSystem(plan.FileSystem ?? "NTFS");
+            var label = ProcessRunner.SanitizeLabel(plan.Label ?? "");
+            description = $"Format partition {partNum.Value} on disk {diskNum.Value} as {fs}" + (label.Length > 0 ? $" (label: {label})" : "");
+            riskLevel = "High";
+            diskpartScript = $"select disk {diskNum.Value}\nselect partition {partNum.Value}\nformat fs={fs}{(label.Length > 0 ? $" label=\"{label}\"" : "")} quick";
+            break;
+
+        case "change-letter":
+            if (!diskNum.HasValue || !partNum.HasValue) { Console.Error.WriteLine("--disk N and --partition P required."); return 1; }
+            var letter = plan.Letter?.Trim().ToUpperInvariant();
+            if (string.IsNullOrEmpty(letter) || letter.Length != 1 || !char.IsLetter(letter[0])) { Console.Error.WriteLine("--letter X required (single letter A-Z)."); return 1; }
+            description = $"Assign letter {letter}: to partition {partNum.Value} on disk {diskNum.Value}";
+            riskLevel = "Normal";
+            diskpartScript = $"select disk {diskNum.Value}\nselect partition {partNum.Value}\nassign letter={letter}";
+            break;
+
+        case "create":
+            if (!diskNum.HasValue) { Console.Error.WriteLine("--disk N required for create."); return 1; }
+            var sizeStr = plan.Size ?? "max";
+            var sizeClause = sizeStr.Equals("max", StringComparison.OrdinalIgnoreCase) ? "" : $" size={ParseSizeMB(sizeStr)}";
+            var createFs = plan.FileSystem ?? "NTFS";
+            ProcessRunner.ValidateFileSystem(createFs);
+            var createLabel = ProcessRunner.SanitizeLabel(plan.Label ?? "");
+            description = $"Create{(sizeClause.Length > 0 ? sizeClause.Trim() + " MB" : " max-size")} {createFs} partition on disk {diskNum.Value}";
+            riskLevel = "Normal";
+            diskpartScript = $"select disk {diskNum.Value}\ncreate partition primary{sizeClause}\nformat fs={createFs}{(createLabel.Length > 0 ? $" label=\"{createLabel}\"" : "")} quick\nassign";
+            break;
+
+        default:
+            Console.Error.WriteLine($"Unknown plan operation: {op}. Supported: delete, format, change-letter, create.");
+            return 1;
+    }
+
+    var planOutput = new
+    {
+        plan.Operation,
+        Description = description,
+        RiskLevel = riskLevel,
+        DiskPartScript = diskpartScript,
+        WillApply = apply
+    };
+
+    if (json)
+        Console.WriteLine(JsonSerializer.Serialize(planOutput, new JsonSerializerOptions { WriteIndented = true }));
+    else
+    {
+        Console.WriteLine($"Plan: {description}");
+        Console.WriteLine($"Risk: {riskLevel}");
+        Console.WriteLine($"DiskPart script:");
+        foreach (var line in diskpartScript.Split('\n'))
+            Console.WriteLine($"  {line}");
+    }
+
+    if (!apply)
+    {
+        Console.Error.WriteLine("\nDry run — add --apply to execute.");
+        return 0;
+    }
+
+    if (riskLevel == "High")
+    {
+        Console.Error.Write($"\nWARNING: This is a destructive operation. Type YES to confirm: ");
+        var confirm = Console.ReadLine()?.Trim();
+        if (!string.Equals(confirm, "YES", StringComparison.Ordinal))
+        {
+            Console.Error.WriteLine("Cancelled.");
+            return 1;
+        }
+    }
+
+    try
+    {
+        Console.Error.WriteLine($"Executing: {description}...");
+        await runner.RunDiskpartAsync(diskpartScript, log);
+        Console.Error.WriteLine("Operation completed successfully.");
+        return 0;
+    }
+    catch (Exception ex)
+    {
+        Console.Error.WriteLine($"Operation failed: {ex.Message}");
+        return 1;
+    }
+}
+
+string? ParseStringArg(string name)
+{
+    var idx = Array.FindIndex(args, a => a.Equals(name, StringComparison.OrdinalIgnoreCase));
+    return (idx >= 0 && idx + 1 < args.Length) ? args[idx + 1] : null;
+}
+
+int? ParseIntArg(string name)
+{
+    var val = ParseStringArg(name);
+    return val is not null && int.TryParse(val, out var n) ? n : null;
+}
+
+long ParseSizeMB(string sizeStr)
+{
+    sizeStr = sizeStr.Trim().ToUpperInvariant();
+    if (sizeStr.EndsWith("TB")) return (long)(double.Parse(sizeStr.Replace("TB", "")) * 1024 * 1024);
+    if (sizeStr.EndsWith("GB")) return (long)(double.Parse(sizeStr.Replace("GB", "")) * 1024);
+    if (sizeStr.EndsWith("MB")) return (long)double.Parse(sizeStr.Replace("MB", ""));
+    return long.Parse(sizeStr);
 }
 
 async Task<int> RunDiagnosticsAsync()
