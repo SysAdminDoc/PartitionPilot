@@ -8,14 +8,31 @@ public class WmiDiskService : IWmiDiskService
 {
     private const string StorageScope = @"\\.\root\Microsoft\Windows\Storage";
     private const string CimScope = @"\\.\root\CIMV2";
+    private const string BitLockerScope = @"\\.\root\CIMV2\Security\MicrosoftVolumeEncryption";
 
     private readonly ProcessRunner _runner;
     private readonly ActivityLog _log;
+    private readonly Dictionary<string, ManagementScope> _scopeCache = new(StringComparer.OrdinalIgnoreCase);
+    private readonly object _scopeLock = new();
 
     public WmiDiskService(ProcessRunner runner, ActivityLog log)
     {
         _runner = runner;
         _log = log;
+    }
+
+    private ManagementScope GetScope(string scopePath)
+    {
+        lock (_scopeLock)
+        {
+            if (_scopeCache.TryGetValue(scopePath, out var cached) && cached.IsConnected)
+                return cached;
+
+            var scope = new ManagementScope(scopePath);
+            scope.Connect();
+            _scopeCache[scopePath] = scope;
+            return scope;
+        }
     }
 
     // ───────────────────────── Disks ─────────────────────────
@@ -25,8 +42,7 @@ public class WmiDiskService : IWmiDiskService
         var list = new List<DiskInfo>();
         try
         {
-            var scope = new ManagementScope(StorageScope);
-            scope.Connect();
+            var scope = GetScope(StorageScope);
             using var searcher = new ManagementObjectSearcher(scope,
                 new ObjectQuery("SELECT * FROM MSFT_Disk WHERE OperationalStatus = 1"));
 
@@ -58,8 +74,7 @@ public class WmiDiskService : IWmiDiskService
         var list = new List<PartitionInfo>();
         try
         {
-            var scope = new ManagementScope(StorageScope);
-            scope.Connect();
+            var scope = GetScope(StorageScope);
             using var searcher = new ManagementObjectSearcher(scope,
                 new ObjectQuery($"SELECT * FROM MSFT_Partition WHERE DiskNumber = {diskNumber}"));
 
@@ -113,8 +128,7 @@ public class WmiDiskService : IWmiDiskService
         var list = new List<VolumeInfo>();
         try
         {
-            var scope = new ManagementScope(StorageScope);
-            scope.Connect();
+            var scope = GetScope(StorageScope);
             using var searcher = new ManagementObjectSearcher(scope,
                 new ObjectQuery("SELECT * FROM MSFT_Volume"));
 
@@ -181,8 +195,7 @@ public class WmiDiskService : IWmiDiskService
         var list = new List<PhysicalDiskInfo>();
         try
         {
-            var scope = new ManagementScope(StorageScope);
-            scope.Connect();
+            var scope = GetScope(StorageScope);
             using var searcher = new ManagementObjectSearcher(scope,
                 new ObjectQuery("SELECT * FROM MSFT_PhysicalDisk"));
 
@@ -234,8 +247,7 @@ public class WmiDiskService : IWmiDiskService
         {
             return await Task.Run(() =>
             {
-                var scope = new ManagementScope(StorageScope);
-                scope.Connect();
+                var scope = GetScope(StorageScope);
                 using var searcher = new ManagementObjectSearcher(scope,
                     new ObjectQuery($"SELECT * FROM MSFT_StorageReliabilityCounter WHERE DeviceId = {WqlStringLiteral(deviceId)}"));
 
@@ -300,8 +312,7 @@ public class WmiDiskService : IWmiDiskService
         var list = new List<AlignmentInfo>();
         try
         {
-            var scope = new ManagementScope(StorageScope);
-            scope.Connect();
+            var scope = GetScope(StorageScope);
             using var searcher = new ManagementObjectSearcher(scope,
                 new ObjectQuery("SELECT * FROM MSFT_Partition"));
 
@@ -336,8 +347,7 @@ public class WmiDiskService : IWmiDiskService
         var set = new HashSet<char>();
         try
         {
-            var scope = new ManagementScope(CimScope);
-            scope.Connect();
+            var scope = GetScope(CimScope);
             using var searcher = new ManagementObjectSearcher(scope,
                 new ObjectQuery("SELECT Name FROM Win32_PageFileUsage"));
 
@@ -365,8 +375,7 @@ public class WmiDiskService : IWmiDiskService
             var allPartitions = await Task.Run(() =>
             {
                 var used = new List<char>();
-                var scope = new ManagementScope(StorageScope);
-                scope.Connect();
+                var scope = GetScope(StorageScope);
                 using var searcher = new ManagementObjectSearcher(scope,
                     new ObjectQuery("SELECT DriveLetter FROM MSFT_Partition"));
 
@@ -417,8 +426,7 @@ public class WmiDiskService : IWmiDiskService
         var list = new List<MountedImageInfo>();
         try
         {
-            var scope = new ManagementScope(StorageScope);
-            scope.Connect();
+            var scope = GetScope(StorageScope);
             using var searcher = new ManagementObjectSearcher(scope,
                 new ObjectQuery("SELECT * FROM MSFT_DiskImage WHERE Attached = True"));
 
@@ -499,8 +507,7 @@ public class WmiDiskService : IWmiDiskService
         var result = new Dictionary<char, string>();
         try
         {
-            var scope = new ManagementScope(@"\\.\root\CIMV2\Security\MicrosoftVolumeEncryption");
-            scope.Connect();
+            var scope = GetScope(BitLockerScope);
             using var searcher = new ManagementObjectSearcher(scope,
                 new ObjectQuery("SELECT DriveLetter, ProtectionStatus, LockStatus FROM Win32_EncryptableVolume"));
 
@@ -525,6 +532,24 @@ public class WmiDiskService : IWmiDiskService
         catch (Exception ex) { LogWmiFailure("Read BitLocker protection status", @"\\.\root\CIMV2\Security\MicrosoftVolumeEncryption", "Win32_EncryptableVolume", ex); }
         return result;
     });
+
+    // ──────────────── BitLocker Helpers ────────────────────
+
+    public async Task<List<string>> GetBitLockerProtectedTargetsAsync(int diskNumber)
+    {
+        var partitions = await GetPartitionsAsync(diskNumber);
+        var bitlockerStatus = await GetBitLockerStatusAsync();
+        foreach (var partition in partitions.Where(p => p.DriveLetter.HasValue))
+        {
+            if (bitlockerStatus.TryGetValue(partition.DriveLetter!.Value, out var status))
+                partition.EncryptionStatus = status;
+        }
+
+        return partitions
+            .Where(p => BitLockerPreflight.IsProtected(p.EncryptionStatus))
+            .Select(BitLockerPreflight.DescribePartitionTarget)
+            .ToList();
+    }
 
     // ──────────────── WMI Helpers ────────────────────────
 

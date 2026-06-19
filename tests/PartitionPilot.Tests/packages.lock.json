@@ -98,15 +98,15 @@
       },
       "System.CodeDom": {
         "type": "Transitive",
-        "resolved": "9.0.6",
-        "contentHash": "9u1pyEykc0bWBHf1cIVwRoMqrEtxtXdC2ss1K02pvrkwHPcyYmy1glO+kLbyqPO9ehCTl+2dFyUuTUNl1Fde5g=="
+        "resolved": "10.0.9",
+        "contentHash": "scH7O8oAuOMyZKOEiOQB3ZVz6x9XkrZNKNeWVCxdvkJHSy4SYXyinGK0o2Rn5LiGh+ovezziT2WCdqWKa7WMKA=="
       },
       "System.Management": {
         "type": "Transitive",
-        "resolved": "9.0.6",
-        "contentHash": "pOc5bCurWL3qVDsPP0iycUCRfXBhI/fVe44SiAlVqoZDIbHP080CLyCzfXV1UbdGKN0hQSLSHqr7OI3BhLBRbA==",
+        "resolved": "10.0.9",
+        "contentHash": "8mfTzHLlMHCqFE1+iFGzxRCeCb2gDqvRQtZthuksYB+z546QZaFCiagbJ2KXHe7dy5ZpCUg/usaIqc2DxiemPw==",
         "dependencies": {
-          "System.CodeDom": "9.0.6"
+          "System.CodeDom": "10.0.9"
         }
       },
       "xunit.analyzers": {
@@ -179,7 +179,7 @@
       "partitionpilot": {
         "type": "Project",
         "dependencies": {
-          "System.Management": "[9.0.6, )"
+          "System.Management": "[10.0.9, )"
         }
       }
     },
@@ -191,10 +191,10 @@
       },
       "System.Management": {
         "type": "Transitive",
-        "resolved": "9.0.6",
-        "contentHash": "pOc5bCurWL3qVDsPP0iycUCRfXBhI/fVe44SiAlVqoZDIbHP080CLyCzfXV1UbdGKN0hQSLSHqr7OI3BhLBRbA==",
+        "resolved": "10.0.9",
+        "contentHash": "8mfTzHLlMHCqFE1+iFGzxRCeCb2gDqvRQtZthuksYB+z546QZaFCiagbJ2KXHe7dy5ZpCUg/usaIqc2DxiemPw==",
         "dependencies": {
-          "System.CodeDom": "9.0.6"
+          "System.CodeDom": "10.0.9"
         }
       }
     }

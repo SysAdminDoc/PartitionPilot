@@ -455,21 +455,8 @@ public class DiskCloningViewModel : ViewModelBase
             BitLockerPreflight.BuildUnlockRequiredMessage($"Create an image from {key}:", $"{key}:", status));
     }
 
-    private async Task<List<string>> GetBitLockerProtectedTargetsAsync(int diskNumber)
-    {
-        var partitions = await _wmiService.GetPartitionsAsync(diskNumber);
-        var bitlockerStatus = await _wmiService.GetBitLockerStatusAsync();
-        foreach (var partition in partitions.Where(p => p.DriveLetter.HasValue))
-        {
-            if (bitlockerStatus.TryGetValue(partition.DriveLetter!.Value, out var status))
-                partition.EncryptionStatus = status;
-        }
-
-        return partitions
-            .Where(p => BitLockerPreflight.IsProtected(p.EncryptionStatus))
-            .Select(BitLockerPreflight.DescribePartitionTarget)
-            .ToList();
-    }
+    private Task<List<string>> GetBitLockerProtectedTargetsAsync(int diskNumber) =>
+        _wmiService.GetBitLockerProtectedTargetsAsync(diskNumber);
 
     public static long EstimateImageBytes(long sourceSizeBytes, long sourceFreeBytes)
     {
