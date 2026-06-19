@@ -1,12 +1,12 @@
-using System.Net.Http;
 using System.Reflection;
-using System.Text.Json;
+using Velopack;
+using Velopack.Sources;
 
 namespace PartitionPilot;
 
 public static class UpdateService
 {
-    private const string ReleasesApiUrl = "https://api.github.com/repos/SysAdminDoc/PartitionPilot/releases/latest";
+    private const string RepoUrl = "https://github.com/SysAdminDoc/PartitionPilot";
 
     public static string GetCurrentVersion()
     {
@@ -26,17 +26,67 @@ public static class UpdateService
         Version.TryParse(currentVersion, out var current) &&
         latest > current;
 
+    public static async Task<UpdateInfo?> CheckForVelopackUpdateAsync(ActivityLog? log = null)
+    {
+        try
+        {
+            var mgr = new UpdateManager(new GithubSource(RepoUrl, null, false));
+            var update = await mgr.CheckForUpdatesAsync();
+            if (update is not null)
+            {
+                log?.Log($"Velopack update available: v{update.TargetFullRelease.Version}");
+            }
+            return update;
+        }
+        catch (Exception ex)
+        {
+            log?.Log($"Velopack update check failed: {ex.Message}");
+            return null;
+        }
+    }
+
+    public static async Task DownloadAndApplyAsync(UpdateInfo update, ActivityLog? log = null)
+    {
+        try
+        {
+            var mgr = new UpdateManager(new GithubSource(RepoUrl, null, false));
+            log?.Log($"Downloading update v{update.TargetFullRelease.Version}...");
+            await mgr.DownloadUpdatesAsync(update);
+            log?.Log("Update downloaded. Applying on next restart.");
+        }
+        catch (Exception ex)
+        {
+            log?.Log($"Update download failed: {ex.Message}");
+            throw;
+        }
+    }
+
+    public static void ApplyAndRestart(UpdateInfo update, ActivityLog? log = null)
+    {
+        try
+        {
+            var mgr = new UpdateManager(new GithubSource(RepoUrl, null, false));
+            log?.Log("Applying update and restarting...");
+            mgr.ApplyUpdatesAndRestart(update);
+        }
+        catch (Exception ex)
+        {
+            log?.Log($"Update apply failed: {ex.Message}");
+            throw;
+        }
+    }
+
     public static async Task<(bool available, string version, string url)?> CheckForUpdateAsync()
     {
         try
         {
             var currentVersion = GetCurrentVersion();
-            using var client = new HttpClient();
+            using var client = new System.Net.Http.HttpClient();
             client.DefaultRequestHeaders.UserAgent.ParseAdd("PartitionPilot/" + currentVersion);
             client.Timeout = TimeSpan.FromSeconds(10);
 
-            var json = await client.GetStringAsync(ReleasesApiUrl);
-            using var doc = JsonDocument.Parse(json);
+            var json = await client.GetStringAsync(RepoUrl + "/releases/latest".Replace("github.com", "api.github.com/repos"));
+            using var doc = System.Text.Json.JsonDocument.Parse(json);
             var root = doc.RootElement;
 
             var tagName = root.GetProperty("tag_name").GetString() ?? "";

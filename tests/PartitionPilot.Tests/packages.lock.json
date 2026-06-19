@@ -109,6 +109,11 @@
           "System.CodeDom": "10.0.9"
         }
       },
+      "Velopack": {
+        "type": "Transitive",
+        "resolved": "1.2.0",
+        "contentHash": "Rz67gJL619fSBS6omaSINUxyDuwhIxkm5mmubf7uLd5Qgi6LLKaKCha+QFP6n+Bw/UjA0vutnH4JQfYzn6ANtw=="
+      },
       "xunit.analyzers": {
         "type": "Transitive",
         "resolved": "1.27.0",
@@ -179,7 +184,8 @@
       "partitionpilot": {
         "type": "Project",
         "dependencies": {
-          "System.Management": "[10.0.9, )"
+          "System.Management": "[10.0.9, )",
+          "Velopack": "[1.2.0, )"
         }
       }
     },
