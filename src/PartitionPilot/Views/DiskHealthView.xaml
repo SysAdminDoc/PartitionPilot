@@ -26,6 +26,7 @@
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
 
                         <TextBlock Grid.Column="0"
@@ -70,6 +71,12 @@
                                 Style="{StaticResource ToolbarButton}"
                                 Margin="6,0,0,0"
                                 AutomationProperties.Name="Run SMART extended self-test"/>
+                        <Button Grid.Column="7"
+                                Content="{Binding PerfButtonText}"
+                                Command="{Binding TogglePerfCountersCommand}"
+                                Style="{StaticResource ToolbarButton}"
+                                Margin="6,0,0,0"
+                                AutomationProperties.Name="Toggle disk I/O monitoring"/>
                     </Grid>
                 </Grid>
             </Border>
@@ -227,6 +234,23 @@
                                 </GridView>
                             </ListView.View>
                         </ListView>
+                    </GroupBox>
+
+                    <GroupBox Header="Disk I/O Activity">
+                        <GroupBox.Style>
+                            <Style TargetType="GroupBox" BasedOn="{StaticResource SectionGroup}">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsPerfMonitoring}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </GroupBox.Style>
+                        <TextBlock Text="{Binding PerfText}" FontFamily="Consolas" FontSize="12"
+                                   Foreground="{DynamicResource TextBrush}"
+                                   TextWrapping="NoWrap"
+                                   AutomationProperties.Name="Disk I/O performance counters"/>
                     </GroupBox>
 
                     <GroupBox Header="SMART / Reliability Data">

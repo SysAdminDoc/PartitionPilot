@@ -34,6 +34,7 @@
 - Added 4 tests for NVMe Critical Warning flag bitfield parsing.
 - Added pseudo-locale resource completeness CI gate test verifying all 130+ keys have pseudo-locale translations.
 - Added ARM64 build target: CI now produces both x64 and ARM64 self-contained binaries with separate attestation.
+- Added real-time disk I/O performance counters: toggle "Start I/O Monitor" on Disk Health tab shows live read/write MB/s, IOPS, queue depth, and latency per physical disk. Uses Windows PhysicalDisk performance counters, updates every 2 seconds.
 
 ## PartitionPilot v0.8.0 - 2026-06-19
 

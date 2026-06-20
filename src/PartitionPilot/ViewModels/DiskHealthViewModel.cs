@@ -12,6 +12,7 @@ public class DiskHealthViewModel : ViewModelBase
     private readonly ActivityLog _log;
     private readonly SmartHistoryService _history = new();
     private readonly TemperatureMonitorService _tempMonitor;
+    private readonly DiskPerfCounterService _perfCounters = new();
     private CancellationTokenSource? _healthCts;
 
     public ObservableCollection<PhysicalDiskInfo> PhysicalDisks { get; } = new();
@@ -279,6 +280,29 @@ public class DiskHealthViewModel : ViewModelBase
     public ICommand RunShortTestCommand { get; }
     public ICommand RunExtendedTestCommand { get; }
     public ICommand ExportReportCommand { get; }
+    public ICommand TogglePerfCountersCommand { get; }
+
+    private bool _isPerfMonitoring;
+    public bool IsPerfMonitoring
+    {
+        get => _isPerfMonitoring;
+        set
+        {
+            if (SetProperty(ref _isPerfMonitoring, value))
+                OnPropertyChanged(nameof(PerfButtonText));
+        }
+    }
+
+    public string PerfButtonText => IsPerfMonitoring ? "Stop I/O Monitor" : "Start I/O Monitor";
+
+    private string _perfText = "";
+    public string PerfText
+    {
+        get => _perfText;
+        set => SetProperty(ref _perfText, value);
+    }
+
+    public bool HasPerfData => !string.IsNullOrEmpty(PerfText);
 
     private string _selfTestStatus = "";
     public string SelfTestStatus
@@ -305,6 +329,47 @@ public class DiskHealthViewModel : ViewModelBase
             _ => SelectedDisk is not null && !IsBusy);
         ExportReportCommand = new AsyncRelayCommand(_ => ExportReportAsync(),
             _ => SelectedDisk is not null && Smart is not null);
+        TogglePerfCountersCommand = new WpfRelayCommand(_ => TogglePerfCounters());
+
+        _perfCounters.Updated += OnPerfUpdated;
+    }
+
+    private void TogglePerfCounters()
+    {
+        if (IsPerfMonitoring)
+        {
+            _perfCounters.Stop();
+            IsPerfMonitoring = false;
+            PerfText = "";
+            OnPropertyChanged(nameof(HasPerfData));
+            _log.Log("Disk I/O monitoring stopped.");
+        }
+        else
+        {
+            var diskNums = PhysicalDisks.Select(d => int.TryParse(d.DeviceId, out var n) ? n : -1).Where(n => n >= 0);
+            _perfCounters.Start(diskNums);
+            IsPerfMonitoring = true;
+            OnPropertyChanged(nameof(HasPerfData));
+            _log.Log("Disk I/O monitoring started.");
+        }
+    }
+
+    private void OnPerfUpdated(List<DiskPerfSnapshot> snapshots)
+    {
+        var sb = new System.Text.StringBuilder();
+        foreach (var s in snapshots)
+        {
+            sb.AppendLine($"Disk {s.DiskNumber}: " +
+                $"Read {s.ReadMBps:F1} MB/s ({s.ReadIOPS:F0} IOPS)  " +
+                $"Write {s.WriteMBps:F1} MB/s ({s.WriteIOPS:F0} IOPS)  " +
+                $"Queue {s.QueueLength:F1}  " +
+                $"Latency R:{s.AvgReadLatencyMs:F1}ms W:{s.AvgWriteLatencyMs:F1}ms");
+        }
+        Application.Current?.Dispatcher?.BeginInvoke(() =>
+        {
+            PerfText = sb.ToString().TrimEnd();
+            OnPropertyChanged(nameof(HasPerfData));
+        });
     }
 
     private async Task ExportReportAsync()
