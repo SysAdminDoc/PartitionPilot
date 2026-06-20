@@ -70,6 +70,10 @@
                                        TextWrapping="Wrap"
                                        Margin="0,0,0,10"
                                        AutomationProperties.Name="Image destination preflight"/>
+                            <CheckBox Content="Encrypt image (AES-256-GCM)"
+                                     IsChecked="{Binding EncryptImage}"
+                                     Margin="0,0,0,10"
+                                     AutomationProperties.Name="Encrypt disk image"/>
                             <Button Content="Create Image"
                                     Style="{StaticResource PrimaryButton}"
                                     Command="{Binding CreateImageCommand}"

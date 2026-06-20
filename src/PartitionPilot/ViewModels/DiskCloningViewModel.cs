@@ -54,6 +54,13 @@ public class DiskCloningViewModel : ViewModelBase
         set => SetProperty(ref _imagePreflightSummary, value);
     }
 
+    private bool _encryptImage;
+    public bool EncryptImage
+    {
+        get => _encryptImage;
+        set => SetProperty(ref _encryptImage, value);
+    }
+
     // Restore Image
     private string _restoreImagePath = "";
     public string RestoreImagePath
@@ -358,6 +365,23 @@ public class DiskCloningViewModel : ViewModelBase
                 _log.Log("VSS snapshot cleaned up after successful capture.");
             }
 
+            if (EncryptImage)
+            {
+                StatusText = "Encrypting image...";
+                var password = PromptForInput("Enter encryption password for the disk image:", "Encrypt Image");
+                if (string.IsNullOrEmpty(password))
+                {
+                    _log.Log("Image encryption skipped — no password provided.");
+                }
+                else
+                {
+                    var encPath = ImagePath + ".enc";
+                    await ImageEncryptionService.EncryptFileAsync(ImagePath, encPath, password, _log, ct: ct);
+                    try { File.Delete(ImagePath); } catch { }
+                    ImagePath = encPath;
+                }
+            }
+
             _log.Log($"Image created: {ImagePath}");
             _dialog.ShowInfo($"Disk image created successfully.\n\nPath: {ImagePath}", "Image Created");
         }
@@ -402,6 +426,32 @@ public class DiskCloningViewModel : ViewModelBase
             "FINAL CONFIRMATION: All data on the target disk will be permanently overwritten.",
             "Confirm Restore")) return;
 
+        string restorePath = RestoreImagePath;
+        string? tempDecrypted = null;
+        if (ImageEncryptionService.IsEncryptedImage(restorePath))
+        {
+            var password = PromptForInput("This is an encrypted image. Enter the decryption password:", "Decrypt Image");
+            if (string.IsNullOrEmpty(password))
+            {
+                _dialog.ShowWarning("Restore cancelled — decryption password required.", "Encrypted Image");
+                return;
+            }
+            tempDecrypted = Path.Combine(Path.GetTempPath(), "PartitionPilot",
+                Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(restorePath)) +
+                Path.GetExtension(Path.GetFileNameWithoutExtension(restorePath)));
+            Directory.CreateDirectory(Path.GetDirectoryName(tempDecrypted)!);
+            try
+            {
+                await ImageEncryptionService.DecryptFileAsync(restorePath, tempDecrypted, password, _log);
+                restorePath = tempDecrypted;
+            }
+            catch (Exception ex)
+            {
+                _dialog.ShowError($"Decryption failed: {ex.Message}", "Decrypt Error");
+                return;
+            }
+        }
+
         _cts?.Cancel();
         _cts?.Dispose();
         _cts = new CancellationTokenSource();
@@ -413,7 +463,12 @@ public class DiskCloningViewModel : ViewModelBase
         try
         {
             await using var cleanup = new OperationCleanupScope(_log);
-            var ext = Path.GetExtension(RestoreImagePath).ToLowerInvariant();
+            if (tempDecrypted is not null)
+                cleanup.Register("Delete temporary decrypted image",
+                    () => { try { File.Delete(tempDecrypted); } catch { } return Task.CompletedTask; },
+                    $"Delete {tempDecrypted}");
+
+            var ext = Path.GetExtension(restorePath).ToLowerInvariant();
             var diskNum = SelectedTargetDisk.Number;
 
             // Best-effort lock volumes on target disk before clearing
@@ -440,23 +495,23 @@ public class DiskCloningViewModel : ViewModelBase
                 var targetLetter = (await _processRunner.RunPowerShellAsync(letterCmd, _log, ct)).Trim();
                 var applyLetter = RequireDriveLetter(targetLetter, "target partition");
 
-                var escapedRestorePath = ProcessRunner.ValidateNativePathArgument(RestoreImagePath);
+                var escapedRestorePath = ProcessRunner.ValidateNativePathArgument(restorePath);
                 await _processRunner.RunExeAsync("dism.exe",
                     $"/Apply-Image /ImageFile:\"{escapedRestorePath}\" /ApplyDir:{applyLetter}:\\ /Index:1", _log, ct: ct);
             }
             else
             {
                 StatusText = "Mounting VHDX and copying...";
-                var mountCmd = $"Mount-DiskImage -ImagePath {ProcessRunner.EscapePowerShellString(RestoreImagePath)}";
+                var mountCmd = $"Mount-DiskImage -ImagePath {ProcessRunner.EscapePowerShellString(restorePath)}";
                 await _processRunner.RunPowerShellAsync(mountCmd, _log, ct);
 
-                var unmountCmd = $"Dismount-DiskImage -ImagePath {ProcessRunner.EscapePowerShellString(RestoreImagePath)}";
+                var unmountCmd = $"Dismount-DiskImage -ImagePath {ProcessRunner.EscapePowerShellString(restorePath)}";
                 var mountCleanup = cleanup.Register(
-                    $"Dismount restore source image {RestoreImagePath}",
+                    $"Dismount restore source image {restorePath}",
                     () => _processRunner.RunPowerShellAsync(unmountCmd, _log),
-                    $"Run Dismount-DiskImage for {RestoreImagePath} from an elevated PowerShell session.");
+                    $"Run Dismount-DiskImage for {restorePath} from an elevated PowerShell session.");
 
-                var srcLetterCmd = $"(Get-DiskImage -ImagePath {ProcessRunner.EscapePowerShellString(RestoreImagePath)} | Get-Disk | Get-Partition | Where-Object {{ $_.DriveLetter }} | Select-Object -First 1).DriveLetter";
+                var srcLetterCmd = $"(Get-DiskImage -ImagePath {ProcessRunner.EscapePowerShellString(restorePath)} | Get-Disk | Get-Partition | Where-Object {{ $_.DriveLetter }} | Select-Object -First 1).DriveLetter";
                 var srcLetter = (await _processRunner.RunPowerShellAsync(srcLetterCmd, _log, ct)).Trim();
                 var sourceLetter = RequireDriveLetter(srcLetter, "mounted source image");
 
@@ -742,6 +797,38 @@ public class DiskCloningViewModel : ViewModelBase
         return root.Length >= 2 && root[1] == ':' && char.IsLetter(root[0])
             ? char.ToUpperInvariant(root[0])
             : null;
+    }
+
+    private static string? PromptForInput(string message, string title)
+    {
+        var dialog = new System.Windows.Window
+        {
+            Title = title,
+            Width = 400,
+            SizeToContent = System.Windows.SizeToContent.Height,
+            WindowStartupLocation = System.Windows.WindowStartupLocation.CenterOwner,
+            ResizeMode = System.Windows.ResizeMode.NoResize,
+            Owner = System.Windows.Application.Current.MainWindow
+        };
+
+        var passwordBox = new System.Windows.Controls.PasswordBox { Margin = new System.Windows.Thickness(12), Height = 30 };
+        var okButton = new System.Windows.Controls.Button { Content = "OK", Width = 80, Height = 30, IsDefault = true, Margin = new System.Windows.Thickness(0, 0, 8, 12) };
+        var cancelButton = new System.Windows.Controls.Button { Content = "Cancel", Width = 80, Height = 30, IsCancel = true, Margin = new System.Windows.Thickness(0, 0, 12, 12) };
+
+        string? result = null;
+        okButton.Click += (_, _) => { result = passwordBox.Password; dialog.DialogResult = true; };
+
+        var buttonPanel = new System.Windows.Controls.StackPanel { Orientation = System.Windows.Controls.Orientation.Horizontal, HorizontalAlignment = System.Windows.HorizontalAlignment.Right };
+        buttonPanel.Children.Add(okButton);
+        buttonPanel.Children.Add(cancelButton);
+
+        var panel = new System.Windows.Controls.StackPanel();
+        panel.Children.Add(new System.Windows.Controls.TextBlock { Text = message, Margin = new System.Windows.Thickness(12, 12, 12, 4), TextWrapping = System.Windows.TextWrapping.Wrap });
+        panel.Children.Add(passwordBox);
+        panel.Children.Add(buttonPanel);
+
+        dialog.Content = panel;
+        return dialog.ShowDialog() == true ? result : null;
     }
 
     public sealed record ImageDestinationPreflight(

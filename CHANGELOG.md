@@ -35,6 +35,8 @@
 - Added pseudo-locale resource completeness CI gate test verifying all 130+ keys have pseudo-locale translations.
 - Added ARM64 build target: CI now produces both x64 and ARM64 self-contained binaries with separate attestation.
 - Added real-time disk I/O performance counters: toggle "Start I/O Monitor" on Disk Health tab shows live read/write MB/s, IOPS, queue depth, and latency per physical disk. Uses Windows PhysicalDisk performance counters, updates every 2 seconds.
+- Added image encryption for WIM/VHDX captures: AES-256-GCM with PBKDF2-SHA256 key derivation (600K iterations). Encrypted images use `.enc` suffix. Restore auto-detects encrypted images and prompts for password.
+- Added German, Spanish, and French translations (130+ resource keys each) to validate the i18n pipeline. App auto-loads matching locale via .NET satellite assemblies.
 
 ## PartitionPilot v0.8.0 - 2026-06-19
 
