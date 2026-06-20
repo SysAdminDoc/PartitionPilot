@@ -292,12 +292,20 @@ public class WmiDiskService : IWmiDiskService
             LogWmiFailure("Read SMART reliability counter", StorageScope, "MSFT_StorageReliabilityCounter", ex);
         }
 
+        SmartData? result = null;
         if (lhmData is not null && wmiData is not null)
-            return MergeSmartData(lhmData, wmiData);
-        if (lhmData is not null)
-            return lhmData;
-        if (wmiData is not null)
-            return wmiData;
+            result = MergeSmartData(lhmData, wmiData);
+        else if (lhmData is not null)
+            result = lhmData;
+        else if (wmiData is not null)
+            result = wmiData;
+
+        if (result is not null)
+        {
+            try { await Task.Run(() => NvmeHealthService.EnrichSmartData(result, diskNum, _log)); }
+            catch (Exception ex) { _log.Log($"NVMe health enrichment failed (non-fatal): {ex.Message}"); }
+            return result;
+        }
 
         // Attempt 3: PowerShell fallback
         try

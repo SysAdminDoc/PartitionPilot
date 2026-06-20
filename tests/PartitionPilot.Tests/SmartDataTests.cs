@@ -35,4 +35,35 @@ public class SmartDataTests
         Assert.Equal(HealthStatus.Critical, smart.Health);
         Assert.Contains("estimated wear limit", smart.HealthReason);
     }
+
+    [Fact]
+    public void CriticalWarningFlags_ParsesBitfield()
+    {
+        var smart = new SmartData { NvmeCriticalWarning = 0x05 };
+        var flags = smart.CriticalWarningFlags;
+        Assert.Contains("Available spare low", flags);
+        Assert.Contains("Reliability degraded", flags);
+        Assert.Equal(2, flags.Count);
+    }
+
+    [Fact]
+    public void CriticalWarningFlags_EmptyWhenZero()
+    {
+        var smart = new SmartData { NvmeCriticalWarning = 0 };
+        Assert.Empty(smart.CriticalWarningFlags);
+    }
+
+    [Fact]
+    public void CriticalWarningFlags_EmptyWhenNull()
+    {
+        var smart = new SmartData();
+        Assert.Empty(smart.CriticalWarningFlags);
+    }
+
+    [Fact]
+    public void CriticalWarningFlags_AllFiveFlags()
+    {
+        var smart = new SmartData { NvmeCriticalWarning = 0x1F };
+        Assert.Equal(5, smart.CriticalWarningFlags.Count);
+    }
 }

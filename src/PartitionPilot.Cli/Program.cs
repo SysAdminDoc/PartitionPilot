@@ -212,6 +212,9 @@ async Task<int> ShowSmartAsync()
                 smart?.ReallocatedSectors, smart?.PendingSectors, smart?.PowerCycleCount,
                 TotalWritten = smart?.TotalBytesWritten, TotalRead = smart?.TotalBytesRead,
                 smart?.NvmeAvailableSpare, smart?.NvmeMediaErrors,
+                smart?.NvmeUnsafeShutdowns, smart?.NvmeControllerBusyMinutes,
+                smart?.NvmeErrorLogEntries, smart?.NvmeCriticalWarning,
+                CriticalWarningFlags = smart?.CriticalWarningFlags,
                 Attributes = smart?.AllAttributes.Select(a => new { a.Id, a.Name, a.Current, a.Worst, a.RawValue })
             });
             continue;
@@ -235,6 +238,10 @@ async Task<int> ShowSmartAsync()
             if (smart.TotalBytesRead.HasValue) Console.WriteLine($"  Total Read:         {SizeUtil.Format(smart.TotalBytesRead.Value)}");
             if (smart.NvmeAvailableSpare.HasValue) Console.WriteLine($"  NVMe Spare:         {smart.NvmeAvailableSpare}%");
             if (smart.NvmeMediaErrors.HasValue) Console.WriteLine($"  NVMe Media Errors:  {smart.NvmeMediaErrors:N0}");
+            if (smart.NvmeUnsafeShutdowns.HasValue) Console.WriteLine($"  Unsafe Shutdowns:   {smart.NvmeUnsafeShutdowns:N0}");
+            if (smart.NvmeControllerBusyMinutes.HasValue) Console.WriteLine($"  Controller Busy:    {smart.NvmeControllerBusyMinutes:N0} min");
+            if (smart.NvmeErrorLogEntries.HasValue) Console.WriteLine($"  Error Log Entries:  {smart.NvmeErrorLogEntries:N0}");
+            if (smart.CriticalWarningFlags.Count > 0) Console.WriteLine($"  Critical Warning:   {string.Join(", ", smart.CriticalWarningFlags)}");
 
             if (smart.AllAttributes.Count > 0)
             {
