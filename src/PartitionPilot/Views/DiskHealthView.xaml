@@ -23,6 +23,8 @@
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
 
                         <TextBlock Grid.Column="0"
@@ -49,6 +51,18 @@
                                 Style="{StaticResource ToolbarButton}"
                                 Margin="6,0,0,0"
                                 AutomationProperties.Name="Toggle temperature monitoring"/>
+                        <Button Grid.Column="4"
+                                Content="Short Test"
+                                Command="{Binding RunShortTestCommand}"
+                                Style="{StaticResource ToolbarButton}"
+                                Margin="6,0,0,0"
+                                AutomationProperties.Name="Run SMART short self-test"/>
+                        <Button Grid.Column="5"
+                                Content="Extended Test"
+                                Command="{Binding RunExtendedTestCommand}"
+                                Style="{StaticResource ToolbarButton}"
+                                Margin="6,0,0,0"
+                                AutomationProperties.Name="Run SMART extended self-test"/>
                     </Grid>
                 </Grid>
             </Border>
@@ -145,12 +159,18 @@
                                 </Style.Triggers>
                             </Style>
                         </Border.Style>
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="{Binding HealthStatusText}" FontWeight="Bold" FontSize="15"
-                                       Foreground="{DynamicResource TextBrush}" Margin="0,0,12,0"/>
-                            <TextBlock Text="{Binding HealthReasonText}" FontSize="13"
-                                       Foreground="{DynamicResource SubtextBrush}" VerticalAlignment="Center"
-                                       ToolTip="{Binding HealthReasonText}"/>
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{Binding HealthStatusText}" FontWeight="Bold" FontSize="15"
+                                           Foreground="{DynamicResource TextBrush}" Margin="0,0,12,0"/>
+                                <TextBlock Text="{Binding HealthReasonText}" FontSize="13"
+                                           Foreground="{DynamicResource SubtextBrush}" VerticalAlignment="Center"
+                                           ToolTip="{Binding HealthReasonText}"/>
+                            </StackPanel>
+                            <TextBlock Text="{Binding SelfTestStatus}" FontSize="12"
+                                       Foreground="{DynamicResource SubtextBrush}" Margin="0,4,0,0"
+                                       TextWrapping="Wrap"
+                                       AutomationProperties.Name="SMART self-test status"/>
                         </StackPanel>
                     </Border>
 
@@ -232,6 +252,10 @@
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
 
                             <TextBlock Grid.Row="0" Grid.Column="0" Text="Temperature" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
@@ -263,6 +287,15 @@
                             <TextBlock Grid.Row="5" Grid.Column="4" Text="{Binding NvmeAvailableSpareText}" Margin="0,3"/>
                             <TextBlock Grid.Row="6" Grid.Column="3" Text="NVMe Media Errors" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
                             <TextBlock Grid.Row="6" Grid.Column="4" Text="{Binding NvmeMediaErrorsText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="7" Grid.Column="3" Text="Unsafe Shutdowns" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="7" Grid.Column="4" Text="{Binding NvmeUnsafeShutdownsText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="8" Grid.Column="3" Text="Controller Busy Time" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="8" Grid.Column="4" Text="{Binding NvmeControllerBusyText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="9" Grid.Column="3" Text="Error Log Entries" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="9" Grid.Column="4" Text="{Binding NvmeErrorLogText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="10" Grid.Column="3" Text="Critical Warning" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="10" Grid.Column="4" Text="{Binding NvmeCriticalWarningText}" Margin="0,3"
+                                       TextWrapping="Wrap"/>
                         </Grid>
                     </GroupBox>
 

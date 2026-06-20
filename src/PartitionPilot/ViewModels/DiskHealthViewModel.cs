@@ -7,6 +7,7 @@ namespace PartitionPilot;
 public class DiskHealthViewModel : ViewModelBase
 {
     private readonly IWmiDiskService _wmiService;
+    private readonly IProcessRunner _runner;
     private readonly ActivityLog _log;
     private readonly SmartHistoryService _history = new();
     private readonly TemperatureMonitorService _tempMonitor;
@@ -57,6 +58,11 @@ public class DiskHealthViewModel : ViewModelBase
                 OnPropertyChanged(nameof(TotalReadText));
                 OnPropertyChanged(nameof(NvmeAvailableSpareText));
                 OnPropertyChanged(nameof(NvmeMediaErrorsText));
+                OnPropertyChanged(nameof(NvmeUnsafeShutdownsText));
+                OnPropertyChanged(nameof(NvmeControllerBusyText));
+                OnPropertyChanged(nameof(NvmeErrorLogText));
+                OnPropertyChanged(nameof(NvmeCriticalWarningText));
+                OnPropertyChanged(nameof(IsNvmeDrive));
                 OnPropertyChanged(nameof(HasExtendedSmartData));
                 OnPropertyChanged(nameof(SmartAttributes));
                 OnPropertyChanged(nameof(HealthStatusText));
@@ -126,6 +132,23 @@ public class DiskHealthViewModel : ViewModelBase
 
     public string NvmeMediaErrorsText => Smart?.NvmeMediaErrors is not null ? Smart.NvmeMediaErrors.Value.ToString("N0") : "N/A";
 
+    public string NvmeUnsafeShutdownsText => Smart?.NvmeUnsafeShutdowns is not null ? Smart.NvmeUnsafeShutdowns.Value.ToString("N0") : "N/A";
+
+    public string NvmeControllerBusyText => Smart?.NvmeControllerBusyMinutes is not null ? $"{Smart.NvmeControllerBusyMinutes:N0} min" : "N/A";
+
+    public string NvmeErrorLogText => Smart?.NvmeErrorLogEntries is not null ? Smart.NvmeErrorLogEntries.Value.ToString("N0") : "N/A";
+
+    public string NvmeCriticalWarningText
+    {
+        get
+        {
+            var flags = Smart?.CriticalWarningFlags ?? new();
+            return flags.Count > 0 ? string.Join(", ", flags) : "None";
+        }
+    }
+
+    public bool IsNvmeDrive => SelectedDisk?.BusType == "NVMe";
+
     public bool HasExtendedSmartData => Smart?.AllAttributes.Count > 0;
 
     public IReadOnlyList<SmartAttribute> SmartAttributes => Smart?.AllAttributes ?? new List<SmartAttribute>();
@@ -183,10 +206,20 @@ public class DiskHealthViewModel : ViewModelBase
 
     public ICommand RefreshCommand { get; }
     public ICommand ToggleMonitorCommand { get; }
+    public ICommand RunShortTestCommand { get; }
+    public ICommand RunExtendedTestCommand { get; }
 
-    public DiskHealthViewModel(IWmiDiskService wmiService, ActivityLog log)
+    private string _selfTestStatus = "";
+    public string SelfTestStatus
+    {
+        get => _selfTestStatus;
+        set => SetProperty(ref _selfTestStatus, value);
+    }
+
+    public DiskHealthViewModel(IWmiDiskService wmiService, IProcessRunner runner, ActivityLog log)
     {
         _wmiService = wmiService;
+        _runner = runner;
         _log = log;
         _tempMonitor = new TemperatureMonitorService(wmiService, log);
 
@@ -195,6 +228,35 @@ public class DiskHealthViewModel : ViewModelBase
 
         RefreshCommand = new AsyncRelayCommand(_ => RefreshAsync());
         ToggleMonitorCommand = new WpfRelayCommand(_ => ToggleMonitoring());
+        RunShortTestCommand = new AsyncRelayCommand(_ => RunSelfTestAsync(SmartTestType.Short),
+            _ => SelectedDisk is not null && !IsBusy);
+        RunExtendedTestCommand = new AsyncRelayCommand(_ => RunSelfTestAsync(SmartTestType.Extended),
+            _ => SelectedDisk is not null && !IsBusy);
+    }
+
+    private async Task RunSelfTestAsync(SmartTestType testType)
+    {
+        if (SelectedDisk is null) return;
+        var diskNum = int.TryParse(SelectedDisk.DeviceId, out var n) ? n : 0;
+        IsBusy = true;
+        SelfTestStatus = $"Starting {testType} self-test...";
+
+        try
+        {
+            var result = await SmartTestService.StartTestAsync(diskNum, testType, _runner, _log);
+            SelfTestStatus = result.Started
+                ? $"{testType} test started. {result.EstimatedDuration ?? ""}"
+                : result.Message;
+        }
+        catch (Exception ex)
+        {
+            SelfTestStatus = $"Self-test failed: {ex.Message}";
+            _log.Log($"SMART self-test error: {ex.Message}");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
     }
 
     public async Task RefreshAsync()

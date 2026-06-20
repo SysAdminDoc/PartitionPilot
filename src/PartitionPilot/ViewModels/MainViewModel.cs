@@ -78,7 +78,7 @@ public partial class MainViewModel : ViewModelBase
 
         Partitions = new PartitionsViewModel(_wmiService, _processRunner, Log, _dialog);
         Snapshots = new SnapshotBrowserViewModel(new PartitionTableBackup(_wmiService, Log), Log, _dialog);
-        DiskHealth = new DiskHealthViewModel(_wmiService, Log);
+        DiskHealth = new DiskHealthViewModel(_wmiService, _processRunner, Log);
         Tools = new ToolsViewModel(_wmiService, _processRunner, Log, _dialog);
         DiskImages = new DiskImagesViewModel(_processRunner, _wmiService, Log, _dialog);
         DiskUsage = new DiskUsageViewModel(_wmiService, Log);

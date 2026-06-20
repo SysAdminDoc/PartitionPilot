@@ -31,8 +31,28 @@ public class SmartData
     public long? TotalBytesRead { get; set; }
     public int? NvmeAvailableSpare { get; set; }
     public long? NvmeMediaErrors { get; set; }
+    public long? NvmeUnsafeShutdowns { get; set; }
+    public long? NvmeControllerBusyMinutes { get; set; }
+    public long? NvmeErrorLogEntries { get; set; }
+    public byte? NvmeCriticalWarning { get; set; }
 
     public List<SmartAttribute> AllAttributes { get; set; } = new();
+
+    public List<string> CriticalWarningFlags
+    {
+        get
+        {
+            if (NvmeCriticalWarning is null or 0) return new();
+            var flags = new List<string>();
+            var w = NvmeCriticalWarning.Value;
+            if ((w & 0x01) != 0) flags.Add("Available spare low");
+            if ((w & 0x02) != 0) flags.Add("Temperature threshold exceeded");
+            if ((w & 0x04) != 0) flags.Add("Reliability degraded");
+            if ((w & 0x08) != 0) flags.Add("Read-only mode");
+            if ((w & 0x10) != 0) flags.Add("Volatile memory backup failed");
+            return flags;
+        }
+    }
 
     public HealthStatus Health
     {
