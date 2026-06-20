@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Windows;
 using System.Windows.Input;
 
@@ -27,6 +28,8 @@ public class DiskHealthViewModel : ViewModelBase
             {
                 OnPropertyChanged(nameof(DiskSizeText));
                 OnPropertyChanged(nameof(SectorSizeText));
+                LoadRatedTbw();
+                OnPropertyChanged(nameof(RatedTbwTB));
                 _healthCts?.Cancel();
                 _healthCts?.Dispose();
                 _healthCts = new CancellationTokenSource();
@@ -63,6 +66,9 @@ public class DiskHealthViewModel : ViewModelBase
                 OnPropertyChanged(nameof(NvmeErrorLogText));
                 OnPropertyChanged(nameof(NvmeCriticalWarningText));
                 OnPropertyChanged(nameof(IsNvmeDrive));
+                OnPropertyChanged(nameof(HasEnduranceData));
+                OnPropertyChanged(nameof(EnduranceText));
+                OnPropertyChanged(nameof(EndurancePercent));
                 OnPropertyChanged(nameof(HasExtendedSmartData));
                 OnPropertyChanged(nameof(SmartAttributes));
                 OnPropertyChanged(nameof(HealthStatusText));
@@ -149,6 +155,70 @@ public class DiskHealthViewModel : ViewModelBase
 
     public bool IsNvmeDrive => SelectedDisk?.BusType == "NVMe";
 
+    public string EnduranceText
+    {
+        get
+        {
+            if (Smart?.TotalBytesWritten is null) return "";
+            var writtenTB = Smart.TotalBytesWritten.Value / (1024.0 * 1024 * 1024 * 1024);
+            if (RatedTbwTB <= 0) return $"{writtenTB:F1} TB written (set rated TBW for endurance gauge)";
+            var pct = writtenTB / RatedTbwTB * 100;
+            return $"{writtenTB:F1} TB written of {RatedTbwTB:F0} TB rated ({pct:F1}% consumed)";
+        }
+    }
+
+    public double EndurancePercent
+    {
+        get
+        {
+            if (Smart?.TotalBytesWritten is null || RatedTbwTB <= 0) return 0;
+            var writtenTB = Smart.TotalBytesWritten.Value / (1024.0 * 1024 * 1024 * 1024);
+            return Math.Min(100, writtenTB / RatedTbwTB * 100);
+        }
+    }
+
+    private double _ratedTbwTB;
+    public double RatedTbwTB
+    {
+        get => _ratedTbwTB;
+        set
+        {
+            if (SetProperty(ref _ratedTbwTB, value))
+            {
+                OnPropertyChanged(nameof(EnduranceText));
+                OnPropertyChanged(nameof(EndurancePercent));
+                SaveRatedTbw();
+            }
+        }
+    }
+
+    public bool HasEnduranceData => Smart?.TotalBytesWritten is not null;
+
+    private void LoadRatedTbw()
+    {
+        if (SelectedDisk is null) return;
+        var path = GetRatedTbwPath(SelectedDisk.DeviceId);
+        if (File.Exists(path) && double.TryParse(File.ReadAllText(path).Trim(), out var val))
+            _ratedTbwTB = val;
+        else
+            _ratedTbwTB = 0;
+    }
+
+    private void SaveRatedTbw()
+    {
+        if (SelectedDisk is null) return;
+        var dir = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
+            "PartitionPilot", "settings");
+        Directory.CreateDirectory(dir);
+        File.WriteAllText(GetRatedTbwPath(SelectedDisk.DeviceId), _ratedTbwTB.ToString("F0"));
+    }
+
+    private static string GetRatedTbwPath(string deviceId) =>
+        Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
+            "PartitionPilot", "settings", $"tbw_disk{deviceId}.txt");
+
     public bool HasExtendedSmartData => Smart?.AllAttributes.Count > 0;
 
     public IReadOnlyList<SmartAttribute> SmartAttributes => Smart?.AllAttributes ?? new List<SmartAttribute>();
@@ -208,6 +278,7 @@ public class DiskHealthViewModel : ViewModelBase
     public ICommand ToggleMonitorCommand { get; }
     public ICommand RunShortTestCommand { get; }
     public ICommand RunExtendedTestCommand { get; }
+    public ICommand ExportReportCommand { get; }
 
     private string _selfTestStatus = "";
     public string SelfTestStatus
@@ -232,6 +303,32 @@ public class DiskHealthViewModel : ViewModelBase
             _ => SelectedDisk is not null && !IsBusy);
         RunExtendedTestCommand = new AsyncRelayCommand(_ => RunSelfTestAsync(SmartTestType.Extended),
             _ => SelectedDisk is not null && !IsBusy);
+        ExportReportCommand = new AsyncRelayCommand(_ => ExportReportAsync(),
+            _ => SelectedDisk is not null && Smart is not null);
+    }
+
+    private async Task ExportReportAsync()
+    {
+        if (SelectedDisk is null || Smart is null) return;
+
+        var deviceId = SelectedDisk.DeviceId;
+        var readings = await _history.GetHistoryAsync(deviceId);
+        var trends = SmartHistoryService.AnalyzeTrends(readings);
+        var alignments = await _wmiService.GetAlignmentAuditAsync();
+
+        var html = SmartHistoryService.FormatHtmlReport(SelectedDisk, Smart, readings, trends, alignments);
+
+        var dir = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
+            "PartitionPilot", "reports");
+        Directory.CreateDirectory(dir);
+        var path = Path.Combine(dir, $"smart_report_disk{deviceId}_{DateTimeOffset.Now:yyyyMMdd_HHmmss}.html");
+        await File.WriteAllTextAsync(path, html);
+
+        _log.Log($"SMART report exported to: {path}");
+
+        try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(path) { UseShellExecute = true }); }
+        catch { }
     }
 
     private async Task RunSelfTestAsync(SmartTestType testType)

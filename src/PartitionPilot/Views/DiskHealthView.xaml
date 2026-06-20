@@ -25,6 +25,7 @@
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
 
                         <TextBlock Grid.Column="0"
@@ -52,12 +53,18 @@
                                 Margin="6,0,0,0"
                                 AutomationProperties.Name="Toggle temperature monitoring"/>
                         <Button Grid.Column="4"
+                                Content="Export Report"
+                                Command="{Binding ExportReportCommand}"
+                                Style="{StaticResource ToolbarButton}"
+                                Margin="6,0,0,0"
+                                AutomationProperties.Name="Export SMART diagnostic report"/>
+                        <Button Grid.Column="5"
                                 Content="Short Test"
                                 Command="{Binding RunShortTestCommand}"
                                 Style="{StaticResource ToolbarButton}"
                                 Margin="6,0,0,0"
                                 AutomationProperties.Name="Run SMART short self-test"/>
-                        <Button Grid.Column="5"
+                        <Button Grid.Column="6"
                                 Content="Extended Test"
                                 Command="{Binding RunExtendedTestCommand}"
                                 Style="{StaticResource ToolbarButton}"
@@ -297,6 +304,32 @@
                             <TextBlock Grid.Row="10" Grid.Column="4" Text="{Binding NvmeCriticalWarningText}" Margin="0,3"
                                        TextWrapping="Wrap"/>
                         </Grid>
+                    </GroupBox>
+
+                    <GroupBox Header="SSD Endurance">
+                        <GroupBox.Style>
+                            <Style TargetType="GroupBox" BasedOn="{StaticResource SectionGroup}">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasEnduranceData}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </GroupBox.Style>
+                        <StackPanel>
+                            <TextBlock Text="{Binding EnduranceText}" Style="{StaticResource CaptionText}" Margin="0,0,0,6"
+                                       AutomationProperties.Name="Endurance status"/>
+                            <ProgressBar Value="{Binding EndurancePercent}" Maximum="100" Height="6"
+                                         Foreground="{DynamicResource PrimaryBrush}"
+                                         Background="{DynamicResource BorderBrush}"
+                                         BorderThickness="0" Margin="0,0,0,8"/>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="Rated TBW (TB):" Style="{StaticResource FieldLabelText}" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                <TextBox Text="{Binding RatedTbwTB, UpdateSourceTrigger=LostFocus}" Width="80" Height="28"
+                                         AutomationProperties.Name="Rated TBW in terabytes"/>
+                            </StackPanel>
+                        </StackPanel>
                     </GroupBox>
 
                     <GroupBox Header="SMART Trend Alerts">

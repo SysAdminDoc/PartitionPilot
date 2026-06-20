@@ -23,6 +23,9 @@
 ### Health & Monitoring
 - Added full NVMe health log: Unsafe Shutdowns, Controller Busy Time, Error Information Log Entries, Critical Warning flags (spare low, temp exceeded, reliability degraded, read-only, backup failed) via IOCTL_STORAGE_QUERY_PROPERTY.
 - Added SMART self-test triggers: "Short Test" and "Extended Test" buttons on Disk Health tab invoke smartctl for both SATA and NVMe drives. Status and estimated duration displayed inline.
+- Added SMART diagnostic report export: HTML report with drive info, all SMART attributes, health status, trend analysis, temperature history, and alignment audit. Opens in default browser.
+- Added SSD endurance gauge: shows total bytes written vs user-configurable rated TBW with progress bar. Rated TBW persists per drive in ProgramData.
+- Expanded recovery scanner to detect ext2/3/4, btrfs, XFS, HFS+/HFSX, APFS, and Linux swap signatures in addition to existing NTFS/FAT/exFAT/ReFS.
 
 ### Quality
 - Added 5 tests for SectorCloneResult (report formatting, verification, bad sectors, phase display).

@@ -63,6 +63,13 @@ public static class PartitionRecoveryScanner
     private static readonly byte[] Fat12Signature = "FAT12   "u8.ToArray();
     private static readonly byte[] ExfatSignature = "EXFAT   "u8.ToArray();
     private static readonly byte[] RefsMagic = [0x52, 0x65, 0x46, 0x53]; // "ReFS"
+    private static readonly byte[] Ext2Magic = [0x53, 0xEF]; // ext2/3/4 magic at superblock offset 56
+    private static readonly byte[] XfsMagic = "XFSB"u8.ToArray(); // XFS superblock magic at offset 0
+    private static readonly byte[] BtrfsMagic = "_BHRfS_M"u8.ToArray(); // btrfs magic at superblock offset 64
+    private static readonly byte[] HfsPlusMagic = [0x48, 0x2B]; // "H+" at offset 0 of volume header
+    private static readonly byte[] HfsxMagic = [0x48, 0x58]; // "HX" for HFSX
+    private static readonly byte[] ApfsNxMagic = "NXSB"u8.ToArray(); // APFS container superblock
+    private static readonly byte[] SwapMagic = "SWAPSPACE2"u8.ToArray(); // Linux swap at page end - 10
 
     public static async Task<RecoveryScanResult> ScanAsync(int diskNumber, long diskSize,
         IActivityLog log, IProgress<double>? progress = null, CancellationToken ct = default)
@@ -231,6 +238,96 @@ public static class PartitionRecoveryScanner
                 SignatureType = "Superblock",
                 Confidence = 70,
                 Details = $"ReFS signature at sector {offset / SECTOR_SIZE}"
+            };
+        }
+
+        if (buffer.Length >= 4 && MatchesAt(buffer, 0, XfsMagic))
+        {
+            long blockSize = buffer.Length >= 8 ? (long)buffer[4] << 24 | (long)buffer[5] << 16 | (long)buffer[6] << 8 | buffer[7] : 0;
+            long totalBlocks = buffer.Length >= 16 ?
+                (long)buffer[8] << 56 | (long)buffer[9] << 48 | (long)buffer[10] << 40 | (long)buffer[11] << 32 |
+                (long)buffer[12] << 24 | (long)buffer[13] << 16 | (long)buffer[14] << 8 | buffer[15] : 0;
+            long estimatedSize = blockSize > 0 && totalBlocks > 0 ? blockSize * totalBlocks : 0;
+
+            return new CandidatePartition
+            {
+                Offset = offset,
+                FileSystem = "XFS",
+                SignatureType = "Superblock",
+                EstimatedSize = estimatedSize,
+                Confidence = 85,
+                Details = $"XFS superblock at sector {offset / SECTOR_SIZE}"
+            };
+        }
+
+        if (buffer.Length >= 4 && MatchesAt(buffer, 0, ApfsNxMagic))
+        {
+            return new CandidatePartition
+            {
+                Offset = offset,
+                FileSystem = "APFS",
+                SignatureType = "Container Superblock",
+                Confidence = 80,
+                Details = $"APFS container superblock at sector {offset / SECTOR_SIZE}"
+            };
+        }
+
+        if (buffer.Length >= 1082 && MatchesAt(buffer, 1024 + 56, Ext2Magic))
+        {
+            int logBlockSize = BitConverter.ToInt32(buffer, 1024 + 24);
+            uint totalBlocks = BitConverter.ToUInt32(buffer, 1024 + 4);
+            long blockSize = 1024L << logBlockSize;
+            long estimatedSize = totalBlocks > 0 && blockSize > 0 ? totalBlocks * blockSize : 0;
+
+            bool hasJournal = (BitConverter.ToUInt32(buffer, 1024 + 96) & 0x04) != 0;
+            bool hasExtents = (BitConverter.ToUInt32(buffer, 1024 + 96) & 0x40) != 0;
+            string fsType = hasExtents ? "ext4" : hasJournal ? "ext3" : "ext2";
+
+            return new CandidatePartition
+            {
+                Offset = offset,
+                FileSystem = fsType,
+                SignatureType = "Superblock",
+                EstimatedSize = estimatedSize,
+                Confidence = 90,
+                Details = $"{fsType} superblock at offset {offset + 1024}"
+            };
+        }
+
+        if (buffer.Length >= 1026 && (MatchesAt(buffer, 1024, HfsPlusMagic) || MatchesAt(buffer, 1024, HfsxMagic)))
+        {
+            var fsType = MatchesAt(buffer, 1024, HfsxMagic) ? "HFSX" : "HFS+";
+            return new CandidatePartition
+            {
+                Offset = offset,
+                FileSystem = fsType,
+                SignatureType = "Volume Header",
+                Confidence = 80,
+                Details = $"{fsType} volume header at offset {offset + 1024}"
+            };
+        }
+
+        if (buffer.Length >= 72 && MatchesAt(buffer, 64, BtrfsMagic))
+        {
+            return new CandidatePartition
+            {
+                Offset = offset,
+                FileSystem = "btrfs",
+                SignatureType = "Superblock",
+                Confidence = 85,
+                Details = $"btrfs superblock at offset {offset + 64}"
+            };
+        }
+
+        if (buffer.Length >= 4096 && MatchesAt(buffer, 4086, SwapMagic))
+        {
+            return new CandidatePartition
+            {
+                Offset = offset,
+                FileSystem = "Linux Swap",
+                SignatureType = "Swap Header",
+                Confidence = 80,
+                Details = $"Linux swap signature at sector {offset / SECTOR_SIZE}"
             };
         }
 
