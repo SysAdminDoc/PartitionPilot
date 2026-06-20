@@ -280,6 +280,100 @@ public class SmartHistoryService
         await File.WriteAllTextAsync(path, JsonSerializer.Serialize(envelope, JsonOpts));
     }
 
+    public static string FormatHtmlReport(PhysicalDiskInfo disk, SmartData? smart,
+        List<SmartReading> history, List<SmartTrend> trends, List<AlignmentInfo> alignments)
+    {
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine("<!DOCTYPE html><html><head><meta charset='utf-8'>");
+        sb.AppendLine("<title>SMART Health Report</title>");
+        sb.AppendLine("<style>body{font-family:system-ui;background:#1e1e2e;color:#cdd6f4;margin:2em;}" +
+            "table{border-collapse:collapse;margin:1em 0}th,td{border:1px solid #45475a;padding:6px 12px;text-align:left}" +
+            "th{background:#313244}h1{color:#89b4fa}h2{color:#a6adc8;border-bottom:1px solid #45475a;padding-bottom:4px}" +
+            ".good{color:#a6e3a1}.warn{color:#f9e2af}.crit{color:#f38ba8}</style>");
+        sb.AppendLine("</head><body>");
+
+        sb.AppendLine($"<h1>SMART Health Report</h1>");
+        sb.AppendLine($"<p>Generated: {DateTimeOffset.Now:yyyy-MM-dd HH:mm:ss}</p>");
+
+        sb.AppendLine("<h2>Drive Information</h2><table>");
+        sb.AppendLine($"<tr><td>Device ID</td><td>{disk.DeviceId}</td></tr>");
+        sb.AppendLine($"<tr><td>Model</td><td>{disk.FriendlyName}</td></tr>");
+        sb.AppendLine($"<tr><td>Size</td><td>{SizeUtil.Format(disk.Size)}</td></tr>");
+        sb.AppendLine($"<tr><td>Media Type</td><td>{disk.MediaType}</td></tr>");
+        sb.AppendLine($"<tr><td>Bus Type</td><td>{disk.BusType}</td></tr>");
+        sb.AppendLine($"<tr><td>Firmware</td><td>{disk.FirmwareVersion}</td></tr>");
+        sb.AppendLine("</table>");
+
+        if (smart is not null)
+        {
+            var healthClass = smart.Health switch { HealthStatus.Good => "good", HealthStatus.Warning => "warn", _ => "crit" };
+            sb.AppendLine("<h2>Health Status</h2>");
+            sb.AppendLine($"<p class='{healthClass}'><strong>{smart.Health}</strong> &mdash; {smart.HealthReason}</p>");
+
+            sb.AppendLine("<h2>SMART Attributes</h2><table><tr><th>Metric</th><th>Value</th></tr>");
+            if (smart.Temperature.HasValue) sb.AppendLine($"<tr><td>Temperature</td><td>{smart.Temperature} C</td></tr>");
+            if (smart.Wear.HasValue) sb.AppendLine($"<tr><td>Wear</td><td>{smart.Wear}%</td></tr>");
+            if (smart.PowerOnHours.HasValue) sb.AppendLine($"<tr><td>Power-On Hours</td><td>{smart.PowerOnHours:N0}</td></tr>");
+            if (smart.PowerCycleCount.HasValue) sb.AppendLine($"<tr><td>Power Cycles</td><td>{smart.PowerCycleCount:N0}</td></tr>");
+            if (smart.ReallocatedSectors.HasValue) sb.AppendLine($"<tr><td>Reallocated Sectors</td><td>{smart.ReallocatedSectors:N0}</td></tr>");
+            if (smart.PendingSectors.HasValue) sb.AppendLine($"<tr><td>Pending Sectors</td><td>{smart.PendingSectors:N0}</td></tr>");
+            if (smart.TotalBytesWritten.HasValue) sb.AppendLine($"<tr><td>Total Written</td><td>{SizeUtil.Format(smart.TotalBytesWritten.Value)}</td></tr>");
+            if (smart.TotalBytesRead.HasValue) sb.AppendLine($"<tr><td>Total Read</td><td>{SizeUtil.Format(smart.TotalBytesRead.Value)}</td></tr>");
+            if (smart.NvmeAvailableSpare.HasValue) sb.AppendLine($"<tr><td>NVMe Available Spare</td><td>{smart.NvmeAvailableSpare}%</td></tr>");
+            if (smart.NvmeMediaErrors.HasValue) sb.AppendLine($"<tr><td>NVMe Media Errors</td><td>{smart.NvmeMediaErrors:N0}</td></tr>");
+            if (smart.NvmeUnsafeShutdowns.HasValue) sb.AppendLine($"<tr><td>Unsafe Shutdowns</td><td>{smart.NvmeUnsafeShutdowns:N0}</td></tr>");
+            if (smart.NvmeControllerBusyMinutes.HasValue) sb.AppendLine($"<tr><td>Controller Busy Time</td><td>{smart.NvmeControllerBusyMinutes:N0} min</td></tr>");
+            if (smart.NvmeErrorLogEntries.HasValue) sb.AppendLine($"<tr><td>Error Log Entries</td><td>{smart.NvmeErrorLogEntries:N0}</td></tr>");
+            if (smart.CriticalWarningFlags.Count > 0) sb.AppendLine($"<tr><td>Critical Warnings</td><td class='crit'>{string.Join(", ", smart.CriticalWarningFlags)}</td></tr>");
+            sb.AppendLine("</table>");
+
+            if (smart.AllAttributes.Count > 0)
+            {
+                sb.AppendLine("<h2>Raw SMART Attributes</h2><table><tr><th>ID</th><th>Name</th><th>Current</th><th>Worst</th><th>Raw</th></tr>");
+                foreach (var a in smart.AllAttributes)
+                    sb.AppendLine($"<tr><td>{a.Id}</td><td>{a.Name}</td><td>{a.Current}</td><td>{a.Worst}</td><td>{a.RawDisplay}</td></tr>");
+                sb.AppendLine("</table>");
+            }
+        }
+
+        if (trends.Count > 0)
+        {
+            sb.AppendLine("<h2>Trend Analysis</h2><table><tr><th>Severity</th><th>Attribute</th><th>Direction</th><th>Message</th></tr>");
+            foreach (var t in trends)
+            {
+                var cls = t.Severity == "Critical" ? "crit" : t.Severity == "Warning" ? "warn" : "";
+                sb.AppendLine($"<tr class='{cls}'><td>{t.Severity}</td><td>{t.Attribute}</td><td>{t.Direction}</td><td>{t.Message}</td></tr>");
+            }
+            sb.AppendLine("</table>");
+        }
+
+        if (history.Count > 0)
+        {
+            sb.AppendLine($"<h2>History ({history.Count} readings)</h2><table>");
+            sb.AppendLine("<tr><th>Timestamp</th><th>Temp</th><th>Wear</th><th>Realloc</th><th>Written</th></tr>");
+            foreach (var r in history.TakeLast(20))
+            {
+                sb.AppendLine($"<tr><td>{r.Timestamp:yyyy-MM-dd HH:mm}</td><td>{r.Temperature?.ToString() ?? "-"}</td>" +
+                    $"<td>{(r.Wear.HasValue ? $"{r.Wear}%" : "-")}</td><td>{r.ReallocatedSectors?.ToString("N0") ?? "-"}</td>" +
+                    $"<td>{(r.TotalBytesWritten.HasValue ? SizeUtil.Format(r.TotalBytesWritten.Value) : "-")}</td></tr>");
+            }
+            sb.AppendLine("</table>");
+        }
+
+        var diskAlignments = alignments.Where(a => a.DiskNumber.ToString() == disk.DeviceId).ToList();
+        if (diskAlignments.Count > 0)
+        {
+            sb.AppendLine("<h2>4K Alignment</h2><table><tr><th>Part</th><th>Letter</th><th>Offset</th><th>Aligned</th></tr>");
+            foreach (var a in diskAlignments)
+                sb.AppendLine($"<tr><td>{a.PartitionNumber}</td><td>{a.LetterDisplay}</td><td>{a.Offset}</td><td>{a.AlignedDisplay}</td></tr>");
+            sb.AppendLine("</table>");
+        }
+
+        sb.AppendLine("<p style='color:#585b70;margin-top:2em;font-size:12px'>Generated by PartitionPilot</p>");
+        sb.AppendLine("</body></html>");
+        return sb.ToString();
+    }
+
     private static string GetFilePath(string deviceId) =>
         Path.Combine(HistoryDir, $"device_{SanitizeDeviceId(deviceId)}.json");
 
