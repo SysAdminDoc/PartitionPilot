@@ -22,6 +22,7 @@ public partial class MainViewModel : ViewModelBase
     public DiskImagesViewModel DiskImages { get; }
     public DiskUsageViewModel DiskUsage { get; }
     public DiskCloningViewModel DiskCloning { get; }
+    public HexViewerViewModel HexViewer { get; }
 
     private string _statusText = "Ready";
     public string StatusText
@@ -85,6 +86,7 @@ public partial class MainViewModel : ViewModelBase
         DiskImages = new DiskImagesViewModel(_processRunner, _wmiService, Log, _dialog);
         DiskUsage = new DiskUsageViewModel(_wmiService, Log);
         DiskCloning = new DiskCloningViewModel(_processRunner, _wmiService, Log, _dialog);
+        HexViewer = new HexViewerViewModel(_wmiService, Log);
 
         TabChangedCommand = new AsyncRelayCommand(OnTabChangedAsync);
         ExportLogCommand = new WpfRelayCommand(_ => ExportLog());
@@ -228,6 +230,10 @@ public partial class MainViewModel : ViewModelBase
             case 6:
                 StatusText = "Loading cloning data...";
                 await DiskCloning.RefreshAsync();
+                break;
+            case 7:
+                StatusText = "Loading hex viewer...";
+                await HexViewer.RefreshAsync();
                 break;
         }
     }

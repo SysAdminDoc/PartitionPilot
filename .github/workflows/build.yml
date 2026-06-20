@@ -69,13 +69,21 @@ jobs:
           path: tests/PartitionPilot.UiTests/bin/Release/**/screenshots/
           if-no-files-found: ignore
 
-      - name: Publish GUI
+      - name: Publish GUI (x64)
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: dotnet publish src\PartitionPilot\PartitionPilot.csproj -c Release -o ./publish/gui
+        run: dotnet publish src\PartitionPilot\PartitionPilot.csproj -c Release -r win-x64 -o ./publish/gui-x64
 
-      - name: Publish CLI
+      - name: Publish CLI (x64)
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: dotnet publish src\PartitionPilot.Cli\PartitionPilot.Cli.csproj -c Release -o ./publish/cli
+        run: dotnet publish src\PartitionPilot.Cli\PartitionPilot.Cli.csproj -c Release -r win-x64 -o ./publish/cli-x64
+
+      - name: Publish GUI (ARM64)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: dotnet publish src\PartitionPilot\PartitionPilot.csproj -c Release -r win-arm64 -o ./publish/gui-arm64
+
+      - name: Publish CLI (ARM64)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: dotnet publish src\PartitionPilot.Cli\PartitionPilot.Cli.csproj -c Release -r win-arm64 -o ./publish/cli-arm64
 
       - name: Generate SBOM
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -88,8 +96,10 @@ jobs:
         shell: pwsh
         run: |
           $files = @(
-            (Get-ChildItem ./publish/gui -File),
-            (Get-ChildItem ./publish/cli -File),
+            (Get-ChildItem ./publish/gui-x64 -File),
+            (Get-ChildItem ./publish/cli-x64 -File),
+            (Get-ChildItem ./publish/gui-arm64 -File),
+            (Get-ChildItem ./publish/cli-arm64 -File),
             (Get-ChildItem ./publish -File -Filter 'sbom-*.json')
           ) | ForEach-Object { $_ }
           $hashes = $files | ForEach-Object {
@@ -106,17 +116,29 @@ jobs:
           name: PartitionPilot-publish
           path: ./publish/
 
-      - name: Attest GUI provenance
+      - name: Attest GUI provenance (x64)
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: actions/attest@v4
         with:
-          subject-path: './publish/gui/PartitionPilot.exe'
+          subject-path: './publish/gui-x64/PartitionPilot.exe'
 
-      - name: Attest CLI provenance
+      - name: Attest GUI provenance (ARM64)
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: actions/attest@v4
         with:
-          subject-path: './publish/cli/pp.exe'
+          subject-path: './publish/gui-arm64/PartitionPilot.exe'
+
+      - name: Attest CLI provenance (x64)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/attest@v4
+        with:
+          subject-path: './publish/cli-x64/pp.exe'
+
+      - name: Attest CLI provenance (ARM64)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/attest@v4
+        with:
+          subject-path: './publish/cli-arm64/pp.exe'
 
       - name: Attest SBOM provenance
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
