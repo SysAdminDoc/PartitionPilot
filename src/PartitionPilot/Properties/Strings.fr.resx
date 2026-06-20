@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" msdata:Ordinal="0" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter</value></resheader>
+
+  <!-- App shell -->
+  <data name="AppTitle" xml:space="preserve"><value>PartitionPilot</value></data>
+  <data name="Refresh" xml:space="preserve"><value>Actualiser</value></data>
+  <data name="ExportLog" xml:space="preserve"><value>Exporter le journal</value></data>
+  <data name="SupportBundle" xml:space="preserve"><value>Lot de support</value></data>
+  <data name="Elevate" xml:space="preserve"><value>Élever</value></data>
+  <data name="ElevateTooltip" xml:space="preserve"><value>Relancer en tant qu'administrateur pour les opérations d'écriture sur disque</value></data>
+  <data name="Ready" xml:space="preserve"><value>Prêt</value></data>
+  <data name="ActivityLog" xml:space="preserve"><value>Journal d'activité</value></data>
+  <data name="ActivityLogDescription" xml:space="preserve"><value>Retour d'opérations, avertissements et preuves de session exportées</value></data>
+
+  <!-- Tab headers -->
+  <data name="TabPartitions" xml:space="preserve"><value>Partitions</value></data>
+  <data name="TabPartitionsSubtitle" xml:space="preserve"><value>Gérer la disposition du stockage</value></data>
+  <data name="TabSnapshots" xml:space="preserve"><value>Instantanés</value></data>
+  <data name="TabSnapshotsSubtitle" xml:space="preserve"><value>Preuves de récupération</value></data>
+  <data name="TabDiskHealth" xml:space="preserve"><value>État du disque</value></data>
+  <data name="TabDiskHealthSubtitle" xml:space="preserve"><value>SMART et alignement</value></data>
+  <data name="TabTools" xml:space="preserve"><value>Outils</value></data>
+  <data name="TabToolsSubtitle" xml:space="preserve"><value>Réparation et maintenance</value></data>
+  <data name="TabDiskImages" xml:space="preserve"><value>Images de disque</value></data>
+  <data name="TabDiskImagesSubtitle" xml:space="preserve"><value>Monter et créer des VHDs</value></data>
+  <data name="TabDiskUsage" xml:space="preserve"><value>Utilisation du disque</value></data>
+  <data name="TabDiskUsageSubtitle" xml:space="preserve"><value>Trouver les dossiers volumineux</value></data>
+  <data name="TabDiskCloning" xml:space="preserve"><value>Clonage de disque</value></data>
+  <data name="TabDiskCloningSubtitle" xml:space="preserve"><value>Copier et restaurer des images</value></data>
+  <data name="TabHexViewer" xml:space="preserve"><value>Visionneuse hexadécimale</value></data>
+  <data name="TabHexViewerSubtitle" xml:space="preserve"><value>Inspection de secteurs bruts</value></data>
+
+  <!-- Status tiles -->
+  <data name="AdminSession" xml:space="preserve"><value>Session administrateur</value></data>
+  <data name="ReadOnlySession" xml:space="preserve"><value>Session en lecture seule</value></data>
+  <data name="DiskChangesAvailable" xml:space="preserve"><value>Modifications de disque disponibles</value></data>
+  <data name="RunAsAdminForWrite" xml:space="preserve"><value>Exécuter en tant qu'administrateur pour les opérations d'écriture</value></data>
+  <data name="SessionState" xml:space="preserve"><value>État de la session</value></data>
+  <data name="StorageConsole" xml:space="preserve"><value>Console de stockage</value></data>
+  <data name="StorageConsoleEngines" xml:space="preserve"><value>WMI, diskpart, PowerShell</value></data>
+
+  <!-- Log filters -->
+  <data name="All" xml:space="preserve"><value>Tous</value></data>
+  <data name="Info" xml:space="preserve"><value>Info</value></data>
+  <data name="Warning" xml:space="preserve"><value>Avertissement</value></data>
+  <data name="Error" xml:space="preserve"><value>Erreur</value></data>
+  <data name="Clear" xml:space="preserve"><value>Effacer</value></data>
+
+  <!-- Common actions -->
+  <data name="Apply" xml:space="preserve"><value>Appliquer</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Annuler</value></data>
+  <data name="Create" xml:space="preserve"><value>Créer</value></data>
+  <data name="Delete" xml:space="preserve"><value>Supprimer</value></data>
+  <data name="Format" xml:space="preserve"><value>Formater</value></data>
+  <data name="Resize" xml:space="preserve"><value>Redimensionner</value></data>
+  <data name="OK" xml:space="preserve"><value>OK</value></data>
+
+  <!-- Disk health -->
+  <data name="DiskHealthTitle" xml:space="preserve"><value>État du disque</value></data>
+  <data name="DiskHealthDescription" xml:space="preserve"><value>Examiner l'état du disque physique, la télémétrie de fiabilité et l'alignement.</value></data>
+  <data name="PhysicalDisk" xml:space="preserve"><value>Disque physique</value></data>
+  <data name="StartMonitoring" xml:space="preserve"><value>Démarrer la surveillance</value></data>
+  <data name="StopMonitoring" xml:space="preserve"><value>Arrêter la surveillance</value></data>
+  <data name="DiskInformation" xml:space="preserve"><value>Informations du disque</value></data>
+  <data name="SmartReliabilityData" xml:space="preserve"><value>Données SMART / Fiabilité</value></data>
+  <data name="SmartTrendAlerts" xml:space="preserve"><value>Alertes de tendance SMART</value></data>
+  <data name="AllSmartAttributes" xml:space="preserve"><value>Tous les attributs SMART</value></data>
+  <data name="AlignmentAudit" xml:space="preserve"><value>Audit d'alignement 4K</value></data>
+  <data name="TemperatureAlerts" xml:space="preserve"><value>Alertes de température</value></data>
+  <data name="Good" xml:space="preserve"><value>Bon</value></data>
+  <data name="Critical" xml:space="preserve"><value>Critique</value></data>
+  <data name="Unknown" xml:space="preserve"><value>Inconnu</value></data>
+
+  <!-- Dialog titles -->
+  <data name="ExportComplete" xml:space="preserve"><value>Exportation terminée</value></data>
+  <data name="ExportError" xml:space="preserve"><value>Erreur d'exportation</value></data>
+  <data name="OperationFailed" xml:space="preserve"><value>Opération échouée</value></data>
+  <data name="OperationsComplete" xml:space="preserve"><value>Opérations terminées</value></data>
+  <data name="SupportBundleExported" xml:space="preserve"><value>Lot de support exporté</value></data>
+  <data name="Confirm" xml:space="preserve"><value>Confirmer</value></data>
+  <data name="ConfirmDelete" xml:space="preserve"><value>Confirmer la suppression</value></data>
+  <data name="ConfirmFormat" xml:space="preserve"><value>Confirmer le formatage</value></data>
+
+  <!-- SMART labels -->
+  <data name="Temperature" xml:space="preserve"><value>Température</value></data>
+  <data name="WearUsed" xml:space="preserve"><value>Usure</value></data>
+  <data name="PowerOnTime" xml:space="preserve"><value>Durée de fonctionnement</value></data>
+  <data name="ReadErrors" xml:space="preserve"><value>Erreurs de lecture</value></data>
+  <data name="WriteErrors" xml:space="preserve"><value>Erreurs d'écriture</value></data>
+  <data name="ReallocatedSectors" xml:space="preserve"><value>Secteurs réalloués</value></data>
+  <data name="PendingSectors" xml:space="preserve"><value>Secteurs en attente</value></data>
+  <data name="PowerCycles" xml:space="preserve"><value>Cycles de démarrage</value></data>
+  <data name="TotalWritten" xml:space="preserve"><value>Total écrit</value></data>
+  <data name="TotalRead" xml:space="preserve"><value>Total lu</value></data>
+  <data name="NvmeAvailableSpare" xml:space="preserve"><value>NVMe réserve disponible</value></data>
+  <data name="NvmeMediaErrors" xml:space="preserve"><value>Erreurs de média NVMe</value></data>
+  <data name="NotAvailable" xml:space="preserve"><value>N/D</value></data>
+
+  <!-- Partitions view -->
+  <data name="PartitionsTitle" xml:space="preserve"><value>Partitions</value></data>
+  <data name="PartitionsDescription" xml:space="preserve"><value>Sélectionnez un disque pour afficher et gérer sa disposition de partitions.</value></data>
+  <data name="SelectDisk" xml:space="preserve"><value>Sélectionner un disque</value></data>
+  <data name="PendingOperations" xml:space="preserve"><value>Opérations en attente</value></data>
+  <data name="NoPendingOperations" xml:space="preserve"><value>Aucune opération en attente</value></data>
+  <data name="ApplyPendingOperations" xml:space="preserve"><value>Appliquer les opérations en attente</value></data>
+  <data name="ClearAll" xml:space="preserve"><value>Tout effacer</value></data>
+  <data name="Remove" xml:space="preserve"><value>Supprimer</value></data>
+  <data name="Extend" xml:space="preserve"><value>Étendre</value></data>
+  <data name="Split" xml:space="preserve"><value>Diviser</value></data>
+  <data name="Merge" xml:space="preserve"><value>Fusionner</value></data>
+  <data name="ChangeLetter" xml:space="preserve"><value>Changer la lettre</value></data>
+  <data name="SetActive" xml:space="preserve"><value>Définir active</value></data>
+  <data name="HideUnhide" xml:space="preserve"><value>Masquer/Afficher</value></data>
+  <data name="InitializeDisk" xml:space="preserve"><value>Initialiser le disque</value></data>
+
+  <!-- Snapshot view -->
+  <data name="SnapshotsTitle" xml:space="preserve"><value>Instantanés de partitions</value></data>
+  <data name="SnapshotsDescription" xml:space="preserve"><value>Examiner les dispositions de partitions enregistrées, comparer à l'état actuel et exporter les preuves de récupération.</value></data>
+  <data name="Export" xml:space="preserve"><value>Exporter</value></data>
+  <data name="Compare" xml:space="preserve"><value>Comparer</value></data>
+  <data name="RecoveryPlan" xml:space="preserve"><value>Plan de récupération</value></data>
+
+  <!-- Disk Usage view -->
+  <data name="DiskUsageTitle" xml:space="preserve"><value>Utilisation du disque</value></data>
+  <data name="DiskUsageDescription" xml:space="preserve"><value>Analyser un lecteur pour voir quels dossiers utilisent le plus d'espace.</value></data>
+  <data name="Scan" xml:space="preserve"><value>Analyser</value></data>
+  <data name="SelectDrive" xml:space="preserve"><value>Sélectionnez un lecteur et cliquez sur Analyser</value></data>
+
+  <!-- Disk Cloning view -->
+  <data name="DiskCloningTitle" xml:space="preserve"><value>Clonage de disque</value></data>
+  <data name="DiskCloningDescription" xml:space="preserve"><value>Créer des images de disque (WIM/VHDX) et les restaurer sur des disques cibles.</value></data>
+  <data name="CreateImage" xml:space="preserve"><value>Créer une image</value></data>
+  <data name="RestoreImage" xml:space="preserve"><value>Restaurer une image</value></data>
+  <data name="SectorClone" xml:space="preserve"><value>Clone sectoriel</value></data>
+  <data name="Browse" xml:space="preserve"><value>Parcourir</value></data>
+  <data name="SourceVolume" xml:space="preserve"><value>Volume source</value></data>
+  <data name="ImagePath" xml:space="preserve"><value>Chemin de l'image</value></data>
+  <data name="TargetDisk" xml:space="preserve"><value>Disque cible</value></data>
+  <data name="SourceDisk" xml:space="preserve"><value>Disque source</value></data>
+  <data name="DestinationDisk" xml:space="preserve"><value>Disque de destination</value></data>
+  <data name="StartClone" xml:space="preserve"><value>Démarrer le clonage</value></data>
+
+  <!-- Disk Images view -->
+  <data name="DiskImagesTitle" xml:space="preserve"><value>Images de disque</value></data>
+  <data name="DiskImagesDescription" xml:space="preserve"><value>Monter, démonter et créer des images de disque virtuel.</value></data>
+  <data name="Mount" xml:space="preserve"><value>Monter</value></data>
+  <data name="Dismount" xml:space="preserve"><value>Démonter</value></data>
+
+  <!-- Tools view -->
+  <data name="ToolsTitle" xml:space="preserve"><value>Outils</value></data>
+  <data name="ToolsDescription" xml:space="preserve"><value>Réparation de disque, maintenance et utilitaires de diagnostic.</value></data>
+  <data name="FilesystemCheck" xml:space="preserve"><value>Vérification du système de fichiers</value></data>
+  <data name="Optimize" xml:space="preserve"><value>Optimiser</value></data>
+  <data name="SecureWipe" xml:space="preserve"><value>Effacement sécurisé</value></data>
+  <data name="BootRepair" xml:space="preserve"><value>Réparation du démarrage</value></data>
+  <data name="SurfaceTest" xml:space="preserve"><value>Test de surface</value></data>
+  <data name="Benchmark" xml:space="preserve"><value>Benchmark</value></data>
+  <data name="DevDrive" xml:space="preserve"><value>Dev Drive</value></data>
+  <data name="MbrToGpt" xml:space="preserve"><value>MBR vers GPT</value></data>
+
+  <!-- Common labels -->
+  <data name="Model" xml:space="preserve"><value>Modèle</value></data>
+  <data name="SerialNumber" xml:space="preserve"><value>Numéro de série</value></data>
+  <data name="Firmware" xml:space="preserve"><value>Micrologiciel</value></data>
+  <data name="MediaType" xml:space="preserve"><value>Type de média</value></data>
+  <data name="BusType" xml:space="preserve"><value>Type de bus</value></data>
+  <data name="Capacity" xml:space="preserve"><value>Capacité</value></data>
+  <data name="Health" xml:space="preserve"><value>État</value></data>
+  <data name="SectorSizes" xml:space="preserve"><value>Tailles de secteur</value></data>
+  <data name="MaxReadLatency" xml:space="preserve"><value>Latence max. lecture</value></data>
+  <data name="MaxWriteLatency" xml:space="preserve"><value>Latence max. écriture</value></data>
+</root>
