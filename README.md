@@ -71,7 +71,7 @@ dotnet run --project .\src\PartitionPilot.Cli\PartitionPilot.Cli.csproj -- parti
 dotnet run --project .\src\PartitionPilot.Cli\PartitionPilot.Cli.csproj -- health --json
 ```
 
-Commands: `disks`, `partitions`, `volumes`, `smart`, `smart-history`, `smart-trends`, `health`, `alignment`, `temperature`, `benchmark`, `snapshot`, `diagnostics`, `plan`, `recovery-scan`, `version`. All support `--json` for scripted automation.
+Commands: `disks`, `partitions`, `volumes`, `smart`, `smart-history`, `smart-trends`, `health`, `alignment`, `temperature`, `benchmark`, `snapshot`, `diagnostics`, `plan`, `apply-layout`, `recovery-scan`, `version`. All support `--json` for scripted automation.
 
 ## Safety
 
