@@ -37,6 +37,7 @@
 - Added real-time disk I/O performance counters: toggle "Start I/O Monitor" on Disk Health tab shows live read/write MB/s, IOPS, queue depth, and latency per physical disk. Uses Windows PhysicalDisk performance counters, updates every 2 seconds.
 - Added image encryption for WIM/VHDX captures: AES-256-GCM with PBKDF2-SHA256 key derivation (600K iterations). Encrypted images use `.enc` suffix. Restore auto-detects encrypted images and prompts for password.
 - Added German, Spanish, and French translations (130+ resource keys each) to validate the i18n pipeline. App auto-loads matching locale via .NET satellite assemblies.
+- Added declarative partition layout spec for CLI: `pp apply-layout --file layout.json --disk N` reads a JSON layout spec, computes a diff against the current disk state, and applies with `--apply`. Dry-run by default.
 
 ## PartitionPilot v0.8.0 - 2026-06-19
 

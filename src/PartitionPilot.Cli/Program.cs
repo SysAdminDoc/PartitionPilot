@@ -33,6 +33,7 @@ try
         "recovery-scan" => await RecoveryScanAsync(),
         "benchmark" => await RunBenchmarkAsync(),
         "temperature" or "temp" => await ShowTemperatureAsync(),
+        "apply-layout" => await ApplyLayoutAsync(),
         "version" => ShowVersion(),
         "help" or "--help" or "-h" => PrintUsage(),
         _ => PrintUnknown(command)
@@ -65,6 +66,7 @@ int PrintUsage()
     Console.WriteLine("  diagnostics               Check environment prerequisites");
     Console.WriteLine("  plan <op> [args]          Preview a partition operation (add --apply to execute)");
     Console.WriteLine("  recovery-scan --disk N    Scan for lost partition signatures (read-only)");
+    Console.WriteLine("  apply-layout --file F --disk N  Apply a partition layout spec (add --apply)");
     Console.WriteLine("  version                   Show version");
     Console.WriteLine();
     Console.WriteLine("Plan operations:");
@@ -682,6 +684,83 @@ async Task<int> ShowTemperatureAsync()
 
     if (json)
         Console.WriteLine(JsonSerializer.Serialize(results, new JsonSerializerOptions { WriteIndented = true }));
+    return 0;
+}
+
+async Task<int> ApplyLayoutAsync()
+{
+    var filePath = ParseStringArg("--file");
+    var diskNum = ParseDiskArg();
+    var apply = args.Contains("--apply", StringComparer.OrdinalIgnoreCase);
+
+    if (string.IsNullOrEmpty(filePath)) { Console.Error.WriteLine("--file <path> required."); return 1; }
+    if (!diskNum.HasValue) { Console.Error.WriteLine("--disk N required."); return 1; }
+    if (!File.Exists(filePath)) { Console.Error.WriteLine($"Layout file not found: {filePath}"); return 1; }
+
+    var specJson = File.ReadAllText(filePath);
+    var spec = JsonSerializer.Deserialize<PartitionLayoutSpec>(specJson,
+        new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+    if (spec is null || spec.Partitions.Count == 0)
+    {
+        Console.Error.WriteLine("Layout spec is empty or invalid.");
+        return 1;
+    }
+
+    var disks = await wmi.GetDisksAsync();
+    var disk = disks.FirstOrDefault(d => d.Number == diskNum.Value);
+    if (disk is null) { Console.Error.WriteLine($"Disk {diskNum.Value} not found."); return 1; }
+
+    var currentPartitions = await wmi.GetPartitionsAsync(diskNum.Value);
+    var diff = LayoutDiffService.ComputeDiff(spec, disk, currentPartitions);
+
+    if (json)
+        Console.WriteLine(JsonSerializer.Serialize(diff.Select(d => new
+        {
+            d.Action, d.Description, d.RiskLevel, d.DiskpartScript, WillApply = apply
+        }), new JsonSerializerOptions { WriteIndented = true }));
+    else
+        Console.Write(LayoutDiffService.FormatPlan(diff));
+
+    if (!apply)
+    {
+        Console.Error.WriteLine("\nDry run — add --apply to execute.");
+        return 0;
+    }
+
+    var hasDestructive = diff.Any(d => d.RiskLevel is "Destructive" or "High");
+    if (hasDestructive)
+    {
+        Console.Error.Write("\nWARNING: This plan includes destructive operations. Type YES to confirm: ");
+        var confirm = Console.ReadLine()?.Trim();
+        if (!string.Equals(confirm, "YES", StringComparison.Ordinal))
+        {
+            Console.Error.WriteLine("Cancelled.");
+            return 1;
+        }
+    }
+
+    foreach (var step in diff)
+    {
+        if (string.IsNullOrEmpty(step.DiskpartScript))
+        {
+            Console.Error.WriteLine($"Skipping: {step.Description} (no automated script)");
+            continue;
+        }
+        Console.Error.WriteLine($"Executing: {step.Description}...");
+        try
+        {
+            await runner.RunDiskpartAsync(step.DiskpartScript, log);
+            Console.Error.WriteLine($"  Done.");
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"  Failed: {ex.Message}");
+            return 1;
+        }
+    }
+
+    Console.Error.WriteLine("Layout applied successfully.");
     return 0;
 }
 
