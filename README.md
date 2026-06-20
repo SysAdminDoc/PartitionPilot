@@ -53,7 +53,7 @@ PartitionPilot is a Windows disk partition management tool for power users and I
 dotnet build .\src\PartitionPilot\PartitionPilot.csproj -m:1
 ```
 
-The project targets `net10.0-windows` and publishes as a self-contained Windows x64 app.
+The project targets `net10.0-windows` and publishes as a self-contained Windows app. CI produces both x64 and ARM64 binaries.
 
 ## Run
 

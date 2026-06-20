@@ -56,6 +56,8 @@
   <data name="TabDiskUsageSubtitle" xml:space="preserve"><value>[Find heavy folders!!]</value></data>
   <data name="TabDiskCloning" xml:space="preserve"><value>[Disk Cloning!!]</value></data>
   <data name="TabDiskCloningSubtitle" xml:space="preserve"><value>[Copy and restore images!!]</value></data>
+  <data name="TabHexViewer" xml:space="preserve"><value>[Hex Viewer!!]</value></data>
+  <data name="TabHexViewerSubtitle" xml:space="preserve"><value>[Raw sector inspection!!]</value></data>
 
   
   <data name="AdminSession" xml:space="preserve"><value>[Admin session!!]</value></data>

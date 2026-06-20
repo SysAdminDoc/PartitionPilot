@@ -194,6 +194,15 @@
                 </TabItem.Header>
                 <views:DiskCloningView DataContext="{Binding DiskCloning}"/>
             </TabItem>
+            <TabItem Style="{StaticResource NavTabItem}" AutomationProperties.Name="Hex Viewer tab">
+                <TabItem.Header>
+                    <StackPanel>
+                        <TextBlock Text="{local:Loc TabHexViewer}" Style="{StaticResource NavTitleText}"/>
+                        <TextBlock Text="{local:Loc TabHexViewerSubtitle}" Style="{StaticResource NavSubtitleText}"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <views:HexViewerView DataContext="{Binding HexViewer}"/>
+            </TabItem>
         </TabControl>
 
         <Border Grid.Row="3"

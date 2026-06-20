@@ -17,6 +17,7 @@
 
 ### UX
 - Added filesystem support matrix dialog showing which operations each filesystem supports, accessible from the command bar.
+- Added read-only hex sector viewer tab: displays raw disk sectors in hex + ASCII, with sector navigation, read-only access to any physical disk.
 - Added FAT32 >32GB formatting via PowerShell Format-Volume (bypasses Windows 32GB diskpart limitation with auto-scaled cluster size).
 - Added pre-clone target signature erasure: first 64KB of destination disk is zeroed before sector clone to prevent ghost filesystem detection.
 
@@ -32,6 +33,7 @@
 - Expanded BitLocker tests from 5 to 17: encryption method mapping, conversion state handling, IsProtected for mid-encryption volumes.
 - Added 4 tests for NVMe Critical Warning flag bitfield parsing.
 - Added pseudo-locale resource completeness CI gate test verifying all 130+ keys have pseudo-locale translations.
+- Added ARM64 build target: CI now produces both x64 and ARM64 self-contained binaries with separate attestation.
 
 ## PartitionPilot v0.8.0 - 2026-06-19
 
