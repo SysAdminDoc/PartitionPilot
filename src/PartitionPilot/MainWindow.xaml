@@ -60,6 +60,11 @@
                             Style="{StaticResource CommandBarButton}"
                             ToolTip="Export a redacted diagnostic bundle for troubleshooting"
                             AutomationProperties.Name="Export support bundle"/>
+                    <Button Content="FS Support"
+                            Command="{Binding ShowFilesystemSupportCommand}"
+                            Style="{StaticResource CommandBarButton}"
+                            ToolTip="Show which operations each filesystem supports"
+                            AutomationProperties.Name="Show filesystem support matrix"/>
                     <Button Content="{Binding ThemeLabel}"
                             Command="{Binding ToggleThemeCommand}"
                             Style="{StaticResource CommandBarButton}"

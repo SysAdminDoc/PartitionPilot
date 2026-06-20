@@ -3,6 +3,7 @@ using System.IO.Compression;
 using System.Security.Principal;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Windows;
 using System.Windows.Input;
 
 namespace PartitionPilot;
@@ -49,6 +50,7 @@ public partial class MainViewModel : ViewModelBase
     public ICommand ExportSupportBundleCommand { get; }
     public ICommand ToggleThemeCommand { get; }
     public ICommand RefreshCurrentCommand { get; }
+    public ICommand ShowFilesystemSupportCommand { get; }
 
     public string VersionText => GetVersionText();
     public string AdminSessionText { get; }
@@ -89,6 +91,7 @@ public partial class MainViewModel : ViewModelBase
         ExportSupportBundleCommand = new AsyncRelayCommand(_ => ExportSupportBundleAsync());
         ToggleThemeCommand = new WpfRelayCommand(_ => ToggleTheme());
         RefreshCurrentCommand = new AsyncRelayCommand(_ => RefreshCurrentAsync());
+        ShowFilesystemSupportCommand = new WpfRelayCommand(_ => ShowFilesystemSupport());
 
         var isAdmin = IsRunningAsAdministrator();
         IsElevated = isAdmin;
@@ -135,6 +138,13 @@ public partial class MainViewModel : ViewModelBase
         var modeName = ThemeService.Preference.ToString().ToLowerInvariant();
         Log.Log($"Theme applied: {modeName} mode.");
         StatusText = $"{ThemeService.Preference} theme applied";
+    }
+
+    private void ShowFilesystemSupport()
+    {
+        var dialog = new Dialogs.FilesystemSupportDialog();
+        dialog.Owner = Application.Current.MainWindow;
+        dialog.ShowDialog();
     }
 
     private void ExportLog()

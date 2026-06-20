@@ -436,12 +436,33 @@ public class PartitionsViewModel : ViewModelBase
                 if (diskNum.HasValue)
                     await _backup.SaveSnapshotAsync(diskNum.Value);
                 using var volumeLock = VolumeLockService.RequireLock(letter, _log);
-                var unitParam = !string.IsNullOrEmpty(allocationUnitSize) ? $"unit={allocationUnitSize} " : "";
-                string script = $"""
-                    select volume {letter}
-                    format fs={fs} label="{label}" {unitParam}{(quick ? "quick" : "")}
-                    """;
-                await _processRunner.RunDiskpartAsync(script, _log);
+
+                var part = FindPartitionByLetter(letter);
+                bool isLargeFat32 = fs.Equals("FAT32", StringComparison.OrdinalIgnoreCase) &&
+                                    part is not null && part.Size > 32L * 1024 * 1024 * 1024;
+
+                if (isLargeFat32)
+                {
+                    var clusterSize = part!.Size switch
+                    {
+                        > 2L * 1024 * 1024 * 1024 * 1024 => 65536,
+                        > 32L * 1024 * 1024 * 1024 => 32768,
+                        _ => 4096
+                    };
+                    _log.Log($"Using format.com for FAT32 >32GB (cluster size {clusterSize})");
+                    var labelArg = string.IsNullOrEmpty(label) ? "" : ProcessRunner.EscapePowerShellString(label);
+                    var ps = $"Format-Volume -DriveLetter '{letter}' -FileSystem FAT32 -AllocationUnitSize {clusterSize}{(string.IsNullOrEmpty(label) ? "" : $" -NewFileSystemLabel {labelArg}")} -Force -Confirm:$false";
+                    await _processRunner.RunPowerShellAsync(ps, _log);
+                }
+                else
+                {
+                    var unitParam = !string.IsNullOrEmpty(allocationUnitSize) ? $"unit={allocationUnitSize} " : "";
+                    string script = $"""
+                        select volume {letter}
+                        format fs={fs} label="{label}" {unitParam}{(quick ? "quick" : "")}
+                        """;
+                    await _processRunner.RunDiskpartAsync(script, _log);
+                }
             }
         });
 

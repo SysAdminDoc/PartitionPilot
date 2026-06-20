@@ -15,6 +15,11 @@
 - Added CLI SMART trends command: `pp smart-trends --disk N` shows trend analysis with severity levels.
 - Added CLI temperature command: `pp temperature` shows current temperatures for all physical disks with threshold warnings.
 
+### UX
+- Added filesystem support matrix dialog showing which operations each filesystem supports, accessible from the command bar.
+- Added FAT32 >32GB formatting via PowerShell Format-Volume (bypasses Windows 32GB diskpart limitation with auto-scaled cluster size).
+- Added pre-clone target signature erasure: first 64KB of destination disk is zeroed before sector clone to prevent ghost filesystem detection.
+
 ### Health & Monitoring
 - Added full NVMe health log: Unsafe Shutdowns, Controller Busy Time, Error Information Log Entries, Critical Warning flags (spare low, temp exceeded, reliability degraded, read-only, backup failed) via IOCTL_STORAGE_QUERY_PROPERTY.
 - Added SMART self-test triggers: "Short Test" and "Extended Test" buttons on Disk Health tab invoke smartctl for both SATA and NVMe drives. Status and estimated duration displayed inline.
@@ -23,6 +28,7 @@
 - Added 5 tests for SectorCloneResult (report formatting, verification, bad sectors, phase display).
 - Expanded BitLocker tests from 5 to 17: encryption method mapping, conversion state handling, IsProtected for mid-encryption volumes.
 - Added 4 tests for NVMe Critical Warning flag bitfield parsing.
+- Added pseudo-locale resource completeness CI gate test verifying all 130+ keys have pseudo-locale translations.
 
 ## PartitionPilot v0.8.0 - 2026-06-19
 

@@ -134,6 +134,8 @@ public static class SectorCloneService
             DeviceIoControl(destHandle, FSCTL_LOCK_VOLUME, IntPtr.Zero, 0, IntPtr.Zero, 0, out _, IntPtr.Zero);
             DeviceIoControl(destHandle, FSCTL_DISMOUNT_VOLUME, IntPtr.Zero, 0, IntPtr.Zero, 0, out _, IntPtr.Zero);
 
+            EraseTargetSignatures(destHandle, log);
+
             var copyResult = await Task.Run(() => CopyLoop(sourceHandle, destHandle, sourceSize, log, progress, ct, rescue), ct);
             result.BytesCopied = copyResult.BytesCopied;
             result.CopyDuration = copyResult.CopyDuration;
@@ -195,6 +197,16 @@ public static class SectorCloneService
             CloseHandle(destHandle);
             CloseHandle(sourceHandle);
         }
+    }
+
+    private static void EraseTargetSignatures(IntPtr destHandle, IActivityLog log)
+    {
+        const int eraseSize = 65536;
+        var zeroBlock = new byte[eraseSize];
+        if (WriteFile(destHandle, zeroBlock, eraseSize, out int written, IntPtr.Zero) && written == eraseSize)
+            log.Log("Erased first 64KB of destination to clear existing filesystem signatures");
+        else
+            log.Log("Warning: could not erase destination signatures (clone will overwrite anyway)");
     }
 
     private static (long BytesCopied, TimeSpan CopyDuration, List<long> BadSectors) CopyLoop(

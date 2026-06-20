@@ -1,3 +1,6 @@
+using System.Globalization;
+using System.Resources;
+
 namespace PartitionPilot.Tests;
 
 public class LocExtensionTests
@@ -70,5 +73,42 @@ public class LocExtensionTests
     {
         var result = LocExtension.Get(key);
         Assert.False(string.IsNullOrEmpty(result));
+    }
+
+    [Fact]
+    public void PseudoLocale_HasAllKeysFromDefaultResources()
+    {
+        var asm = typeof(LocExtension).Assembly;
+        var rm = new ResourceManager("PartitionPilot.Properties.Strings", asm);
+
+        var defaultSet = rm.GetResourceSet(CultureInfo.InvariantCulture, true, false);
+        Assert.NotNull(defaultSet);
+
+        var pseudoSet = rm.GetResourceSet(new CultureInfo("qps-ploc"), true, false);
+
+        var defaultKeys = new List<string>();
+        var enumerator = defaultSet!.GetEnumerator();
+        while (enumerator.MoveNext())
+        {
+            if (enumerator.Key is string key)
+                defaultKeys.Add(key);
+        }
+
+        Assert.True(defaultKeys.Count >= 130, $"Expected >=130 resource keys, found {defaultKeys.Count}");
+
+        if (pseudoSet is not null)
+        {
+            var pseudoKeys = new HashSet<string>();
+            var pseudoEnum = pseudoSet.GetEnumerator();
+            while (pseudoEnum.MoveNext())
+            {
+                if (pseudoEnum.Key is string key)
+                    pseudoKeys.Add(key);
+            }
+
+            var missing = defaultKeys.Where(k => !pseudoKeys.Contains(k)).ToList();
+            Assert.True(missing.Count == 0,
+                $"Pseudo-locale is missing {missing.Count} key(s): {string.Join(", ", missing.Take(10))}");
+        }
     }
 }
