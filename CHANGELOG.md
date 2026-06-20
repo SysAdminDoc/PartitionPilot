@@ -1,5 +1,24 @@
 # Changelog
 
+## PartitionPilot v0.9.0 - 2026-06-20
+
+### Safety & Reliability
+- Added post-clone verification pass: after sector clone, source and destination are re-read and compared block-by-block. Mismatches are reported with count and duration.
+- Added bad-sector rescue mode for sector clone: when enabled, read failures zero the destination block and log the offset instead of aborting. Final report lists all bad sectors with count and percentage.
+- Added journal-save failure logging: OperationQueue now logs warnings when crash-recovery journal writes fail instead of silently swallowing errors.
+- Enhanced BitLocker status display: shows encryption method (XTS-AES-128, AES-256, etc.), conversion state (Encrypting/Decrypting/Paused with progress), and lock status. Mid-encryption volumes are now correctly treated as protected.
+- Added pre-clone target signature erasure checkbox and verify-after-clone checkbox to the Disk Cloning UI.
+
+### Features
+- Added CLI benchmark command: `pp benchmark --drive C` runs DiskSpd profiles and outputs results in text or JSON.
+- Added CLI SMART history command: `pp smart-history --disk N` shows recorded SMART readings over time.
+- Added CLI SMART trends command: `pp smart-trends --disk N` shows trend analysis with severity levels.
+- Added CLI temperature command: `pp temperature` shows current temperatures for all physical disks with threshold warnings.
+
+### Quality
+- Added 5 tests for SectorCloneResult (report formatting, verification, bad sectors, phase display).
+- Expanded BitLocker tests from 5 to 17: encryption method mapping, conversion state handling, IsProtected for mid-encryption volumes.
+
 ## PartitionPilot v0.8.0 - 2026-06-19
 
 ### Safety & Reliability

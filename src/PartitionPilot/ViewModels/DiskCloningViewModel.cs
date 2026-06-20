@@ -78,6 +78,20 @@ public class DiskCloningViewModel : ViewModelBase
     }
 
     // Sector Clone
+    private bool _cloneRescueMode;
+    public bool CloneRescueMode
+    {
+        get => _cloneRescueMode;
+        set => SetProperty(ref _cloneRescueMode, value);
+    }
+
+    private bool _cloneVerify = true;
+    public bool CloneVerify
+    {
+        get => _cloneVerify;
+        set => SetProperty(ref _cloneVerify, value);
+    }
+
     private DiskInfo? _cloneSourceDisk;
     public DiskInfo? CloneSourceDisk
     {
@@ -539,15 +553,18 @@ public class DiskCloningViewModel : ViewModelBase
                 StatusText = $"Cloning... {p.PercentComplete:F1}%";
             });
 
-            await SectorCloneService.CloneAsync(
+            var cloneResult = await SectorCloneService.CloneAsync(
                 CloneSourceDisk.Number, CloneDestDisk.Number, CloneSourceDisk.Size,
-                _log, progress, ct);
+                _log, progress, ct, rescue: CloneRescueMode, verify: CloneVerify);
 
-            CloneProgressText = "Clone complete.";
             CloneProgressPercent = 100;
-            _dialog.ShowInfo(
-                $"Sector clone complete.\n\nDisk {CloneSourceDisk.Number} -> Disk {CloneDestDisk.Number}\n{SizeUtil.Format(CloneSourceDisk.Size)} copied.",
-                "Clone Complete");
+            CloneProgressText = cloneResult.FormatReport();
+
+            var summary = $"Sector clone complete.\n\nDisk {CloneSourceDisk.Number} -> Disk {CloneDestDisk.Number}\n{cloneResult.FormatReport()}";
+            if (cloneResult.HasBadSectors || !cloneResult.VerificationPassed)
+                _dialog.ShowWarning(summary, "Clone Complete (With Warnings)");
+            else
+                _dialog.ShowInfo(summary, "Clone Complete");
         }
         catch (OperationCanceledException)
         {
