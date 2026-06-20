@@ -2,7 +2,8 @@ namespace PartitionPilot;
 
 public static class BitLockerPreflight
 {
-    public static string MapStatus(int protectionStatus, int? lockStatus)
+    public static string MapStatus(int protectionStatus, int? lockStatus,
+        int? conversionStatus = null, int? encryptionMethod = null)
     {
         var status = protectionStatus switch
         {
@@ -12,18 +13,51 @@ public static class BitLockerPreflight
             _ => "BitLocker: Unknown"
         };
 
-        if (status == "BitLocker: Off" || lockStatus is null)
+        if (status == "BitLocker: Off" && conversionStatus is not (2 or 3 or 4 or 5))
             return status;
 
-        var lockText = lockStatus switch
+        if (conversionStatus is 2 or 3 or 4 or 5)
         {
-            0 => "Unlocked",
-            1 => "Locked",
-            _ => "Lock status unknown"
-        };
+            status = conversionStatus switch
+            {
+                2 => "BitLocker: Encrypting",
+                3 => "BitLocker: Decrypting",
+                4 => "BitLocker: Encryption Paused",
+                5 => "BitLocker: Decryption Paused",
+                _ => status
+            };
+        }
 
-        return $"{status} ({lockText})";
+        var details = new List<string>();
+
+        var methodText = MapEncryptionMethod(encryptionMethod);
+        if (methodText is not null)
+            details.Add(methodText);
+
+        if (lockStatus is not null)
+        {
+            var lockText = lockStatus switch
+            {
+                0 => "Unlocked",
+                1 => "Locked",
+                _ => (string?)null
+            };
+            if (lockText is not null)
+                details.Add(lockText);
+        }
+
+        return details.Count > 0 ? $"{status} ({string.Join(", ", details)})" : status;
     }
+
+    public static string? MapEncryptionMethod(int? method) => method switch
+    {
+        3 => "AES-128",
+        4 => "AES-256",
+        5 => "Hardware",
+        6 => "XTS-AES-128",
+        7 => "XTS-AES-256",
+        _ => null
+    };
 
     public static bool IsProtected(string? encryptionStatus)
     {
@@ -31,7 +65,11 @@ public static class BitLockerPreflight
             return false;
 
         return encryptionStatus.Contains("BitLocker: On", StringComparison.OrdinalIgnoreCase) ||
-               encryptionStatus.Contains("BitLocker: Unknown", StringComparison.OrdinalIgnoreCase);
+               encryptionStatus.Contains("BitLocker: Unknown", StringComparison.OrdinalIgnoreCase) ||
+               encryptionStatus.Contains("BitLocker: Encrypting", StringComparison.OrdinalIgnoreCase) ||
+               encryptionStatus.Contains("BitLocker: Decrypting", StringComparison.OrdinalIgnoreCase) ||
+               encryptionStatus.Contains("BitLocker: Encryption Paused", StringComparison.OrdinalIgnoreCase) ||
+               encryptionStatus.Contains("BitLocker: Decryption Paused", StringComparison.OrdinalIgnoreCase);
     }
 
     public static bool IsLocked(string? encryptionStatus)

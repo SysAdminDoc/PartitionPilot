@@ -82,7 +82,8 @@ public class OperationQueue
                 log.Log($"Applying operation {i + 1}/{total}: {op.Description}");
 
                 OperationJournalService.UpdateEntry(journal, i, JournalEntryStatus.Applying);
-                try { await OperationJournalService.SaveAsync(journal); } catch { }
+                try { await OperationJournalService.SaveAsync(journal); }
+                catch (Exception ex) { log.Log($"Journal write failed (non-fatal): {ex.Message}"); }
 
                 try
                 {
@@ -92,7 +93,8 @@ public class OperationQueue
                     log.Log($"Operation {i + 1} completed: {op.Description}");
 
                     OperationJournalService.UpdateEntry(journal, i, JournalEntryStatus.Completed);
-                    try { await OperationJournalService.SaveAsync(journal); } catch { }
+                    try { await OperationJournalService.SaveAsync(journal); }
+                    catch (Exception ex) { log.Log($"Journal write failed (non-fatal): {ex.Message}"); }
                 }
                 catch (Exception ex)
                 {
@@ -102,7 +104,8 @@ public class OperationQueue
                     OperationJournalService.UpdateEntry(journal, i, JournalEntryStatus.Failed, ex.Message);
                     for (int j = i + 1; j < snapshot.Count; j++)
                         OperationJournalService.UpdateEntry(journal, j, JournalEntryStatus.Skipped);
-                    try { await OperationJournalService.SaveAsync(journal); } catch { }
+                    try { await OperationJournalService.SaveAsync(journal); }
+                    catch (Exception jex) { log.Log($"Journal write failed (non-fatal): {jex.Message}"); }
 
                     dialog.ShowError(
                         $"Operation failed: {op.Description}\n\n{ex.Message}\n\n" +
@@ -116,7 +119,8 @@ public class OperationQueue
                 Pending.Remove(op);
 
             OperationJournalService.MarkCompleted(journal);
-            try { await OperationJournalService.SaveAsync(journal); } catch { }
+            try { await OperationJournalService.SaveAsync(journal); }
+            catch (Exception ex) { log.Log($"Journal write failed (non-fatal): {ex.Message}"); }
 
             if (failed == 0)
             {

@@ -23,12 +23,16 @@ try
         "partitions" => await ListPartitionsAsync(),
         "volumes" => await ListVolumesAsync(),
         "smart" => await ShowSmartAsync(),
+        "smart-history" => await ShowSmartHistoryAsync(),
+        "smart-trends" => await ShowSmartTrendsAsync(),
         "health" => await ShowHealthAsync(),
         "alignment" => await ShowAlignmentAsync(),
         "snapshot" => await CaptureSnapshotAsync(),
         "diagnostics" or "diag" => await RunDiagnosticsAsync(),
         "plan" => await PlanOperationAsync(),
         "recovery-scan" => await RecoveryScanAsync(),
+        "benchmark" => await RunBenchmarkAsync(),
+        "temperature" or "temp" => await ShowTemperatureAsync(),
         "version" => ShowVersion(),
         "help" or "--help" or "-h" => PrintUsage(),
         _ => PrintUnknown(command)
@@ -51,8 +55,12 @@ int PrintUsage()
     Console.WriteLine("  partitions [--disk N]     List partitions (all disks or specific disk)");
     Console.WriteLine("  volumes                   List volumes with drive letters");
     Console.WriteLine("  smart --disk N            Show SMART data for a physical disk");
+    Console.WriteLine("  smart-history --disk N    Show SMART history readings");
+    Console.WriteLine("  smart-trends --disk N     Show SMART trend analysis");
     Console.WriteLine("  health                    Show health status for all physical disks");
     Console.WriteLine("  alignment                 Check 4K alignment for all partitions");
+    Console.WriteLine("  temperature               Show current disk temperatures");
+    Console.WriteLine("  benchmark --drive C       Run DiskSpd benchmark on a drive");
     Console.WriteLine("  snapshot --disk N         Capture partition layout snapshot to JSON");
     Console.WriteLine("  diagnostics               Check environment prerequisites");
     Console.WriteLine("  plan <op> [args]          Preview a partition operation (add --apply to execute)");
@@ -524,6 +532,149 @@ async Task<int> RunDiagnosticsAsync()
 int ShowVersion()
 {
     Console.WriteLine($"PartitionPilot CLI v{UpdateService.GetCurrentVersion()}");
+    return 0;
+}
+
+async Task<int> RunBenchmarkAsync()
+{
+    var driveStr = ParseStringArg("--drive");
+    if (string.IsNullOrEmpty(driveStr) || driveStr.Length != 1 || !char.IsLetter(driveStr[0]))
+    {
+        Console.Error.WriteLine("--drive C required (single drive letter).");
+        return 1;
+    }
+
+    var letter = char.ToUpperInvariant(driveStr[0]);
+    Console.Error.WriteLine($"Ensuring DiskSpd is available...");
+    await DiskSpdService.EnsureAvailableAsync(log, CancellationToken.None);
+
+    Console.Error.WriteLine($"Running benchmark on {letter}:...");
+    var progress = new Progress<string>(s => Console.Error.WriteLine($"  {s}"));
+    var result = await DiskSpdService.RunProfilesAsync(letter, log, progress, CancellationToken.None);
+
+    if (json)
+    {
+        Console.WriteLine(JsonSerializer.Serialize(new
+        {
+            result.DriveLetter, result.DriveModel, DriveCapacity = result.DriveCapacityBytes,
+            result.Timestamp,
+            result.SeqReadMBps, result.SeqWriteMBps,
+            result.Rnd4kReadMBps, result.Rnd4kWriteMBps,
+            result.Rnd4kReadIOPS, result.Rnd4kWriteIOPS
+        }, new JsonSerializerOptions { WriteIndented = true }));
+    }
+    else
+    {
+        Console.WriteLine($"Benchmark Results — {letter}: ({result.DriveModel})");
+        Console.WriteLine(new string('-', 50));
+        Console.WriteLine($"  SEQ1M     Read:  {result.SeqReadMBps,8:F1} MB/s   Write: {result.SeqWriteMBps,8:F1} MB/s");
+        Console.WriteLine($"  RND4K     Read:  {result.Rnd4kReadMBps,8:F1} MB/s   Write: {result.Rnd4kWriteMBps,8:F1} MB/s");
+        Console.WriteLine($"  RND4K     IOPS:  {result.Rnd4kReadIOPS,8:F0}         IOPS:  {result.Rnd4kWriteIOPS,8:F0}");
+    }
+    return 0;
+}
+
+async Task<int> ShowSmartHistoryAsync()
+{
+    var diskNum = ParseDiskArg();
+    if (!diskNum.HasValue) { Console.Error.WriteLine("--disk N required."); return 1; }
+
+    var history = new SmartHistoryService();
+    var readings = await history.GetHistoryAsync(diskNum.Value.ToString());
+
+    if (json)
+    {
+        Console.WriteLine(JsonSerializer.Serialize(readings.Select(r => new
+        {
+            r.Timestamp, r.Temperature, r.Wear, r.ReallocatedSectors, r.PendingSectors,
+            r.PowerOnHours, r.TotalBytesWritten,
+            r.NvmeAvailableSpare, r.NvmeMediaErrors
+        }), new JsonSerializerOptions { WriteIndented = true }));
+        return 0;
+    }
+
+    if (readings.Count == 0)
+    {
+        Console.WriteLine($"No SMART history for disk {diskNum.Value}.");
+        return 0;
+    }
+
+    Console.WriteLine($"SMART History — Disk {diskNum.Value} ({readings.Count} readings)");
+    Console.WriteLine($"{"Timestamp",-22} {"Temp",-6} {"Wear",-6} {"Realloc",-8} {"Pending",-8} {"POH",-8} Written");
+    Console.WriteLine(new string('-', 76));
+    foreach (var r in readings)
+    {
+        Console.WriteLine($"{r.Timestamp:yyyy-MM-dd HH:mm}  {(r.Temperature.HasValue ? $"{r.Temperature}C" : "-"),-6} " +
+            $"{(r.Wear.HasValue ? $"{r.Wear}%" : "-"),-6} " +
+            $"{r.ReallocatedSectors?.ToString("N0") ?? "-",-8} " +
+            $"{r.PendingSectors?.ToString("N0") ?? "-",-8} " +
+            $"{r.PowerOnHours?.ToString("N0") ?? "-",-8} " +
+            $"{(r.TotalBytesWritten.HasValue ? SizeUtil.Format(r.TotalBytesWritten.Value) : "-")}");
+    }
+    return 0;
+}
+
+async Task<int> ShowSmartTrendsAsync()
+{
+    var diskNum = ParseDiskArg();
+    if (!diskNum.HasValue) { Console.Error.WriteLine("--disk N required."); return 1; }
+
+    var history = new SmartHistoryService();
+    var readings = await history.GetHistoryAsync(diskNum.Value.ToString());
+    var trends = SmartHistoryService.AnalyzeTrends(readings);
+
+    if (json)
+    {
+        Console.WriteLine(JsonSerializer.Serialize(trends.Select(t => new
+        {
+            t.Attribute, Direction = t.Direction.ToString(), Severity = t.Severity.ToString(), t.Message
+        }), new JsonSerializerOptions { WriteIndented = true }));
+        return 0;
+    }
+
+    if (trends.Count == 0)
+    {
+        Console.WriteLine($"No trends detected for disk {diskNum.Value} (need multiple readings).");
+        return 0;
+    }
+
+    Console.WriteLine($"SMART Trends — Disk {diskNum.Value}");
+    Console.WriteLine($"{"Severity",-10} {"Attribute",-24} {"Direction",-12} Message");
+    Console.WriteLine(new string('-', 76));
+    foreach (var t in trends)
+    {
+        Console.WriteLine($"{t.Severity,-10} {t.Attribute,-24} {t.Direction,-12} {t.Message}");
+    }
+    return 0;
+}
+
+async Task<int> ShowTemperatureAsync()
+{
+    var physicals = await wmi.GetPhysicalDisksAsync();
+    var results = new List<object>();
+
+    foreach (var p in physicals)
+    {
+        var smart = await wmi.GetSmartDataAsync(p.DeviceId);
+        var temp = smart?.Temperature;
+        if (json)
+        {
+            results.Add(new { p.DeviceId, p.FriendlyName, p.MediaType, Temperature = temp });
+            continue;
+        }
+
+        var tempText = temp.HasValue ? $"{temp}°C" : "N/A";
+        var warn = temp switch
+        {
+            >= 65 => " [CRITICAL]",
+            >= 55 => " [WARNING]",
+            _ => ""
+        };
+        Console.WriteLine($"Disk {p.DeviceId}: {p.FriendlyName,-30} {tempText}{warn}");
+    }
+
+    if (json)
+        Console.WriteLine(JsonSerializer.Serialize(results, new JsonSerializerOptions { WriteIndented = true }));
     return 0;
 }
 

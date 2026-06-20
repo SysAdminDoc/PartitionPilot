@@ -95,4 +95,64 @@ public class SectorCloneServiceTests
         var progress = new SectorCloneProgress { BytesCopied = 500, TotalBytes = 1000 };
         Assert.Contains("50.0%", progress.ProgressText);
     }
+
+    [Fact]
+    public void SectorCloneProgress_ProgressText_IncludesPhase()
+    {
+        var progress = new SectorCloneProgress { BytesCopied = 500, TotalBytes = 1000, Phase = "Verifying" };
+        Assert.StartsWith("Verifying:", progress.ProgressText);
+    }
+
+    [Fact]
+    public void SectorCloneResult_FormatReport_ShowsBadSectors()
+    {
+        var result = new SectorCloneResult
+        {
+            BytesCopied = 1_048_576,
+            TotalBytes = 1_048_576,
+            CopyDuration = TimeSpan.FromSeconds(5),
+            BadSectorOffsets = new List<long> { 0, 1_048_576 }
+        };
+        var report = result.FormatReport();
+        Assert.Contains("Bad sectors: 2", report);
+    }
+
+    [Fact]
+    public void SectorCloneResult_FormatReport_ShowsVerificationPassed()
+    {
+        var result = new SectorCloneResult
+        {
+            BytesCopied = 1_048_576,
+            TotalBytes = 1_048_576,
+            CopyDuration = TimeSpan.FromSeconds(5),
+            VerificationPassed = true,
+            VerifyDuration = TimeSpan.FromSeconds(3)
+        };
+        var report = result.FormatReport();
+        Assert.Contains("PASSED", report);
+    }
+
+    [Fact]
+    public void SectorCloneResult_FormatReport_ShowsVerificationFailed()
+    {
+        var result = new SectorCloneResult
+        {
+            BytesCopied = 1_048_576,
+            TotalBytes = 1_048_576,
+            CopyDuration = TimeSpan.FromSeconds(5),
+            VerificationPassed = false,
+            VerificationMismatches = 3,
+            VerifyDuration = TimeSpan.FromSeconds(3)
+        };
+        var report = result.FormatReport();
+        Assert.Contains("FAILED", report);
+        Assert.Contains("3 mismatched", report);
+    }
+
+    [Fact]
+    public void SectorCloneResult_HasBadSectors_ReturnsFalseWhenEmpty()
+    {
+        var result = new SectorCloneResult();
+        Assert.False(result.HasBadSectors);
+    }
 }

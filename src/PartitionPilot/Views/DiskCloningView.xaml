@@ -135,6 +135,14 @@
                                       ItemTemplate="{StaticResource DiskInfoComboTemplate}"
                                       Height="34" Margin="0,0,0,10"
                                       AutomationProperties.Name="Clone destination disk"/>
+                            <CheckBox Content="Verify after clone"
+                                     IsChecked="{Binding CloneVerify}"
+                                     Margin="0,0,0,4"
+                                     AutomationProperties.Name="Verify clone after completion"/>
+                            <CheckBox Content="Rescue mode (continue on read errors)"
+                                     IsChecked="{Binding CloneRescueMode}"
+                                     Margin="0,0,0,10"
+                                     AutomationProperties.Name="Rescue mode for bad sectors"/>
                             <TextBlock Text="{Binding CloneSizeSummary}"
                                        Style="{StaticResource CaptionText}"
                                        TextWrapping="Wrap"

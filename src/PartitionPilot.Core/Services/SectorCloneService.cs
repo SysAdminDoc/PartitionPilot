@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 
 namespace PartitionPilot;
 
@@ -11,9 +12,43 @@ public class SectorCloneProgress
     public double BytesPerSecond { get; set; }
     public TimeSpan Elapsed { get; set; }
     public TimeSpan EstimatedRemaining { get; set; }
+    public string Phase { get; set; } = "Copying";
 
     public string RateText => BytesPerSecond > 0 ? $"{SizeUtil.Format((long)BytesPerSecond)}/s" : "";
-    public string ProgressText => $"{SizeUtil.Format(BytesCopied)} / {SizeUtil.Format(TotalBytes)} ({PercentComplete:F1}%)";
+    public string ProgressText => $"{Phase}: {SizeUtil.Format(BytesCopied)} / {SizeUtil.Format(TotalBytes)} ({PercentComplete:F1}%)";
+}
+
+public class SectorCloneResult
+{
+    public long BytesCopied { get; set; }
+    public long TotalBytes { get; set; }
+    public TimeSpan CopyDuration { get; set; }
+    public List<long> BadSectorOffsets { get; set; } = new();
+    public bool VerificationPassed { get; set; }
+    public int VerificationMismatches { get; set; }
+    public TimeSpan VerifyDuration { get; set; }
+
+    public bool HasBadSectors => BadSectorOffsets.Count > 0;
+
+    public string FormatReport()
+    {
+        var lines = new List<string>
+        {
+            $"Clone: {SizeUtil.Format(BytesCopied)} of {SizeUtil.Format(TotalBytes)} in {CopyDuration:hh\\:mm\\:ss}"
+        };
+
+        if (HasBadSectors)
+            lines.Add($"Bad sectors: {BadSectorOffsets.Count} ({BadSectorOffsets.Count * 100.0 / (TotalBytes / 1048576):F4}% of blocks)");
+
+        if (VerifyDuration > TimeSpan.Zero)
+        {
+            lines.Add(VerificationPassed
+                ? $"Verification: PASSED in {VerifyDuration:hh\\:mm\\:ss}"
+                : $"Verification: FAILED — {VerificationMismatches} mismatched block(s) in {VerifyDuration:hh\\:mm\\:ss}");
+        }
+
+        return string.Join("\n", lines);
+    }
 }
 
 public static class SectorCloneService
@@ -71,13 +106,15 @@ public static class SectorCloneService
             throw new InvalidOperationException("Cannot clone to a Storage Spaces pooled disk.");
     }
 
-    public static async Task CloneAsync(int sourceDiskNumber, int destDiskNumber, long sourceSize,
-        IActivityLog log, IProgress<SectorCloneProgress>? progress = null, CancellationToken ct = default)
+    public static async Task<SectorCloneResult> CloneAsync(int sourceDiskNumber, int destDiskNumber, long sourceSize,
+        IActivityLog log, IProgress<SectorCloneProgress>? progress = null, CancellationToken ct = default,
+        bool rescue = false, bool verify = true)
     {
         var sourcePath = $"\\\\.\\PhysicalDrive{sourceDiskNumber}";
         var destPath = $"\\\\.\\PhysicalDrive{destDiskNumber}";
+        var result = new SectorCloneResult { TotalBytes = sourceSize };
 
-        log.Log($"Starting sector clone: Disk {sourceDiskNumber} -> Disk {destDiskNumber} ({SizeUtil.Format(sourceSize)})");
+        log.Log($"Starting sector clone: Disk {sourceDiskNumber} -> Disk {destDiskNumber} ({SizeUtil.Format(sourceSize)}){(rescue ? " [rescue mode]" : "")}");
 
         var sourceHandle = CreateFileW(sourcePath, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
             IntPtr.Zero, OPEN_EXISTING, FILE_FLAG_NO_BUFFERING, IntPtr.Zero);
@@ -97,9 +134,61 @@ public static class SectorCloneService
             DeviceIoControl(destHandle, FSCTL_LOCK_VOLUME, IntPtr.Zero, 0, IntPtr.Zero, 0, out _, IntPtr.Zero);
             DeviceIoControl(destHandle, FSCTL_DISMOUNT_VOLUME, IntPtr.Zero, 0, IntPtr.Zero, 0, out _, IntPtr.Zero);
 
-            await Task.Run(() => CopyLoop(sourceHandle, destHandle, sourceSize, log, progress, ct), ct);
+            var copyResult = await Task.Run(() => CopyLoop(sourceHandle, destHandle, sourceSize, log, progress, ct, rescue), ct);
+            result.BytesCopied = copyResult.BytesCopied;
+            result.CopyDuration = copyResult.CopyDuration;
+            result.BadSectorOffsets = copyResult.BadSectors;
 
-            log.Log($"Sector clone complete: {SizeUtil.Format(sourceSize)} copied from Disk {sourceDiskNumber} to Disk {destDiskNumber}");
+            if (result.HasBadSectors)
+                log.Log($"Sector clone completed with {result.BadSectorOffsets.Count} bad sector(s) zeroed");
+
+            log.Log($"Sector clone complete: {SizeUtil.Format(result.BytesCopied)} copied from Disk {sourceDiskNumber} to Disk {destDiskNumber}");
+        }
+        finally
+        {
+            CloseHandle(destHandle);
+            CloseHandle(sourceHandle);
+        }
+
+        if (verify)
+        {
+            log.Log("Starting post-clone verification...");
+            var verifyResult = await VerifyAsync(sourceDiskNumber, destDiskNumber, sourceSize, log, progress, ct);
+            result.VerificationPassed = verifyResult.Passed;
+            result.VerificationMismatches = verifyResult.Mismatches;
+            result.VerifyDuration = verifyResult.Duration;
+
+            if (verifyResult.Passed)
+                log.Log($"Verification passed: all {SizeUtil.Format(sourceSize)} verified in {verifyResult.Duration:hh\\:mm\\:ss}");
+            else
+                log.Log($"Verification FAILED: {verifyResult.Mismatches} mismatched block(s) detected");
+        }
+
+        return result;
+    }
+
+    public static async Task<VerifyResult> VerifyAsync(int sourceDiskNumber, int destDiskNumber, long totalBytes,
+        IActivityLog log, IProgress<SectorCloneProgress>? progress = null, CancellationToken ct = default)
+    {
+        var sourcePath = $"\\\\.\\PhysicalDrive{sourceDiskNumber}";
+        var destPath = $"\\\\.\\PhysicalDrive{destDiskNumber}";
+
+        var sourceHandle = CreateFileW(sourcePath, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
+            IntPtr.Zero, OPEN_EXISTING, FILE_FLAG_NO_BUFFERING, IntPtr.Zero);
+        if (sourceHandle == new IntPtr(-1))
+            throw new Win32Exception(Marshal.GetLastWin32Error(), $"Cannot open source disk {sourceDiskNumber} for verification");
+
+        var destHandle = CreateFileW(destPath, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
+            IntPtr.Zero, OPEN_EXISTING, FILE_FLAG_NO_BUFFERING, IntPtr.Zero);
+        if (destHandle == new IntPtr(-1))
+        {
+            CloseHandle(sourceHandle);
+            throw new Win32Exception(Marshal.GetLastWin32Error(), $"Cannot open destination disk {destDiskNumber} for verification");
+        }
+
+        try
+        {
+            return await Task.Run(() => VerifyLoop(sourceHandle, destHandle, totalBytes, progress, ct), ct);
         }
         finally
         {
@@ -108,11 +197,14 @@ public static class SectorCloneService
         }
     }
 
-    private static void CopyLoop(IntPtr source, IntPtr dest, long totalBytes,
-        IActivityLog log, IProgress<SectorCloneProgress>? progress, CancellationToken ct)
+    private static (long BytesCopied, TimeSpan CopyDuration, List<long> BadSectors) CopyLoop(
+        IntPtr source, IntPtr dest, long totalBytes,
+        IActivityLog log, IProgress<SectorCloneProgress>? progress, CancellationToken ct, bool rescue)
     {
         var buffer = new byte[BUFFER_SIZE];
+        var zeroBuffer = rescue ? new byte[BUFFER_SIZE] : null;
         long copied = 0;
+        var badSectors = new List<long>();
         var sw = System.Diagnostics.Stopwatch.StartNew();
         var lastReport = sw.Elapsed;
 
@@ -121,13 +213,30 @@ public static class SectorCloneService
             ct.ThrowIfCancellationRequested();
 
             int toRead = (int)Math.Min(BUFFER_SIZE, totalBytes - copied);
-            if (!ReadFile(source, buffer, toRead, out int bytesRead, IntPtr.Zero))
-                throw new Win32Exception(Marshal.GetLastWin32Error(),
-                    $"Read failed at offset {copied} during sector clone");
+            bool readOk = ReadFile(source, buffer, toRead, out int bytesRead, IntPtr.Zero);
 
-            if (bytesRead == 0)
-                throw new InvalidOperationException(
-                    $"Source returned zero bytes at offset {copied} of {totalBytes} — clone incomplete");
+            if (!readOk || bytesRead == 0)
+            {
+                if (!rescue)
+                {
+                    if (!readOk)
+                        throw new Win32Exception(Marshal.GetLastWin32Error(),
+                            $"Read failed at offset {copied} during sector clone");
+                    throw new InvalidOperationException(
+                        $"Source returned zero bytes at offset {copied} of {totalBytes} — clone incomplete");
+                }
+
+                badSectors.Add(copied);
+                log.Log($"Bad sector at offset {copied} ({SizeUtil.Format(copied)}) — zeroing destination block");
+
+                if (!WriteFile(dest, zeroBuffer!, toRead, out _, IntPtr.Zero))
+                    throw new Win32Exception(Marshal.GetLastWin32Error(),
+                        $"Write of zero-fill failed at offset {copied} during rescue clone");
+
+                copied += toRead;
+                ReportProgress(progress, copied, totalBytes, sw, ref lastReport, "Copying");
+                continue;
+            }
 
             int written = 0;
             while (written < bytesRead)
@@ -156,21 +265,7 @@ public static class SectorCloneService
             }
 
             copied += bytesRead;
-
-            if (sw.Elapsed - lastReport > TimeSpan.FromSeconds(1))
-            {
-                var rate = copied / sw.Elapsed.TotalSeconds;
-                var remaining2 = rate > 0 ? TimeSpan.FromSeconds((totalBytes - copied) / rate) : TimeSpan.Zero;
-                progress?.Report(new SectorCloneProgress
-                {
-                    BytesCopied = copied,
-                    TotalBytes = totalBytes,
-                    BytesPerSecond = rate,
-                    Elapsed = sw.Elapsed,
-                    EstimatedRemaining = remaining2
-                });
-                lastReport = sw.Elapsed;
-            }
+            ReportProgress(progress, copied, totalBytes, sw, ref lastReport, "Copying");
         }
 
         if (copied != totalBytes)
@@ -183,7 +278,81 @@ public static class SectorCloneService
             TotalBytes = totalBytes,
             BytesPerSecond = sw.Elapsed.TotalSeconds > 0 ? copied / sw.Elapsed.TotalSeconds : 0,
             Elapsed = sw.Elapsed,
-            EstimatedRemaining = TimeSpan.Zero
+            EstimatedRemaining = TimeSpan.Zero,
+            Phase = "Copying"
         });
+
+        return (copied, sw.Elapsed, badSectors);
+    }
+
+    private static VerifyResult VerifyLoop(IntPtr source, IntPtr dest, long totalBytes,
+        IProgress<SectorCloneProgress>? progress, CancellationToken ct)
+    {
+        var sourceBuffer = new byte[BUFFER_SIZE];
+        var destBuffer = new byte[BUFFER_SIZE];
+        long verified = 0;
+        int mismatches = 0;
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+        var lastReport = sw.Elapsed;
+
+        while (verified < totalBytes)
+        {
+            ct.ThrowIfCancellationRequested();
+
+            int toRead = (int)Math.Min(BUFFER_SIZE, totalBytes - verified);
+
+            if (!ReadFile(source, sourceBuffer, toRead, out int srcRead, IntPtr.Zero) || srcRead == 0)
+                throw new Win32Exception(Marshal.GetLastWin32Error(),
+                    $"Source read failed during verification at offset {verified}");
+
+            if (!ReadFile(dest, destBuffer, toRead, out int dstRead, IntPtr.Zero) || dstRead == 0)
+                throw new Win32Exception(Marshal.GetLastWin32Error(),
+                    $"Destination read failed during verification at offset {verified}");
+
+            int compareLen = Math.Min(srcRead, dstRead);
+            if (!sourceBuffer.AsSpan(0, compareLen).SequenceEqual(destBuffer.AsSpan(0, compareLen)))
+                mismatches++;
+
+            verified += compareLen;
+            ReportProgress(progress, verified, totalBytes, sw, ref lastReport, "Verifying");
+        }
+
+        progress?.Report(new SectorCloneProgress
+        {
+            BytesCopied = verified,
+            TotalBytes = totalBytes,
+            BytesPerSecond = sw.Elapsed.TotalSeconds > 0 ? verified / sw.Elapsed.TotalSeconds : 0,
+            Elapsed = sw.Elapsed,
+            EstimatedRemaining = TimeSpan.Zero,
+            Phase = "Verifying"
+        });
+
+        return new VerifyResult { Passed = mismatches == 0, Mismatches = mismatches, Duration = sw.Elapsed };
+    }
+
+    private static void ReportProgress(IProgress<SectorCloneProgress>? progress,
+        long processed, long total, System.Diagnostics.Stopwatch sw, ref TimeSpan lastReport, string phase)
+    {
+        if (sw.Elapsed - lastReport <= TimeSpan.FromSeconds(1)) return;
+
+        var rate = processed / sw.Elapsed.TotalSeconds;
+        var remaining = rate > 0 ? TimeSpan.FromSeconds((total - processed) / rate) : TimeSpan.Zero;
+        progress?.Report(new SectorCloneProgress
+        {
+            BytesCopied = processed,
+            TotalBytes = total,
+            BytesPerSecond = rate,
+            Elapsed = sw.Elapsed,
+            EstimatedRemaining = remaining,
+            Phase = phase
+        });
+        lastReport = sw.Elapsed;
+    }
+
+    public class VerifyResult
+    {
+        public bool Passed { get; set; }
+        public int Mismatches { get; set; }
+        public TimeSpan Duration { get; set; }
     }
 }

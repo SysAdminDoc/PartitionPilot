@@ -530,7 +530,7 @@ public class WmiDiskService : IWmiDiskService
         {
             var scope = GetScope(BitLockerScope);
             using var searcher = new ManagementObjectSearcher(scope,
-                new ObjectQuery("SELECT DriveLetter, ProtectionStatus, LockStatus FROM Win32_EncryptableVolume"));
+                new ObjectQuery("SELECT DriveLetter, ProtectionStatus, LockStatus, ConversionStatus, EncryptionMethod FROM Win32_EncryptableVolume"));
 
             foreach (ManagementObject obj in searcher.Get())
             {
@@ -543,7 +543,10 @@ public class WmiDiskService : IWmiDiskService
                     if (!char.IsLetter(letter)) continue;
 
                     var status = Convert.ToInt32(obj["ProtectionStatus"] ?? 0);
-                    var statusText = BitLockerPreflight.MapStatus(status, GetNullableInt(obj, "LockStatus"));
+                    var statusText = BitLockerPreflight.MapStatus(status,
+                        GetNullableInt(obj, "LockStatus"),
+                        GetNullableInt(obj, "ConversionStatus"),
+                        GetNullableInt(obj, "EncryptionMethod"));
 
                     if (!string.IsNullOrEmpty(statusText))
                         result[char.ToUpperInvariant(letter)] = statusText;
