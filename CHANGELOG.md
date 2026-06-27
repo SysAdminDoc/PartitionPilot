@@ -1,5 +1,13 @@
 # Changelog
 
+## PartitionPilot v0.9.1 - 2026-06-27
+
+### Documentation & Release Hygiene
+- Drained stale completed items from the active roadmap after verifying the v0.9.0 feature work is present in the codebase.
+- Replaced current README CI language with local build and release artifact instructions.
+- Bumped app, CLI, core library, installer, and README version strings to v0.9.1.
+- Included the published `pp.exe` CLI companion in the installer payload.
+
 ## PartitionPilot v0.9.0 - 2026-06-20
 
 ### Safety & Reliability

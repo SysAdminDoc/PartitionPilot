@@ -1,4 +1,4 @@
-![Version](https://img.shields.io/badge/version-0.9.0-4CC2FF)
+![Version](https://img.shields.io/badge/version-0.9.1-4CC2FF)
 ![License](https://img.shields.io/badge/license-MIT-5EE0A0)
 ![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-F4C96A)
 
@@ -39,7 +39,7 @@ PartitionPilot is a Windows disk partition management tool for power users and I
 - Cancellable long-running operations with progress and rate reporting.
 - Screen reader accessibility (AutomationProperties on all interactive controls).
 - Administrator Protection compatible (ProgramData-based data paths).
-- CI pipeline with SHA256SUMS and GitHub artifact attestations for unsigned release provenance.
+- Local release packaging for self-contained Windows builds and installer artifacts.
 
 ## Requirements
 
@@ -53,7 +53,12 @@ PartitionPilot is a Windows disk partition management tool for power users and I
 dotnet build .\src\PartitionPilot\PartitionPilot.csproj -m:1
 ```
 
-The project targets `net10.0-windows` and publishes as a self-contained Windows app. CI produces both x64 and ARM64 binaries.
+The project targets `net10.0-windows` and publishes as a self-contained Windows app. Release artifacts are built locally.
+
+```powershell
+dotnet publish .\src\PartitionPilot\PartitionPilot.csproj -c Release -r win-x64 --self-contained true
+dotnet publish .\src\PartitionPilot.Cli\PartitionPilot.Cli.csproj -c Release -r win-x64 --self-contained true
+```
 
 ## Run
 
