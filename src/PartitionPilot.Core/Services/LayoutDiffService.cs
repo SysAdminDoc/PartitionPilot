@@ -15,23 +15,33 @@ public static class LayoutDiffService
 {
     private static readonly Regex SizeMbPattern = new(@"^[0-9]+$", RegexOptions.Compiled);
 
-    public static List<LayoutDiffEntry> ComputeDiff(PartitionLayoutSpec spec, DiskInfo disk, List<PartitionInfo> currentPartitions)
+    public static List<LayoutDiffEntry> ComputeDiff(
+        PartitionLayoutSpec spec,
+        DiskInfo disk,
+        List<PartitionInfo> currentPartitions,
+        bool allowDestructiveReplace = false)
     {
         var normalized = ValidateAndNormalize(spec);
         var diff = new List<LayoutDiffEntry>();
 
-        if (normalized.Style == "GPT" && disk.PartitionStyle == "MBR")
-        {
-            diff.Add(new LayoutDiffEntry
-            {
-                Action = "Convert",
-                Description = $"Convert Disk {disk.Number} from MBR to GPT",
-                RiskLevel = "High"
-            });
-        }
+        var hasPartitions = currentPartitions.Count > 0;
+        var styleMatches = disk.PartitionStyle.Equals(normalized.Style, StringComparison.OrdinalIgnoreCase);
+        var needsInitialize = normalized.Partitions.Count > 0 &&
+            (disk.PartitionStyle.Equals("RAW", StringComparison.OrdinalIgnoreCase) || (!styleMatches && !hasPartitions));
 
-        if (currentPartitions.Count > 0 && normalized.Partitions.Count > 0)
+        if (hasPartitions && !LayoutMatches(normalized, disk, currentPartitions, out var mismatchReason))
         {
+            if (!allowDestructiveReplace)
+            {
+                diff.Add(new LayoutDiffEntry
+                {
+                    Action = "Blocked",
+                    Description = $"Current layout differs from spec: {mismatchReason}. Rerun with --replace to clear and recreate the disk.",
+                    RiskLevel = "Blocked"
+                });
+                return diff;
+            }
+
             diff.Add(new LayoutDiffEntry
             {
                 Action = "Clear",
@@ -47,7 +57,7 @@ public static class LayoutDiffService
                 DiskpartScript = $"select disk {disk.Number}\nconvert {normalized.Style.ToLowerInvariant()}"
             });
         }
-        else if (disk.PartitionStyle == "RAW" && normalized.Partitions.Count > 0)
+        else if (needsInitialize)
         {
             diff.Add(new LayoutDiffEntry
             {
@@ -57,7 +67,11 @@ public static class LayoutDiffService
             });
         }
 
-        for (int i = 0; i < normalized.Partitions.Count; i++)
+        var createStartIndex = hasPartitions && !allowDestructiveReplace
+            ? currentPartitions.Count
+            : 0;
+
+        for (int i = createStartIndex; i < normalized.Partitions.Count; i++)
         {
             var part = normalized.Partitions[i];
             var sizeClause = part.UseMaximumSize ? "" : $" size={part.SizeMB!.Value.ToString(CultureInfo.InvariantCulture)}";
@@ -81,6 +95,12 @@ public static class LayoutDiffService
         var sb = new System.Text.StringBuilder();
         sb.AppendLine($"Plan: {diff.Count} step(s)");
         sb.AppendLine(new string('-', 50));
+        if (diff.Count == 0)
+        {
+            sb.AppendLine("  No changes needed.");
+            return sb.ToString();
+        }
+
         for (int i = 0; i < diff.Count; i++)
         {
             var d = diff[i];
@@ -168,6 +188,75 @@ public static class LayoutDiffService
             throw new ArgumentException($"Partition {index + 1} DriveLetter must be a single letter A-Z.");
 
         return letter;
+    }
+
+    private static bool LayoutMatches(
+        NormalizedLayoutSpec spec,
+        DiskInfo disk,
+        List<PartitionInfo> currentPartitions,
+        out string mismatchReason)
+    {
+        mismatchReason = "";
+
+        if (!disk.PartitionStyle.Equals(spec.Style, StringComparison.OrdinalIgnoreCase))
+        {
+            mismatchReason = $"disk style is {disk.PartitionStyle}, expected {spec.Style}";
+            return false;
+        }
+
+        if (currentPartitions.Count > spec.Partitions.Count)
+        {
+            mismatchReason = $"disk has {currentPartitions.Count} partition(s), spec has {spec.Partitions.Count}";
+            return false;
+        }
+
+        for (int i = 0; i < currentPartitions.Count; i++)
+        {
+            if (!PartitionMatches(spec.Partitions[i], currentPartitions[i], i, out mismatchReason))
+                return false;
+        }
+
+        return true;
+    }
+
+    private static bool PartitionMatches(
+        NormalizedPartitionSpec expected,
+        PartitionInfo actual,
+        int index,
+        out string mismatchReason)
+    {
+        mismatchReason = "";
+
+        if (!string.Equals(actual.FileSystem, expected.FileSystem, StringComparison.OrdinalIgnoreCase))
+        {
+            mismatchReason = $"partition {index + 1} filesystem is {actual.FileSystemDisplay}, expected {expected.FileSystem}";
+            return false;
+        }
+
+        if (!string.Equals(actual.Label ?? "", expected.Label, StringComparison.Ordinal))
+        {
+            mismatchReason = $"partition {index + 1} label is \"{actual.Label}\", expected \"{expected.Label}\"";
+            return false;
+        }
+
+        if (expected.DriveLetter.HasValue && actual.DriveLetter != expected.DriveLetter)
+        {
+            mismatchReason = $"partition {index + 1} letter is {actual.LetterDisplay}, expected {expected.DriveLetter}:";
+            return false;
+        }
+
+        if (!expected.UseMaximumSize)
+        {
+            var expectedBytes = expected.SizeMB!.Value * 1024L * 1024L;
+            var toleranceBytes = 1024L * 1024L;
+            if (Math.Abs(actual.Size - expectedBytes) > toleranceBytes)
+            {
+                mismatchReason = $"partition {index + 1} size is {SizeUtil.Format(actual.Size)}, expected {expected.SizeMB} MB";
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private sealed record NormalizedLayoutSpec(string Style, List<NormalizedPartitionSpec> Partitions);

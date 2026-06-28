@@ -66,7 +66,7 @@ int PrintUsage()
     Console.WriteLine("  diagnostics               Check environment prerequisites");
     Console.WriteLine("  plan <op> [args]          Preview a partition operation (add --apply to execute)");
     Console.WriteLine("  recovery-scan --disk N    Scan for lost partition signatures (read-only)");
-    Console.WriteLine("  apply-layout --file F --disk N  Apply a partition layout spec (add --apply)");
+    Console.WriteLine("  apply-layout --file F --disk N  Apply a partition layout spec (add --apply, --replace to recreate)");
     Console.WriteLine("  version                   Show version");
     Console.WriteLine();
     Console.WriteLine("Plan operations:");
@@ -692,6 +692,7 @@ async Task<int> ApplyLayoutAsync()
     var filePath = ParseStringArg("--file");
     var diskNum = ParseDiskArg();
     var apply = args.Contains("--apply", StringComparer.OrdinalIgnoreCase);
+    var replace = args.Contains("--replace", StringComparer.OrdinalIgnoreCase);
 
     if (string.IsNullOrEmpty(filePath)) { Console.Error.WriteLine("--file <path> required."); return 1; }
     if (!diskNum.HasValue) { Console.Error.WriteLine("--disk N required."); return 1; }
@@ -722,15 +723,22 @@ async Task<int> ApplyLayoutAsync()
     if (disk is null) { Console.Error.WriteLine($"Disk {diskNum.Value} not found."); return 1; }
 
     var currentPartitions = await wmi.GetPartitionsAsync(diskNum.Value);
-    var diff = LayoutDiffService.ComputeDiff(spec, disk, currentPartitions);
+    var diff = LayoutDiffService.ComputeDiff(spec, disk, currentPartitions, allowDestructiveReplace: replace);
 
     if (json)
         Console.WriteLine(JsonSerializer.Serialize(diff.Select(d => new
         {
-            d.Action, d.Description, d.RiskLevel, d.DiskpartScript, WillApply = apply
+            d.Action, d.Description, d.RiskLevel, d.DiskpartScript, WillApply = apply, WillReplace = replace
         }), new JsonSerializerOptions { WriteIndented = true }));
     else
         Console.Write(LayoutDiffService.FormatPlan(diff));
+
+    var blocked = diff.Where(d => d.RiskLevel == "Blocked").ToList();
+    if (blocked.Count > 0)
+    {
+        Console.Error.WriteLine("\nPlan cannot be applied without --replace because the current disk layout differs from the spec.");
+        return apply ? 1 : 0;
+    }
 
     if (!apply)
     {

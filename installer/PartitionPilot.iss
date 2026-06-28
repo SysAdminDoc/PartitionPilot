@@ -1,11 +1,11 @@
 [Setup]
 AppName=PartitionPilot
-AppVersion=0.9.2
+AppVersion=0.9.3
 AppPublisher=SysAdminDoc
 AppPublisherURL=https://github.com/SysAdminDoc/PartitionPilot
 DefaultDirName={autopf}\PartitionPilot
 DefaultGroupName=PartitionPilot
-OutputBaseFilename=PartitionPilot-0.9.2-Setup
+OutputBaseFilename=PartitionPilot-0.9.3-Setup
 Compression=lzma2/ultra64
 SolidCompression=yes
 PrivilegesRequired=admin
