@@ -1,5 +1,12 @@
 # Changelog
 
+## PartitionPilot v0.9.2 - 2026-06-28
+
+### Safety & Reliability
+- Added fail-closed validation for declarative layout specs before DiskPart scripts are emitted.
+- Rejected invalid or injection-shaped partition style, size, and drive-letter values with clear errors.
+- Added layout-diff tests covering valid normalization and unsafe JSON-shaped inputs.
+
 ## PartitionPilot v0.9.1 - 2026-06-27
 
 ### Documentation & Release Hygiene

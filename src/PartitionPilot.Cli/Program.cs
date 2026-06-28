@@ -707,6 +707,16 @@ async Task<int> ApplyLayoutAsync()
         return 1;
     }
 
+    try
+    {
+        LayoutDiffService.Validate(spec);
+    }
+    catch (ArgumentException ex)
+    {
+        Console.Error.WriteLine($"Invalid layout spec: {ex.Message}");
+        return 1;
+    }
+
     var disks = await wmi.GetDisksAsync();
     var disk = disks.FirstOrDefault(d => d.Number == diskNum.Value);
     if (disk is null) { Console.Error.WriteLine($"Disk {diskNum.Value} not found."); return 1; }
