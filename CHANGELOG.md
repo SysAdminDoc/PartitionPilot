@@ -1,5 +1,12 @@
 # Changelog
 
+## PartitionPilot v0.9.3 - 2026-06-28
+
+### Safety & Reliability
+- Made declarative `apply-layout` idempotent for matching disk layouts.
+- Blocked destructive layout replacement by default; populated-disk mismatches now require `--replace` plus the existing destructive confirmation.
+- Added layout-diff tests for no-op, create-only, blocked mismatch, and explicit replacement plans.
+
 ## PartitionPilot v0.9.2 - 2026-06-28
 
 ### Safety & Reliability

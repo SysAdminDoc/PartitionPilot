@@ -2,13 +2,6 @@
 
 ## Research-Driven Additions
 
-- [ ] P0 - Make `apply-layout` idempotent and non-destructive by default
-  Why: the current diff clears any populated disk before recreating partitions, which makes desired-state automation unsafe to repeat.
-  Evidence: `src/PartitionPilot.Core/Services/LayoutDiffService.cs`; https://github.com/nix-community/disko; https://docs.ansible.com/ansible/latest/collections/community/general/parted_module.html
-  Touches: `src/PartitionPilot.Core/Services/LayoutDiffService.cs`, `src/PartitionPilot.Cli/Program.cs`, `tests/PartitionPilot.Tests/`
-  Acceptance: a matching disk layout returns a no-op plan; destructive replacement requires an explicit flag and confirmation; tests cover no-op, create-only, mismatch, and replace plans.
-  Complexity: L
-
 - [ ] P1 - Stream encrypted disk images with bounded memory
   Why: encrypted WIM/VHDX handling reads the entire image into memory, which is not viable for multi-GB disk images.
   Evidence: `src/PartitionPilot.Core/Services/ImageEncryptionService.cs`; https://learn.microsoft.com/en-us/dotnet/api/system.io.file.readallbytes; https://learn.microsoft.com/en-us/dotnet/api/system.security.cryptography.aesgcm

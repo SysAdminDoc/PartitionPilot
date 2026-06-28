@@ -110,6 +110,71 @@ public class LayoutDiffServiceTests
         Assert.Contains("UseMaximumSize", ex.Message, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void ComputeDiff_ReturnsNoOpWhenCurrentLayoutMatchesSpec()
+    {
+        var diff = LayoutDiffService.ComputeDiff(
+            ValidSpec(),
+            GptDisk(),
+            [MatchingPartition()]);
+
+        Assert.Empty(diff);
+        Assert.Contains("No changes needed", LayoutDiffService.FormatPlan(diff), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ComputeDiff_CreateOnlyWhenExistingPrefixMatchesSpec()
+    {
+        var spec = ValidSpec();
+        spec.Partitions.Add(new PartitionSpec
+        {
+            SizeMB = "2048",
+            FileSystem = "NTFS",
+            Label = "Logs",
+            DriveLetter = "L"
+        });
+
+        var diff = LayoutDiffService.ComputeDiff(spec, GptDisk(), [MatchingPartition()]);
+
+        var create = Assert.Single(diff);
+        Assert.Equal("Create", create.Action);
+        Assert.DoesNotContain("clean", create.DiskpartScript, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("size=2048", create.DiskpartScript, StringComparison.Ordinal);
+        Assert.Contains("assign letter=L", create.DiskpartScript, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ComputeDiff_BlocksMismatchedPopulatedDiskWithoutReplace()
+    {
+        var current = MatchingPartition();
+        current.Label = "Other";
+
+        var diff = LayoutDiffService.ComputeDiff(ValidSpec(), GptDisk(), [current]);
+
+        var blocked = Assert.Single(diff);
+        Assert.Equal("Blocked", blocked.Action);
+        Assert.Equal("Blocked", blocked.RiskLevel);
+        Assert.Empty(blocked.DiskpartScript);
+        Assert.Contains("--replace", blocked.Description, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ComputeDiff_ReplacePlanClearsAndRecreatesMismatchedDiskOnlyWhenAllowed()
+    {
+        var current = MatchingPartition();
+        current.Label = "Other";
+
+        var diff = LayoutDiffService.ComputeDiff(
+            ValidSpec(),
+            GptDisk(),
+            [current],
+            allowDestructiveReplace: true);
+
+        Assert.Contains(diff, entry => entry.Action == "Clear" && entry.RiskLevel == "Destructive");
+        Assert.Contains(diff, entry => entry.DiskpartScript.Contains("clean", StringComparison.OrdinalIgnoreCase));
+        Assert.Contains(diff, entry => entry.Action == "Create");
+    }
+
     private static PartitionLayoutSpec ValidSpec() => new()
     {
         Style = "GPT",
@@ -131,5 +196,24 @@ public class LayoutDiffServiceTests
         FriendlyName = "Test Disk",
         PartitionStyle = "RAW",
         Size = 64L * 1024 * 1024 * 1024
+    };
+
+    private static DiskInfo GptDisk() => new()
+    {
+        Number = 3,
+        FriendlyName = "Test Disk",
+        PartitionStyle = "GPT",
+        Size = 64L * 1024 * 1024 * 1024
+    };
+
+    private static PartitionInfo MatchingPartition() => new()
+    {
+        DiskNumber = 3,
+        PartitionNumber = 1,
+        DriveLetter = 'D',
+        Label = "Data",
+        FileSystem = "NTFS",
+        Size = 1024L * 1024L * 1024L,
+        Type = "Basic"
     };
 }
