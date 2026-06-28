@@ -255,6 +255,28 @@
         "resolved": "10.0.9",
         "contentHash": "scH7O8oAuOMyZKOEiOQB3ZVz6x9XkrZNKNeWVCxdvkJHSy4SYXyinGK0o2Rn5LiGh+ovezziT2WCdqWKa7WMKA=="
       },
+      "System.Configuration.ConfigurationManager": {
+        "type": "Transitive",
+        "resolved": "10.0.9",
+        "contentHash": "k7kYSTmNjwFYKdUju+rjYyigbcUBj1sElR3ayqszcatPXL9YJoBANJN48xctdXTopYf3ceFX2T4m1xvJRM+CGA==",
+        "dependencies": {
+          "System.Diagnostics.EventLog": "10.0.9",
+          "System.Security.Cryptography.ProtectedData": "10.0.9"
+        }
+      },
+      "System.Diagnostics.EventLog": {
+        "type": "Transitive",
+        "resolved": "10.0.9",
+        "contentHash": "s2PcxHK4IYQ6gmD3VSBkym9tWGkFisKjcjWBdl7a+n4Yy66ae4beJ1ZdjDp060SSll4W3Rt4H2LW87dWckv+QQ=="
+      },
+      "System.Diagnostics.PerformanceCounter": {
+        "type": "Transitive",
+        "resolved": "10.0.9",
+        "contentHash": "brTyfKYxhpaXyh244XpQZ6vDUtT+fEOUjYlJxZVhkiPLBPzutDCfkIkClsdEbOlv0wLH/YSeq0rMUHGGcdWK9Q==",
+        "dependencies": {
+          "System.Configuration.ConfigurationManager": "10.0.9"
+        }
+      },
       "System.IO.FileSystem.AccessControl": {
         "type": "Transitive",
         "resolved": "5.0.0",
@@ -275,6 +297,11 @@
         "dependencies": {
           "System.CodeDom": "10.0.9"
         }
+      },
+      "System.Security.Cryptography.ProtectedData": {
+        "type": "Transitive",
+        "resolved": "10.0.9",
+        "contentHash": "vXp+vBQbTkMrDzUiPCxo1KvzfaAvZWuSRS2P7e5orhtV7ZuePKAB3Cqc9dH2YHUavRJyA2uWd2yrL6hl2VoJ5g=="
       },
       "Velopack": {
         "type": "Transitive",
@@ -352,13 +379,14 @@
         "type": "Project",
         "dependencies": {
           "CommunityToolkit.Mvvm": "[8.4.2, )",
-          "PartitionPilot.Core": "[1.0.0, )"
+          "PartitionPilot.Core": "[0.9.2, )"
         }
       },
       "partitionpilot.core": {
         "type": "Project",
         "dependencies": {
           "LibreHardwareMonitorLib": "[0.9.6, )",
+          "System.Diagnostics.PerformanceCounter": "[10.0.9, )",
           "System.Management": "[10.0.9, )",
           "Velopack": "[1.2.0, )"
         }
@@ -468,6 +496,19 @@
         "type": "Transitive",
         "resolved": "10.0.3",
         "contentHash": "L1gcOL5kcfeeujKQbqJmpeTLsT0c6DeaJ9w6PY9oZ+/WESyya+Zj7StKguXR5j93o3o86FjcN05yufpoCz7R2g=="
+      },
+      "System.Diagnostics.EventLog": {
+        "type": "Transitive",
+        "resolved": "10.0.9",
+        "contentHash": "s2PcxHK4IYQ6gmD3VSBkym9tWGkFisKjcjWBdl7a+n4Yy66ae4beJ1ZdjDp060SSll4W3Rt4H2LW87dWckv+QQ=="
+      },
+      "System.Diagnostics.PerformanceCounter": {
+        "type": "Transitive",
+        "resolved": "10.0.9",
+        "contentHash": "brTyfKYxhpaXyh244XpQZ6vDUtT+fEOUjYlJxZVhkiPLBPzutDCfkIkClsdEbOlv0wLH/YSeq0rMUHGGcdWK9Q==",
+        "dependencies": {
+          "System.Configuration.ConfigurationManager": "10.0.9"
+        }
       },
       "System.IO.FileSystem.AccessControl": {
         "type": "Transitive",

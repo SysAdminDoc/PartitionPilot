@@ -2,13 +2,6 @@
 
 ## Research-Driven Additions
 
-- [ ] P0 - Fail closed on declarative layout spec validation
-  Why: `apply-layout` validates filesystems and labels but still lets JSON `Style`, `SizeMB`, and `DriveLetter` flow into DiskPart scripts.
-  Evidence: `src/PartitionPilot.Core/Services/LayoutDiffService.cs`; `src/PartitionPilot.Core/Models/PartitionLayoutSpec.cs`; `src/PartitionPilot.Cli/Program.cs`
-  Touches: `src/PartitionPilot.Core/Models/PartitionLayoutSpec.cs`, `src/PartitionPilot.Core/Services/LayoutDiffService.cs`, `src/PartitionPilot.Cli/Program.cs`, `tests/PartitionPilot.Tests/`
-  Acceptance: invalid style, size, and drive-letter values are rejected before any DiskPart script is emitted; injection-shaped values have unit tests; CLI exits non-zero with a clear message.
-  Complexity: M
-
 - [ ] P0 - Make `apply-layout` idempotent and non-destructive by default
   Why: the current diff clears any populated disk before recreating partitions, which makes desired-state automation unsafe to repeat.
   Evidence: `src/PartitionPilot.Core/Services/LayoutDiffService.cs`; https://github.com/nix-community/disko; https://docs.ansible.com/ansible/latest/collections/community/general/parted_module.html
