@@ -2,13 +2,6 @@
 
 ## Research-Driven Additions
 
-- [ ] P1 - Stream encrypted disk images with bounded memory
-  Why: encrypted WIM/VHDX handling reads the entire image into memory, which is not viable for multi-GB disk images.
-  Evidence: `src/PartitionPilot.Core/Services/ImageEncryptionService.cs`; https://learn.microsoft.com/en-us/dotnet/api/system.io.file.readallbytes; https://learn.microsoft.com/en-us/dotnet/api/system.security.cryptography.aesgcm
-  Touches: `src/PartitionPilot.Core/Services/ImageEncryptionService.cs`, `src/PartitionPilot/ViewModels/DiskCloningViewModel.cs`, `tests/PartitionPilot.Tests/`
-  Acceptance: a new chunked container encrypts/decrypts large images with bounded memory and authenticated per-chunk tags; existing `PPENC1` images still decrypt; tests include tamper, wrong-password, cancellation, and compatibility cases.
-  Complexity: L
-
 - [ ] P1 - Add stable disk identity to destructive plans and confirmations
   Why: disk number, friendly name, and size are not enough to identify a target after reboot, hotplug, or storage reordering.
   Evidence: `src/PartitionPilot.Core/Models/DiskInfo.cs`; `src/PartitionPilot.Core/Services/WmiDiskService.cs`; https://learn.microsoft.com/en-us/windows-hardware/drivers/storage/msft-disk
