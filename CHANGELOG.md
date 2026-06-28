@@ -1,5 +1,12 @@
 # Changelog
 
+## PartitionPilot v0.9.4 - 2026-06-28
+
+### Safety & Reliability
+- Replaced whole-file encrypted image writes with a chunked `PPENC2` AES-256-GCM container that keeps memory bounded for large WIM/VHDX images.
+- Authenticated each encrypted chunk with header-bound associated data and preserved legacy `PPENC1` decrypt compatibility.
+- Added encryption tests for chunked round-trip, legacy decrypt, tamper detection, wrong-password failure, and cancellation.
+
 ## PartitionPilot v0.9.3 - 2026-06-28
 
 ### Safety & Reliability
