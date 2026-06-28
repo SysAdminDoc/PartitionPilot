@@ -70,6 +70,34 @@ public class OperationQueueTests
         Assert.Equal("All 2 operation(s) applied successfully.", dialog.LastInfo);
     }
 
+    [Fact]
+    public async Task ApplyAllAsync_RunsTargetValidationBeforeExecute()
+    {
+        var queue = new OperationQueue();
+        var log = new TestLog();
+        var dialog = new CapturingDialogService();
+        var executed = false;
+
+        queue.Enqueue(new PendingOperation
+        {
+            Description = "Delete partition",
+            RiskLevel = "Destructive",
+            ValidateTarget = () => throw new InvalidOperationException("Target disk identity changed"),
+            Execute = () =>
+            {
+                executed = true;
+                return Task.CompletedTask;
+            }
+        });
+
+        await queue.ApplyAllAsync(log, dialog, _ => { }, _ => { });
+
+        Assert.False(executed);
+        Assert.Single(queue.Pending);
+        Assert.Contains("Target disk identity changed", dialog.LastError);
+        Assert.Contains("Target disk identity changed", log.FullText);
+    }
+
     private sealed class CapturingDialogService : IDialogService
     {
         public string LastError { get; private set; } = "";

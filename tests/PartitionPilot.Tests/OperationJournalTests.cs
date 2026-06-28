@@ -146,4 +146,29 @@ public class OperationJournalTests
 
         Assert.Equal("Disk 1, Partition 3", journal.Entries[0].DiskTarget);
     }
+
+    [Fact]
+    public void CreateJournal_PreservesDiskIdentity()
+    {
+        var identity = new DiskIdentitySnapshot
+        {
+            DiskNumber = 1,
+            FriendlyName = "Target Disk",
+            Size = 1000,
+            PartitionStyle = "GPT",
+            UniqueId = "UID-1",
+            SerialNumber = "SER-1",
+            Path = @"\\?\disk#1"
+        };
+        var ops = new List<PendingOperation>
+        {
+            new() { Type = PendingOperationType.Delete, Description = "Delete", DiskTarget = identity.Summary, DiskIdentity = identity }
+        };
+
+        var journal = OperationJournalService.CreateJournal(ops);
+
+        Assert.NotNull(journal.Entries[0].DiskIdentity);
+        Assert.Equal("UID-1", journal.Entries[0].DiskIdentity!.UniqueId);
+        Assert.Equal(@"\\?\disk#1", journal.Entries[0].DiskIdentity!.Path);
+    }
 }

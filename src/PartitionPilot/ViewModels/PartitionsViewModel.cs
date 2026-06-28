@@ -387,11 +387,14 @@ public class PartitionsViewModel : ViewModelBase
         label = ProcessRunner.SanitizeLabel(label);
         fs = ProcessRunner.ValidateFileSystem(fs);
 
+        var diskIdentity = SelectedDisk.ToIdentitySnapshot();
         Queue.Enqueue(new PendingOperation
         {
             Type = PendingOperationType.Create,
             Description = $"Create {sizeGB:F1} GB {fs} partition ({letter}:) on Disk {diskNum}",
-            DiskTarget = $"Disk {diskNum}",
+            DiskTarget = DiskTargetText(diskIdentity, $"Disk {diskNum}"),
+            DiskIdentity = diskIdentity,
+            ValidateTarget = BuildTargetValidator(diskIdentity),
             Execute = async () =>
             {
                 long sizeMB = (long)(sizeGB * 1024);
@@ -423,12 +426,15 @@ public class PartitionsViewModel : ViewModelBase
             return Task.CompletedTask;
 
         var diskNum = SelectedDisk?.Number;
+        var diskIdentity = FindDiskForPartition(partition)?.ToIdentitySnapshot();
 
         Queue.Enqueue(new PendingOperation
         {
             Type = PendingOperationType.Format,
             Description = $"Format {letter}: as {fs}",
-            DiskTarget = diskNum.HasValue ? $"Disk {diskNum}" : $"Volume {letter}:",
+            DiskTarget = DiskTargetText(diskIdentity, diskNum.HasValue ? $"Disk {diskNum}" : $"Volume {letter}:"),
+            DiskIdentity = diskIdentity,
+            ValidateTarget = BuildTargetValidator(diskIdentity),
             RiskLevel = "Destructive",
             Execute = async () =>
             {
@@ -476,12 +482,15 @@ public class PartitionsViewModel : ViewModelBase
         var partition = FindPartitionByLetter(letter);
         if (!GuardBitLockerMutation(partition, $"Resize {letter}:"))
             return Task.CompletedTask;
+        var diskIdentity = FindDiskForPartition(partition)?.ToIdentitySnapshot();
 
         Queue.Enqueue(new PendingOperation
         {
             Type = PendingOperationType.Resize,
             Description = $"Resize {letter}: to {SizeUtil.Format(newSizeBytes)}",
-            DiskTarget = $"Volume {letter}:",
+            DiskTarget = DiskTargetText(diskIdentity, $"Volume {letter}:"),
+            DiskIdentity = diskIdentity,
+            ValidateTarget = BuildTargetValidator(diskIdentity),
             Execute = async () =>
             {
                 _log.Log($"Resizing {letter}: to {SizeUtil.Format(newSizeBytes)}...");
@@ -506,12 +515,15 @@ public class PartitionsViewModel : ViewModelBase
             return Task.CompletedTask;
 
         var diskNum = SelectedDisk?.Number;
+        var diskIdentity = FindDiskForPartition(partition)?.ToIdentitySnapshot();
 
         Queue.Enqueue(new PendingOperation
         {
             Type = PendingOperationType.Split,
-            Description = $"Split {letter}: — shrink by {newPartGB:F1} GB, new {newLetter}: ({fs})",
-            DiskTarget = diskNum.HasValue ? $"Disk {diskNum}" : $"Volume {letter}:",
+            Description = $"Split {letter}: - shrink by {newPartGB:F1} GB, new {newLetter}: ({fs})",
+            DiskTarget = DiskTargetText(diskIdentity, diskNum.HasValue ? $"Disk {diskNum}" : $"Volume {letter}:"),
+            DiskIdentity = diskIdentity,
+            ValidateTarget = BuildTargetValidator(diskIdentity),
             Execute = async () =>
             {
                 if (diskNum.HasValue)
@@ -546,12 +558,15 @@ public class PartitionsViewModel : ViewModelBase
         var diskNum = SelectedDisk.Number;
         var partition = Partitions.FirstOrDefault(p => p.PartitionNumber == partNum);
         var oldLetter = partition?.DriveLetter;
+        var diskIdentity = SelectedDisk.ToIdentitySnapshot();
 
         Queue.Enqueue(new PendingOperation
         {
             Type = PendingOperationType.ChangeLetter,
             Description = $"Change letter: partition {partNum} on Disk {diskNum} to {newLetter}:",
-            DiskTarget = $"Disk {diskNum}",
+            DiskTarget = DiskTargetText(diskIdentity, $"Disk {diskNum}"),
+            DiskIdentity = diskIdentity,
+            ValidateTarget = BuildTargetValidator(diskIdentity),
             Execute = async () =>
             {
                 _log.Log($"Changing drive letter for Disk {diskNum}, Partition {partNum} to {newLetter}:...");
@@ -602,12 +617,15 @@ public class PartitionsViewModel : ViewModelBase
         var primaryLetter = primary.DriveLetter!.Value;
         var secondaryPartNum = secondary.PartitionNumber;
         var secondaryLetter = secondary.DriveLetter;
+        var diskIdentity = SelectedDisk.ToIdentitySnapshot();
 
         Queue.Enqueue(new PendingOperation
         {
             Type = PendingOperationType.Delete,
             Description = $"Merge: delete partition {secondaryPartNum} ({secondary.LetterDisplay}) then extend {primaryLetter}: on Disk {diskNum}",
-            DiskTarget = $"Disk {diskNum}",
+            DiskTarget = DiskTargetText(diskIdentity, $"Disk {diskNum}"),
+            DiskIdentity = diskIdentity,
+            ValidateTarget = BuildTargetValidator(diskIdentity),
             RiskLevel = "Destructive",
             Execute = async () =>
             {
@@ -703,6 +721,8 @@ public class PartitionsViewModel : ViewModelBase
             sb.AppendLine("--- Affected Targets ---");
             foreach (var target in targets)
                 sb.AppendLine($"  {target}");
+            foreach (var identity in ops.Select(o => o.DiskIdentity).Where(i => i is not null).Cast<DiskIdentitySnapshot>().DistinctBy(i => i.DiskNumber))
+                sb.AppendLine($"  {identity.StableIdentityText}");
             sb.AppendLine();
         }
 
@@ -720,6 +740,20 @@ public class PartitionsViewModel : ViewModelBase
 
         return sb.ToString();
     }
+
+    private DiskInfo? FindDiskForPartition(PartitionInfo? partition)
+    {
+        if (partition is null)
+            return SelectedDisk;
+
+        return Disks.FirstOrDefault(d => d.Number == partition.DiskNumber) ?? SelectedDisk;
+    }
+
+    private static string DiskTargetText(DiskIdentitySnapshot? identity, string fallback) =>
+        identity?.Summary ?? fallback;
+
+    private Func<Task> BuildTargetValidator(DiskIdentitySnapshot? identity) =>
+        identity is null ? () => Task.CompletedTask : () => identity.VerifyCurrentAsync(_wmiService);
 
     private async Task CheckInterruptedJournalsAsync()
     {
@@ -780,6 +814,7 @@ public class PartitionsViewModel : ViewModelBase
 
         if (!_dialog.Confirm(
             $"Initialize Disk {diskNum} ({diskName}, {diskSize}) with a GPT partition table?\n\n" +
+            $"{SelectedDisk.IdentitySummary}\n\n" +
             "This will write an empty GPT partition table to the disk. " +
             "Use MBR only if legacy BIOS boot compatibility is required.",
             "Initialize Disk")) return;
@@ -813,6 +848,7 @@ public class PartitionsViewModel : ViewModelBase
 
         var part = SelectedPartition;
         var diskNum = SelectedDisk.Number;
+        var diskIdentity = SelectedDisk.ToIdentitySnapshot();
         if (!GuardStoragePool($"Delete partition {part.PartitionNumber}"))
             return;
         if (!await GuardRecoveryPartitionOperationAsync(part, "delete"))
@@ -829,7 +865,7 @@ public class PartitionsViewModel : ViewModelBase
             if (!_dialog.ConfirmDanger(
                 $"CRITICAL: Partition {part.PartitionNumber} is a {part.Type} partition" +
                 (part.IsBoot ? " (Boot)" : "") + (part.IsSystem ? " (System)" : "") +
-                $".\n\nDeleting it may make the system unbootable.\n\nDisk: {diskNum}, Letter: {part.LetterDisplay}, Size: {part.SizeText}{encryptionLine}\n\n" +
+                $".\n\nDeleting it may make the system unbootable.\n\nTarget:\n{diskIdentity.ConfirmationSummary}\n\nLetter: {part.LetterDisplay}, Size: {part.SizeText}{encryptionLine}\n\n" +
                 "Type YES to confirm this destructive action.",
                 "Delete Critical Partition")) return;
         }
@@ -839,6 +875,7 @@ public class PartitionsViewModel : ViewModelBase
 
         if (!_dialog.ConfirmWarning(
             $"Delete partition {part.PartitionNumber} on Disk {diskNum}?\n" +
+            $"Target:\n{diskIdentity.ConfirmationSummary}\n\n" +
             $"Letter: {part.LetterDisplay}, Size: {part.SizeText}{encryptionLine}\n\n" +
             "ALL DATA ON THIS PARTITION WILL BE LOST.\n\n" +
             "The deletion will be queued and applied when you click Apply.",
@@ -851,7 +888,9 @@ public class PartitionsViewModel : ViewModelBase
         {
             Type = PendingOperationType.Delete,
             Description = $"Delete partition {partNum} ({part.LetterDisplay}) on Disk {diskNum}",
-            DiskTarget = $"Disk {diskNum}",
+            DiskTarget = DiskTargetText(diskIdentity, $"Disk {diskNum}"),
+            DiskIdentity = diskIdentity,
+            ValidateTarget = BuildTargetValidator(diskIdentity),
             RiskLevel = "Destructive",
             Execute = async () =>
             {
@@ -1026,7 +1065,8 @@ public class PartitionsViewModel : ViewModelBase
             return true;
 
         return _dialog.ConfirmDanger(
-            $"{operation} targets Disk {SelectedDisk.Number} which belongs to Storage Spaces pool \"{SelectedDisk.StoragePoolName}\".\n\n" +
+            $"{operation} targets:\n{SelectedDisk.ConfirmationSummary}\n\n" +
+            $"This disk belongs to Storage Spaces pool \"{SelectedDisk.StoragePoolName}\".\n\n" +
             "Modifying pooled disks can break pool integrity and cause data loss across the entire pool. " +
             "Use Windows Storage Spaces management to modify pooled disks.",
             "Storage Spaces Pool Warning");
@@ -1044,7 +1084,7 @@ public class PartitionsViewModel : ViewModelBase
             "Proceed only if you are certain this partition is no longer needed.",
             $"Unsupported Partition Type: {partition.Type}"))
         {
-            _log.Log($"{operation} cancelled — unsupported partition type: {partition.Type}");
+            _log.Log($"{operation} cancelled - unsupported partition type: {partition.Type}");
             return false;
         }
 

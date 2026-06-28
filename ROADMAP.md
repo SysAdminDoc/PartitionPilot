@@ -2,13 +2,6 @@
 
 ## Research-Driven Additions
 
-- [ ] P1 - Add stable disk identity to destructive plans and confirmations
-  Why: disk number, friendly name, and size are not enough to identify a target after reboot, hotplug, or storage reordering.
-  Evidence: `src/PartitionPilot.Core/Models/DiskInfo.cs`; `src/PartitionPilot.Core/Services/WmiDiskService.cs`; https://learn.microsoft.com/en-us/windows-hardware/drivers/storage/msft-disk
-  Touches: `src/PartitionPilot.Core/Models/DiskInfo.cs`, `src/PartitionPilot.Core/Services/WmiDiskService.cs`, partition/clone/layout view models, CLI JSON output, tests
-  Acceptance: disk records expose stable ID/path/serial fields where available; destructive confirmations and persisted layout/journal records include them; apply flows warn or block when identity no longer matches.
-  Complexity: M
-
 - [ ] P1 - Replace recovery scan with fast/deep/resumable modes
   Why: scanning every 512-byte sector across an entire disk can make large-disk recovery impractically slow.
   Evidence: `src/PartitionPilot.Core/Services/PartitionRecoveryScanner.cs`; https://www.cgsecurity.org/wiki/TestDisk; https://www.diskgenius.com/manual/recover-lost-partitions.php

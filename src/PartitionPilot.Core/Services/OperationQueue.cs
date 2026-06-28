@@ -21,7 +21,9 @@ public class PendingOperation
     public PendingOperationType Type { get; init; }
     public string Description { get; init; } = "";
     public string DiskTarget { get; init; } = "";
+    public DiskIdentitySnapshot? DiskIdentity { get; init; }
     public string RiskLevel { get; init; } = "Normal";
+    public Func<Task> ValidateTarget { get; init; } = () => Task.CompletedTask;
     public Func<Task> Execute { get; init; } = () => Task.CompletedTask;
 
     public string TypeDisplay => Type.ToString();
@@ -87,6 +89,7 @@ public class OperationQueue
 
                 try
                 {
+                    await op.ValidateTarget();
                     await op.Execute();
                     completed++;
                     completedOperations.Add(op);
@@ -99,7 +102,7 @@ public class OperationQueue
                 catch (Exception ex)
                 {
                     failed++;
-                    log.Log($"Operation {i + 1} failed: {op.Description} — {ex.Message}");
+                    log.Log($"Operation {i + 1} failed: {op.Description} - {ex.Message}");
 
                     OperationJournalService.UpdateEntry(journal, i, JournalEntryStatus.Failed, ex.Message);
                     for (int j = i + 1; j < snapshot.Count; j++)

@@ -406,6 +406,7 @@ public class DiskCloningViewModel : ViewModelBase
     private async Task RestoreImageAsync()
     {
         if (SelectedTargetDisk is null || string.IsNullOrWhiteSpace(RestoreImagePath)) return;
+        var targetIdentity = SelectedTargetDisk.ToIdentitySnapshot();
 
         var protectedTargets = await GetBitLockerProtectedTargetsAsync(SelectedTargetDisk.Number);
         if (protectedTargets.Count > 0 &&
@@ -419,7 +420,7 @@ public class DiskCloningViewModel : ViewModelBase
         }
 
         if (!_dialog.ConfirmDanger(
-            $"WARNING: Restoring to Disk {SelectedTargetDisk.Number} ({SelectedTargetDisk.FriendlyName}) will DESTROY ALL DATA on the target disk.\n\nContinue?",
+            $"WARNING: Restoring will DESTROY ALL DATA on the target disk.\n\nTarget:\n{targetIdentity.ConfirmationSummary}\n\nContinue?",
             "Confirm Image Restore")) return;
 
         if (!_dialog.ConfirmDanger(
@@ -452,6 +453,9 @@ public class DiskCloningViewModel : ViewModelBase
             }
         }
 
+        if (!await VerifyDiskIdentityBeforeExecuteAsync(targetIdentity, "Restore Target Changed"))
+            return;
+
         _cts?.Cancel();
         _cts?.Dispose();
         _cts = new CancellationTokenSource();
@@ -463,6 +467,7 @@ public class DiskCloningViewModel : ViewModelBase
         try
         {
             await using var cleanup = new OperationCleanupScope(_log);
+            await targetIdentity.VerifyCurrentAsync(_wmiService);
             if (tempDecrypted is not null)
                 cleanup.Register("Delete temporary decrypted image",
                     () => { try { File.Delete(tempDecrypted); } catch { } return Task.CompletedTask; },
@@ -554,6 +559,8 @@ public class DiskCloningViewModel : ViewModelBase
     private async Task SectorCloneAsync()
     {
         if (CloneSourceDisk is null || CloneDestDisk is null) return;
+        var sourceIdentity = CloneSourceDisk.ToIdentitySnapshot();
+        var destIdentity = CloneDestDisk.ToIdentitySnapshot();
 
         try
         {
@@ -574,13 +581,18 @@ public class DiskCloningViewModel : ViewModelBase
             return;
 
         if (!_dialog.ConfirmDanger(
-            $"WARNING: This will overwrite ALL data on Disk {CloneDestDisk.Number} ({CloneDestDisk.FriendlyName}, {SizeUtil.Format(CloneDestDisk.Size)}) with a sector-by-sector copy of Disk {CloneSourceDisk.Number}.\n\nThis operation cannot be undone. Continue?",
+            $"WARNING: This will overwrite ALL data on the destination disk with a sector-by-sector copy.\n\nSource:\n{sourceIdentity.ConfirmationSummary}\n\nDestination:\n{destIdentity.ConfirmationSummary}\n\nThis operation cannot be undone. Continue?",
             "Confirm Sector Clone"))
             return;
 
         if (!_dialog.ConfirmDanger(
             "FINAL CONFIRMATION: All data on the destination disk will be permanently overwritten with a raw sector copy.",
             "Confirm Clone"))
+            return;
+
+        if (!await VerifyDiskIdentityBeforeExecuteAsync(sourceIdentity, "Clone Source Changed"))
+            return;
+        if (!await VerifyDiskIdentityBeforeExecuteAsync(destIdentity, "Clone Destination Changed"))
             return;
 
         _cts?.Cancel();
@@ -595,6 +607,8 @@ public class DiskCloningViewModel : ViewModelBase
         var targetLocks = new List<VolumeLock>();
         try
         {
+            await sourceIdentity.VerifyCurrentAsync(_wmiService);
+            await destIdentity.VerifyCurrentAsync(_wmiService);
             var targetPartitions = await _wmiService.GetPartitionsAsync(CloneDestDisk.Number);
             targetLocks = targetPartitions
                 .Where(p => p.DriveLetter.HasValue)
@@ -708,6 +722,21 @@ public class DiskCloningViewModel : ViewModelBase
 
     private Task<List<string>> GetBitLockerProtectedTargetsAsync(int diskNumber) =>
         _wmiService.GetBitLockerProtectedTargetsAsync(diskNumber);
+
+    private async Task<bool> VerifyDiskIdentityBeforeExecuteAsync(DiskIdentitySnapshot identity, string title)
+    {
+        try
+        {
+            await identity.VerifyCurrentAsync(_wmiService);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _log.Log($"Target identity check failed: {ex.Message}");
+            _dialog.ShowError(ex.Message, title);
+            return false;
+        }
+    }
 
     public static long EstimateImageBytes(long sourceSizeBytes, long sourceFreeBytes)
     {
