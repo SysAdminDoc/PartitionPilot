@@ -72,6 +72,7 @@ public class PartitionTableBackupTests
 
         Assert.Contains("Get-Disk -Number 0", commands);
         Assert.Contains("Captured partition layout", commands);
+        Assert.Contains("UniqueId=UID-0", commands);
         Assert.Contains("does not generate destructive restore commands", commands);
     }
 
@@ -85,6 +86,16 @@ public class PartitionTableBackupTests
             DiskName = "Test Disk",
             DiskSize = 100_000,
             PartitionStyle = "GPT",
+            DiskIdentity = new DiskIdentitySnapshot
+            {
+                DiskNumber = 0,
+                FriendlyName = "Test Disk",
+                Size = 100_000,
+                PartitionStyle = "GPT",
+                UniqueId = "UID-0",
+                SerialNumber = "SER-0",
+                Path = @"\\?\disk#0"
+            },
             Partitions =
             {
                 new PartitionSnapshotPartition

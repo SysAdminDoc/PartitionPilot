@@ -35,6 +35,44 @@ public class WmiDiskService : IWmiDiskService
         }
     }
 
+    private static string GetString(ManagementBaseObject obj, string propertyName)
+    {
+        try
+        {
+            return obj.Properties[propertyName]?.Value?.ToString()?.Trim() ?? "";
+        }
+        catch
+        {
+            return "";
+        }
+    }
+
+    private static int GetInt32(ManagementBaseObject obj, string propertyName, int fallback = 0)
+    {
+        try
+        {
+            var value = obj.Properties[propertyName]?.Value;
+            return value is null ? fallback : Convert.ToInt32(value);
+        }
+        catch
+        {
+            return fallback;
+        }
+    }
+
+    private static long GetInt64(ManagementBaseObject obj, string propertyName, long fallback = 0)
+    {
+        try
+        {
+            var value = obj.Properties[propertyName]?.Value;
+            return value is null ? fallback : Convert.ToInt64(value);
+        }
+        catch
+        {
+            return fallback;
+        }
+    }
+
     // ───────────────────────── Disks ─────────────────────────
 
     public Task<List<DiskInfo>> GetDisksAsync() => Task.Run(() =>
@@ -44,21 +82,26 @@ public class WmiDiskService : IWmiDiskService
         {
             var scope = GetScope(StorageScope);
             using var searcher = new ManagementObjectSearcher(scope,
-                new ObjectQuery("SELECT * FROM MSFT_Disk WHERE OperationalStatus = 1"));
+                new ObjectQuery("SELECT * FROM MSFT_Disk"));
 
             foreach (ManagementObject obj in searcher.Get())
             {
                 using (obj)
                 {
-                    var style = Convert.ToInt32(obj["PartitionStyle"]);
+                    var style = GetInt32(obj, "PartitionStyle");
                     list.Add(new DiskInfo
                     {
-                        Number = Convert.ToInt32(obj["Number"]),
-                        FriendlyName = obj["FriendlyName"]?.ToString() ?? "",
-                        Size = Convert.ToInt64(obj["Size"]),
+                        Number = GetInt32(obj, "Number"),
+                        FriendlyName = GetString(obj, "FriendlyName"),
+                        Size = GetInt64(obj, "Size"),
                         PartitionStyle = style switch { 1 => "MBR", 2 => "GPT", _ => "RAW" },
-                        LargestFreeExtent = Convert.ToInt64(obj["LargestFreeExtent"] ?? 0L),
-                        NumberOfPartitions = Convert.ToInt32(obj["NumberOfPartitions"] ?? 0)
+                        UniqueId = GetString(obj, "UniqueId"),
+                        SerialNumber = GetString(obj, "SerialNumber"),
+                        Path = GetString(obj, "Path"),
+                        BusType = MapBusType(GetInt32(obj, "BusType")),
+                        Location = GetString(obj, "Location"),
+                        LargestFreeExtent = GetInt64(obj, "LargestFreeExtent"),
+                        NumberOfPartitions = GetInt32(obj, "NumberOfPartitions")
                     });
                 }
             }

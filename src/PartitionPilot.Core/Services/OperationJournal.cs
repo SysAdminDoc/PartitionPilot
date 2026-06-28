@@ -19,6 +19,7 @@ public class JournalEntry
     public string Type { get; set; } = "";
     public string Description { get; set; } = "";
     public string DiskTarget { get; set; } = "";
+    public DiskIdentitySnapshot? DiskIdentity { get; set; }
     public string RiskLevel { get; set; } = "Normal";
     public JournalEntryStatus Status { get; set; }
     public string? ErrorMessage { get; set; }
@@ -77,6 +78,7 @@ public static class OperationJournalService
                 Type = op.Type.ToString(),
                 Description = RedactPaths(op.Description),
                 DiskTarget = op.DiskTarget,
+                DiskIdentity = op.DiskIdentity,
                 RiskLevel = op.RiskLevel,
                 Status = JournalEntryStatus.Queued,
                 Timestamp = DateTimeOffset.UtcNow

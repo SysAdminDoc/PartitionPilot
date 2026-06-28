@@ -872,6 +872,7 @@ public class ToolsViewModel : ViewModelBase
     private async Task RunNvmeSanitizeAsync()
     {
         if (SelectedWipeDrive is null) return;
+        var diskIdentity = SelectedWipeDrive.ToIdentitySnapshot();
 
         if (!SecureEraseService.CanSanitizeDisk(SelectedWipeDrive, _physicalDisks, out var availability))
         {
@@ -895,7 +896,7 @@ public class ToolsViewModel : ViewModelBase
         }
 
         if (!_dialog.ConfirmDanger(
-            $"NVMe FIRMWARE ERASE on Disk {SelectedWipeDrive.Number} ({SelectedWipeDrive.FriendlyName}).\n\n" +
+            $"NVMe FIRMWARE ERASE target:\n{diskIdentity.ConfirmationSummary}\n\n" +
             $"Method: {method}\n\n" +
             "This sends a firmware-level sanitize command directly to the drive controller. " +
             "ALL DATA WILL BE PERMANENTLY AND IRREVERSIBLY DESTROYED.\n\n" +
@@ -906,6 +907,9 @@ public class ToolsViewModel : ViewModelBase
             "FINAL WARNING: NVMe sanitize is a hardware-level operation that erases ALL data " +
             "including data in over-provisioned and remapped sectors.\n\nProceed?",
             "NVMe Sanitize -- FINAL Confirmation")) return;
+
+        if (!await VerifyDiskIdentityBeforeExecuteAsync(diskIdentity, "NVMe Sanitize Target Changed"))
+            return;
 
         var ct = BeginOperation($"NVMe sanitize ({method}) on Disk {SelectedWipeDrive.Number}...");
         try
@@ -937,6 +941,7 @@ public class ToolsViewModel : ViewModelBase
     private async Task RunDodWipeAsync(int passCount)
     {
         if (SelectedWipeDrive is null) return;
+        var diskIdentity = SelectedWipeDrive.ToIdentitySnapshot();
 
         var protectedTargets = await GetBitLockerProtectedTargetsAsync(SelectedWipeDrive.Number);
         if (protectedTargets.Count > 0 &&
@@ -950,7 +955,7 @@ public class ToolsViewModel : ViewModelBase
         }
 
         if (!_dialog.ConfirmWarning(
-            $"DoD 5220.22-M {passCount}-PASS WIPE on Disk {SelectedWipeDrive.Number} ({SelectedWipeDrive.FriendlyName}).\n\n" +
+            $"DoD 5220.22-M {passCount}-PASS WIPE target:\n{diskIdentity.ConfirmationSummary}\n\n" +
             $"Size: {SizeUtil.Format(SelectedWipeDrive.Size)}\n\n" +
             "ALL DATA WILL BE PERMANENTLY DESTROYED with multiple overwrite passes.\n\nContinue?",
             $"DoD {passCount}-Pass Wipe -- Confirmation 1 of 2")) return;
@@ -959,6 +964,9 @@ public class ToolsViewModel : ViewModelBase
             $"FINAL WARNING: {passCount}-pass wipe will write the entire disk {passCount} times. " +
             "This may take hours on large drives. Click Yes to begin.",
             $"DoD {passCount}-Pass Wipe -- FINAL Confirmation")) return;
+
+        if (!await VerifyDiskIdentityBeforeExecuteAsync(diskIdentity, "DoD Wipe Target Changed"))
+            return;
 
         var ct = BeginOperation($"DoD {passCount}-pass wipe on Disk {SelectedWipeDrive.Number}...");
         var locks = new List<VolumeLock>();
@@ -1013,6 +1021,7 @@ public class ToolsViewModel : ViewModelBase
         }
 
         if (SelectedWipeDrive is null) return;
+        var diskIdentity = SelectedWipeDrive.ToIdentitySnapshot();
 
         var protectedTargets = await GetBitLockerProtectedTargetsAsync(SelectedWipeDrive.Number);
         if (protectedTargets.Count > 0 &&
@@ -1026,13 +1035,13 @@ public class ToolsViewModel : ViewModelBase
         }
 
         if (!_dialog.ConfirmWarning(
-            $"WARNING: You are about to wipe Disk {SelectedWipeDrive.Number} ({SelectedWipeDrive.FriendlyName}).\n\n" +
+            $"WARNING: You are about to wipe:\n{diskIdentity.ConfirmationSummary}\n\n" +
             "ALL DATA ON THIS DISK WILL BE PERMANENTLY DESTROYED.\n\nContinue?",
             "Wipe Disk -- Confirmation 1 of 3")) return;
 
         if (!_dialog.ConfirmWarning(
             $"Are you absolutely sure you want to wipe Disk {SelectedWipeDrive.Number}?\n\n" +
-            $"Disk: {SelectedWipeDrive.FriendlyName}\n" +
+            $"Target:\n{diskIdentity.ConfirmationSummary}\n" +
             $"Size: {SizeUtil.Format(SelectedWipeDrive.Size)}\n" +
             $"Mode: {WipeMode}\n\nThis CANNOT be undone.",
             "Wipe Disk -- Confirmation 2 of 3")) return;
@@ -1040,6 +1049,9 @@ public class ToolsViewModel : ViewModelBase
         if (!_dialog.ConfirmDanger(
             "FINAL WARNING: Click Yes to begin disk wipe immediately.",
             "Wipe Disk -- FINAL Confirmation")) return;
+
+        if (!await VerifyDiskIdentityBeforeExecuteAsync(diskIdentity, "Wipe Target Changed"))
+            return;
 
         var ct = BeginOperation($"Wiping Disk {SelectedWipeDrive.Number}...");
         var locks = new List<VolumeLock>();
@@ -1138,6 +1150,21 @@ public class ToolsViewModel : ViewModelBase
 
     private Task<List<string>> GetBitLockerProtectedTargetsAsync(int diskNumber) =>
         _wmiService.GetBitLockerProtectedTargetsAsync(diskNumber);
+
+    private async Task<bool> VerifyDiskIdentityBeforeExecuteAsync(DiskIdentitySnapshot identity, string title)
+    {
+        try
+        {
+            await identity.VerifyCurrentAsync(_wmiService);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _log.Log($"Target identity check failed: {ex.Message}");
+            _dialog.ShowError(ex.Message, title);
+            return false;
+        }
+    }
 
     // ──────────────────────── Boot Repair ────────────────────────
 

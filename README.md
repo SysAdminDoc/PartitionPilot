@@ -1,4 +1,4 @@
-![Version](https://img.shields.io/badge/version-0.9.4-4CC2FF)
+![Version](https://img.shields.io/badge/version-0.9.5-4CC2FF)
 ![License](https://img.shields.io/badge/license-MIT-5EE0A0)
 ![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-F4C96A)
 

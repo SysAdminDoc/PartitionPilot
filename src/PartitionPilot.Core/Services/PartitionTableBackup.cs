@@ -44,7 +44,7 @@ public class PartitionTableBackup
         _log = log;
     }
 
-    private const int CurrentSchemaVersion = 1;
+    private const int CurrentSchemaVersion = 2;
 
     public async Task SaveSnapshotAsync(int diskNumber)
     {
@@ -62,6 +62,7 @@ public class PartitionTableBackup
                 DiskName = disk?.FriendlyName ?? "Unknown",
                 DiskSize = disk?.Size ?? 0,
                 PartitionStyle = disk?.PartitionStyle ?? "Unknown",
+                DiskIdentity = disk?.ToIdentitySnapshot(),
                 Partitions = partitions.Select(p => new
                 {
                     p.PartitionNumber,
@@ -244,23 +245,13 @@ public class PartitionTableBackup
         var currentDisk = currentDisks.FirstOrDefault(d => d.Number == snapshot.DiskNumber);
         var mismatches = new List<string>();
 
-        if (currentDisk is null)
-        {
-            mismatches.Add($"Disk {snapshot.DiskNumber} is not currently connected.");
-        }
-        else
-        {
-            if (!string.IsNullOrEmpty(snapshot.DiskName) &&
-                !snapshot.DiskName.Equals(currentDisk.FriendlyName, StringComparison.OrdinalIgnoreCase))
-                mismatches.Add($"Name mismatch: snapshot=\"{snapshot.DiskName}\", current=\"{currentDisk.FriendlyName}\"");
+        if (!snapshot.EffectiveDiskIdentity.Matches(currentDisk, out var identityMismatch))
+            mismatches.Add(identityMismatch);
 
-            if (snapshot.DiskSize > 0 && Math.Abs(snapshot.DiskSize - currentDisk.Size) > 1024 * 1024 * 10)
-                mismatches.Add($"Size mismatch: snapshot={SizeUtil.Format(snapshot.DiskSize)}, current={SizeUtil.Format(currentDisk.Size)}");
-
-            if (!string.IsNullOrEmpty(snapshot.PartitionStyle) &&
-                !snapshot.PartitionStyle.Equals(currentDisk.PartitionStyle, StringComparison.OrdinalIgnoreCase))
-                mismatches.Add($"Partition style mismatch: snapshot={snapshot.PartitionStyle}, current={currentDisk.PartitionStyle}");
-        }
+        if (currentDisk is not null &&
+            !string.IsNullOrEmpty(snapshot.PartitionStyle) &&
+            !snapshot.PartitionStyle.Equals(currentDisk.PartitionStyle, StringComparison.OrdinalIgnoreCase))
+            mismatches.Add($"Partition style mismatch: snapshot={snapshot.PartitionStyle}, current={currentDisk.PartitionStyle}");
 
         if (mismatches.Count > 0)
         {
@@ -272,7 +263,7 @@ public class PartitionTableBackup
         }
         else
         {
-            lines.Add("# Disk identity verified: name, size, and partition style match the snapshot.");
+            lines.Add("# Disk identity verified: stable identity, size, and partition style match the snapshot.");
             lines.Add("");
         }
 
@@ -304,6 +295,7 @@ public class PartitionTableBackup
             $"# Snapshot: {snapshot.FileName}",
             $"# Captured: {snapshot.CapturedAtText}",
             $"# Disk: {snapshot.DiskSummary}",
+            $"# {snapshot.EffectiveDiskIdentity.StableIdentityText}",
             "",
             "Get-Disk -Number " + snapshot.DiskNumber,
             "Get-Partition -DiskNumber " + snapshot.DiskNumber + " | Sort-Object PartitionNumber | Format-Table -AutoSize",

@@ -3,6 +3,7 @@ namespace PartitionPilot;
 public class PartitionLayoutSpec
 {
     public string Style { get; set; } = "GPT";
+    public DiskIdentitySnapshot? TargetDisk { get; set; }
     public List<PartitionSpec> Partitions { get; set; } = new();
 }
 

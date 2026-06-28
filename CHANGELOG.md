@@ -1,5 +1,13 @@
 # Changelog
 
+## PartitionPilot v0.9.5 - 2026-06-28
+
+### Safety & Reliability
+- Added stable disk identity fields from `MSFT_Disk` to disk records, CLI JSON output, partition snapshots, and operation journals.
+- Added target identity text to destructive wipe, sanitize, clone, restore, format, delete, layout, and queue-apply confirmations.
+- Blocked queued operations and layout specs when the saved target identity no longer matches the current disk.
+- Added tests for disk identity matching, journal persistence, recovery notes, and pre-execute queue validation.
+
 ## PartitionPilot v0.9.4 - 2026-06-28
 
 ### Safety & Reliability

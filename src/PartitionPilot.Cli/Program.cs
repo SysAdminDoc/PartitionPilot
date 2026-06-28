@@ -95,16 +95,47 @@ int? ParseDiskArg()
     return int.TryParse(args[idx + 1], out var n) ? n : null;
 }
 
+static object DiskJson(DiskInfo d) => new
+{
+    d.Number,
+    d.FriendlyName,
+    d.Size,
+    SizeText = SizeUtil.Format(d.Size),
+    d.PartitionStyle,
+    d.NumberOfPartitions,
+    d.StoragePoolName,
+    d.UniqueId,
+    d.SerialNumber,
+    d.Path,
+    d.BusType,
+    d.Location,
+    DiskIdentity = d.ToIdentitySnapshot()
+};
+
+static void PrintTargetIdentity(DiskInfo disk)
+{
+    Console.WriteLine($"Target: {disk.DisplayText}");
+    Console.WriteLine($"        {disk.IdentitySummary}");
+}
+
+static bool ValidateExpectedDiskIdentity(PartitionLayoutSpec spec, DiskInfo disk)
+{
+    if (spec.TargetDisk is null)
+        return true;
+
+    if (spec.TargetDisk.Matches(disk, out var mismatch))
+        return true;
+
+    Console.Error.WriteLine($"Target disk identity mismatch: {mismatch}");
+    return false;
+}
+
 async Task<int> ListDisksAsync()
 {
     var disks = await wmi.GetDisksAsync();
     if (json)
     {
-        Console.WriteLine(JsonSerializer.Serialize(disks.Select(d => new
-        {
-            d.Number, d.FriendlyName, d.Size, SizeText = SizeUtil.Format(d.Size),
-            d.PartitionStyle, d.NumberOfPartitions, d.StoragePoolName
-        }), new JsonSerializerOptions { WriteIndented = true }));
+        Console.WriteLine(JsonSerializer.Serialize(disks.Select(DiskJson), new JsonSerializerOptions { WriteIndented = true }));
         return 0;
     }
 
@@ -113,6 +144,7 @@ async Task<int> ListDisksAsync()
     foreach (var d in disks)
     {
         Console.WriteLine($"{d.Number,-6} {Trunc(d.FriendlyName, 36),-36} {SizeUtil.Format(d.Size),-12} {d.PartitionStyle,-6} {d.NumberOfPartitions,-6} {d.StoragePoolName}");
+        Console.WriteLine($"       {d.IdentitySummary}");
     }
     return 0;
 }
@@ -129,7 +161,7 @@ async Task<int> ListPartitionsAsync()
         foreach (var disk in targets)
         {
             var parts = await wmi.GetPartitionsAsync(disk.Number);
-            result.Add(new { Disk = disk.Number, disk.FriendlyName, Partitions = parts.Select(p => new
+            result.Add(new { Disk = disk.Number, disk.FriendlyName, DiskIdentity = disk.ToIdentitySnapshot(), Partitions = parts.Select(p => new
             {
                 p.PartitionNumber, DriveLetter = p.DriveLetter?.ToString(), p.Label,
                 p.Size, SizeText = SizeUtil.Format(p.Size), p.FreeSpace, p.FileSystem, p.Type, p.Details
@@ -142,6 +174,7 @@ async Task<int> ListPartitionsAsync()
     foreach (var disk in targets)
     {
         Console.WriteLine($"Disk {disk.Number}: {disk.FriendlyName} ({SizeUtil.Format(disk.Size)}, {disk.PartitionStyle})");
+        Console.WriteLine($"  {disk.IdentitySummary}");
         var parts = await wmi.GetPartitionsAsync(disk.Number);
         if (parts.Count == 0)
         {
@@ -334,6 +367,7 @@ async Task<int> CaptureSnapshotAsync()
         DiskName = disk?.FriendlyName ?? "Unknown",
         DiskSize = disk?.Size ?? 0,
         PartitionStyle = disk?.PartitionStyle ?? "Unknown",
+        DiskIdentity = disk?.ToIdentitySnapshot(),
         Partitions = parts.Select(p => new
         {
             p.PartitionNumber, DriveLetter = p.DriveLetter?.ToString(), p.Label,
@@ -418,12 +452,27 @@ async Task<int> PlanOperationAsync()
             return 1;
     }
 
+    DiskInfo? targetDisk = null;
+    DiskIdentitySnapshot? targetIdentity = null;
+    if (diskNum.HasValue)
+    {
+        var disks = await wmi.GetDisksAsync();
+        targetDisk = disks.FirstOrDefault(d => d.Number == diskNum.Value);
+        if (targetDisk is null)
+        {
+            Console.Error.WriteLine($"Disk {diskNum.Value} not found.");
+            return 1;
+        }
+        targetIdentity = targetDisk.ToIdentitySnapshot();
+    }
+
     var planOutput = new
     {
         plan.Operation,
         Description = description,
         RiskLevel = riskLevel,
         DiskPartScript = diskpartScript,
+        TargetDisk = targetIdentity,
         WillApply = apply
     };
 
@@ -433,6 +482,8 @@ async Task<int> PlanOperationAsync()
     {
         Console.WriteLine($"Plan: {description}");
         Console.WriteLine($"Risk: {riskLevel}");
+        if (targetDisk is not null)
+            PrintTargetIdentity(targetDisk);
         Console.WriteLine($"DiskPart script:");
         foreach (var line in diskpartScript.Split('\n'))
             Console.WriteLine($"  {line}");
@@ -446,6 +497,8 @@ async Task<int> PlanOperationAsync()
 
     if (riskLevel == "High")
     {
+        if (targetIdentity is not null)
+            Console.Error.WriteLine($"\nTarget identity:\n{targetIdentity.ConfirmationSummary}");
         Console.Error.Write($"\nWARNING: This is a destructive operation. Type YES to confirm: ");
         var confirm = Console.ReadLine()?.Trim();
         if (!string.Equals(confirm, "YES", StringComparison.Ordinal))
@@ -457,6 +510,8 @@ async Task<int> PlanOperationAsync()
 
     try
     {
+        if (targetIdentity is not null)
+            await targetIdentity.VerifyCurrentAsync(wmi);
         Console.Error.WriteLine($"Executing: {description}...");
         await runner.RunDiskpartAsync(diskpartScript, log);
         Console.Error.WriteLine("Operation completed successfully.");
@@ -721,6 +776,8 @@ async Task<int> ApplyLayoutAsync()
     var disks = await wmi.GetDisksAsync();
     var disk = disks.FirstOrDefault(d => d.Number == diskNum.Value);
     if (disk is null) { Console.Error.WriteLine($"Disk {diskNum.Value} not found."); return 1; }
+    if (!ValidateExpectedDiskIdentity(spec, disk)) return 1;
+    var targetIdentity = disk.ToIdentitySnapshot();
 
     var currentPartitions = await wmi.GetPartitionsAsync(diskNum.Value);
     var diff = LayoutDiffService.ComputeDiff(spec, disk, currentPartitions, allowDestructiveReplace: replace);
@@ -728,10 +785,14 @@ async Task<int> ApplyLayoutAsync()
     if (json)
         Console.WriteLine(JsonSerializer.Serialize(diff.Select(d => new
         {
-            d.Action, d.Description, d.RiskLevel, d.DiskpartScript, WillApply = apply, WillReplace = replace
+            d.Action, d.Description, d.RiskLevel, d.DiskpartScript, TargetDisk = targetIdentity, WillApply = apply, WillReplace = replace
         }), new JsonSerializerOptions { WriteIndented = true }));
     else
+    {
+        PrintTargetIdentity(disk);
+        Console.WriteLine();
         Console.Write(LayoutDiffService.FormatPlan(diff));
+    }
 
     var blocked = diff.Where(d => d.RiskLevel == "Blocked").ToList();
     if (blocked.Count > 0)
@@ -749,6 +810,7 @@ async Task<int> ApplyLayoutAsync()
     var hasDestructive = diff.Any(d => d.RiskLevel is "Destructive" or "High");
     if (hasDestructive)
     {
+        Console.Error.WriteLine($"\nTarget identity:\n{targetIdentity.ConfirmationSummary}");
         Console.Error.Write("\nWARNING: This plan includes destructive operations. Type YES to confirm: ");
         var confirm = Console.ReadLine()?.Trim();
         if (!string.Equals(confirm, "YES", StringComparison.Ordinal))
@@ -760,6 +822,7 @@ async Task<int> ApplyLayoutAsync()
 
     foreach (var step in diff)
     {
+        await targetIdentity.VerifyCurrentAsync(wmi);
         if (string.IsNullOrEmpty(step.DiskpartScript))
         {
             Console.Error.WriteLine($"Skipping: {step.Description} (no automated script)");

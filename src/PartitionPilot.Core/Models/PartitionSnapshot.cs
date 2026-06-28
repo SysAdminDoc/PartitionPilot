@@ -10,12 +10,20 @@ public class PartitionSnapshot
     public string DiskName { get; set; } = "";
     public long DiskSize { get; set; }
     public string PartitionStyle { get; set; } = "";
+    public DiskIdentitySnapshot? DiskIdentity { get; set; }
     public List<PartitionSnapshotPartition> Partitions { get; set; } = new();
 
     public string FileName => string.IsNullOrWhiteSpace(FilePath) ? "" : Path.GetFileName(FilePath);
     public DateTimeOffset? CapturedAt => DateTimeOffset.TryParse(Timestamp, out var parsed) ? parsed : null;
     public string CapturedAtText => CapturedAt?.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss") ?? "Unknown time";
-    public string DiskSummary => $"Disk {DiskNumber}: {DiskName} ({SizeUtil.Format(DiskSize)}, {PartitionStyle})";
+    public DiskIdentitySnapshot EffectiveDiskIdentity => DiskIdentity ?? new DiskIdentitySnapshot
+    {
+        DiskNumber = DiskNumber,
+        FriendlyName = DiskName,
+        Size = DiskSize,
+        PartitionStyle = PartitionStyle
+    };
+    public string DiskSummary => EffectiveDiskIdentity.Summary;
     public string PartitionCountText => Partitions.Count == 1 ? "1 partition" : $"{Partitions.Count} partitions";
 }
 
