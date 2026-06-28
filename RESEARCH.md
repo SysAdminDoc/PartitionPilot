@@ -65,7 +65,7 @@ Macrium Reflect Free was retired January 2024, leaving a vacuum in trusted free 
   - `DiskCloningViewModel.cs` (735 lines) mixes VSS snapshot orchestration, DISM invocation, and robocopy orchestration — image workflow logic should move to a Core service.
   - `MainViewModel.cs` support-bundle generation (lines 280-360) is a view-model concern that belongs in a Core service.
 - **Test gaps:** CLI command parsing untested; PartitionRecoveryScanner untested; no pseudo-locale completeness CI gate; no test for sector clone verification (because verification doesn't exist yet); EnvironmentDiagnostics untested; UI smoke tests run in CI but with `continue-on-error: true`.
-- **Documentation accuracy:** README accurately describes v0.8.0 features. CLI section lists all commands. CLAUDE.md is current.
+- **Documentation accuracy:** README accurately describes v0.8.0 features. CLI section lists all commands.
 
 ## Rejected Ideas
 
