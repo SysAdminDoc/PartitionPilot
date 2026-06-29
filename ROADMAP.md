@@ -43,3 +43,31 @@
   Touches: `README.md`, `CLAUDE.md`, `CHANGELOG.md`
   Acceptance: docs include layout JSON schema examples, encryption compatibility notes, recovery scan mode tradeoffs, and release verification steps without adding extra markdown files.
   Complexity: S
+
+- [ ] P1 - Enforce filesystem-operation capability gates
+  Why: the support matrix is currently dialog-local guidance, while GUI and CLI operation paths need a single fail-closed policy before queuing DiskPart or PowerShell work.
+  Evidence: `src/PartitionPilot/Dialogs/FilesystemSupportDialog.xaml.cs`; `src/PartitionPilot/ViewModels/PartitionsViewModel.cs`; https://gparted.org/features.php; https://invent.kde.org/system/kpmcore
+  Touches: `src/PartitionPilot.Core/Services/`, `src/PartitionPilot/ViewModels/PartitionsViewModel.cs`, `src/PartitionPilot.Cli/Program.cs`, `tests/PartitionPilot.Tests/`
+  Acceptance: a Core capability service returns create/format/resize/extend/check/label availability plus localized reason text; GUI disables or blocks invalid actions; CLI plan/apply fails before invoking native tools; tests cover NTFS, FAT32, exFAT, ReFS, ext, APFS, HFS+, Linux swap, and LUKS.
+  Complexity: M
+
+- [ ] P1 - Add VSS writer-health preflight to image capture
+  Why: current VSS availability only checks providers, but consistent live-volume images depend on writer health and should fail closed or explain the fallback.
+  Evidence: `src/PartitionPilot.Core/Services/VssSnapshotService.cs`; `src/PartitionPilot/ViewModels/DiskCloningViewModel.cs`; https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/vssadmin-list-writers; https://learn.microsoft.com/en-us/windows/win32/vss/volume-shadow-copy-service-overview
+  Touches: `src/PartitionPilot.Core/Services/VssSnapshotService.cs`, `src/PartitionPilot.Core/Services/EnvironmentDiagnostics.cs`, `src/PartitionPilot/ViewModels/DiskCloningViewModel.cs`, `tests/PartitionPilot.Tests/`
+  Acceptance: image capture preflights providers and writers, parses healthy and failed writer states, records VSS evidence in diagnostics/support bundles, blocks or requires an explicit degraded-mode path for failed writers, and unit tests cover representative `vssadmin list writers` output.
+  Complexity: M
+
+- [ ] P2 - Make UI automation smoke tests release-gating
+  Why: five FlaUI smoke tests exist and discover locally, but the current noninteractive run skipped all of them, leaving UI/accessibility regressions without a release signal.
+  Evidence: `tests/PartitionPilot.UiTests/SmokeTests.cs`; `rtk dotnet test .\tests\PartitionPilot.UiTests\PartitionPilot.UiTests.csproj -c Release --no-restore`; https://api.xunit.net/v3/3.0.1/v3.3.0.1-Xunit.Assert.SkipWhen.html
+  Touches: `tests/PartitionPilot.UiTests/`, release validation scripts/docs, `README.md`, `CLAUDE.md`
+  Acceptance: a documented local command builds the app, runs simulation-mode UI tests in an interactive desktop session, fails when all tests skip unless an explicit headless flag is set, and saves screenshots/logs under the release artifact area on failure.
+  Complexity: M
+
+- [ ] P2 - Add curated drive-health advisory metadata
+  Why: PartitionPilot collects SMART/NVMe data but still relies heavily on raw attributes and generic text, while mature health tools use curated drive and attribute metadata to turn telemetry into guidance.
+  Evidence: `src/PartitionPilot.Core/Services/SmartQueryService.cs`; `src/PartitionPilot.Core/Services/WmiDiskService.cs`; `src/PartitionPilot.Core/Services/SmartHistoryService.cs`; https://www.smartmontools.org/; https://github.com/smartmontools/smartmontools/blob/master/smartmontools/drivedb.h; https://crystalmark.info/en/software/crystaldiskinfo/
+  Touches: `src/PartitionPilot.Core/Models/SmartData.cs`, `src/PartitionPilot.Core/Services/`, `src/PartitionPilot/ViewModels/DiskHealthViewModel.cs`, `src/PartitionPilot.Cli/Program.cs`, `tests/PartitionPilot.Tests/`
+  Acceptance: a local metadata layer maps known SATA/NVMe/USB attributes to names, severity, and explanations; unknown attributes remain visible as raw data; disk-health UI/CLI show advisory text with metadata version; tests cover known and unknown attribute fallback.
+  Complexity: L
