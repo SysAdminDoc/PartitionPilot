@@ -2,13 +2,6 @@
 
 ## Research-Driven Additions
 
-- [ ] P1 - Replace recovery scan with fast/deep/resumable modes
-  Why: scanning every 512-byte sector across an entire disk can make large-disk recovery impractically slow.
-  Evidence: `src/PartitionPilot.Core/Services/PartitionRecoveryScanner.cs`; https://www.cgsecurity.org/wiki/TestDisk; https://www.diskgenius.com/manual/recover-lost-partitions.php
-  Touches: `src/PartitionPilot.Core/Services/PartitionRecoveryScanner.cs`, recovery CLI output, GUI recovery surface if added, tests
-  Acceptance: fast mode checks common partition boundaries and filesystem superblock offsets; deep mode is cancellable and resumable; duplicate candidates are coalesced; exported reports include scan mode and coverage.
-  Complexity: L
-
 - [ ] P1 - Add release and update artifact verification
   Why: installer and update paths do not yet enforce project-level hash/signature verification, even though disk tools require high trust.
   Evidence: `installer/PartitionPilot.iss`; `src/PartitionPilot.Core/Services/UpdateService.cs`; https://learn.microsoft.com/en-us/windows/win32/seccrypto/signtool; https://github.com/velopack/velopack

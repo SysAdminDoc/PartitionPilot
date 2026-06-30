@@ -1,4 +1,4 @@
-![Version](https://img.shields.io/badge/version-0.9.8-4CC2FF)
+![Version](https://img.shields.io/badge/version-0.9.9-4CC2FF)
 ![License](https://img.shields.io/badge/license-MIT-5EE0A0)
 ![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-F4C96A)
 
@@ -14,6 +14,7 @@ PartitionPilot is a Windows disk partition management tool for power users and I
 - Pending operations queue: partition changes are queued and previewed before applying.
 - Partition snapshot history with JSON export, mismatch-checked recovery plans, and guided recovery notes.
 - Required pre-destruction partition snapshots before image restore, sector clone, whole-disk wipe, DoD wipe, and NVMe sanitize workflows.
+- Lost-partition recovery scanning with fast boundary probes, resumable deep mode, duplicate candidate coalescing, and coverage reporting.
 - Create, delete, format, resize, extend, split, hide, and drive-letter operations.
 - Disk initialization for RAW/unpartitioned disks (GPT).
 - Extended SMART health monitoring via LibreHardwareMonitorLib: reallocated sectors, pending sectors, power cycles, total writes, NVMe available spare, NVMe media errors, and vendor-specific attributes.
@@ -80,6 +81,13 @@ dotnet run --project .\src\PartitionPilot.Cli\PartitionPilot.Cli.csproj -- healt
 ```
 
 Commands: `disks`, `partitions`, `volumes`, `smart`, `smart-history`, `smart-trends`, `health`, `alignment`, `temperature`, `benchmark`, `snapshot`, `diagnostics`, `plan`, `apply-layout`, `recovery-scan`, `version`. All support `--json` for scripted automation.
+
+Recovery scans default to fast mode:
+
+```powershell
+pp recovery-scan --disk 1 --mode fast
+pp recovery-scan --disk 1 --mode deep --state C:\ProgramData\PartitionPilot\recovery\scan-disk1.json
+```
 
 ## Safety
 

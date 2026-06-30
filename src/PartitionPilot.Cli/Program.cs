@@ -65,7 +65,8 @@ int PrintUsage()
     Console.WriteLine("  snapshot --disk N         Capture partition layout snapshot to JSON");
     Console.WriteLine("  diagnostics               Check environment prerequisites");
     Console.WriteLine("  plan <op> [args]          Preview a partition operation (add --apply to execute)");
-    Console.WriteLine("  recovery-scan --disk N    Scan for lost partition signatures (read-only)");
+    Console.WriteLine("  recovery-scan --disk N [--mode fast|deep] [--state path]");
+    Console.WriteLine("                            Scan for lost partition signatures (read-only)");
     Console.WriteLine("  apply-layout --file F --disk N  Apply a partition layout spec (add --apply, --replace to recreate)");
     Console.WriteLine("  version                   Show version");
     Console.WriteLine();
@@ -566,6 +567,17 @@ async Task<int> RecoveryScanAsync()
         return 1;
     }
 
+    var modeText = ParseStringArg("--mode") ?? "fast";
+    if (!Enum.TryParse<RecoveryScanMode>(modeText, ignoreCase: true, out var mode))
+    {
+        Console.Error.WriteLine("--mode must be fast or deep.");
+        return 1;
+    }
+
+    var statePath = ParseStringArg("--state");
+    if (mode == RecoveryScanMode.Deep && string.IsNullOrWhiteSpace(statePath))
+        statePath = PartitionRecoveryScanner.GetDefaultResumeStatePath(diskNum.Value);
+
     var disks = await wmi.GetDisksAsync();
     var disk = disks.FirstOrDefault(d => d.Number == diskNum.Value);
     if (disk is null)
@@ -577,8 +589,39 @@ async Task<int> RecoveryScanAsync()
     var progress = new Progress<double>(p =>
         Console.Error.Write($"\rScanning... {p:F1}%"));
 
-    var result = await PartitionRecoveryScanner.ScanAsync(
-        disk.Number, disk.Size, log, progress);
+    using var cts = new CancellationTokenSource();
+    ConsoleCancelEventHandler cancelHandler = (_, e) =>
+    {
+        e.Cancel = true;
+        cts.Cancel();
+        Console.Error.WriteLine("\nCancelling recovery scan and saving resume state...");
+    };
+
+    Console.CancelKeyPress += cancelHandler;
+    RecoveryScanResult result;
+    try
+    {
+        result = await PartitionRecoveryScanner.ScanAsync(
+            disk.Number,
+            disk.Size,
+            log,
+            new RecoveryScanOptions { Mode = mode, ResumeStatePath = statePath },
+            progress,
+            cts.Token);
+    }
+    catch (OperationCanceledException)
+    {
+        Console.Error.WriteLine();
+        if (mode == RecoveryScanMode.Deep)
+            Console.Error.WriteLine($"Scan cancelled. Resume with: pp recovery-scan --disk {disk.Number} --mode deep --state \"{statePath}\"");
+        else
+            Console.Error.WriteLine("Scan cancelled.");
+        return 130;
+    }
+    finally
+    {
+        Console.CancelKeyPress -= cancelHandler;
+    }
 
     Console.Error.WriteLine();
 

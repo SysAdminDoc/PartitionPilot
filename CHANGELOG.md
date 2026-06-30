@@ -1,5 +1,12 @@
 # Changelog
 
+## PartitionPilot v0.9.9 - 2026-06-30
+
+### Recovery
+- Replaced whole-disk 512-byte-stride recovery scans with default fast mode and explicit deep mode.
+- Fast recovery scans probe common legacy and 1 MiB partition boundaries while still checking filesystem boot records and superblock offsets.
+- Deep recovery scans now checkpoint progress to a resume state file, support Ctrl+C cancellation from the CLI, coalesce duplicate candidates, and include scan mode plus coverage in text and JSON reports.
+
 ## PartitionPilot v0.9.8 - 2026-06-30
 
 ### Safety & Reliability
