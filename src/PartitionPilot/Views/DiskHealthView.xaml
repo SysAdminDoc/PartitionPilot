@@ -62,14 +62,18 @@
                         <Button Grid.Column="5"
                                 Content="Short Test"
                                 Command="{Binding RunShortTestCommand}"
+                                IsEnabled="{Binding CanRunSmartSelfTest}"
                                 Style="{StaticResource ToolbarButton}"
                                 Margin="6,0,0,0"
+                                ToolTip="{Binding SmartSelfTestSupportText}"
                                 AutomationProperties.Name="Run SMART short self-test"/>
                         <Button Grid.Column="6"
                                 Content="Extended Test"
                                 Command="{Binding RunExtendedTestCommand}"
+                                IsEnabled="{Binding CanRunSmartSelfTest}"
                                 Style="{StaticResource ToolbarButton}"
                                 Margin="6,0,0,0"
+                                ToolTip="{Binding SmartSelfTestSupportText}"
                                 AutomationProperties.Name="Run SMART extended self-test"/>
                         <Button Grid.Column="7"
                                 Content="{Binding PerfButtonText}"
@@ -185,6 +189,10 @@
                                        Foreground="{DynamicResource SubtextBrush}" Margin="0,4,0,0"
                                        TextWrapping="Wrap"
                                        AutomationProperties.Name="SMART self-test status"/>
+                            <TextBlock Text="{Binding SmartSelfTestSupportText}" FontSize="12"
+                                       Foreground="{DynamicResource SubtextBrush}" Margin="0,4,0,0"
+                                       TextWrapping="Wrap"
+                                       AutomationProperties.Name="SMART self-test availability"/>
                         </StackPanel>
                     </Border>
 

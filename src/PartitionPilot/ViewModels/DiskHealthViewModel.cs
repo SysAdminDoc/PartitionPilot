@@ -34,6 +34,8 @@ public class DiskHealthViewModel : ViewModelBase
                 _healthCts?.Cancel();
                 _healthCts?.Dispose();
                 _healthCts = new CancellationTokenSource();
+                OnPropertyChanged(nameof(CanRunSmartSelfTest));
+                _ = RefreshSmartSelfTestCapabilityAsync(_healthCts.Token);
                 _ = LoadHealthDataAsync(_healthCts.Token);
             }
         }
@@ -82,7 +84,14 @@ public class DiskHealthViewModel : ViewModelBase
     public bool IsBusy
     {
         get => _isBusy;
-        set => SetProperty(ref _isBusy, value);
+        set
+        {
+            if (SetProperty(ref _isBusy, value))
+            {
+                OnPropertyChanged(nameof(CanRunSmartSelfTest));
+                CommandManager.InvalidateRequerySuggested();
+            }
+        }
     }
 
     // ──────────────────────── Display Properties ────────────────────────
@@ -311,6 +320,41 @@ public class DiskHealthViewModel : ViewModelBase
         set => SetProperty(ref _selfTestStatus, value);
     }
 
+    private SmartctlCapability _smartSelfTestCapability = new()
+    {
+        CanRunSelfTest = false,
+        Status = "NotChecked",
+        Detail = "Select a disk to check SMART self-test support."
+    };
+
+    public SmartctlCapability SmartSelfTestCapability
+    {
+        get => _smartSelfTestCapability;
+        private set
+        {
+            if (SetProperty(ref _smartSelfTestCapability, value))
+            {
+                OnPropertyChanged(nameof(CanRunSmartSelfTest));
+                OnPropertyChanged(nameof(SmartSelfTestSupportText));
+                CommandManager.InvalidateRequerySuggested();
+            }
+        }
+    }
+
+    public bool CanRunSmartSelfTest => SelectedDisk is not null && SmartSelfTestCapability.CanRunSelfTest && !IsBusy;
+
+    public string SmartSelfTestSupportText
+    {
+        get
+        {
+            var detail = SmartSelfTestCapability.Detail;
+            if (!string.IsNullOrWhiteSpace(SmartSelfTestCapability.Remediation) &&
+                !SmartSelfTestCapability.CanRunSelfTest)
+                detail = $"{detail} {SmartSelfTestCapability.Remediation}".Trim();
+            return string.IsNullOrWhiteSpace(detail) ? "SMART self-test support not checked." : detail;
+        }
+    }
+
     public DiskHealthViewModel(IWmiDiskService wmiService, IProcessRunner runner, ActivityLog log)
     {
         _wmiService = wmiService;
@@ -324,9 +368,9 @@ public class DiskHealthViewModel : ViewModelBase
         RefreshCommand = new AsyncRelayCommand(_ => RefreshAsync());
         ToggleMonitorCommand = new WpfRelayCommand(_ => ToggleMonitoring());
         RunShortTestCommand = new AsyncRelayCommand(_ => RunSelfTestAsync(SmartTestType.Short),
-            _ => SelectedDisk is not null && !IsBusy);
+            _ => CanRunSmartSelfTest);
         RunExtendedTestCommand = new AsyncRelayCommand(_ => RunSelfTestAsync(SmartTestType.Extended),
-            _ => SelectedDisk is not null && !IsBusy);
+            _ => CanRunSmartSelfTest);
         ExportReportCommand = new AsyncRelayCommand(_ => ExportReportAsync(),
             _ => SelectedDisk is not null && Smart is not null);
         TogglePerfCountersCommand = new WpfRelayCommand(_ => TogglePerfCounters());
@@ -398,14 +442,20 @@ public class DiskHealthViewModel : ViewModelBase
 
     private async Task RunSelfTestAsync(SmartTestType testType)
     {
-        if (SelectedDisk is null) return;
-        var diskNum = int.TryParse(SelectedDisk.DeviceId, out var n) ? n : 0;
+        var selectedDisk = SelectedDisk;
+        if (selectedDisk is null) return;
+        if (!SmartSelfTestCapability.CanRunSelfTest)
+        {
+            SelfTestStatus = SmartSelfTestSupportText;
+            return;
+        }
+
         IsBusy = true;
         SelfTestStatus = $"Starting {testType} self-test...";
 
         try
         {
-            var result = await SmartTestService.StartTestAsync(diskNum, testType, _runner, _log);
+            var result = await SmartTestService.StartTestAsync(selectedDisk, testType, _runner, _log);
             SelfTestStatus = result.Started
                 ? $"{testType} test started. {result.EstimatedDuration ?? ""}"
                 : result.Message;
@@ -424,7 +474,49 @@ public class DiskHealthViewModel : ViewModelBase
     public async Task RefreshAsync()
     {
         await LoadPhysicalDisksAsync();
+        await RefreshSmartSelfTestCapabilityAsync(CancellationToken.None);
         await LoadHealthDataAsync(CancellationToken.None);
+    }
+
+    private async Task RefreshSmartSelfTestCapabilityAsync(CancellationToken ct)
+    {
+        var selectedDisk = SelectedDisk;
+        if (selectedDisk is null)
+        {
+            SmartSelfTestCapability = new SmartctlCapability
+            {
+                CanRunSelfTest = false,
+                Status = "NoDisk",
+                Detail = "Select a physical disk before running SMART self-tests."
+            };
+            return;
+        }
+
+        SmartSelfTestCapability = new SmartctlCapability
+        {
+            CanRunSelfTest = false,
+            Status = "Checking",
+            Detail = "Checking smartctl support..."
+        };
+
+        try
+        {
+            var capability = await SmartTestService.GetSelfTestCapabilityAsync(selectedDisk, _runner, _log);
+            ct.ThrowIfCancellationRequested();
+            if (SelectedDisk?.DeviceId == selectedDisk.DeviceId)
+                SmartSelfTestCapability = capability;
+        }
+        catch (OperationCanceledException) { }
+        catch (Exception ex)
+        {
+            SmartSelfTestCapability = new SmartctlCapability
+            {
+                CanRunSelfTest = false,
+                Status = "Error",
+                Detail = $"Could not check smartctl support: {ex.Message}",
+                Remediation = "Run diagnostics and verify smartctl is installed."
+            };
+        }
     }
 
     private async Task LoadPhysicalDisksAsync()

@@ -157,8 +157,24 @@ public static class EnvironmentDiagnostics
         checks.Add(await CheckToolAsync(runner, log, "vssadmin", "list providers", "VSS", "Volume Shadow Copy"));
         checks.Add(await CheckVssWriterHealthAsync(runner, log));
         checks.Add(await CheckToolAsync(runner, log, "chkdsk.exe", "/?", "chkdsk", "Filesystem repair"));
+        checks.Add(await CheckSmartctlAsync(runner, log));
 
         return checks;
+    }
+
+    public static async Task<DiagnosticCheck> CheckSmartctlAsync(IProcessRunner runner, IActivityLog log)
+    {
+        var info = await SmartTestService.GetSmartctlInfoAsync(runner, log);
+        return new DiagnosticCheck
+        {
+            Category = "Native Tools",
+            Name = "smartctl",
+            Status = info.IsAvailable ? "OK" : "Error",
+            Detail = info.IsAvailable
+                ? $"SMART self-tests available - version {info.Version}, path: {(string.IsNullOrWhiteSpace(info.Path) ? "PATH lookup unavailable" : info.Path)}"
+                : info.Detail,
+            Remediation = info.IsAvailable ? "" : info.Remediation
+        };
     }
 
     private static async Task<DiagnosticCheck> CheckVssWriterHealthAsync(IProcessRunner runner, IActivityLog log)

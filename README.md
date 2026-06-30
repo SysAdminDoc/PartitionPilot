@@ -1,4 +1,4 @@
-![Version](https://img.shields.io/badge/version-0.9.11-4CC2FF)
+![Version](https://img.shields.io/badge/version-0.9.12-4CC2FF)
 ![License](https://img.shields.io/badge/license-MIT-5EE0A0)
 ![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-F4C96A)
 
@@ -37,6 +37,7 @@ PartitionPilot is a Windows disk partition management tool for power users and I
 - .NET 10 Fluent theme with dark, light, and system (follows OS setting) modes.
 - CLI companion (pp.exe) for scripted disk management with JSON output.
 - SMART attribute history tracking with trend alerts for degradation detection.
+- smartctl diagnostics with path/version reporting, remediation, and disk-aware self-test gating for physical, NVMe, and USB bridge modes.
 - Real-time disk temperature monitoring with configurable threshold alerts.
 - MFT-direct NTFS scanning for near-instant disk usage analysis.
 - Sector-level disk-to-disk clone with progress reporting and cancel support.
