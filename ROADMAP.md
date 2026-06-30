@@ -30,13 +30,6 @@
   Acceptance: docs include layout JSON schema examples, encryption compatibility notes, recovery scan mode tradeoffs, and release verification steps without adding extra markdown files.
   Complexity: S
 
-- [ ] P2 - Make UI automation smoke tests release-gating
-  Why: five FlaUI smoke tests exist and discover locally, but the current noninteractive run skipped all of them, leaving UI/accessibility regressions without a release signal.
-  Evidence: `tests/PartitionPilot.UiTests/SmokeTests.cs`; `rtk dotnet test .\tests\PartitionPilot.UiTests\PartitionPilot.UiTests.csproj -c Release --no-restore`; https://api.xunit.net/v3/3.0.1/v3.3.0.1-Xunit.Assert.SkipWhen.html
-  Touches: `tests/PartitionPilot.UiTests/`, release validation scripts/docs, `README.md`, `CLAUDE.md`
-  Acceptance: a documented local command builds the app, runs simulation-mode UI tests in an interactive desktop session, fails when all tests skip unless an explicit headless flag is set, and saves screenshots/logs under the release artifact area on failure.
-  Complexity: M
-
 - [ ] P2 - Add curated drive-health advisory metadata
   Why: PartitionPilot collects SMART/NVMe data but still relies heavily on raw attributes and generic text, while mature health tools use curated drive and attribute metadata to turn telemetry into guidance.
   Evidence: `src/PartitionPilot.Core/Services/SmartQueryService.cs`; `src/PartitionPilot.Core/Services/WmiDiskService.cs`; `src/PartitionPilot.Core/Services/SmartHistoryService.cs`; https://www.smartmontools.org/; https://github.com/smartmontools/smartmontools/blob/master/smartmontools/drivedb.h; https://crystalmark.info/en/software/crystaldiskinfo/

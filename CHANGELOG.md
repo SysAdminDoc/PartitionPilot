@@ -1,5 +1,12 @@
 # Changelog
 
+## PartitionPilot v0.9.14 - 2026-06-30
+
+### UI Smoke Gate
+- Added `tools/run-ui-smoke.ps1` to build the WPF app, run FlaUI simulation-mode smoke tests, and save TRX/log/screenshot artifacts under `artifacts\ui-smoke`.
+- The smoke gate now fails when all UI tests skip unless `-AllowHeadlessSkip` is explicitly passed for noninteractive verification.
+- UI smoke screenshots can now be redirected with `PARTITIONPILOT_UI_SCREENSHOT_DIR`.
+
 ## PartitionPilot v0.9.13 - 2026-06-30
 
 ### Bootability Audit

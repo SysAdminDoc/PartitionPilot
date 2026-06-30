@@ -139,7 +139,7 @@ public static class BootabilityAuditService
         report.SystemPartitionFound = systemPartition is not null;
         report.SystemPartitionDriveLetter = systemPartition?.DriveLetter;
 
-        if (!report.WindowsDetected)
+        if (windowsDrive is not { } detectedWindowsDrive)
         {
             report.Issues.Add(new BootabilityAuditIssue
             {
@@ -166,7 +166,7 @@ public static class BootabilityAuditService
         }
         else
         {
-            report.BcdStoreFound = await CheckBcdStoreAsync(systemPartition, windowsDrive.Value, isGpt, runner, log, ct);
+            report.BcdStoreFound = await CheckBcdStoreAsync(systemPartition, detectedWindowsDrive, isGpt, runner, log, ct);
             if (!report.BcdStoreFound)
             {
                 report.Issues.Add(new BootabilityAuditIssue
@@ -181,7 +181,7 @@ public static class BootabilityAuditService
             }
         }
 
-        await CheckWinReAsync(report, windowsDrive.Value, runner, log, ct);
+        await CheckWinReAsync(report, detectedWindowsDrive, runner, log, ct);
         report.SuggestedBootRepairPlan = BuildBootRepairPlan(report, isGpt, isMbr);
         FinalizeReport(report);
         return report;

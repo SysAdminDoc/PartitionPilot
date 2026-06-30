@@ -50,7 +50,10 @@ public class SmokeTests : IDisposable
         if (window is null) return;
         try
         {
-            var dir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "screenshots");
+            var configuredDir = Environment.GetEnvironmentVariable("PARTITIONPILOT_UI_SCREENSHOT_DIR");
+            var dir = string.IsNullOrWhiteSpace(configuredDir)
+                ? Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "screenshots")
+                : configuredDir;
             Directory.CreateDirectory(dir);
             var image = Capture.Element(window);
             image.ToFile(Path.Combine(dir, $"{testName}_{DateTime.Now:yyyyMMdd_HHmmss}.png"));
