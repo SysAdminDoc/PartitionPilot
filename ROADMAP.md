@@ -44,21 +44,14 @@
   Acceptance: a local metadata layer maps known SATA/NVMe/USB attributes to names, severity, and explanations; unknown attributes remain visible as raw data; disk-health UI/CLI show advisory text with metadata version; tests cover known and unknown attribute fallback.
   Complexity: L
 
-- [ ] P1 — Verify user-created and restored disk images
-  Why: release artifacts have a verification item, but user WIM/VHDX/encrypted images still need capture/restore integrity proof.
-  Evidence: `src/PartitionPilot/ViewModels/DiskCloningViewModel.cs`; `src/PartitionPilot.Core/Services/ImageEncryptionService.cs`; https://learn.microsoft.com/en-us/windows-hardware/manufacture/desktop/dism-image-management-command-line-options-s14?view=windows-11; https://partclone.org/features/; https://github.com/rescuezilla/rescuezilla/issues/441
-  Touches: `src/PartitionPilot.Core/Services/`, `src/PartitionPilot/ViewModels/DiskCloningViewModel.cs`, `src/PartitionPilot.Cli/Program.cs` if image commands are added, `tests/PartitionPilot.Tests/`
-  Acceptance: WIM capture/apply uses DISM integrity/verification switches where supported; VHDX capture writes a manifest with source volume identity, file counts, byte totals, and hashes for sampled or full verification modes; encrypted images preserve/verifiably bind the manifest; restore validates the manifest before clearing the target unless explicitly bypassed with a logged degraded state.
-  Complexity: L
-
-- [ ] P2 — Add smartctl dependency diagnostics and self-test gating
+- [ ] P2 - Add smartctl dependency diagnostics and self-test gating
   Why: SMART self-tests call `smartctl`, but diagnostics do not report its path/version or device-mode limitations before users click self-test actions.
   Evidence: `src/PartitionPilot.Core/Services/SmartTestService.cs`; `src/PartitionPilot.Core/Services/EnvironmentDiagnostics.cs`; https://github.com/smartmontools/smartmontools/releases/tag/RELEASE_7_5; https://github.com/smartmontools/smartmontools/issues/499
   Touches: `src/PartitionPilot.Core/Services/SmartTestService.cs`, `src/PartitionPilot.Core/Services/EnvironmentDiagnostics.cs`, `src/PartitionPilot/ViewModels/DiskHealthViewModel.cs`, `src/PartitionPilot/Views/DiskHealthView.xaml`, `tests/PartitionPilot.Tests/`
   Acceptance: diagnostics report `smartctl` availability, version, and remediation; Disk Health disables or labels self-test actions when unavailable; device-path selection accounts for physical disk, NVMe, and USB bridge cases; tests cover available, missing, and unsupported-device output.
   Complexity: M
 
-- [ ] P2 — Add post-clone and post-restore bootability audit
+- [ ] P2 - Add post-clone and post-restore bootability audit
   Why: clone/restore workflows can succeed at copying bytes while leaving Windows boot files, EFI entries, or WinRE state unusable.
   Evidence: `src/PartitionPilot/ViewModels/DiskCloningViewModel.cs`; `src/PartitionPilot/ViewModels/ToolsViewModel.cs`; https://superuser.com/questions/347693/clonezilla-verify-image-fails; https://learn.microsoft.com/en-us/windows-hardware/manufacture/desktop/bcdboot-command-line-options-techref-di?view=windows-11
   Touches: `src/PartitionPilot.Core/Services/`, `src/PartitionPilot/ViewModels/DiskCloningViewModel.cs`, `src/PartitionPilot.Cli/Program.cs`, `tests/PartitionPilot.Tests/`
