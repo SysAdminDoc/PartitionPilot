@@ -293,6 +293,9 @@ public class DiskCloningViewModel : ViewModelBase
             VssSnapshot? vssSnapshot = null;
             try
             {
+                StatusText = "Checking VSS writer health...";
+                await VssSnapshotService.EnsureWritersHealthyAsync(_processRunner, _log, ct);
+
                 StatusText = "Creating VSS snapshot for consistent capture...";
                 vssSnapshot = await VssSnapshotService.CreateSnapshotAsync(
                     SelectedSourceDrive, _processRunner, _log, ct);

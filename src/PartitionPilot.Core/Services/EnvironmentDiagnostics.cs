@@ -155,9 +155,39 @@ public static class EnvironmentDiagnostics
         checks.Add(await CheckToolAsync(runner, log, "powershell.exe", "-NoProfile -Command \"$PSVersionTable.PSVersion.ToString()\"", "PowerShell", "Script execution"));
         checks.Add(await CheckToolAsync(runner, log, "dism.exe", "/?", "DISM", "Image capture/apply"));
         checks.Add(await CheckToolAsync(runner, log, "vssadmin", "list providers", "VSS", "Volume Shadow Copy"));
+        checks.Add(await CheckVssWriterHealthAsync(runner, log));
         checks.Add(await CheckToolAsync(runner, log, "chkdsk.exe", "/?", "chkdsk", "Filesystem repair"));
 
         return checks;
+    }
+
+    private static async Task<DiagnosticCheck> CheckVssWriterHealthAsync(IProcessRunner runner, IActivityLog log)
+    {
+        try
+        {
+            var report = await VssSnapshotService.CheckWriterHealthAsync(runner, log);
+            return new DiagnosticCheck
+            {
+                Category = "Native Tools",
+                Name = "VSS Writers",
+                Status = report.IsHealthy ? "OK" : "Error",
+                Detail = report.Summary,
+                Remediation = report.IsHealthy
+                    ? ""
+                    : "Run `vssadmin list writers` in an elevated terminal, resolve failed writers, then retry image capture"
+            };
+        }
+        catch (Exception ex)
+        {
+            return new DiagnosticCheck
+            {
+                Category = "Native Tools",
+                Name = "VSS Writers",
+                Status = "Error",
+                Detail = $"Could not list VSS writers: {ex.Message}",
+                Remediation = "Ensure the Volume Shadow Copy service is available and run diagnostics from an elevated session"
+            };
+        }
     }
 
     private static async Task<DiagnosticCheck> CheckToolAsync(IProcessRunner runner, IActivityLog log,
