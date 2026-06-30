@@ -72,13 +72,6 @@
   Acceptance: a local metadata layer maps known SATA/NVMe/USB attributes to names, severity, and explanations; unknown attributes remain visible as raw data; disk-health UI/CLI show advisory text with metadata version; tests cover known and unknown attribute fallback.
   Complexity: L
 
-- [ ] P1 — Snapshot destructive whole-disk targets before restore, clone, and wipe
-  Why: partition operations preserve recovery evidence, but whole-disk restore/clone/wipe paths can destroy the target layout without first saving a target snapshot.
-  Evidence: `src/PartitionPilot/ViewModels/DiskCloningViewModel.cs`; `src/PartitionPilot/ViewModels/ToolsViewModel.cs`; `src/PartitionPilot.Core/Services/PartitionTableBackup.cs`; https://kbx.macrium.com/macrium-reflect-x/validating-backups-images-can-be-restored
-  Touches: `src/PartitionPilot.Core/Services/PartitionTableBackup.cs`, `src/PartitionPilot/ViewModels/DiskCloningViewModel.cs`, `src/PartitionPilot/ViewModels/ToolsViewModel.cs`, `tests/PartitionPilot.Tests/`
-  Acceptance: image restore, sector clone destination, whole-disk wipe, DoD wipe, and NVMe sanitize flows save a timestamped target snapshot with disk identity before destructive execution; failures show the snapshot path; support bundles include the latest relevant snapshot; tests cover success and snapshot-write failure logging.
-  Complexity: M
-
 - [ ] P1 — Verify user-created and restored disk images
   Why: release artifacts have a verification item, but user WIM/VHDX/encrypted images still need capture/restore integrity proof.
   Evidence: `src/PartitionPilot/ViewModels/DiskCloningViewModel.cs`; `src/PartitionPilot.Core/Services/ImageEncryptionService.cs`; https://learn.microsoft.com/en-us/windows-hardware/manufacture/desktop/dism-image-management-command-line-options-s14?view=windows-11; https://partclone.org/features/; https://github.com/rescuezilla/rescuezilla/issues/441

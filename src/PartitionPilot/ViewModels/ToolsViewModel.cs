@@ -12,6 +12,7 @@ public class ToolsViewModel : ViewModelBase
     private readonly ProcessRunner _processRunner;
     private readonly ActivityLog _log;
     private readonly IDialogService _dialog;
+    private readonly PartitionTableBackup _backup;
     private List<PhysicalDiskInfo> _physicalDisks = new();
 
     // ──────────────────────── MBR → GPT ────────────────────────
@@ -460,6 +461,7 @@ public class ToolsViewModel : ViewModelBase
         _processRunner = processRunner;
         _log = log;
         _dialog = dialog;
+        _backup = new PartitionTableBackup(wmiService, log);
 
         ValidateMbrToGptCommand = new AsyncRelayCommand(_ => ValidateMbrToGptAsync(), _ => SelectedMbrDisk is not null);
         ConvertMbrToGptCommand = new AsyncRelayCommand(_ => ConvertMbrToGptAsync(), _ => SelectedMbrDisk is not null);
@@ -915,6 +917,9 @@ public class ToolsViewModel : ViewModelBase
         try
         {
             int diskNum = SelectedWipeDrive.Number;
+            StatusText = "Saving target partition snapshot...";
+            await _backup.SaveSnapshotForDestructiveOperationAsync(diskNum, "NVMe sanitize", ct);
+
             _log.Log($"Starting NVMe sanitize ({method}) on Disk {diskNum}...");
 
             await Task.Run(() => SecureEraseService.ExecuteNvmeSanitize(diskNum, method, _log), ct);
@@ -973,6 +978,9 @@ public class ToolsViewModel : ViewModelBase
         try
         {
             int diskNum = SelectedWipeDrive.Number;
+            StatusText = "Saving target partition snapshot...";
+            await _backup.SaveSnapshotForDestructiveOperationAsync(diskNum, $"DoD {passCount}-pass wipe", ct);
+
             var partitions = await _wmiService.GetPartitionsAsync(diskNum);
             locks = partitions
                 .Where(p => p.DriveLetter.HasValue)
@@ -1058,6 +1066,9 @@ public class ToolsViewModel : ViewModelBase
         try
         {
             int diskNum = SelectedWipeDrive.Number;
+            StatusText = "Saving target partition snapshot...";
+            await _backup.SaveSnapshotForDestructiveOperationAsync(diskNum, "disk wipe", ct);
+
             _log.Log($"Wiping Disk {diskNum} ({WipeMode})...");
 
             // Best-effort lock on all known volumes of this disk

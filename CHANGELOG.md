@@ -1,5 +1,12 @@
 # Changelog
 
+## PartitionPilot v0.9.6 - 2026-06-29
+
+### Safety & Reliability
+- Added required pre-destruction partition snapshots for image restore, sector clone destinations, whole-disk wipe, DoD wipe, and NVMe sanitize workflows.
+- Snapshot write failures now block destructive disk actions before native overwrite commands run and log the snapshot path for recovery evidence.
+- Support bundles now include the newest partition snapshots first.
+
 ## PartitionPilot v0.9.5 - 2026-06-28
 
 ### Safety & Reliability
