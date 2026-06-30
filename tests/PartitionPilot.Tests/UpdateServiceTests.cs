@@ -1,3 +1,5 @@
+using System.Text.Json;
+
 namespace PartitionPilot.Tests;
 
 public class UpdateServiceTests
@@ -20,7 +22,7 @@ public class UpdateServiceTests
 
         Assert.NotEqual("0.2.3", current);
         Assert.True(Version.TryParse(current, out _));
-        Assert.StartsWith("0.9.9", current);
+        Assert.StartsWith("0.9.10", current);
     }
 
     [Fact]
@@ -37,5 +39,60 @@ public class UpdateServiceTests
     public void BuildLatestReleaseApiUrl_RejectsInvalidRepoUrls(string repoUrl)
     {
         Assert.Throws<ArgumentException>(() => UpdateService.BuildLatestReleaseApiUrl(repoUrl));
+    }
+
+    [Fact]
+    public void EvaluateReleaseAssetVerification_AcceptsGithubSha256Digest()
+    {
+        using var doc = JsonDocument.Parse("""
+            {
+              "assets": [
+                {
+                  "name": "PartitionPilot-0.9.10-Setup.exe",
+                  "digest": "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+                }
+              ]
+            }
+            """);
+
+        var result = UpdateService.EvaluateReleaseAssetVerification(doc.RootElement);
+
+        Assert.Equal("Verified", result.Status);
+        Assert.True(result.IsVerified);
+    }
+
+    [Fact]
+    public void EvaluateReleaseAssetVerification_DetectsManifestOnlyRelease()
+    {
+        using var doc = JsonDocument.Parse("""
+            {
+              "assets": [
+                { "name": "PartitionPilot-0.9.10-Setup.exe" },
+                { "name": "SHA256SUMS.json" }
+              ]
+            }
+            """);
+
+        var result = UpdateService.EvaluateReleaseAssetVerification(doc.RootElement);
+
+        Assert.Equal("Manifest", result.Status);
+        Assert.Contains("SHA256 manifest", result.Detail, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void EvaluateReleaseAssetVerification_LabelsMissingHashesAsUnsignedLocalTest()
+    {
+        using var doc = JsonDocument.Parse("""
+            {
+              "assets": [
+                { "name": "PartitionPilot-0.9.10-Setup.exe" }
+              ]
+            }
+            """);
+
+        var result = UpdateService.EvaluateReleaseAssetVerification(doc.RootElement);
+
+        Assert.Equal("UnsignedLocalTest", result.Status);
+        Assert.Contains("local-test", result.Detail, StringComparison.OrdinalIgnoreCase);
     }
 }

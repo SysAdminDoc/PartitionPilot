@@ -128,8 +128,8 @@ public partial class MainViewModel : ViewModelBase
         var result = await UpdateService.CheckForUpdateAsync();
         if (result is { available: true } update)
         {
-            Log.Log($"Update available: v{update.version} - {update.url}");
-            StatusText = $"Update available: v{update.version}";
+            Log.Log($"Update available: v{update.version} - {update.url} ({update.verificationStatus}: {update.verificationDetail})");
+            StatusText = $"Update available: v{update.version} ({update.verificationStatus})";
         }
     }
 
