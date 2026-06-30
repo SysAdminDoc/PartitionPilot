@@ -1,5 +1,12 @@
 # Changelog
 
+## PartitionPilot v0.9.12 - 2026-06-30
+
+### SMART Diagnostics
+- Environment diagnostics now report smartctl availability, version, path, and remediation when SMART self-tests are unavailable.
+- Disk Health self-test buttons are gated by disk-aware smartctl capability, including NVMe mode selection, USB SAT bridge labeling, and unsupported-device warnings.
+- Added unit coverage for smartctl discovery, missing-tool diagnostics, device-mode selection, and self-test command generation.
+
 ## PartitionPilot v0.9.11 - 2026-06-30
 
 ### Image Integrity
