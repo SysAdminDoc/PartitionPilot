@@ -305,7 +305,9 @@ public partial class MainViewModel : ViewModelBase
                 {
                     var snapshotOut = Path.Combine(tempDir, "snapshots");
                     Directory.CreateDirectory(snapshotOut);
-                    foreach (var file in Directory.EnumerateFiles(snapshotDir, "*.json").Take(10))
+                    foreach (var file in Directory.EnumerateFiles(snapshotDir, "*.json")
+                                 .OrderByDescending(File.GetCreationTimeUtc)
+                                 .Take(10))
                     {
                         var content = await File.ReadAllTextAsync(file);
                         content = RedactSupportBundleText(content);

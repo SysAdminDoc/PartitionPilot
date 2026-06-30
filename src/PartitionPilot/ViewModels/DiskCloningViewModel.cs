@@ -12,6 +12,7 @@ public class DiskCloningViewModel : ViewModelBase
     private readonly IWmiDiskService _wmiService;
     private readonly ActivityLog _log;
     private readonly IDialogService _dialog;
+    private readonly PartitionTableBackup _backup;
     private readonly Dictionary<char, VolumeInfo> _volumeByLetter = new();
     private readonly Dictionary<char, string> _sourceBitLockerByLetter = new();
 
@@ -187,6 +188,7 @@ public class DiskCloningViewModel : ViewModelBase
         _wmiService = wmiService;
         _log = log;
         _dialog = dialog;
+        _backup = new PartitionTableBackup(wmiService, log);
 
         BrowseImageCommand = new WpfRelayCommand(_ => BrowseImagePath());
         BrowseRestoreImageCommand = new WpfRelayCommand(_ => BrowseRestoreImagePath());
@@ -476,6 +478,9 @@ public class DiskCloningViewModel : ViewModelBase
             var ext = Path.GetExtension(restorePath).ToLowerInvariant();
             var diskNum = SelectedTargetDisk.Number;
 
+            StatusText = "Saving target partition snapshot...";
+            await _backup.SaveSnapshotForDestructiveOperationAsync(diskNum, "image restore", ct);
+
             // Best-effort lock volumes on target disk before clearing
             var targetPartitions = await _wmiService.GetPartitionsAsync(diskNum);
             targetLocks = targetPartitions
@@ -609,6 +614,10 @@ public class DiskCloningViewModel : ViewModelBase
         {
             await sourceIdentity.VerifyCurrentAsync(_wmiService);
             await destIdentity.VerifyCurrentAsync(_wmiService);
+
+            StatusText = "Saving destination partition snapshot...";
+            await _backup.SaveSnapshotForDestructiveOperationAsync(CloneDestDisk.Number, "sector clone", ct);
+
             var targetPartitions = await _wmiService.GetPartitionsAsync(CloneDestDisk.Number);
             targetLocks = targetPartitions
                 .Where(p => p.DriveLetter.HasValue)

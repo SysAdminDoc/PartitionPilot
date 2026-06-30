@@ -7,6 +7,7 @@ public class PartitionTableBackup
 {
     private readonly IWmiDiskService _wmiService;
     private readonly IActivityLog _log;
+    private readonly string _backupDir;
     private static readonly string BackupDir = ResolveBackupDir();
     private static readonly JsonSerializerOptions SnapshotJsonOptions = new()
     {
@@ -38,16 +39,39 @@ public class PartitionTableBackup
         }
     }
 
-    public PartitionTableBackup(IWmiDiskService wmiService, IActivityLog log)
+    public PartitionTableBackup(IWmiDiskService wmiService, IActivityLog log, string? backupDirectory = null)
     {
         _wmiService = wmiService;
         _log = log;
+        _backupDir = backupDirectory ?? BackupDir;
     }
 
     private const int CurrentSchemaVersion = 2;
 
     public async Task SaveSnapshotAsync(int diskNumber)
     {
+        await SaveSnapshotCoreAsync(diskNumber, operationName: null, requireSuccess: false);
+    }
+
+    public async Task<string> SaveSnapshotForDestructiveOperationAsync(
+        int diskNumber,
+        string operationName,
+        CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(operationName))
+            throw new ArgumentException("Operation name is required.", nameof(operationName));
+
+        return await SaveSnapshotCoreAsync(diskNumber, operationName, requireSuccess: true, ct)
+            ?? throw new InvalidOperationException("Could not save the required partition table snapshot.");
+    }
+
+    private async Task<string?> SaveSnapshotCoreAsync(
+        int diskNumber,
+        string? operationName,
+        bool requireSuccess,
+        CancellationToken ct = default)
+    {
+        string? path = null;
         try
         {
             var partitions = await _wmiService.GetPartitionsAsync(diskNumber);
@@ -79,28 +103,45 @@ public class PartitionTableBackup
                 }).ToArray()
             };
 
-            Directory.CreateDirectory(BackupDir);
-            var filename = $"disk{diskNumber}_{DateTime.UtcNow:yyyyMMdd_HHmmss}.json";
-            var path = Path.Combine(BackupDir, filename);
+            Directory.CreateDirectory(_backupDir);
+            var suffix = string.IsNullOrWhiteSpace(operationName)
+                ? ""
+                : $"_{SanitizeFileSuffix(operationName)}";
+            var filename = $"disk{diskNumber}_{DateTime.UtcNow:yyyyMMdd_HHmmssfff}{suffix}.json";
+            path = Path.Combine(_backupDir, filename);
             var json = JsonSerializer.Serialize(snapshot, SnapshotJsonOptions);
-            await File.WriteAllTextAsync(path, json);
+            await File.WriteAllTextAsync(path, json, ct);
 
-            _log.Log($"Partition table snapshot saved: {filename}");
+            if (string.IsNullOrWhiteSpace(operationName))
+                _log.Log($"Partition table snapshot saved: {filename}");
+            else
+                _log.Log($"Pre-destruction snapshot saved before {operationName} on Disk {diskNumber}: {path}");
 
-            PurgeOldSnapshots();
+            PurgeOldSnapshots(_backupDir);
+            return path;
         }
         catch (Exception ex)
         {
-            _log.Log($"Could not save partition table snapshot: {ex.Message}");
+            if (!requireSuccess)
+            {
+                _log.Log($"Could not save partition table snapshot: {ex.Message}");
+                return null;
+            }
+
+            var target = path ?? _backupDir;
+            var message =
+                $"Could not save required pre-destruction partition snapshot for {operationName} on Disk {diskNumber} at {target}: {ex.Message}. Destructive operation blocked before disk changes.";
+            _log.Log(message);
+            throw new InvalidOperationException(message, ex);
         }
     }
 
-    private static void PurgeOldSnapshots()
+    private static void PurgeOldSnapshots(string backupDir)
     {
         try
         {
             var cutoff = DateTime.UtcNow.AddDays(-30);
-            foreach (var file in Directory.EnumerateFiles(BackupDir, "*.json"))
+            foreach (var file in Directory.EnumerateFiles(backupDir, "*.json"))
             {
                 if (File.GetCreationTimeUtc(file) < cutoff)
                     File.Delete(file);
@@ -109,12 +150,25 @@ public class PartitionTableBackup
         catch { }
     }
 
+    private static string SanitizeFileSuffix(string value)
+    {
+        var chars = value
+            .Trim()
+            .ToLowerInvariant()
+            .Select(c => char.IsLetterOrDigit(c) ? c : '_')
+            .ToArray();
+        var suffix = new string(chars).Trim('_');
+        while (suffix.Contains("__", StringComparison.Ordinal))
+            suffix = suffix.Replace("__", "_", StringComparison.Ordinal);
+        return string.IsNullOrEmpty(suffix) ? "destructive_operation" : suffix;
+    }
+
     public async Task<List<PartitionSnapshot>> ListSnapshotsAsync()
     {
-        Directory.CreateDirectory(BackupDir);
+        Directory.CreateDirectory(_backupDir);
         var snapshots = new List<PartitionSnapshot>();
 
-        foreach (var file in Directory.EnumerateFiles(BackupDir, "*.json").OrderByDescending(File.GetCreationTimeUtc))
+        foreach (var file in Directory.EnumerateFiles(_backupDir, "*.json").OrderByDescending(File.GetCreationTimeUtc))
         {
             try
             {
