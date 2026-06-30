@@ -386,6 +386,8 @@ public class PartitionsViewModel : ViewModelBase
         letter = ProcessRunner.ValidateDriveLetter(letter);
         label = ProcessRunner.SanitizeLabel(label);
         fs = ProcessRunner.ValidateFileSystem(fs);
+        if (!GuardFilesystemCapability(FilesystemOperation.Create, fs, $"Create {fs} partition"))
+            return Task.CompletedTask;
 
         var diskIdentity = SelectedDisk.ToIdentitySnapshot();
         Queue.Enqueue(new PendingOperation
@@ -423,6 +425,8 @@ public class PartitionsViewModel : ViewModelBase
         if (!GuardUnsupportedType(partition, $"Format {letter}:"))
             return Task.CompletedTask;
         if (!ConfirmBitLockerDestructiveOperation(partition, $"Format {letter}:"))
+            return Task.CompletedTask;
+        if (!GuardFilesystemCapability(FilesystemOperation.Format, fs, $"Format {letter}:"))
             return Task.CompletedTask;
 
         var diskNum = SelectedDisk?.Number;
@@ -482,6 +486,8 @@ public class PartitionsViewModel : ViewModelBase
         var partition = FindPartitionByLetter(letter);
         if (!GuardBitLockerMutation(partition, $"Resize {letter}:"))
             return Task.CompletedTask;
+        if (!GuardFilesystemCapability(FilesystemOperation.Resize, partition?.FileSystem, $"Resize {letter}:"))
+            return Task.CompletedTask;
         var diskIdentity = FindDiskForPartition(partition)?.ToIdentitySnapshot();
 
         Queue.Enqueue(new PendingOperation
@@ -512,6 +518,10 @@ public class PartitionsViewModel : ViewModelBase
         fs = ProcessRunner.ValidateFileSystem(fs);
         var partition = FindPartitionByLetter(letter);
         if (!GuardBitLockerMutation(partition, $"Split {letter}:"))
+            return Task.CompletedTask;
+        if (!GuardFilesystemCapability(FilesystemOperation.Resize, partition?.FileSystem, $"Split {letter}:"))
+            return Task.CompletedTask;
+        if (!GuardFilesystemCapability(FilesystemOperation.Create, fs, $"Create split target {newLetter}:"))
             return Task.CompletedTask;
 
         var diskNum = SelectedDisk?.Number;
@@ -610,6 +620,7 @@ public class PartitionsViewModel : ViewModelBase
         if (!GuardUnsupportedType(primary, $"Merge into {primary.LetterDisplay}")) return;
         if (!GuardUnsupportedType(secondary, $"Delete {secondary.LetterDisplay} to merge")) return;
         if (!GuardStoragePool("Merge partitions")) return;
+        if (!GuardFilesystemCapability(FilesystemOperation.Extend, primary.FileSystem, $"Merge into {primary.LetterDisplay}")) return;
         if (!GuardBitLockerMutation(primary, $"Merge into {primary.LetterDisplay}")) return;
         if (!ConfirmBitLockerDestructiveOperation(secondary, $"Delete {secondary.LetterDisplay} to merge")) return;
 
@@ -920,6 +931,8 @@ public class PartitionsViewModel : ViewModelBase
 
         if (!GuardBitLockerMutation(part, $"Extend partition {part.PartitionNumber}"))
             return;
+        if (!GuardFilesystemCapability(FilesystemOperation.Extend, part.FileSystem, $"Extend partition {part.PartitionNumber}"))
+            return;
 
         // Warn about recovery / pagefile / system partitions
         var warnings = new List<string>();
@@ -1070,6 +1083,17 @@ public class PartitionsViewModel : ViewModelBase
             "Modifying pooled disks can break pool integrity and cause data loss across the entire pool. " +
             "Use Windows Storage Spaces management to modify pooled disks.",
             "Storage Spaces Pool Warning");
+    }
+
+    private bool GuardFilesystemCapability(FilesystemOperation operation, string? fileSystem, string target)
+    {
+        var result = FilesystemCapabilityService.Evaluate(fileSystem, operation);
+        if (result.IsAllowed)
+            return true;
+
+        _log.Log($"{target} blocked by filesystem policy: {result.Reason}");
+        _dialog.ShowError(result.Reason, "Filesystem Operation Not Supported");
+        return false;
     }
 
     private bool GuardUnsupportedType(PartitionInfo? partition, string operation)

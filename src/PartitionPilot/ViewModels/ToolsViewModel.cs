@@ -748,6 +748,12 @@ public class ToolsViewModel : ViewModelBase
     {
         if (SelectedCheckDrive == default) return;
 
+        if (!GuardFilesystemCapability(
+                FilesystemOperation.Check,
+                GetVolumeFileSystemType(SelectedCheckDrive),
+                $"Check {SelectedCheckDrive}:"))
+            return;
+
         var ct = BeginOperation($"Checking {SelectedCheckDrive}: ({CheckMode})...");
         try
         {
@@ -1159,6 +1165,25 @@ public class ToolsViewModel : ViewModelBase
             char.ToUpperInvariant(v.DriveLetter.Value) == letter)?.EncryptionStatus;
     }
 
+    private string? GetVolumeFileSystemType(char letter)
+    {
+        letter = char.ToUpperInvariant(letter);
+        return WipeVolumes.FirstOrDefault(v =>
+            v.DriveLetter.HasValue &&
+            char.ToUpperInvariant(v.DriveLetter.Value) == letter)?.FileSystemType;
+    }
+
+    private bool GuardFilesystemCapability(FilesystemOperation operation, string? fileSystem, string target)
+    {
+        var result = FilesystemCapabilityService.Evaluate(fileSystem, operation);
+        if (result.IsAllowed)
+            return true;
+
+        _log.Log($"{target} blocked by filesystem policy: {result.Reason}");
+        _dialog.ShowError(result.Reason, "Filesystem Operation Not Supported");
+        return false;
+    }
+
     private Task<List<string>> GetBitLockerProtectedTargetsAsync(int diskNumber) =>
         _wmiService.GetBitLockerProtectedTargetsAsync(diskNumber);
 
@@ -1257,6 +1282,12 @@ public class ToolsViewModel : ViewModelBase
     private async Task RunSurfaceTestAsync()
     {
         if (SelectedSurfaceTestVolume == default) return;
+
+        if (!GuardFilesystemCapability(
+                FilesystemOperation.Check,
+                GetVolumeFileSystemType(SelectedSurfaceTestVolume),
+                $"Surface test {SelectedSurfaceTestVolume}:"))
+            return;
 
         var ct = BeginOperation($"Running surface test on {SelectedSurfaceTestVolume}:...");
         SurfaceTestResults = "Running surface test (this may take a while)...";

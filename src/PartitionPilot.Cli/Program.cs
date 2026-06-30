@@ -420,6 +420,8 @@ async Task<int> PlanOperationAsync()
         case "format":
             if (!diskNum.HasValue || !partNum.HasValue) { Console.Error.WriteLine("--disk N and --partition P required for format."); return 1; }
             var fs = ProcessRunner.ValidateFileSystem(plan.FileSystem ?? "NTFS");
+            if (RejectUnsupportedFilesystem(FilesystemCapabilityService.Evaluate(fs, FilesystemOperation.Format)))
+                return 1;
             var label = ProcessRunner.SanitizeLabel(plan.Label ?? "");
             description = $"Format partition {partNum.Value} on disk {diskNum.Value} as {fs}" + (label.Length > 0 ? $" (label: {label})" : "");
             riskLevel = "High";
@@ -439,8 +441,9 @@ async Task<int> PlanOperationAsync()
             if (!diskNum.HasValue) { Console.Error.WriteLine("--disk N required for create."); return 1; }
             var sizeStr = plan.Size ?? "max";
             var sizeClause = sizeStr.Equals("max", StringComparison.OrdinalIgnoreCase) ? "" : $" size={ParseSizeMB(sizeStr)}";
-            var createFs = plan.FileSystem ?? "NTFS";
-            ProcessRunner.ValidateFileSystem(createFs);
+            var createFs = ProcessRunner.ValidateFileSystem(plan.FileSystem ?? "NTFS");
+            if (RejectUnsupportedFilesystem(FilesystemCapabilityService.Evaluate(createFs, FilesystemOperation.Create)))
+                return 1;
             var createLabel = ProcessRunner.SanitizeLabel(plan.Label ?? "");
             description = $"Create{(sizeClause.Length > 0 ? sizeClause.Trim() + " MB" : " max-size")} {createFs} partition on disk {diskNum.Value}";
             riskLevel = "Normal";
@@ -522,6 +525,15 @@ async Task<int> PlanOperationAsync()
         Console.Error.WriteLine($"Operation failed: {ex.Message}");
         return 1;
     }
+}
+
+bool RejectUnsupportedFilesystem(FilesystemCapabilityResult result)
+{
+    if (result.IsAllowed)
+        return false;
+
+    Console.Error.WriteLine(result.Reason);
+    return true;
 }
 
 string? ParseStringArg(string name)

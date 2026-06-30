@@ -44,13 +44,6 @@
   Acceptance: docs include layout JSON schema examples, encryption compatibility notes, recovery scan mode tradeoffs, and release verification steps without adding extra markdown files.
   Complexity: S
 
-- [ ] P1 - Enforce filesystem-operation capability gates
-  Why: the support matrix is currently dialog-local guidance, while GUI and CLI operation paths need a single fail-closed policy before queuing DiskPart or PowerShell work.
-  Evidence: `src/PartitionPilot/Dialogs/FilesystemSupportDialog.xaml.cs`; `src/PartitionPilot/ViewModels/PartitionsViewModel.cs`; https://gparted.org/features.php; https://invent.kde.org/system/kpmcore
-  Touches: `src/PartitionPilot.Core/Services/`, `src/PartitionPilot/ViewModels/PartitionsViewModel.cs`, `src/PartitionPilot.Cli/Program.cs`, `tests/PartitionPilot.Tests/`
-  Acceptance: a Core capability service returns create/format/resize/extend/check/label availability plus localized reason text; GUI disables or blocks invalid actions; CLI plan/apply fails before invoking native tools; tests cover NTFS, FAT32, exFAT, ReFS, ext, APFS, HFS+, Linux swap, and LUKS.
-  Complexity: M
-
 - [ ] P2 - Make UI automation smoke tests release-gating
   Why: five FlaUI smoke tests exist and discover locally, but the current noninteractive run skipped all of them, leaving UI/accessibility regressions without a release signal.
   Evidence: `tests/PartitionPilot.UiTests/SmokeTests.cs`; `rtk dotnet test .\tests\PartitionPilot.UiTests\PartitionPilot.UiTests.csproj -c Release --no-restore`; https://api.xunit.net/v3/3.0.1/v3.3.0.1-Xunit.Assert.SkipWhen.html

@@ -1,4 +1,4 @@
-![Version](https://img.shields.io/badge/version-0.9.7-4CC2FF)
+![Version](https://img.shields.io/badge/version-0.9.8-4CC2FF)
 ![License](https://img.shields.io/badge/license-MIT-5EE0A0)
 ![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-F4C96A)
 
@@ -21,6 +21,7 @@ PartitionPilot is a Windows disk partition management tool for power users and I
 - BitLocker encryption status with mutation and destruction preflights.
 - Storage Spaces pool detection with integrity warnings on pooled disks.
 - Unsupported partition type identification (Linux, LUKS, HFS+, APFS) with guarded actions.
+- Shared filesystem capability policy blocks unsupported create, format, resize, extend, check, and label operations before native disk tools run.
 - Maintenance tools: MBR to GPT conversion, filesystem repair, optimization/TRIM, secure wipe (single-pass, DoD 3-pass, DoD 7-pass, NVMe sanitize), boot repair, surface test, Dev Drive creation, and DiskSpd-backed benchmarking.
 - Benchmark result export as JSON or text with drive metadata.
 - Disk image workflows for mounting, dismounting, and creating VHD/VHDX images.
