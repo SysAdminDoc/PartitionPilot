@@ -1,4 +1,4 @@
-![Version](https://img.shields.io/badge/version-0.9.13-4CC2FF)
+![Version](https://img.shields.io/badge/version-0.9.14-4CC2FF)
 ![License](https://img.shields.io/badge/license-MIT-5EE0A0)
 ![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-F4C96A)
 
@@ -35,6 +35,7 @@ PartitionPilot is a Windows disk partition management tool for power users and I
 - Structured native-command audit records with path redaction.
 - Auto-updates via Velopack with delta packages and GitHub Releases integration.
 - Release artifact verification with SHA256 manifests, optional Authenticode signing, and explicit unsigned local-test status.
+- Release-gated UI smoke tests with TRX logs, screenshots, and fail-closed all-skipped detection.
 - .NET 10 Fluent theme with dark, light, and system (follows OS setting) modes.
 - CLI companion (pp.exe) for scripted disk management with JSON output.
 - SMART attribute history tracking with trend alerts for degradation detection.
@@ -70,6 +71,14 @@ dotnet run --project .\src\PartitionPilot.Cli\PartitionPilot.Cli.csproj -- relea
 ```
 
 Set `PARTITIONPILOT_SIGN_CERT_THUMBPRINT` before `release-manifest` to Authenticode-sign `.exe` artifacts with `signtool.exe`; without it, manifests are marked `UnsignedLocalTest`.
+
+Run release UI smoke tests from an interactive desktop session:
+
+```powershell
+.\tools\run-ui-smoke.ps1
+```
+
+The gate builds the WPF app, runs simulation-mode FlaUI smoke tests, writes `artifacts\ui-smoke\ui-smoke.trx`, and saves failure screenshots under `artifacts\ui-smoke\screenshots`. Noninteractive verification must opt in to skipped UI tests with `-AllowHeadlessSkip`; without that flag, an all-skipped run fails the release gate.
 
 ## Run
 
