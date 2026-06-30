@@ -1,4 +1,4 @@
-![Version](https://img.shields.io/badge/version-0.9.10-4CC2FF)
+![Version](https://img.shields.io/badge/version-0.9.11-4CC2FF)
 ![License](https://img.shields.io/badge/license-MIT-5EE0A0)
 ![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-F4C96A)
 
@@ -29,6 +29,7 @@ PartitionPilot is a Windows disk partition management tool for power users and I
 - Disk usage analysis with squarified treemap visualization and top-folder size breakdown.
 - Disk cloning: create and restore WIM/VHDX images.
 - VSS writer-health preflight before live volume image capture, with explicit degraded-mode confirmation on failed writers.
+- Disk image sidecar manifests with image SHA256, source-volume evidence, sampled source file hashes, encrypted-image rebinding, and restore-time validation before target clearing.
 - Privacy-preserving support bundle export (redacted serial numbers and user paths).
 - Structured native-command audit records with path redaction.
 - Auto-updates via Velopack with delta packages and GitHub Releases integration.

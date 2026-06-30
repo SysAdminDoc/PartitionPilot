@@ -325,7 +325,7 @@ public class DiskCloningViewModel : ViewModelBase
                 _log.Log($"Creating WIM image of {captureSource} to {ImagePath}...");
                 var escapedPath = ProcessRunner.ValidateNativePathArgument(ImagePath);
                 await _processRunner.RunExeAsync("dism.exe",
-                    $"/Capture-Image /ImageFile:\"{escapedPath}\" /CaptureDir:{captureSource} /Name:\"PartitionPilot Capture\" /Compress:Fast",
+                    $"/Capture-Image /ImageFile:\"{escapedPath}\" /CaptureDir:{captureSource} /Name:\"PartitionPilot Capture\" /Compress:Fast /CheckIntegrity /Verify",
                     _log, ct: ct);
             }
             else
@@ -364,6 +364,17 @@ public class DiskCloningViewModel : ViewModelBase
                 detachCleanup.Complete();
             }
 
+            StatusText = "Writing image manifest...";
+            var sourceVolume = _volumeByLetter.GetValueOrDefault(char.ToUpperInvariant(SelectedSourceDrive));
+            var imageManifest = await DiskImageManifestService.CreateManifestAsync(
+                ImagePath,
+                SelectedSourceDrive,
+                captureSource,
+                sourceVolume,
+                UpdateService.GetCurrentVersion(),
+                _log,
+                ct);
+
             if (vssSnapshot is not null)
             {
                 await vssSnapshot.DisposeAsync();
@@ -382,6 +393,8 @@ public class DiskCloningViewModel : ViewModelBase
                 {
                     var encPath = ImagePath + ".enc";
                     await ImageEncryptionService.EncryptFileAsync(ImagePath, encPath, password, _log, ct: ct);
+                    await DiskImageManifestService.RebindManifestToEncryptedImageAsync(imageManifest, encPath, ct);
+                    try { File.Delete(DiskImageManifestService.GetManifestPath(ImagePath)); } catch { }
                     try { File.Delete(ImagePath); } catch { }
                     ImagePath = encPath;
                 }
@@ -434,6 +447,10 @@ public class DiskCloningViewModel : ViewModelBase
 
         string restorePath = RestoreImagePath;
         string? tempDecrypted = null;
+        var imageManifestValidation = await ValidateRestoreImageManifestOrConfirmAsync(restorePath, CancellationToken.None);
+        if (imageManifestValidation is null)
+            return;
+
         if (ImageEncryptionService.IsEncryptedImage(restorePath))
         {
             var password = PromptForInput("This is an encrypted image. Enter the decryption password:", "Decrypt Image");
@@ -449,6 +466,8 @@ public class DiskCloningViewModel : ViewModelBase
             try
             {
                 await ImageEncryptionService.DecryptFileAsync(restorePath, tempDecrypted, password, _log);
+                if (!await ValidateDecryptedImageHashOrConfirmAsync(tempDecrypted, imageManifestValidation.Manifest, CancellationToken.None))
+                    return;
                 restorePath = tempDecrypted;
             }
             catch (Exception ex)
@@ -510,7 +529,7 @@ public class DiskCloningViewModel : ViewModelBase
 
                 var escapedRestorePath = ProcessRunner.ValidateNativePathArgument(restorePath);
                 await _processRunner.RunExeAsync("dism.exe",
-                    $"/Apply-Image /ImageFile:\"{escapedRestorePath}\" /ApplyDir:{applyLetter}:\\ /Index:1", _log, ct: ct);
+                    $"/Apply-Image /ImageFile:\"{escapedRestorePath}\" /ApplyDir:{applyLetter}:\\ /Index:1 /CheckIntegrity /Verify", _log, ct: ct);
             }
             else
             {
@@ -734,6 +753,41 @@ public class DiskCloningViewModel : ViewModelBase
 
     private Task<List<string>> GetBitLockerProtectedTargetsAsync(int diskNumber) =>
         _wmiService.GetBitLockerProtectedTargetsAsync(diskNumber);
+
+    private async Task<DiskImageManifestValidation?> ValidateRestoreImageManifestOrConfirmAsync(string imagePath, CancellationToken ct)
+    {
+        var validation = await DiskImageManifestService.ValidateManifestAsync(imagePath, ct);
+        if (validation.IsValid)
+        {
+            _log.Log($"Image manifest validated for restore: {imagePath}");
+            return validation;
+        }
+
+        _log.Log($"Image manifest validation failed/degraded: {validation.Status} - {validation.Detail}");
+        return _dialog.ConfirmWarning(
+            $"{validation.Detail}\n\nContinue restore in degraded mode? The target disk will still be cleared if you proceed.",
+            "Image Manifest Verification")
+            ? validation
+            : null;
+    }
+
+    private async Task<bool> ValidateDecryptedImageHashOrConfirmAsync(string decryptedPath, DiskImageManifest? manifest, CancellationToken ct)
+    {
+        if (manifest is null || string.IsNullOrWhiteSpace(manifest.PlainImageSha256))
+            return true;
+
+        var actual = await DiskImageManifestService.ComputeSha256HexAsync(decryptedPath, ct);
+        if (string.Equals(actual, manifest.PlainImageSha256, StringComparison.OrdinalIgnoreCase))
+        {
+            _log.Log("Decrypted image hash matches manifest plain-image hash.");
+            return true;
+        }
+
+        _log.Log($"Decrypted image hash mismatch. Expected {manifest.PlainImageSha256}, got {actual}.");
+        return _dialog.ConfirmWarning(
+            $"The decrypted image hash does not match the manifest.\n\nExpected: {manifest.PlainImageSha256}\nActual: {actual}\n\nContinue restore in degraded mode?",
+            "Decrypted Image Verification");
+    }
 
     private async Task<bool> VerifyDiskIdentityBeforeExecuteAsync(DiskIdentitySnapshot identity, string title)
     {

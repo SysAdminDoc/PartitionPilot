@@ -1,5 +1,12 @@
 # Changelog
 
+## PartitionPilot v0.9.11 - 2026-06-30
+
+### Image Integrity
+- WIM capture/apply now uses DISM `/CheckIntegrity` and `/Verify`.
+- Image capture writes a `.ppmanifest.json` sidecar with image SHA256, source-volume metadata, source file counts/bytes, and sampled source file hashes.
+- Encrypted image captures rebind the sidecar manifest to the encrypted file hash while preserving the plain-image hash, and restores validate manifests before clearing the target disk.
+
 ## PartitionPilot v0.9.10 - 2026-06-30
 
 ### Release Integrity
