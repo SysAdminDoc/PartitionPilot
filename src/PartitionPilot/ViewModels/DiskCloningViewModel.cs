@@ -499,6 +499,7 @@ public class DiskCloningViewModel : ViewModelBase
 
             var ext = Path.GetExtension(restorePath).ToLowerInvariant();
             var diskNum = SelectedTargetDisk.Number;
+            char? restoredWindowsDrive = null;
 
             StatusText = "Saving target partition snapshot...";
             await _backup.SaveSnapshotForDestructiveOperationAsync(diskNum, "image restore", ct);
@@ -530,6 +531,7 @@ public class DiskCloningViewModel : ViewModelBase
                 var escapedRestorePath = ProcessRunner.ValidateNativePathArgument(restorePath);
                 await _processRunner.RunExeAsync("dism.exe",
                     $"/Apply-Image /ImageFile:\"{escapedRestorePath}\" /ApplyDir:{applyLetter}:\\ /Index:1 /CheckIntegrity /Verify", _log, ct: ct);
+                restoredWindowsDrive = applyLetter;
             }
             else
             {
@@ -556,13 +558,23 @@ public class DiskCloningViewModel : ViewModelBase
 
                 await _processRunner.RunExeAsync("robocopy",
                     $"{sourceLetter}:\\ {destinationLetter}:\\ /MIR /R:0 /W:0 /NP /NDL /NFL", _log, ignoreStderrOnSuccess: true, ct: ct);
+                restoredWindowsDrive = destinationLetter;
 
                 await _processRunner.RunPowerShellAsync(unmountCmd, _log, ct);
                 mountCleanup.Complete();
             }
 
+            StatusText = "Auditing restored bootability...";
+            var bootAudit = await RunBootabilityAuditAsync(diskNum, restoredWindowsDrive, ct);
+            var bootAuditReport = bootAudit.FormatReport();
             _log.Log($"Image restored to Disk {diskNum}.");
-            _dialog.ShowInfo($"Image restored successfully to Disk {diskNum}.", "Restore Complete");
+            _log.Log(bootAuditReport);
+
+            var restoreSummary = $"Image restored successfully to Disk {diskNum}.\n\n{bootAuditReport}";
+            if (bootAudit.Status == BootabilityAuditStatus.Pass)
+                _dialog.ShowInfo(restoreSummary, "Restore Complete");
+            else
+                _dialog.ShowWarning(restoreSummary, "Restore Complete (Boot Audit Warnings)");
         }
         catch (OperationCanceledException)
         {
@@ -658,10 +670,14 @@ public class DiskCloningViewModel : ViewModelBase
                 _log, progress, ct, rescue: CloneRescueMode, verify: CloneVerify);
 
             CloneProgressPercent = 100;
-            CloneProgressText = cloneResult.FormatReport();
+            StatusText = "Auditing cloned bootability...";
+            var bootAudit = await RunBootabilityAuditAsync(CloneDestDisk.Number, null, ct);
+            var bootAuditReport = bootAudit.FormatReport();
+            _log.Log(bootAuditReport);
+            CloneProgressText = $"{cloneResult.FormatReport()}\n\n{bootAuditReport}";
 
-            var summary = $"Sector clone complete.\n\nDisk {CloneSourceDisk.Number} -> Disk {CloneDestDisk.Number}\n{cloneResult.FormatReport()}";
-            if (cloneResult.HasBadSectors || !cloneResult.VerificationPassed)
+            var summary = $"Sector clone complete.\n\nDisk {CloneSourceDisk.Number} -> Disk {CloneDestDisk.Number}\n{cloneResult.FormatReport()}\n\n{bootAuditReport}";
+            if (cloneResult.HasBadSectors || !cloneResult.VerificationPassed || bootAudit.Status != BootabilityAuditStatus.Pass)
                 _dialog.ShowWarning(summary, "Clone Complete (With Warnings)");
             else
                 _dialog.ShowInfo(summary, "Clone Complete");
@@ -769,6 +785,44 @@ public class DiskCloningViewModel : ViewModelBase
             "Image Manifest Verification")
             ? validation
             : null;
+    }
+
+    private async Task<BootabilityAuditReport> RunBootabilityAuditAsync(int diskNumber, char? knownWindowsDrive, CancellationToken ct)
+    {
+        try
+        {
+            return await BootabilityAuditService.AuditAsync(
+                diskNumber,
+                _wmiService,
+                _processRunner,
+                _log,
+                knownWindowsDrive,
+                ct);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _log.Log($"Bootability audit failed: {ex.Message}");
+            return new BootabilityAuditReport
+            {
+                DiskNumber = diskNumber,
+                Status = BootabilityAuditStatus.Warning,
+                SuggestedBootRepairPlan = $"Run `pp boot-audit --disk {diskNumber}` after refreshing disk inventory.",
+                Issues =
+                {
+                    new BootabilityAuditIssue
+                    {
+                        Severity = BootabilityAuditStatus.Warning,
+                        Code = "BootAuditFailed",
+                        Message = $"Bootability audit could not complete: {ex.Message}",
+                        Remediation = "Refresh disks and rerun the boot audit from the CLI or Disk Cloning workflow."
+                    }
+                }
+            };
+        }
     }
 
     private async Task<bool> ValidateDecryptedImageHashOrConfirmAsync(string decryptedPath, DiskImageManifest? manifest, CancellationToken ct)

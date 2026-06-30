@@ -43,10 +43,3 @@
   Touches: `src/PartitionPilot.Core/Models/SmartData.cs`, `src/PartitionPilot.Core/Services/`, `src/PartitionPilot/ViewModels/DiskHealthViewModel.cs`, `src/PartitionPilot.Cli/Program.cs`, `tests/PartitionPilot.Tests/`
   Acceptance: a local metadata layer maps known SATA/NVMe/USB attributes to names, severity, and explanations; unknown attributes remain visible as raw data; disk-health UI/CLI show advisory text with metadata version; tests cover known and unknown attribute fallback.
   Complexity: L
-
-- [ ] P2 - Add post-clone and post-restore bootability audit
-  Why: clone/restore workflows can succeed at copying bytes while leaving Windows boot files, EFI entries, or WinRE state unusable.
-  Evidence: `src/PartitionPilot/ViewModels/DiskCloningViewModel.cs`; `src/PartitionPilot/ViewModels/ToolsViewModel.cs`; https://superuser.com/questions/347693/clonezilla-verify-image-fails; https://learn.microsoft.com/en-us/windows-hardware/manufacture/desktop/bcdboot-command-line-options-techref-di?view=windows-11
-  Touches: `src/PartitionPilot.Core/Services/`, `src/PartitionPilot/ViewModels/DiskCloningViewModel.cs`, `src/PartitionPilot.Cli/Program.cs`, `tests/PartitionPilot.Tests/`
-  Acceptance: after WIM restore, VHDX restore, or sector clone, PartitionPilot audits target GPT/MBR style, EFI/System partition presence, BCD files, and WinRE status when a Windows installation is detected; the UI/CLI reports pass/warn/fail and offers a non-destructive boot-repair plan without auto-running destructive fixes.
-  Complexity: M

@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using PartitionPilot;
 using PartitionPilot.Cli;
 
@@ -29,6 +30,7 @@ try
         "alignment" => await ShowAlignmentAsync(),
         "snapshot" => await CaptureSnapshotAsync(),
         "diagnostics" or "diag" => await RunDiagnosticsAsync(),
+        "boot-audit" => await BootAuditAsync(),
         "plan" => await PlanOperationAsync(),
         "recovery-scan" => await RecoveryScanAsync(),
         "benchmark" => await RunBenchmarkAsync(),
@@ -65,6 +67,8 @@ int PrintUsage()
     Console.WriteLine("  benchmark --drive C       Run DiskSpd benchmark on a drive");
     Console.WriteLine("  snapshot --disk N         Capture partition layout snapshot to JSON");
     Console.WriteLine("  diagnostics               Check environment prerequisites");
+    Console.WriteLine("  boot-audit --disk N [--windows C]");
+    Console.WriteLine("                            Audit Windows bootability and print a repair plan");
     Console.WriteLine("  plan <op> [args]          Preview a partition operation (add --apply to execute)");
     Console.WriteLine("  recovery-scan --disk N [--mode fast|deep] [--state path]");
     Console.WriteLine("                            Scan for lost partition signatures (read-only)");
@@ -552,6 +556,14 @@ int? ParseIntArg(string name)
     return val is not null && int.TryParse(val, out var n) ? n : null;
 }
 
+char? ParseDriveLetterArg(string name)
+{
+    var val = ParseStringArg(name)?.Trim();
+    return val is { Length: 1 } && char.IsLetter(val[0])
+        ? char.ToUpperInvariant(val[0])
+        : null;
+}
+
 long ParseSizeMB(string sizeStr)
 {
     sizeStr = sizeStr.Trim().ToUpperInvariant();
@@ -649,6 +661,40 @@ async Task<int> RunDiagnosticsAsync()
     }
     var errorCount = checks.Count(c => c.Status == "Error");
     return errorCount > 0 ? 1 : 0;
+}
+
+async Task<int> BootAuditAsync()
+{
+    var diskNum = ParseDiskArg();
+    if (!diskNum.HasValue)
+    {
+        Console.Error.WriteLine("--disk N is required for boot-audit.");
+        return 1;
+    }
+
+    var knownWindowsDrive = ParseDriveLetterArg("--windows");
+    var report = await BootabilityAuditService.AuditAsync(
+        diskNum.Value,
+        wmi,
+        runner,
+        log,
+        knownWindowsDrive);
+
+    if (json)
+    {
+        var options = new JsonSerializerOptions { WriteIndented = true };
+        options.Converters.Add(new JsonStringEnumConverter());
+        Console.WriteLine(JsonSerializer.Serialize(report, options));
+    }
+    else
+        Console.WriteLine(report.FormatReport());
+
+    return report.Status switch
+    {
+        BootabilityAuditStatus.Pass => 0,
+        BootabilityAuditStatus.Warning => 1,
+        _ => 2
+    };
 }
 
 async Task<int> ReleaseManifestAsync()

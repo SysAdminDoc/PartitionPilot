@@ -1,5 +1,12 @@
 # Changelog
 
+## PartitionPilot v0.9.13 - 2026-06-30
+
+### Bootability Audit
+- Added a Core bootability audit for restored and cloned Windows targets covering partition style, EFI/system partition presence, BCD files, and WinRE status.
+- Restore and sector-clone completion now include pass/warn/fail boot audit output plus a non-destructive bcdboot/reagentc repair plan when needed.
+- Added `pp boot-audit --disk N [--windows C]` for rerunning the same audit from the CLI.
+
 ## PartitionPilot v0.9.12 - 2026-06-30
 
 ### SMART Diagnostics
