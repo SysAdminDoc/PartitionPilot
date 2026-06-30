@@ -1,5 +1,12 @@
 # Changelog
 
+## PartitionPilot v0.9.7 - 2026-06-29
+
+### Safety & Reliability
+- Added VSS writer-health parsing and preflight checks before live volume image capture.
+- Image capture now requires healthy VSS writers or an explicit degraded-mode confirmation before proceeding without a consistent snapshot.
+- Environment diagnostics now report VSS writer health separately from provider availability.
+
 ## PartitionPilot v0.9.6 - 2026-06-29
 
 ### Safety & Reliability

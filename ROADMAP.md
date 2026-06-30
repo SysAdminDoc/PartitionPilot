@@ -51,13 +51,6 @@
   Acceptance: a Core capability service returns create/format/resize/extend/check/label availability plus localized reason text; GUI disables or blocks invalid actions; CLI plan/apply fails before invoking native tools; tests cover NTFS, FAT32, exFAT, ReFS, ext, APFS, HFS+, Linux swap, and LUKS.
   Complexity: M
 
-- [ ] P1 - Add VSS writer-health preflight to image capture
-  Why: current VSS availability only checks providers, but consistent live-volume images depend on writer health and should fail closed or explain the fallback.
-  Evidence: `src/PartitionPilot.Core/Services/VssSnapshotService.cs`; `src/PartitionPilot/ViewModels/DiskCloningViewModel.cs`; https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/vssadmin-list-writers; https://learn.microsoft.com/en-us/windows/win32/vss/volume-shadow-copy-service-overview
-  Touches: `src/PartitionPilot.Core/Services/VssSnapshotService.cs`, `src/PartitionPilot.Core/Services/EnvironmentDiagnostics.cs`, `src/PartitionPilot/ViewModels/DiskCloningViewModel.cs`, `tests/PartitionPilot.Tests/`
-  Acceptance: image capture preflights providers and writers, parses healthy and failed writer states, records VSS evidence in diagnostics/support bundles, blocks or requires an explicit degraded-mode path for failed writers, and unit tests cover representative `vssadmin list writers` output.
-  Complexity: M
-
 - [ ] P2 - Make UI automation smoke tests release-gating
   Why: five FlaUI smoke tests exist and discover locally, but the current noninteractive run skipped all of them, leaving UI/accessibility regressions without a release signal.
   Evidence: `tests/PartitionPilot.UiTests/SmokeTests.cs`; `rtk dotnet test .\tests\PartitionPilot.UiTests\PartitionPilot.UiTests.csproj -c Release --no-restore`; https://api.xunit.net/v3/3.0.1/v3.3.0.1-Xunit.Assert.SkipWhen.html
