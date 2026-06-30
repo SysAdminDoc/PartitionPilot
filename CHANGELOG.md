@@ -1,5 +1,12 @@
 # Changelog
 
+## PartitionPilot v0.9.15 - 2026-06-30
+
+### Localization
+- Converted XAML visible labels, dialog strings, and automation names to `LocExtension` resource keys.
+- Added source-level tests that block hardcoded XAML user-facing strings and verify every XAML localization key exists in resources.
+- Preserved invariant filesystem and format-preset values with `ComboBoxItem.Tag` so localized display text cannot alter partition operations.
+
 ## PartitionPilot v0.9.14 - 2026-06-30
 
 ### UI Smoke Gate

@@ -32,17 +32,17 @@ public partial class SplitPartitionDialog : Window
     {
         if (!double.TryParse(txtNewSize.Text, out var size) || size <= 0)
         {
-            _dialog.ShowWarning("Enter a new partition size greater than 0 GB.", "Size Required");
+            _dialog.ShowWarning(LocExtension.Get("DialogNewPartitionSizeRequired"), LocExtension.Get("DialogSizeRequired"));
             return;
         }
         if (cmbLetter.SelectedItem is not char letter)
         {
-            _dialog.ShowWarning("Select an available drive letter before continuing.", "Drive Letter Required");
+            _dialog.ShowWarning(LocExtension.Get("DialogSelectDriveLetterRequired"), LocExtension.Get("DialogDriveLetterRequired"));
             return;
         }
         NewPartSizeGB = size;
         NewLetter = letter;
-        FileSystem = (cmbFS.SelectedItem as System.Windows.Controls.ComboBoxItem)?.Content?.ToString() ?? "NTFS";
+        FileSystem = (cmbFS.SelectedItem as System.Windows.Controls.ComboBoxItem)?.Tag?.ToString() ?? "NTFS";
         VolumeLabel = txtLabel.Text.Trim();
         DialogResult = true;
     }

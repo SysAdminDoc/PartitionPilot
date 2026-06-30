@@ -1,6 +1,7 @@
 <UserControl x:Class="PartitionPilot.Views.DiskImagesView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:PartitionPilot">
     <Grid>
         <DockPanel IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}">
             <Border DockPanel.Dock="Top" Style="{StaticResource PanelCard}" Margin="0,0,0,10">
@@ -10,29 +11,29 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <StackPanel>
-                        <TextBlock Text="Disk Images" Style="{StaticResource PageTitleText}"/>
-                        <TextBlock Text="Mount, dismount, and create ISO, VHD, and VHDX images."
+                        <TextBlock Text="{local:Loc TabDiskImages}" Style="{StaticResource PageTitleText}"/>
+                        <TextBlock Text="{local:Loc Xaml_MountDismountAndCreateISOVHDAndVHDXImages}"
                                    Style="{StaticResource CaptionText}"
                                    Margin="0,3,0,0"/>
                     </StackPanel>
                     <Button Grid.Column="1"
-                            Content="Refresh"
+                            Content="{local:Loc Refresh}"
                             Command="{Binding RefreshCommand}"
                             Style="{StaticResource ToolbarButton}"
                             Margin="12,0,0,0"
-                            AutomationProperties.Name="Refresh disk images"/>
+                            AutomationProperties.Name="{local:Loc Xaml_RefreshDiskImages}"/>
                 </Grid>
             </Border>
 
             <ScrollViewer VerticalScrollBarVisibility="Auto">
                 <WrapPanel Margin="0,0,8,0">
 
-                    <GroupBox Header="Mount Disk Image" Style="{StaticResource ToolGroup}">
+                    <GroupBox Header="{local:Loc Xaml_MountDiskImage}" Style="{StaticResource ToolGroup}">
                         <StackPanel>
-                            <TextBlock Text="Select an ISO, VHD, or VHDX file and mount it as a drive."
+                            <TextBlock Text="{local:Loc Xaml_SelectAnISOVHDOrVHDXFileAndMountItAsADrive}"
                                        Style="{StaticResource CaptionText}"
                                        Margin="0,0,0,10"/>
-                            <TextBlock Text="Image path" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
+                            <TextBlock Text="{local:Loc ImagePath}" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
                             <Grid Margin="0,0,0,10">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -42,23 +43,23 @@
                                          Text="{Binding MountPath, UpdateSourceTrigger=PropertyChanged}"
                                          Height="34"
                                          FontSize="13"
-                                         AutomationProperties.Name="Image path"/>
+                                         AutomationProperties.Name="{local:Loc ImagePath}"/>
                                 <Button Grid.Column="1"
-                                        Content="Browse"
+                                        Content="{local:Loc Browse}"
                                         Command="{Binding BrowseMountCommand}"
                                         Style="{StaticResource ToolbarButton}"
                                         Margin="8,0,0,0"
-                                        AutomationProperties.Name="Browse for image to mount"/>
+                                        AutomationProperties.Name="{local:Loc Xaml_BrowseForImageToMount}"/>
                             </Grid>
-                            <Button Content="Mount Image"
+                            <Button Content="{local:Loc Xaml_MountImage}"
                                     Style="{StaticResource PrimaryButton}"
                                     Command="{Binding MountCommand}"
                                     HorizontalAlignment="Left"
-                                    AutomationProperties.Name="Mount image"/>
+                                    AutomationProperties.Name="{local:Loc Xaml_MountImage}"/>
                         </StackPanel>
                     </GroupBox>
 
-                    <GroupBox Header="Currently Mounted Images" Style="{StaticResource ToolGroup}">
+                    <GroupBox Header="{local:Loc Xaml_CurrentlyMountedImages}" Style="{StaticResource ToolGroup}">
                         <StackPanel>
                             <Grid Margin="0,0,0,10">
                                 <ListView ItemsSource="{Binding MountedImages}"
@@ -66,13 +67,13 @@
                                           Height="172"
                                           FontSize="12.5"
                                           BorderThickness="0"
-                                          AutomationProperties.Name="Mounted images table">
+                                          AutomationProperties.Name="{local:Loc Xaml_MountedImagesTable}">
                                     <ListView.View>
                                         <GridView>
-                                            <GridViewColumn Header="Path" Width="250" DisplayMemberBinding="{Binding ImagePath}"/>
-                                            <GridViewColumn Header="Type" Width="64" DisplayMemberBinding="{Binding StorageType}"/>
-                                            <GridViewColumn Header="Size" Width="90" DisplayMemberBinding="{Binding SizeText}"/>
-                                            <GridViewColumn Header="Drive" Width="62" DisplayMemberBinding="{Binding LetterDisplay}"/>
+                                            <GridViewColumn Header="{local:Loc Xaml_Path}" Width="250" DisplayMemberBinding="{Binding ImagePath}"/>
+                                            <GridViewColumn Header="{local:Loc Xaml_Type}" Width="64" DisplayMemberBinding="{Binding StorageType}"/>
+                                            <GridViewColumn Header="{local:Loc Xaml_Size}" Width="90" DisplayMemberBinding="{Binding SizeText}"/>
+                                            <GridViewColumn Header="{local:Loc Xaml_Drive}" Width="62" DisplayMemberBinding="{Binding LetterDisplay}"/>
                                         </GridView>
                                     </ListView.View>
                                 </ListView>
@@ -89,27 +90,27 @@
                                         </Style>
                                     </Border.Style>
                                     <StackPanel VerticalAlignment="Center">
-                                        <TextBlock Text="No mounted images" Style="{StaticResource EmptyStateTitle}"/>
-                                        <TextBlock Text="Mounted ISO, VHD, and VHDX files will appear here."
+                                        <TextBlock Text="{local:Loc Xaml_NoMountedImages}" Style="{StaticResource EmptyStateTitle}"/>
+                                        <TextBlock Text="{local:Loc Xaml_MountedISOVHDAndVHDXFilesWillAppearHere}"
                                                    Style="{StaticResource EmptyStateText}"
                                                    Margin="0"/>
                                     </StackPanel>
                                 </Border>
                             </Grid>
-                            <Button Content="Dismount Selected"
+                            <Button Content="{local:Loc Xaml_DismountSelected}"
                                     Style="{StaticResource PrimaryButton}"
                                     Command="{Binding DismountCommand}"
                                     HorizontalAlignment="Left"
-                                    AutomationProperties.Name="Dismount selected image"/>
+                                    AutomationProperties.Name="{local:Loc Xaml_DismountSelectedImage}"/>
                         </StackPanel>
                     </GroupBox>
 
-                    <GroupBox Header="Create Virtual Hard Disk" Style="{StaticResource ToolGroup}">
+                    <GroupBox Header="{local:Loc Xaml_CreateVirtualHardDisk}" Style="{StaticResource ToolGroup}">
                         <StackPanel>
-                            <TextBlock Text="Create a VHD or VHDX, initialize it, format it, and mount it."
+                            <TextBlock Text="{local:Loc Xaml_CreateAVHDOrVHDXInitializeItFormatItAndMountIt}"
                                        Style="{StaticResource CaptionText}"
                                        Margin="0,0,0,10"/>
-                            <TextBlock Text="File path" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
+                            <TextBlock Text="{local:Loc Xaml_FilePath}" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
                             <Grid Margin="0,0,0,10">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -119,19 +120,19 @@
                                          Text="{Binding VhdPath, UpdateSourceTrigger=PropertyChanged}"
                                          Height="34"
                                          FontSize="13"
-                                         AutomationProperties.Name="VHD path"/>
+                                         AutomationProperties.Name="{local:Loc Xaml_VHDPath}"/>
                                 <Button Grid.Column="1"
-                                        Content="Browse"
+                                        Content="{local:Loc Browse}"
                                         Command="{Binding BrowseVhdCommand}"
                                         Style="{StaticResource ToolbarButton}"
                                         Margin="8,0,0,0"
-                                        AutomationProperties.Name="Browse for VHD save location"/>
+                                        AutomationProperties.Name="{local:Loc Xaml_BrowseForVHDSaveLocation}"/>
                             </Grid>
 
-                            <TextBlock Text="Size" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
+                            <TextBlock Text="{local:Loc Xaml_Size}" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
                             <DockPanel Margin="0,0,0,10">
                                 <TextBlock DockPanel.Dock="Right"
-                                           Text="GB"
+                                           Text="{local:Loc Xaml_GB}"
                                            Style="{StaticResource CaptionText}"
                                            VerticalAlignment="Center"
                                            Margin="8,0,0,0"/>
@@ -140,25 +141,25 @@
                                          Height="34"
                                          FontSize="13"
                                          HorizontalAlignment="Left"
-                                         AutomationProperties.Name="VHD size in GB"/>
+                                         AutomationProperties.Name="{local:Loc Xaml_VHDSizeInGB}"/>
                             </DockPanel>
 
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                                <RadioButton Content="Dynamic"
+                                <RadioButton Content="{local:Loc Xaml_Dynamic}"
                                              GroupName="VhdType"
                                              IsChecked="{Binding VhdIsDynamic}"
-                                             AutomationProperties.Name="Create a dynamically expanding VHD"/>
-                                <RadioButton Content="Fixed"
+                                             AutomationProperties.Name="{local:Loc Xaml_CreateADynamicallyExpandingVHD}"/>
+                                <RadioButton Content="{local:Loc Xaml_Fixed}"
                                              GroupName="VhdType"
                                              IsChecked="{Binding VhdIsFixed}"
-                                             AutomationProperties.Name="Create a fixed-size VHD"/>
+                                             AutomationProperties.Name="{local:Loc Xaml_CreateAFixedSizeVHD}"/>
                             </StackPanel>
 
-                            <Button Content="Create VHD"
+                            <Button Content="{local:Loc Xaml_CreateVHD}"
                                     Style="{StaticResource PrimaryButton}"
                                     Command="{Binding CreateVhdCommand}"
                                     HorizontalAlignment="Left"
-                                    AutomationProperties.Name="Create virtual hard disk"/>
+                                    AutomationProperties.Name="{local:Loc Xaml_CreateVirtualHardDisk}"/>
                         </StackPanel>
                     </GroupBox>
                 </WrapPanel>
@@ -168,11 +169,11 @@
         <Border Style="{StaticResource BusyOverlay}">
             <Border Style="{StaticResource BusyPanel}" HorizontalAlignment="Center" VerticalAlignment="Center">
                 <StackPanel>
-                    <TextBlock Text="Working with disk images"
+                    <TextBlock Text="{local:Loc Xaml_WorkingWithDiskImages}"
                                Style="{StaticResource PageTitleText}"
                                HorizontalAlignment="Center"/>
                     <ProgressBar Style="{StaticResource BusyProgress}" IsIndeterminate="True"/>
-                    <TextBlock Text="Mount, dismount, and VHD operations are being logged."
+                    <TextBlock Text="{local:Loc Xaml_MountDismountAndVHDOperationsAreBeingLogged}"
                                Style="{StaticResource CaptionText}"
                                TextAlignment="Center"/>
                 </StackPanel>

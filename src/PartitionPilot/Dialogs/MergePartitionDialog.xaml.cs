@@ -47,8 +47,8 @@ public partial class MergePartitionDialog : Window
         MergeButton.IsEnabled = candidates.Count > 0;
 
         MergeHelpText.Text = candidates.Count > 0
-            ? "The partition to remove will be deleted. The primary partition will be extended into the freed space when the queued operation is applied."
-            : "Choose a primary data partition that is immediately followed by another mergeable data partition.";
+            ? LocExtension.Get("DialogMergeDeleteExtends")
+            : LocExtension.Get("DialogMergeChoosePrimaryDataPartition");
     }
 
     private void OnMerge(object sender, RoutedEventArgs e)
@@ -56,8 +56,8 @@ public partial class MergePartitionDialog : Window
         if (PrimaryPartition is null || SecondaryPartition is null)
         {
             MessageBox.Show(
-                "Choose a primary partition that is immediately followed by another mergeable partition.",
-                "Merge Partitions",
+                LocExtension.Get("DialogMergePrimaryAdjacentRequired"),
+                LocExtension.Get("Xaml_MergePartitions"),
                 MessageBoxButton.OK,
                 MessageBoxImage.Warning);
             return;
@@ -65,7 +65,11 @@ public partial class MergePartitionDialog : Window
 
         if (PrimaryPartition == SecondaryPartition)
         {
-            MessageBox.Show("Select two adjacent partitions.", "Merge Partitions", MessageBoxButton.OK, MessageBoxImage.Warning);
+            MessageBox.Show(
+                LocExtension.Get("DialogMergeTwoAdjacentRequired"),
+                LocExtension.Get("Xaml_MergePartitions"),
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
             return;
         }
 

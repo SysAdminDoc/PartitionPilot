@@ -1,28 +1,29 @@
 <Window x:Class="PartitionPilot.Dialogs.ChangeLetterDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Change Drive Letter" Width="400" SizeToContent="Height"
+             xmlns:local="clr-namespace:PartitionPilot"
+        Title="{local:Loc Xaml_ChangeDriveLetter}" Width="400" SizeToContent="Height"
         WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
         Style="{StaticResource DialogWindow}">
     <Border Style="{StaticResource Card}" Margin="16">
         <StackPanel>
-            <TextBlock Text="Change Drive Letter" Style="{StaticResource SectionTitleText}" Margin="0,0,0,6"/>
-            <TextBlock Text="Assign a new letter to the selected partition."
+            <TextBlock Text="{local:Loc Xaml_ChangeDriveLetter}" Style="{StaticResource SectionTitleText}" Margin="0,0,0,6"/>
+            <TextBlock Text="{local:Loc Xaml_AssignANewLetterToTheSelectedPartition}"
                        Style="{StaticResource CaptionText}"
                        Margin="0,0,0,14"/>
 
-            <TextBlock Text="Current letter" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
+            <TextBlock Text="{local:Loc Xaml_CurrentLetter}" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
             <TextBlock x:Name="txtCurrent" Foreground="{DynamicResource PrimaryBrush}" FontSize="13" FontWeight="SemiBold" Margin="0,0,0,12"/>
 
-            <TextBlock Text="New letter" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
+            <TextBlock Text="{local:Loc Xaml_NewLetter}" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
             <ComboBox x:Name="cmbLetter" Height="34" FontSize="13" Margin="0,0,0,16"
-                      AutomationProperties.Name="New drive letter"/>
+                      AutomationProperties.Name="{local:Loc Xaml_NewDriveLetter}"/>
 
             <Border Style="{StaticResource DialogFooter}">
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                    <Button Content="Apply" Width="96" Height="34" Style="{StaticResource PrimaryButton}"
+                    <Button Content="{local:Loc Apply}" Width="96" Height="34" Style="{StaticResource PrimaryButton}"
                             IsDefault="True" Click="OnOk"/>
-                    <Button Content="Cancel" Width="96" Height="34" Margin="8,0,0,0" IsCancel="True"/>
+                    <Button Content="{local:Loc Cancel}" Width="96" Height="34" Margin="8,0,0,0" IsCancel="True"/>
                 </StackPanel>
             </Border>
         </StackPanel>

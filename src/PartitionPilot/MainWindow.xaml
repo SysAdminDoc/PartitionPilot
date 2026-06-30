@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:PartitionPilot"
         xmlns:views="clr-namespace:PartitionPilot.Views"
-        Title="PartitionPilot" Width="1380" Height="860"
+        Title="{local:Loc AppTitle}" Width="1380" Height="860"
         Icon="Assets/AppIcon.png"
         MinWidth="1080" MinHeight="720"
         WindowStartupLocation="CenterScreen"
@@ -36,7 +36,7 @@
                            Height="28"
                            Margin="0,0,10,0"/>
                     <StackPanel>
-                        <TextBlock Text="PartitionPilot" Style="{StaticResource ShellTitleText}"/>
+                        <TextBlock Text="{local:Loc AppTitle}" Style="{StaticResource ShellTitleText}"/>
                         <TextBlock Text="{Binding VersionText}"
                                    Style="{StaticResource TinyLabelText}"
                                    Margin="1,1,0,0"/>
@@ -47,35 +47,35 @@
                            Orientation="Horizontal"
                            HorizontalAlignment="Right"
                            VerticalAlignment="Center">
-                    <Button Content="Refresh"
+                    <Button Content="{local:Loc Refresh}"
                             Command="{Binding RefreshCurrentCommand}"
                             Style="{StaticResource CommandBarButton}"
-                            AutomationProperties.Name="Refresh current workspace"/>
-                    <Button Content="Export Log"
+                            AutomationProperties.Name="{local:Loc Xaml_RefreshCurrentWorkspace}"/>
+                    <Button Content="{local:Loc ExportLog}"
                             Command="{Binding ExportLogCommand}"
                             Style="{StaticResource CommandBarButton}"
-                            AutomationProperties.Name="Export activity log"/>
-                    <Button Content="Support Bundle"
+                            AutomationProperties.Name="{local:Loc Xaml_ExportActivityLog}"/>
+                    <Button Content="{local:Loc SupportBundle}"
                             Command="{Binding ExportSupportBundleCommand}"
                             Style="{StaticResource CommandBarButton}"
-                            ToolTip="Export a redacted diagnostic bundle for troubleshooting"
-                            AutomationProperties.Name="Export support bundle"/>
-                    <Button Content="FS Support"
+                            ToolTip="{local:Loc Xaml_ExportARedactedDiagnosticBundleForTroubleshooting}"
+                            AutomationProperties.Name="{local:Loc Xaml_ExportSupportBundle}"/>
+                    <Button Content="{local:Loc Xaml_FSSupport}"
                             Command="{Binding ShowFilesystemSupportCommand}"
                             Style="{StaticResource CommandBarButton}"
-                            ToolTip="Show which operations each filesystem supports"
-                            AutomationProperties.Name="Show filesystem support matrix"/>
+                            ToolTip="{local:Loc Xaml_ShowWhichOperationsEachFilesystemSupports}"
+                            AutomationProperties.Name="{local:Loc Xaml_ShowFilesystemSupportMatrix}"/>
                     <Button Content="{Binding ThemeLabel}"
                             Command="{Binding ToggleThemeCommand}"
                             Style="{StaticResource CommandBarButton}"
-                            AutomationProperties.Name="Toggle theme"/>
-                    <Button Content="Elevate"
+                            AutomationProperties.Name="{local:Loc Xaml_ToggleTheme}"/>
+                    <Button Content="{local:Loc Elevate}"
                             Command="{Binding ElevateCommand}"
                             Style="{StaticResource CommandBarButton}"
                             Margin="0"
-                            ToolTip="Re-launch as administrator for disk write operations"
+                            ToolTip="{local:Loc ElevateTooltip}"
                             Visibility="{Binding IsReadOnly, Converter={StaticResource BoolVis}}"
-                            AutomationProperties.Name="Elevate to administrator"/>
+                            AutomationProperties.Name="{local:Loc Xaml_ElevateToAdministrator}"/>
                 </WrapPanel>
             </Grid>
         </Border>
@@ -107,7 +107,7 @@
 
                 <Border Style="{StaticResource StatusTile}">
                     <StackPanel>
-                        <TextBlock Text="Activity log" Style="{StaticResource SectionTitleText}"/>
+                        <TextBlock Text="{local:Loc ActivityLog}" Style="{StaticResource SectionTitleText}"/>
                         <TextBlock Text="{Binding Log.EntryCountText}"
                                    Style="{StaticResource CaptionText}"
                                    Margin="0,2,0,0"/>
@@ -116,8 +116,8 @@
 
                 <Border Style="{StaticResource StatusTile}" Margin="0">
                     <StackPanel>
-                        <TextBlock Text="Storage console" Style="{StaticResource SectionTitleText}"/>
-                        <TextBlock Text="WMI, diskpart, PowerShell"
+                        <TextBlock Text="{local:Loc StorageConsole}" Style="{StaticResource SectionTitleText}"/>
+                        <TextBlock Text="{local:Loc StorageConsoleEngines}"
                                    Style="{StaticResource CaptionText}"
                                    Margin="0,2,0,0"/>
                     </StackPanel>
@@ -131,7 +131,7 @@
                     BorderThickness="0"
                     Background="Transparent"
                     Margin="18,14,18,12">
-            <TabItem Style="{StaticResource NavTabItem}" AutomationProperties.Name="Partitions tab">
+            <TabItem Style="{StaticResource NavTabItem}" AutomationProperties.Name="{local:Loc Xaml_PartitionsTab}">
                 <TabItem.Header>
                     <StackPanel>
                         <TextBlock Text="{local:Loc TabPartitions}" Style="{StaticResource NavTitleText}"/>
@@ -140,7 +140,7 @@
                 </TabItem.Header>
                 <views:PartitionsView DataContext="{Binding Partitions}"/>
             </TabItem>
-            <TabItem Style="{StaticResource NavTabItem}" AutomationProperties.Name="Snapshots tab">
+            <TabItem Style="{StaticResource NavTabItem}" AutomationProperties.Name="{local:Loc Xaml_SnapshotsTab}">
                 <TabItem.Header>
                     <StackPanel>
                         <TextBlock Text="{local:Loc TabSnapshots}" Style="{StaticResource NavTitleText}"/>
@@ -149,7 +149,7 @@
                 </TabItem.Header>
                 <views:SnapshotBrowserView DataContext="{Binding Snapshots}"/>
             </TabItem>
-            <TabItem Style="{StaticResource NavTabItem}" AutomationProperties.Name="Disk Health tab">
+            <TabItem Style="{StaticResource NavTabItem}" AutomationProperties.Name="{local:Loc Xaml_DiskHealthTab}">
                 <TabItem.Header>
                     <StackPanel>
                         <TextBlock Text="{local:Loc TabDiskHealth}" Style="{StaticResource NavTitleText}"/>
@@ -158,7 +158,7 @@
                 </TabItem.Header>
                 <views:DiskHealthView DataContext="{Binding DiskHealth}"/>
             </TabItem>
-            <TabItem Style="{StaticResource NavTabItem}" AutomationProperties.Name="Tools tab">
+            <TabItem Style="{StaticResource NavTabItem}" AutomationProperties.Name="{local:Loc Xaml_ToolsTab}">
                 <TabItem.Header>
                     <StackPanel>
                         <TextBlock Text="{local:Loc TabTools}" Style="{StaticResource NavTitleText}"/>
@@ -167,7 +167,7 @@
                 </TabItem.Header>
                 <views:ToolsView DataContext="{Binding Tools}"/>
             </TabItem>
-            <TabItem Style="{StaticResource NavTabItem}" AutomationProperties.Name="Disk Images tab">
+            <TabItem Style="{StaticResource NavTabItem}" AutomationProperties.Name="{local:Loc Xaml_DiskImagesTab}">
                 <TabItem.Header>
                     <StackPanel>
                         <TextBlock Text="{local:Loc TabDiskImages}" Style="{StaticResource NavTitleText}"/>
@@ -176,7 +176,7 @@
                 </TabItem.Header>
                 <views:DiskImagesView DataContext="{Binding DiskImages}"/>
             </TabItem>
-            <TabItem Style="{StaticResource NavTabItem}" AutomationProperties.Name="Disk Usage tab">
+            <TabItem Style="{StaticResource NavTabItem}" AutomationProperties.Name="{local:Loc Xaml_DiskUsageTab}">
                 <TabItem.Header>
                     <StackPanel>
                         <TextBlock Text="{local:Loc TabDiskUsage}" Style="{StaticResource NavTitleText}"/>
@@ -185,7 +185,7 @@
                 </TabItem.Header>
                 <views:DiskUsageView DataContext="{Binding DiskUsage}"/>
             </TabItem>
-            <TabItem Style="{StaticResource NavTabItem}" AutomationProperties.Name="Disk Cloning tab">
+            <TabItem Style="{StaticResource NavTabItem}" AutomationProperties.Name="{local:Loc Xaml_DiskCloningTab}">
                 <TabItem.Header>
                     <StackPanel>
                         <TextBlock Text="{local:Loc TabDiskCloning}" Style="{StaticResource NavTitleText}"/>
@@ -194,7 +194,7 @@
                 </TabItem.Header>
                 <views:DiskCloningView DataContext="{Binding DiskCloning}"/>
             </TabItem>
-            <TabItem Style="{StaticResource NavTabItem}" AutomationProperties.Name="Hex Viewer tab">
+            <TabItem Style="{StaticResource NavTabItem}" AutomationProperties.Name="{local:Loc Xaml_HexViewerTab}">
                 <TabItem.Header>
                     <StackPanel>
                         <TextBlock Text="{local:Loc TabHexViewer}" Style="{StaticResource NavTitleText}"/>
@@ -232,35 +232,35 @@
                         </StackPanel>
 
                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                            <ToggleButton Content="All"
+                            <ToggleButton Content="{local:Loc All}"
                                           IsChecked="{Binding Log.IsAllFilter, Mode=OneWay}"
                                           Command="{Binding Log.SetFilterCommand}"
                                           CommandParameter="All"
                                           Style="{StaticResource LogFilterToggle}"
                                           Margin="0,0,6,0"/>
-                            <ToggleButton Content="Info"
+                            <ToggleButton Content="{local:Loc Info}"
                                           IsChecked="{Binding Log.IsInfoFilter, Mode=OneWay}"
                                           Command="{Binding Log.SetFilterCommand}"
                                           CommandParameter="Info"
                                           Style="{StaticResource LogFilterToggle}"
                                           Margin="0,0,6,0"/>
-                            <ToggleButton Content="Warning"
+                            <ToggleButton Content="{local:Loc Warning}"
                                           IsChecked="{Binding Log.IsWarningFilter, Mode=OneWay}"
                                           Command="{Binding Log.SetFilterCommand}"
                                           CommandParameter="Warning"
                                           Style="{StaticResource LogFilterToggle}"
                                           Margin="0,0,6,0"/>
-                            <ToggleButton Content="Error"
+                            <ToggleButton Content="{local:Loc Error}"
                                           IsChecked="{Binding Log.IsErrorFilter, Mode=OneWay}"
                                           Command="{Binding Log.SetFilterCommand}"
                                           CommandParameter="Error"
                                           Style="{StaticResource LogFilterToggle}"
                                           Margin="0,0,10,0"/>
-                            <Button Content="Clear"
+                            <Button Content="{local:Loc Clear}"
                                     Command="{Binding Log.ClearCommand}"
                                     Style="{StaticResource CommandBarButton}"
                                     Margin="0"
-                                    AutomationProperties.Name="Clear activity log"/>
+                                    AutomationProperties.Name="{local:Loc Xaml_ClearActivityLog}"/>
                         </StackPanel>
                     </Grid>
                 </Border>
@@ -269,12 +269,12 @@
                           ItemsSource="{Binding Log.FilteredEntries}"
                           BorderThickness="0"
                           Background="Transparent"
-                          AutomationProperties.Name="Activity log entries">
+                          AutomationProperties.Name="{local:Loc Xaml_ActivityLogEntries}">
                     <ListView.View>
                         <GridView>
-                            <GridViewColumn Header="Time" Width="92" DisplayMemberBinding="{Binding Timestamp}"/>
-                            <GridViewColumn Header="Level" Width="92" DisplayMemberBinding="{Binding Level}"/>
-                            <GridViewColumn Header="Details" Width="1040" DisplayMemberBinding="{Binding Message}"/>
+                            <GridViewColumn Header="{local:Loc Xaml_Time}" Width="92" DisplayMemberBinding="{Binding Timestamp}"/>
+                            <GridViewColumn Header="{local:Loc Xaml_Level}" Width="92" DisplayMemberBinding="{Binding Level}"/>
+                            <GridViewColumn Header="{local:Loc Xaml_Details}" Width="1040" DisplayMemberBinding="{Binding Message}"/>
                         </GridView>
                     </ListView.View>
                 </ListView>
@@ -301,7 +301,7 @@
                                Foreground="{DynamicResource SubtextBrush}"
                                FontSize="12"
                                TextTrimming="CharacterEllipsis"
-                               AutomationProperties.Name="Status"/>
+                               AutomationProperties.Name="{local:Loc Xaml_Status}"/>
                 </StackPanel>
             </DockPanel>
         </Border>

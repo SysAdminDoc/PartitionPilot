@@ -1,28 +1,29 @@
 <Window x:Class="PartitionPilot.Dialogs.ResizePartitionDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Resize Partition" Width="440" SizeToContent="Height"
+             xmlns:local="clr-namespace:PartitionPilot"
+        Title="{local:Loc Xaml_ResizePartition}" Width="440" SizeToContent="Height"
         WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
         Style="{StaticResource DialogWindow}">
     <Border Style="{StaticResource Card}" Margin="16">
         <StackPanel>
-            <TextBlock Text="Resize Partition" Style="{StaticResource SectionTitleText}" Margin="0,0,0,6"/>
-            <TextBlock Text="Choose a supported target size for the selected volume."
+            <TextBlock Text="{local:Loc Xaml_ResizePartition}" Style="{StaticResource SectionTitleText}" Margin="0,0,0,6"/>
+            <TextBlock Text="{local:Loc Xaml_ChooseASupportedTargetSizeForTheSelectedVolume}"
                        Style="{StaticResource CaptionText}"
                        Margin="0,0,0,14"/>
 
-            <TextBlock Text="Current size" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
+            <TextBlock Text="{local:Loc Xaml_CurrentSize}" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
             <TextBlock x:Name="txtInfo" Foreground="{DynamicResource PrimaryBrush}" FontSize="13" FontWeight="SemiBold" Margin="0,0,0,12"/>
 
-            <TextBlock Text="New size (GB)" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
+            <TextBlock Text="{local:Loc Xaml_NewSizeGB}" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
             <TextBox x:Name="txtSize" Height="34" FontSize="13" Margin="0,0,0,16"
-                     AutomationProperties.Name="New size in GB"/>
+                     AutomationProperties.Name="{local:Loc Xaml_NewSizeInGB}"/>
 
             <Border Style="{StaticResource DialogFooter}">
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                    <Button Content="Resize" Width="96" Height="34" Style="{StaticResource PrimaryButton}"
+                    <Button Content="{local:Loc Resize}" Width="96" Height="34" Style="{StaticResource PrimaryButton}"
                             IsDefault="True" Click="OnOk"/>
-                    <Button Content="Cancel" Width="96" Height="34" Margin="8,0,0,0" IsCancel="True"/>
+                    <Button Content="{local:Loc Cancel}" Width="96" Height="34" Margin="8,0,0,0" IsCancel="True"/>
                 </StackPanel>
             </Border>
         </StackPanel>

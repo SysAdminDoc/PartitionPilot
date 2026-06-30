@@ -1,6 +1,7 @@
 <UserControl x:Class="PartitionPilot.Views.DiskCloningView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:PartitionPilot">
     <Grid>
         <DockPanel IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}">
             <Border DockPanel.Dock="Top" Style="{StaticResource PanelCard}" Margin="0,0,0,10">
@@ -10,16 +11,16 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <StackPanel>
-                        <TextBlock Text="Disk Cloning" Style="{StaticResource PageTitleText}"/>
-                        <TextBlock Text="Create disk images (WIM/VHDX) and restore them to target disks."
+                        <TextBlock Text="{local:Loc TabDiskCloning}" Style="{StaticResource PageTitleText}"/>
+                        <TextBlock Text="{local:Loc DiskCloningDescription}"
                                    Style="{StaticResource CaptionText}"
                                    Margin="0,3,0,0"/>
                     </StackPanel>
                     <Button Grid.Column="1"
-                            Content="Refresh"
+                            Content="{local:Loc Refresh}"
                             Command="{Binding RefreshCommand}"
                             Style="{StaticResource ToolbarButton}"
-                            AutomationProperties.Name="Refresh disk list"/>
+                            AutomationProperties.Name="{local:Loc Xaml_RefreshDiskList}"/>
                 </Grid>
             </Border>
 
@@ -35,8 +36,8 @@
                     </Style>
                 </Border.Style>
                 <StackPanel VerticalAlignment="Center">
-                    <TextBlock Text="No cloning targets loaded" Style="{StaticResource EmptyStateTitle}"/>
-                    <TextBlock Text="Refresh to load source volumes and target disks before creating or restoring an image."
+                    <TextBlock Text="{local:Loc Xaml_NoCloningTargetsLoaded}" Style="{StaticResource EmptyStateTitle}"/>
+                    <TextBlock Text="{local:Loc Xaml_RefreshToLoadSourceVolumesAndTargetDisksBeforeCreatingOrRe_ac385bff}"
                                Style="{StaticResource EmptyStateText}"
                                Margin="0"/>
                 </StackPanel>
@@ -44,118 +45,118 @@
 
             <ScrollViewer VerticalScrollBarVisibility="Auto">
                 <WrapPanel>
-                    <GroupBox Header="Create Image" Style="{StaticResource ToolGroup}">
+                    <GroupBox Header="{local:Loc CreateImage}" Style="{StaticResource ToolGroup}">
                         <StackPanel>
-                            <TextBlock Text="Capture a volume to a WIM or VHDX file."
+                            <TextBlock Text="{local:Loc Xaml_CaptureAVolumeToAWIMOrVHDXFile}"
                                        Style="{StaticResource CaptionText}"
                                        Margin="0,0,0,10"/>
-                            <TextBlock Text="Source Volume" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
+                            <TextBlock Text="{local:Loc SourceVolume}" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
                             <ComboBox ItemsSource="{Binding DriveLetters}"
                                       SelectedItem="{Binding SelectedSourceDrive}"
                                       Height="34" Margin="0,0,0,10"
-                                      AutomationProperties.Name="Source volume"/>
-                            <TextBlock Text="Image Path" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
+                                      AutomationProperties.Name="{local:Loc SourceVolume}"/>
+                            <TextBlock Text="{local:Loc ImagePath}" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
                             <DockPanel Margin="0,0,0,10">
-                                <Button DockPanel.Dock="Right" Content="Browse"
+                                <Button DockPanel.Dock="Right" Content="{local:Loc Browse}"
                                         Command="{Binding BrowseImageCommand}"
                                         Style="{StaticResource ToolbarButton}"
                                         Margin="6,0,0,0"
-                                        AutomationProperties.Name="Browse image save path"/>
+                                        AutomationProperties.Name="{local:Loc Xaml_BrowseImageSavePath}"/>
                                 <TextBox Text="{Binding ImagePath, UpdateSourceTrigger=PropertyChanged}"
                                          Height="34"
-                                         AutomationProperties.Name="Image file path"/>
+                                         AutomationProperties.Name="{local:Loc Xaml_ImageFilePath}"/>
                             </DockPanel>
                             <TextBlock Text="{Binding ImagePreflightSummary}"
                                        Style="{StaticResource CaptionText}"
                                        TextWrapping="Wrap"
                                        Margin="0,0,0,10"
-                                       AutomationProperties.Name="Image destination preflight"/>
-                            <CheckBox Content="Encrypt image (AES-256-GCM)"
+                                       AutomationProperties.Name="{local:Loc Xaml_ImageDestinationPreflight}"/>
+                            <CheckBox Content="{local:Loc Xaml_EncryptImageAES256GCM}"
                                      IsChecked="{Binding EncryptImage}"
                                      Margin="0,0,0,10"
-                                     AutomationProperties.Name="Encrypt disk image"/>
-                            <Button Content="Create Image"
+                                     AutomationProperties.Name="{local:Loc Xaml_EncryptDiskImage}"/>
+                            <Button Content="{local:Loc CreateImage}"
                                     Style="{StaticResource PrimaryButton}"
                                     Command="{Binding CreateImageCommand}"
                                     HorizontalAlignment="Left"
-                                    AutomationProperties.Name="Create disk image"/>
+                                    AutomationProperties.Name="{local:Loc Xaml_CreateDiskImage}"/>
                         </StackPanel>
                     </GroupBox>
 
-                    <GroupBox Header="Restore Image" Style="{StaticResource ToolGroup}">
+                    <GroupBox Header="{local:Loc RestoreImage}" Style="{StaticResource ToolGroup}">
                         <StackPanel>
-                            <TextBlock Text="Apply a WIM or VHDX image to a target disk. All data on the target will be destroyed."
+                            <TextBlock Text="{local:Loc Xaml_ApplyAWIMOrVHDXImageToATargetDiskAllDataOnTheTargetWillBeDestroyed}"
                                        Style="{StaticResource CaptionText}"
                                        Margin="0,0,0,10"/>
                             <Border Style="{StaticResource DangerNoticePanel}">
-                                <TextBlock Text="Restore writes to the selected target disk and replaces its contents."
+                                <TextBlock Text="{local:Loc Xaml_RestoreWritesToTheSelectedTargetDiskAndReplacesItsContents}"
                                            Style="{StaticResource CaptionText}"
                                            Foreground="{DynamicResource DangerBtnFgBrush}"/>
                             </Border>
-                            <TextBlock Text="Image File" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
+                            <TextBlock Text="{local:Loc Xaml_ImageFile}" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
                             <DockPanel Margin="0,0,0,10">
-                                <Button DockPanel.Dock="Right" Content="Browse"
+                                <Button DockPanel.Dock="Right" Content="{local:Loc Browse}"
                                         Command="{Binding BrowseRestoreImageCommand}"
                                         Style="{StaticResource ToolbarButton}"
                                         Margin="6,0,0,0"
-                                        AutomationProperties.Name="Browse restore image"/>
+                                        AutomationProperties.Name="{local:Loc Xaml_BrowseRestoreImage}"/>
                                 <TextBox Text="{Binding RestoreImagePath, UpdateSourceTrigger=PropertyChanged}"
                                          Height="34"
-                                         AutomationProperties.Name="Restore image file path"/>
+                                         AutomationProperties.Name="{local:Loc Xaml_RestoreImageFilePath}"/>
                             </DockPanel>
-                            <TextBlock Text="Target Disk" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
+                            <TextBlock Text="{local:Loc TargetDisk}" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
                             <ComboBox ItemsSource="{Binding AllDisks}"
                                       SelectedItem="{Binding SelectedTargetDisk}"
                                       ItemTemplate="{StaticResource DiskInfoComboTemplate}"
                                       Height="34" Margin="0,0,0,10"
-                                      AutomationProperties.Name="Target disk"/>
-                            <Button Content="Restore Image"
+                                      AutomationProperties.Name="{local:Loc TargetDisk}"/>
+                            <Button Content="{local:Loc RestoreImage}"
                                     Style="{StaticResource PrimaryButton}"
                                     Command="{Binding RestoreImageCommand}"
                                     HorizontalAlignment="Left"
-                                    AutomationProperties.Name="Restore disk image"/>
+                                    AutomationProperties.Name="{local:Loc Xaml_RestoreDiskImage}"/>
                         </StackPanel>
                     </GroupBox>
 
-                    <GroupBox Header="Sector Clone" Style="{StaticResource ToolGroup}">
+                    <GroupBox Header="{local:Loc SectorClone}" Style="{StaticResource ToolGroup}">
                         <StackPanel>
-                            <TextBlock Text="Copy every sector from a source disk to a destination disk. Creates an exact byte-for-byte duplicate."
+                            <TextBlock Text="{local:Loc Xaml_CopyEverySectorFromASourceDiskToADestinationDiskCreatesAnE_85d7e317}"
                                        Style="{StaticResource CaptionText}"
                                        Margin="0,0,0,10"/>
                             <Border Style="{StaticResource DangerNoticePanel}">
-                                <TextBlock Text="Sector clone overwrites ALL data on the destination disk. The destination must be at least as large as the source."
+                                <TextBlock Text="{local:Loc Xaml_SectorCloneOverwritesALLDataOnTheDestinationDiskTheDestina_75f97d43}"
                                            Style="{StaticResource CaptionText}"
                                            Foreground="{DynamicResource DangerBtnFgBrush}"/>
                             </Border>
-                            <TextBlock Text="Source Disk" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
+                            <TextBlock Text="{local:Loc SourceDisk}" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
                             <ComboBox ItemsSource="{Binding AllDisks}"
                                       SelectedItem="{Binding CloneSourceDisk}"
                                       ItemTemplate="{StaticResource DiskInfoComboTemplate}"
                                       Height="34" Margin="0,0,0,10"
-                                      AutomationProperties.Name="Clone source disk"/>
-                            <TextBlock Text="Destination Disk" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
+                                      AutomationProperties.Name="{local:Loc Xaml_CloneSourceDisk}"/>
+                            <TextBlock Text="{local:Loc DestinationDisk}" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
                             <ComboBox ItemsSource="{Binding AllDisks}"
                                       SelectedItem="{Binding CloneDestDisk}"
                                       ItemTemplate="{StaticResource DiskInfoComboTemplate}"
                                       Height="34" Margin="0,0,0,10"
-                                      AutomationProperties.Name="Clone destination disk"/>
-                            <CheckBox Content="Verify after clone"
+                                      AutomationProperties.Name="{local:Loc Xaml_CloneDestinationDisk}"/>
+                            <CheckBox Content="{local:Loc Xaml_VerifyAfterClone}"
                                      IsChecked="{Binding CloneVerify}"
                                      Margin="0,0,0,4"
-                                     AutomationProperties.Name="Verify clone after completion"/>
-                            <CheckBox Content="Rescue mode (continue on read errors)"
+                                     AutomationProperties.Name="{local:Loc Xaml_VerifyCloneAfterCompletion}"/>
+                            <CheckBox Content="{local:Loc Xaml_RescueModeContinueOnReadErrors}"
                                      IsChecked="{Binding CloneRescueMode}"
                                      Margin="0,0,0,10"
-                                     AutomationProperties.Name="Rescue mode for bad sectors"/>
+                                     AutomationProperties.Name="{local:Loc Xaml_RescueModeForBadSectors}"/>
                             <TextBlock Text="{Binding CloneSizeSummary}"
                                        Style="{StaticResource CaptionText}"
                                        TextWrapping="Wrap"
                                        Margin="0,0,0,6"
-                                       AutomationProperties.Name="Clone size summary"/>
+                                       AutomationProperties.Name="{local:Loc Xaml_CloneSizeSummary}"/>
                             <TextBlock Text="{Binding CloneProgressText}"
                                        Style="{StaticResource CaptionText}"
                                        Margin="0,0,0,6"
-                                       AutomationProperties.Name="Clone progress"/>
+                                       AutomationProperties.Name="{local:Loc Xaml_CloneProgress}"/>
                             <ProgressBar Value="{Binding CloneProgressPercent}"
                                          Maximum="100"
                                          Height="4"
@@ -163,11 +164,11 @@
                                          Background="{DynamicResource BorderBrush}"
                                          BorderThickness="0"
                                          Margin="0,0,0,10"/>
-                            <Button Content="Start Clone"
+                            <Button Content="{local:Loc StartClone}"
                                     Style="{StaticResource DangerButton}"
                                     Command="{Binding SectorCloneCommand}"
                                     HorizontalAlignment="Left"
-                                    AutomationProperties.Name="Start sector clone"/>
+                                    AutomationProperties.Name="{local:Loc Xaml_StartSectorClone}"/>
                         </StackPanel>
                     </GroupBox>
                 </WrapPanel>
@@ -177,7 +178,7 @@
         <Border Style="{StaticResource BusyOverlay}">
             <Border Style="{StaticResource BusyPanel}" HorizontalAlignment="Center" VerticalAlignment="Center">
                 <StackPanel>
-                    <TextBlock Text="Disk Cloning"
+                    <TextBlock Text="{local:Loc TabDiskCloning}"
                                Style="{StaticResource PageTitleText}"
                                HorizontalAlignment="Center"/>
                     <ProgressBar Style="{StaticResource BusyProgress}" IsIndeterminate="True"/>
@@ -185,11 +186,11 @@
                                Foreground="{DynamicResource TextBrush}"
                                FontSize="13"
                                TextAlignment="Center"/>
-                    <Button Content="Cancel"
+                    <Button Content="{local:Loc Cancel}"
                             Command="{Binding CancelCommand}"
                             Style="{StaticResource ToolbarButton}"
                             HorizontalAlignment="Center" Margin="0,12,0,0"
-                            AutomationProperties.Name="Cancel cloning operation"/>
+                            AutomationProperties.Name="{local:Loc Xaml_CancelCloningOperation}"/>
                 </StackPanel>
             </Border>
         </Border>

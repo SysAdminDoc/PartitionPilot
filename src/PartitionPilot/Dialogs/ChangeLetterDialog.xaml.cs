@@ -17,7 +17,7 @@ public partial class ChangeLetterDialog : Window
     {
         _dialog = dialog;
         InitializeComponent();
-        txtCurrent.Text = currentLetter.HasValue ? $"{currentLetter}:" : "(none)";
+        txtCurrent.Text = currentLetter.HasValue ? $"{currentLetter}:" : LocExtension.Get("DialogNoCurrentDriveLetter");
         foreach (var l in availableLetters) cmbLetter.Items.Add(l);
         if (cmbLetter.Items.Count > 0) cmbLetter.SelectedIndex = 0;
     }
@@ -26,7 +26,7 @@ public partial class ChangeLetterDialog : Window
     {
         if (cmbLetter.SelectedItem is not char letter)
         {
-            _dialog.ShowWarning("Select an available drive letter before continuing.", "Drive Letter Required");
+            _dialog.ShowWarning(LocExtension.Get("DialogSelectDriveLetterRequired"), LocExtension.Get("DialogDriveLetterRequired"));
             return;
         }
         NewLetter = letter;

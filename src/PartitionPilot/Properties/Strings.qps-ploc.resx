@@ -83,6 +83,8 @@
   <data name="Format" xml:space="preserve"><value>[Format!!]</value></data>
   <data name="Resize" xml:space="preserve"><value>[Resize!!]</value></data>
   <data name="OK" xml:space="preserve"><value>[OK!!]</value></data>
+  <data name="Yes" xml:space="preserve"><value>[Yes!!]</value></data>
+  <data name="No" xml:space="preserve"><value>[No!!]</value></data>
 
   
   <data name="DiskHealthTitle" xml:space="preserve"><value>[Disk Health!!]</value></data>
@@ -109,6 +111,17 @@
   <data name="Confirm" xml:space="preserve"><value>[Confirm!!]</value></data>
   <data name="ConfirmDelete" xml:space="preserve"><value>[Confirm Delete!!]</value></data>
   <data name="ConfirmFormat" xml:space="preserve"><value>[Confirm Format!!]</value></data>
+  <data name="DialogSizeRequired" xml:space="preserve"><value>[Size Required!!]</value></data>
+  <data name="DialogDriveLetterRequired" xml:space="preserve"><value>[Drive Letter Required!!]</value></data>
+  <data name="DialogPartitionSizeRequired" xml:space="preserve"><value>[Enter a partition size greater than 0 GB.!!]</value></data>
+  <data name="DialogTargetSizeRequired" xml:space="preserve"><value>[Enter a target size greater than 0 GB.!!]</value></data>
+  <data name="DialogNewPartitionSizeRequired" xml:space="preserve"><value>[Enter a new partition size greater than 0 GB.!!]</value></data>
+  <data name="DialogSelectDriveLetterRequired" xml:space="preserve"><value>[Select an available drive letter before continuing.!!]</value></data>
+  <data name="DialogNoCurrentDriveLetter" xml:space="preserve"><value>[(none)!!]</value></data>
+  <data name="DialogMergeDeleteExtends" xml:space="preserve"><value>[The partition to remove will be deleted. The primary partition will be extended into the freed space when the queued operation is applied.!!]</value></data>
+  <data name="DialogMergeChoosePrimaryDataPartition" xml:space="preserve"><value>[Choose a primary data partition that is immediately followed by another mergeable data partition.!!]</value></data>
+  <data name="DialogMergePrimaryAdjacentRequired" xml:space="preserve"><value>[Choose a primary partition that is immediately followed by another mergeable partition.!!]</value></data>
+  <data name="DialogMergeTwoAdjacentRequired" xml:space="preserve"><value>[Select two adjacent partitions.!!]</value></data>
 
   
   <data name="Temperature" xml:space="preserve"><value>[TemperatUre!!]</value></data>
@@ -198,4 +211,351 @@
   <data name="SectorSizes" xml:space="preserve"><value>[Sector Sizes!!]</value></data>
   <data name="MaxReadLatency" xml:space="preserve"><value>[Max Read Latency!!]</value></data>
   <data name="MaxWriteLatency" xml:space="preserve"><value>[Max Write Latency!!]</value></data>
+  <!-- XAML localized literals -->
+  <data name="Xaml_4KAlignmentAuditTable" xml:space="preserve"><value>[4K alignment audit table!!]</value></data>
+  <data name="Xaml_ActionsAreEnabledOnlyWhenTheRequiredDiskOrPartitionIsSelected" xml:space="preserve"><value>[Actions are enabled only when the required disk or partition is selected.!!]</value></data>
+  <data name="Xaml_ActivityLogEntries" xml:space="preserve"><value>[Activity log entries!!]</value></data>
+  <data name="Xaml_Aligned" xml:space="preserve"><value>[Aligned!!]</value></data>
+  <data name="Xaml_AlignmentDetailsWillAppearAfterHealthDataLoads" xml:space="preserve"><value>[Alignment details will appear after health data loads.!!]</value></data>
+  <data name="Xaml_Analyze" xml:space="preserve"><value>[Analyze!!]</value></data>
+  <data name="Xaml_AnalyzeOrOptimizeHDDsAndSendRetrimToSSDBackedVolumes" xml:space="preserve"><value>[Analyze or optimize HDDs, and send retrim to SSD-backed volumes.!!]</value></data>
+  <data name="Xaml_ApplyAll" xml:space="preserve"><value>[Apply All!!]</value></data>
+  <data name="Xaml_ApplyAllPendingOperations" xml:space="preserve"><value>[Apply all pending operations!!]</value></data>
+  <data name="Xaml_ApplyAWIMOrVHDXImageToATargetDiskAllDataOnTheTargetWillBeDestroyed" xml:space="preserve"><value>[Apply a WIM or VHDX image to a target disk. All data on the target will be destroyed.!!]</value></data>
+  <data name="Xaml_AssignANewLetterToTheSelectedPartition" xml:space="preserve"><value>[Assign a new letter to the selected partition.!!]</value></data>
+  <data name="Xaml_AssignOrChangeTheSelectedPartitionDriveLetter" xml:space="preserve"><value>[Assign or change the selected partition drive letter!!]</value></data>
+  <data name="Xaml_Attribute" xml:space="preserve"><value>[Attribute!!]</value></data>
+  <data name="Xaml_AvailableSpace" xml:space="preserve"><value>[Available space!!]</value></data>
+  <data name="Xaml_BenchmarkDriveSelector" xml:space="preserve"><value>[Benchmark drive selector!!]</value></data>
+  <data name="Xaml_BenchmarkResults" xml:space="preserve"><value>[Benchmark results!!]</value></data>
+  <data name="Xaml_BootloaderRepair" xml:space="preserve"><value>[Bootloader Repair!!]</value></data>
+  <data name="Xaml_BrowseForImageToMount" xml:space="preserve"><value>[Browse for image to mount!!]</value></data>
+  <data name="Xaml_BrowseForVHDSaveLocation" xml:space="preserve"><value>[Browse for VHD save location!!]</value></data>
+  <data name="Xaml_BrowseImageSavePath" xml:space="preserve"><value>[Browse image save path!!]</value></data>
+  <data name="Xaml_BrowseRestoreImage" xml:space="preserve"><value>[Browse restore image!!]</value></data>
+  <data name="Xaml_CameraFAT3232KBClusters" xml:space="preserve"><value>[Camera (FAT32, 32 KB clusters)!!]</value></data>
+  <data name="Xaml_CancelCloningOperation" xml:space="preserve"><value>[Cancel cloning operation!!]</value></data>
+  <data name="Xaml_CancelDiskUsageScan" xml:space="preserve"><value>[Cancel disk usage scan!!]</value></data>
+  <data name="Xaml_CancelMerge" xml:space="preserve"><value>[Cancel merge!!]</value></data>
+  <data name="Xaml_CancelToolOperation" xml:space="preserve"><value>[Cancel tool operation!!]</value></data>
+  <data name="Xaml_CaptureAVolumeToAWIMOrVHDXFile" xml:space="preserve"><value>[Capture a volume to a WIM or VHDX file.!!]</value></data>
+  <data name="Xaml_Captured" xml:space="preserve"><value>[Captured!!]</value></data>
+  <data name="Xaml_ChangeDriveLetter" xml:space="preserve"><value>[Change Drive Letter!!]</value></data>
+  <data name="Xaml_Check" xml:space="preserve"><value>[Check!!]</value></data>
+  <data name="Xaml_ChooseADriveAndScanItToRankTheLargestTopLevelFolders" xml:space="preserve"><value>[Choose a drive and scan it to rank the largest top-level folders.!!]</value></data>
+  <data name="Xaml_ChooseASupportedTargetSizeForTheSelectedVolume" xml:space="preserve"><value>[Choose a supported target size for the selected volume.!!]</value></data>
+  <data name="Xaml_ChooseAVolumeForFreeSpaceWipeOrADiskForFullDestructiveWipe" xml:space="preserve"><value>[Choose a volume for free-space wipe or a disk for full destructive wipe.!!]</value></data>
+  <data name="Xaml_ClearActivityLog" xml:space="preserve"><value>[Clear activity log!!]</value></data>
+  <data name="Xaml_ClearPendingOperations" xml:space="preserve"><value>[Clear pending operations!!]</value></data>
+  <data name="Xaml_CloneDestinationDisk" xml:space="preserve"><value>[Clone destination disk!!]</value></data>
+  <data name="Xaml_CloneProgress" xml:space="preserve"><value>[Clone progress!!]</value></data>
+  <data name="Xaml_CloneSizeSummary" xml:space="preserve"><value>[Clone size summary!!]</value></data>
+  <data name="Xaml_CloneSourceDisk" xml:space="preserve"><value>[Clone source disk!!]</value></data>
+  <data name="Xaml_Close" xml:space="preserve"><value>[Close!!]</value></data>
+  <data name="Xaml_CompareCurrentLayout" xml:space="preserve"><value>[Compare Current Layout!!]</value></data>
+  <data name="Xaml_CompareSelectedSnapshotWithCurrentDiskLayout" xml:space="preserve"><value>[Compare selected snapshot with current disk layout!!]</value></data>
+  <data name="Xaml_ConfirmMerge" xml:space="preserve"><value>[Confirm merge!!]</value></data>
+  <data name="Xaml_ControllerBusyTime" xml:space="preserve"><value>[Controller Busy Time!!]</value></data>
+  <data name="Xaml_Convert" xml:space="preserve"><value>[Convert!!]</value></data>
+  <data name="Xaml_ConvertFAT32ToNTFS" xml:space="preserve"><value>[Convert FAT32 to NTFS!!]</value></data>
+  <data name="Xaml_ConvertMBRToGPT" xml:space="preserve"><value>[Convert MBR to GPT!!]</value></data>
+  <data name="Xaml_ConvertVolume" xml:space="preserve"><value>[Convert Volume!!]</value></data>
+  <data name="Xaml_CopyEverySectorFromASourceDiskToADestinationDiskCreatesAnE_85d7e317" xml:space="preserve"><value>[Copy every sector from a source disk to a destination disk. Creates an exact byte-for-byte duplicate.!!]</value></data>
+  <data name="Xaml_CopyGuidance" xml:space="preserve"><value>[Copy Guidance!!]</value></data>
+  <data name="Xaml_CopySnapshotRecoveryGuidance" xml:space="preserve"><value>[Copy snapshot recovery guidance!!]</value></data>
+  <data name="Xaml_CreateADevDriveVolumeReFSWithOptimizedIOAndAntivirusFilter_d75777a5" xml:space="preserve"><value>[Create a Dev Drive volume (ReFS) with optimized I/O and antivirus filter control. Requires Windows 11 23H2+.!!]</value></data>
+  <data name="Xaml_CreateADynamicallyExpandingVHD" xml:space="preserve"><value>[Create a dynamically expanding VHD!!]</value></data>
+  <data name="Xaml_CreateAFixedSizeVHD" xml:space="preserve"><value>[Create a fixed-size VHD!!]</value></data>
+  <data name="Xaml_CreateAPartitionFromUnallocatedSpace" xml:space="preserve"><value>[Create a partition from unallocated space!!]</value></data>
+  <data name="Xaml_CreateAVHDOrVHDXInitializeItFormatItAndMountIt" xml:space="preserve"><value>[Create a VHD or VHDX, initialize it, format it, and mount it.!!]</value></data>
+  <data name="Xaml_CreateDevDrive" xml:space="preserve"><value>[Create Dev Drive!!]</value></data>
+  <data name="Xaml_CreateDiskImage" xml:space="preserve"><value>[Create disk image!!]</value></data>
+  <data name="Xaml_CreatePartition" xml:space="preserve"><value>[Create Partition!!]</value></data>
+  <data name="Xaml_CreateVHD" xml:space="preserve"><value>[Create VHD!!]</value></data>
+  <data name="Xaml_CreateVirtualHardDisk" xml:space="preserve"><value>[Create Virtual Hard Disk!!]</value></data>
+  <data name="Xaml_CriticalWarning" xml:space="preserve"><value>[Critical Warning!!]</value></data>
+  <data name="Xaml_CurrentLetter" xml:space="preserve"><value>[Current letter!!]</value></data>
+  <data name="Xaml_CurrentlyMountedImages" xml:space="preserve"><value>[Currently Mounted Images!!]</value></data>
+  <data name="Xaml_CurrentSize" xml:space="preserve"><value>[Current size!!]</value></data>
+  <data name="Xaml_CurrentVolume" xml:space="preserve"><value>[Current volume!!]</value></data>
+  <data name="Xaml_Custom" xml:space="preserve"><value>[Custom!!]</value></data>
+  <data name="Xaml_Defrag" xml:space="preserve"><value>[Defrag!!]</value></data>
+  <data name="Xaml_DeletePartition" xml:space="preserve"><value>[Delete partition!!]</value></data>
+  <data name="Xaml_DeleteTheSelectedPartition" xml:space="preserve"><value>[Delete the selected partition!!]</value></data>
+  <data name="Xaml_DestructiveOperationsRequireConfirmationLogTheirCommandOut_3d2db885" xml:space="preserve"><value>[Destructive operations require confirmation, log their command output, and refresh the partition map afterward.!!]</value></data>
+  <data name="Xaml_Details" xml:space="preserve"><value>[Details!!]</value></data>
+  <data name="Xaml_DevDriveReFS" xml:space="preserve"><value>[Dev Drive (ReFS)!!]</value></data>
+  <data name="Xaml_DevDriveVolumeSelector" xml:space="preserve"><value>[Dev Drive volume selector!!]</value></data>
+  <data name="Xaml_DevicePreset" xml:space="preserve"><value>[Device preset!!]</value></data>
+  <data name="Xaml_Direction" xml:space="preserve"><value>[Direction!!]</value></data>
+  <data name="Xaml_Disk" xml:space="preserve"><value>[Disk!!]</value></data>
+  <data name="Xaml_DiskBenchmark" xml:space="preserve"><value>[Disk Benchmark!!]</value></data>
+  <data name="Xaml_DiskCloningTab" xml:space="preserve"><value>[Disk Cloning tab!!]</value></data>
+  <data name="Xaml_DiskDoD3Pass" xml:space="preserve"><value>[Disk (DoD 3-pass)!!]</value></data>
+  <data name="Xaml_DiskDoD7Pass" xml:space="preserve"><value>[Disk (DoD 7-pass)!!]</value></data>
+  <data name="Xaml_DiskHealthStatus" xml:space="preserve"><value>[Disk health status!!]</value></data>
+  <data name="Xaml_DiskHealthTab" xml:space="preserve"><value>[Disk Health tab!!]</value></data>
+  <data name="Xaml_DiskImagesTab" xml:space="preserve"><value>[Disk Images tab!!]</value></data>
+  <data name="Xaml_DiskIOActivity" xml:space="preserve"><value>[Disk I/O Activity!!]</value></data>
+  <data name="Xaml_DiskIOPerformanceCounters" xml:space="preserve"><value>[Disk I/O performance counters!!]</value></data>
+  <data name="Xaml_DiskNVMeSanitize" xml:space="preserve"><value>[Disk (NVMe Sanitize)!!]</value></data>
+  <data name="Xaml_DiskSelector" xml:space="preserve"><value>[Disk selector!!]</value></data>
+  <data name="Xaml_DiskUsageAnalysis" xml:space="preserve"><value>[Disk Usage Analysis!!]</value></data>
+  <data name="Xaml_DiskUsageResults" xml:space="preserve"><value>[Disk usage results!!]</value></data>
+  <data name="Xaml_DiskUsageTab" xml:space="preserve"><value>[Disk Usage tab!!]</value></data>
+  <data name="Xaml_DiskUsageTreemap" xml:space="preserve"><value>[Disk usage treemap!!]</value></data>
+  <data name="Xaml_DismountSelected" xml:space="preserve"><value>[Dismount Selected!!]</value></data>
+  <data name="Xaml_DismountSelectedImage" xml:space="preserve"><value>[Dismount selected image!!]</value></data>
+  <data name="Xaml_DoD3Pass" xml:space="preserve"><value>[DoD 3-pass!!]</value></data>
+  <data name="Xaml_DoD3PassWipe" xml:space="preserve"><value>[DoD 3-pass wipe!!]</value></data>
+  <data name="Xaml_DoD3PassWipeDiskSelector" xml:space="preserve"><value>[DoD 3-pass wipe disk selector!!]</value></data>
+  <data name="Xaml_DoD522022M3PassOverwriteZerosOnesRandom" xml:space="preserve"><value>[DoD 5220.22-M 3-pass overwrite (zeros, ones, random)!!]</value></data>
+  <data name="Xaml_DoD522022M7PassOverwrite" xml:space="preserve"><value>[DoD 5220.22-M 7-pass overwrite!!]</value></data>
+  <data name="Xaml_DoD7Pass" xml:space="preserve"><value>[DoD 7-pass!!]</value></data>
+  <data name="Xaml_DoD7PassWipe" xml:space="preserve"><value>[DoD 7-pass wipe!!]</value></data>
+  <data name="Xaml_DoD7PassWipeDiskSelector" xml:space="preserve"><value>[DoD 7-pass wipe disk selector!!]</value></data>
+  <data name="Xaml_Drive" xml:space="preserve"><value>[Drive!!]</value></data>
+  <data name="Xaml_DriveLetter" xml:space="preserve"><value>[Drive letter!!]</value></data>
+  <data name="Xaml_DriveLetterSelector" xml:space="preserve"><value>[Drive letter selector!!]</value></data>
+  <data name="Xaml_Dynamic" xml:space="preserve"><value>[Dynamic!!]</value></data>
+  <data name="Xaml_ElevateToAdministrator" xml:space="preserve"><value>[Elevate to administrator!!]</value></data>
+  <data name="Xaml_EncryptDiskImage" xml:space="preserve"><value>[Encrypt disk image!!]</value></data>
+  <data name="Xaml_EncryptImageAES256GCM" xml:space="preserve"><value>[Encrypt image (AES-256-GCM)!!]</value></data>
+  <data name="Xaml_EnduranceStatus" xml:space="preserve"><value>[Endurance status!!]</value></data>
+  <data name="Xaml_EntireDisk" xml:space="preserve"><value>[Entire disk!!]</value></data>
+  <data name="Xaml_EntireDiskWipeIsDestructiveConfirmTheSelectedTargetBeforeStarting" xml:space="preserve"><value>[Entire disk wipe is destructive. Confirm the selected target before starting.!!]</value></data>
+  <data name="Xaml_ErrorLogEntries" xml:space="preserve"><value>[Error Log Entries!!]</value></data>
+  <data name="Xaml_ExFAT" xml:space="preserve"><value>[exFAT!!]</value></data>
+  <data name="Xaml_ExportActivityLog" xml:space="preserve"><value>[Export activity log!!]</value></data>
+  <data name="Xaml_ExportAMismatchCheckedRecoveryPlanForThisSnapshot" xml:space="preserve"><value>[Export a mismatch-checked recovery plan for this snapshot!!]</value></data>
+  <data name="Xaml_ExportARedactedDiagnosticBundleForTroubleshooting" xml:space="preserve"><value>[Export a redacted diagnostic bundle for troubleshooting!!]</value></data>
+  <data name="Xaml_ExportBenchmarkResults" xml:space="preserve"><value>[Export benchmark results!!]</value></data>
+  <data name="Xaml_ExportJSON" xml:space="preserve"><value>[Export JSON!!]</value></data>
+  <data name="Xaml_ExportRecoveryPlan" xml:space="preserve"><value>[Export recovery plan!!]</value></data>
+  <data name="Xaml_ExportReport" xml:space="preserve"><value>[Export Report!!]</value></data>
+  <data name="Xaml_ExportResults" xml:space="preserve"><value>[Export Results!!]</value></data>
+  <data name="Xaml_ExportSelectedPartitionSnapshot" xml:space="preserve"><value>[Export selected partition snapshot!!]</value></data>
+  <data name="Xaml_ExportSMARTDiagnosticReport" xml:space="preserve"><value>[Export SMART diagnostic report!!]</value></data>
+  <data name="Xaml_ExportSupportBundle" xml:space="preserve"><value>[Export support bundle!!]</value></data>
+  <data name="Xaml_ExtendedTest" xml:space="preserve"><value>[Extended Test!!]</value></data>
+  <data name="Xaml_ExtendPartition" xml:space="preserve"><value>[Extend partition!!]</value></data>
+  <data name="Xaml_ExtendTheSelectedPartitionIntoAvailableSpace" xml:space="preserve"><value>[Extend the selected partition into available space!!]</value></data>
+  <data name="Xaml_FAT32" xml:space="preserve"><value>[FAT32!!]</value></data>
+  <data name="Xaml_FAT32VolumeSelector" xml:space="preserve"><value>[FAT32 volume selector!!]</value></data>
+  <data name="Xaml_FilePath" xml:space="preserve"><value>[File path!!]</value></data>
+  <data name="Xaml_Files" xml:space="preserve"><value>[Files!!]</value></data>
+  <data name="Xaml_FileSystem" xml:space="preserve"><value>[File system!!]</value></data>
+  <data name="Xaml_FilesystemColumn" xml:space="preserve"><value>[Filesystem!!]</value></data>
+  <data name="Xaml_FilesystemCheckAndRepair" xml:space="preserve"><value>[Filesystem Check and Repair!!]</value></data>
+  <data name="Xaml_FilesystemCheckVolumeSelector" xml:space="preserve"><value>[Filesystem check volume selector!!]</value></data>
+  <data name="Xaml_FilesystemSupport" xml:space="preserve"><value>[Filesystem Support!!]</value></data>
+  <data name="Xaml_FilesystemSupportMatrix" xml:space="preserve"><value>[Filesystem support matrix!!]</value></data>
+  <data name="Xaml_Fixed" xml:space="preserve"><value>[Fixed!!]</value></data>
+  <data name="Xaml_Folder" xml:space="preserve"><value>[Folder!!]</value></data>
+  <data name="Xaml_FormatPartition" xml:space="preserve"><value>[Format partition!!]</value></data>
+  <data name="Xaml_FormatTheSelectedVolume" xml:space="preserve"><value>[Format the selected volume!!]</value></data>
+  <data name="Xaml_FormattingReplacesTheFileSystemOnThisVolumeAndRemovesItsEx_b589b663" xml:space="preserve"><value>[Formatting replaces the file system on this volume and removes its existing files.!!]</value></data>
+  <data name="Xaml_Free" xml:space="preserve"><value>[Free!!]</value></data>
+  <data name="Xaml_FreeSpace" xml:space="preserve"><value>[Free space!!]</value></data>
+  <data name="Xaml_FSSupport" xml:space="preserve"><value>[FS Support!!]</value></data>
+  <data name="Xaml_GB" xml:space="preserve"><value>[GB!!]</value></data>
+  <data name="Xaml_GeneralNTFS" xml:space="preserve"><value>[General NTFS!!]</value></data>
+  <data name="Xaml_HexDumpDisplay" xml:space="preserve"><value>[Hex dump display!!]</value></data>
+  <data name="Xaml_HexViewerDiskSelector" xml:space="preserve"><value>[Hex viewer disk selector!!]</value></data>
+  <data name="Xaml_HexViewerStatus" xml:space="preserve"><value>[Hex viewer status!!]</value></data>
+  <data name="Xaml_HexViewerTab" xml:space="preserve"><value>[Hex Viewer tab!!]</value></data>
+  <data name="Xaml_HideOrUnhide" xml:space="preserve"><value>[Hide or Unhide!!]</value></data>
+  <data name="Xaml_HideOrUnhidePartition" xml:space="preserve"><value>[Hide or unhide partition!!]</value></data>
+  <data name="Xaml_HideOrUnhideTheSelectedPartition" xml:space="preserve"><value>[Hide or unhide the selected partition!!]</value></data>
+  <data name="Xaml_History" xml:space="preserve"><value>[History:!!]</value></data>
+  <data name="Xaml_ID" xml:space="preserve"><value>[ID!!]</value></data>
+  <data name="Xaml_ImageDestinationPreflight" xml:space="preserve"><value>[Image destination preflight!!]</value></data>
+  <data name="Xaml_ImageFile" xml:space="preserve"><value>[Image File!!]</value></data>
+  <data name="Xaml_ImageFilePath" xml:space="preserve"><value>[Image file path!!]</value></data>
+  <data name="Xaml_InitializeThisUnpartitionedDiskWithAGPTPartitionTable" xml:space="preserve"><value>[Initialize this unpartitioned disk with a GPT partition table!!]</value></data>
+  <data name="Xaml_Label" xml:space="preserve"><value>[Label!!]</value></data>
+  <data name="Xaml_LargestFreeExtent" xml:space="preserve"><value>[Largest Free Extent!!]</value></data>
+  <data name="Xaml_LargeUSBExFAT" xml:space="preserve"><value>[Large USB (exFAT)!!]</value></data>
+  <data name="Xaml_Layout" xml:space="preserve"><value>[Layout!!]</value></data>
+  <data name="Xaml_Letter" xml:space="preserve"><value>[Letter!!]</value></data>
+  <data name="Xaml_Level" xml:space="preserve"><value>[Level!!]</value></data>
+  <data name="Xaml_LiveDiskTemperatures" xml:space="preserve"><value>[Live disk temperatures!!]</value></data>
+  <data name="Xaml_LiveTemperatureMonitor" xml:space="preserve"><value>[Live Temperature Monitor!!]</value></data>
+  <data name="Xaml_LoadingHealthData" xml:space="preserve"><value>[Loading health data!!]</value></data>
+  <data name="Xaml_LoadingSnapshots" xml:space="preserve"><value>[Loading snapshots!!]</value></data>
+  <data name="Xaml_MaintenanceTools" xml:space="preserve"><value>[Maintenance Tools!!]</value></data>
+  <data name="Xaml_MarkTheSelectedPartitionAsActive" xml:space="preserve"><value>[Mark the selected partition as active!!]</value></data>
+  <data name="Xaml_MBRDiskSelector" xml:space="preserve"><value>[MBR disk selector!!]</value></data>
+  <data name="Xaml_MergePartitions" xml:space="preserve"><value>[Merge Partitions!!]</value></data>
+  <data name="Xaml_MergePartitionsDialog" xml:space="preserve"><value>[Merge partitions dialog!!]</value></data>
+  <data name="Xaml_MergeTwoAdjacentPartitions" xml:space="preserve"><value>[Merge Two Adjacent Partitions!!]</value></data>
+  <data name="Xaml_MergeTwoAdjacentPartitionsIntoOne" xml:space="preserve"><value>[Merge two adjacent partitions into one!!]</value></data>
+  <data name="Xaml_MountDiskImage" xml:space="preserve"><value>[Mount Disk Image!!]</value></data>
+  <data name="Xaml_MountDismountAndCreateISOVHDAndVHDXImages" xml:space="preserve"><value>[Mount, dismount, and create ISO, VHD, and VHDX images.!!]</value></data>
+  <data name="Xaml_MountDismountAndVHDOperationsAreBeingLogged" xml:space="preserve"><value>[Mount, dismount, and VHD operations are being logged.!!]</value></data>
+  <data name="Xaml_MountedImagesTable" xml:space="preserve"><value>[Mounted images table!!]</value></data>
+  <data name="Xaml_MountedISOVHDAndVHDXFilesWillAppearHere" xml:space="preserve"><value>[Mounted ISO, VHD, and VHDX files will appear here.!!]</value></data>
+  <data name="Xaml_MountImage" xml:space="preserve"><value>[Mount image!!]</value></data>
+  <data name="Xaml_NewDriveLetter" xml:space="preserve"><value>[New drive letter!!]</value></data>
+  <data name="Xaml_NewLetter" xml:space="preserve"><value>[New letter!!]</value></data>
+  <data name="Xaml_NewPartitionSizeGB" xml:space="preserve"><value>[New partition size (GB)!!]</value></data>
+  <data name="Xaml_NewPartitionSizeInGB" xml:space="preserve"><value>[New partition size in GB!!]</value></data>
+  <data name="Xaml_NewSizeGB" xml:space="preserve"><value>[New size (GB)!!]</value></data>
+  <data name="Xaml_NewSizeInGB" xml:space="preserve"><value>[New size in GB!!]</value></data>
+  <data name="Xaml_Next" xml:space="preserve"><value>[Next!!]</value></data>
+  <data name="Xaml_NextSector" xml:space="preserve"><value>[Next sector!!]</value></data>
+  <data name="Xaml_NintendoSwitchFAT3264KBClusters" xml:space="preserve"><value>[Nintendo Switch (FAT32, 64 KB clusters)!!]</value></data>
+  <data name="Xaml_NoAlignmentEntries" xml:space="preserve"><value>[No alignment entries!!]</value></data>
+  <data name="Xaml_NoCloningTargetsLoaded" xml:space="preserve"><value>[No cloning targets loaded!!]</value></data>
+  <data name="Xaml_NoDiskHealthDataLoaded" xml:space="preserve"><value>[No disk health data loaded!!]</value></data>
+  <data name="Xaml_NoMountedImages" xml:space="preserve"><value>[No mounted images!!]</value></data>
+  <data name="Xaml_NoPartitionDataLoaded" xml:space="preserve"><value>[No partition data loaded!!]</value></data>
+  <data name="Xaml_NoSnapshotsSaved" xml:space="preserve"><value>[No snapshots saved!!]</value></data>
+  <data name="Xaml_Notes" xml:space="preserve"><value>[Notes!!]</value></data>
+  <data name="Xaml_NoUsageScanResults" xml:space="preserve"><value>[No usage scan results!!]</value></data>
+  <data name="Xaml_NTFS" xml:space="preserve"><value>[NTFS!!]</value></data>
+  <data name="Xaml_NVMeFirmwareErase" xml:space="preserve"><value>[NVMe firmware erase!!]</value></data>
+  <data name="Xaml_NVMeSanitizeDiskSelector" xml:space="preserve"><value>[NVMe sanitize disk selector!!]</value></data>
+  <data name="Xaml_OfflineRepair" xml:space="preserve"><value>[Offline repair!!]</value></data>
+  <data name="Xaml_Offset" xml:space="preserve"><value>[Offset!!]</value></data>
+  <data name="Xaml_OneWayConversionForFAT32VolumesThatNeedNTFSFeatures" xml:space="preserve"><value>[One-way conversion for FAT32 volumes that need NTFS features.!!]</value></data>
+  <data name="Xaml_OperationsSupportedByPartitionPilotPerFilesystemTypeLimita_c6dd9bed" xml:space="preserve"><value>[Operations supported by PartitionPilot per filesystem type. Limitations are imposed by Windows Storage APIs.!!]</value></data>
+  <data name="Xaml_OptimizeAndTRIM" xml:space="preserve"><value>[Optimize and TRIM!!]</value></data>
+  <data name="Xaml_OptimizeVolumeSelector" xml:space="preserve"><value>[Optimize volume selector!!]</value></data>
+  <data name="Xaml_OutputIsBeingCapturedInTheActivityLog" xml:space="preserve"><value>[Output is being captured in the activity log.!!]</value></data>
+  <data name="Xaml_Partition" xml:space="preserve"><value>[Partition!!]</value></data>
+  <data name="Xaml_PartitionActions" xml:space="preserve"><value>[Partition Actions!!]</value></data>
+  <data name="Xaml_PartitionSizeInGB" xml:space="preserve"><value>[Partition size in GB!!]</value></data>
+  <data name="Xaml_PartitionSnapshotHistory" xml:space="preserve"><value>[Partition snapshot history!!]</value></data>
+  <data name="Xaml_PartitionsTab" xml:space="preserve"><value>[Partitions tab!!]</value></data>
+  <data name="Xaml_PartitionStyle" xml:space="preserve"><value>[Partition Style!!]</value></data>
+  <data name="Xaml_PartitionTable" xml:space="preserve"><value>[Partition table!!]</value></data>
+  <data name="Xaml_PartitionToRemove" xml:space="preserve"><value>[Partition to Remove!!]</value></data>
+  <data name="Xaml_PartitionToRemoveDuringMerge" xml:space="preserve"><value>[Partition to remove during merge!!]</value></data>
+  <data name="Xaml_PartitionWorkspace" xml:space="preserve"><value>[Partition Workspace!!]</value></data>
+  <data name="Xaml_Path" xml:space="preserve"><value>[Path!!]</value></data>
+  <data name="Xaml_PhysicalDiskSelector" xml:space="preserve"><value>[Physical disk selector!!]</value></data>
+  <data name="Xaml_Prev" xml:space="preserve"><value>[Prev!!]</value></data>
+  <data name="Xaml_PreviousSector" xml:space="preserve"><value>[Previous sector!!]</value></data>
+  <data name="Xaml_PrimaryPartition" xml:space="preserve"><value>[Primary Partition!!]</value></data>
+  <data name="Xaml_PrimaryPartitionSelector" xml:space="preserve"><value>[Primary partition selector!!]</value></data>
+  <data name="Xaml_QueryingDisksOrApplyingTheRequestedPartitionOperation" xml:space="preserve"><value>[Querying disks or applying the requested partition operation.!!]</value></data>
+  <data name="Xaml_QueueMerge" xml:space="preserve"><value>[Queue Merge!!]</value></data>
+  <data name="Xaml_QuickFormat" xml:space="preserve"><value>[Quick format!!]</value></data>
+  <data name="Xaml_RaspberryPiFAT32" xml:space="preserve"><value>[Raspberry Pi (FAT32)!!]</value></data>
+  <data name="Xaml_RatedTBWInTerabytes" xml:space="preserve"><value>[Rated TBW in terabytes!!]</value></data>
+  <data name="Xaml_RatedTBWTB" xml:space="preserve"><value>[Rated TBW (TB):!!]</value></data>
+  <data name="Xaml_RawValue" xml:space="preserve"><value>[Raw Value!!]</value></data>
+  <data name="Xaml_Read" xml:space="preserve"><value>[Read!!]</value></data>
+  <data name="Xaml_ReadingPhysicalDiskSMARTAndAlignmentDetails" xml:space="preserve"><value>[Reading physical disk, SMART, and alignment details.!!]</value></data>
+  <data name="Xaml_ReadingSavedPartitionLayoutsAndComparisonData" xml:space="preserve"><value>[Reading saved partition layouts and comparison data.!!]</value></data>
+  <data name="Xaml_ReadSector" xml:space="preserve"><value>[Read sector!!]</value></data>
+  <data name="Xaml_RebuildBootFilesForADetectedWindowsInstallation" xml:space="preserve"><value>[Rebuild boot files for a detected Windows installation.!!]</value></data>
+  <data name="Xaml_RefreshCurrentWorkspace" xml:space="preserve"><value>[Refresh current workspace!!]</value></data>
+  <data name="Xaml_RefreshDiskHealth" xml:space="preserve"><value>[Refresh disk health!!]</value></data>
+  <data name="Xaml_RefreshDiskImages" xml:space="preserve"><value>[Refresh disk images!!]</value></data>
+  <data name="Xaml_RefreshDiskList" xml:space="preserve"><value>[Refresh disk list!!]</value></data>
+  <data name="Xaml_RefreshDisks" xml:space="preserve"><value>[Refresh disks!!]</value></data>
+  <data name="Xaml_RefreshLists" xml:space="preserve"><value>[Refresh Lists!!]</value></data>
+  <data name="Xaml_RefreshPartitionSnapshots" xml:space="preserve"><value>[Refresh partition snapshots!!]</value></data>
+  <data name="Xaml_RefreshToLoadPhysicalDiskSMARTReliabilityAndAlignmentDetails" xml:space="preserve"><value>[Refresh to load physical disk, SMART reliability, and alignment details.!!]</value></data>
+  <data name="Xaml_RefreshToLoadSourceVolumesAndTargetDisksBeforeCreatingOrRe_ac385bff" xml:space="preserve"><value>[Refresh to load source volumes and target disks before creating or restoring an image.!!]</value></data>
+  <data name="Xaml_RefreshToolLists" xml:space="preserve"><value>[Refresh tool lists!!]</value></data>
+  <data name="Xaml_ReFS" xml:space="preserve"><value>[ReFS!!]</value></data>
+  <data name="Xaml_RemovePendingOperation" xml:space="preserve"><value>[Remove pending operation!!]</value></data>
+  <data name="Xaml_RepairBootloader" xml:space="preserve"><value>[Repair bootloader!!]</value></data>
+  <data name="Xaml_RequiresWindows1123H2OrNewerWithDevDriveSupport" xml:space="preserve"><value>[Requires Windows 11 23H2 or newer with Dev Drive support.!!]</value></data>
+  <data name="Xaml_RescueModeContinueOnReadErrors" xml:space="preserve"><value>[Rescue mode (continue on read errors)!!]</value></data>
+  <data name="Xaml_RescueModeForBadSectors" xml:space="preserve"><value>[Rescue mode for bad sectors!!]</value></data>
+  <data name="Xaml_ResizePartition" xml:space="preserve"><value>[Resize partition!!]</value></data>
+  <data name="Xaml_ResizeTheSelectedVolume" xml:space="preserve"><value>[Resize the selected volume!!]</value></data>
+  <data name="Xaml_RestoreDiskImage" xml:space="preserve"><value>[Restore disk image!!]</value></data>
+  <data name="Xaml_RestoreImageFilePath" xml:space="preserve"><value>[Restore image file path!!]</value></data>
+  <data name="Xaml_RestoreWritesToTheSelectedTargetDiskAndReplacesItsContents" xml:space="preserve"><value>[Restore writes to the selected target disk and replaces its contents.!!]</value></data>
+  <data name="Xaml_ReviewADiskLayoutBeforeCreatingResizingFormattingOrAssigningVolumes" xml:space="preserve"><value>[Review a disk layout before creating, resizing, formatting, or assigning volumes.!!]</value></data>
+  <data name="Xaml_ReviewSavedPartitionTableSnapshotsExportEvidenceAndCopyGui_d4ae9b65" xml:space="preserve"><value>[Review saved partition-table snapshots, export evidence, and copy guided recovery notes.!!]</value></data>
+  <data name="Xaml_Role" xml:space="preserve"><value>[Role!!]</value></data>
+  <data name="Xaml_RunBenchmark" xml:space="preserve"><value>[Run benchmark!!]</value></data>
+  <data name="Xaml_RunCheck" xml:space="preserve"><value>[Run Check!!]</value></data>
+  <data name="Xaml_RunDiskSpdSequentialAndRandomProfilesAgainstATemporaryTest_8ed7a19c" xml:space="preserve"><value>[Run DiskSpd sequential and random profiles against a temporary test file, then export the evidence.!!]</value></data>
+  <data name="Xaml_RunFilesystemCheck" xml:space="preserve"><value>[Run filesystem check!!]</value></data>
+  <data name="Xaml_RunNativeWindowsDiskUtilitiesWithClearerTargetingAndLoggedOutput" xml:space="preserve"><value>[Run native Windows disk utilities with clearer targeting and logged output.!!]</value></data>
+  <data name="Xaml_RunningTool" xml:space="preserve"><value>[Running tool!!]</value></data>
+  <data name="Xaml_RunOptimize" xml:space="preserve"><value>[Run optimize!!]</value></data>
+  <data name="Xaml_RunSMARTExtendedSelfTest" xml:space="preserve"><value>[Run SMART extended self-test!!]</value></data>
+  <data name="Xaml_RunSMARTShortSelfTest" xml:space="preserve"><value>[Run SMART short self-test!!]</value></data>
+  <data name="Xaml_RunSurfaceTest" xml:space="preserve"><value>[Run surface test!!]</value></data>
+  <data name="Xaml_Safety" xml:space="preserve"><value>[Safety!!]</value></data>
+  <data name="Xaml_ScanAVolumeForBadSectorsUsingRepairVolumeOfflineScanAndFix_b4beca22" xml:space="preserve"><value>[Scan a volume for bad sectors using Repair-Volume OfflineScanAndFix. May take several minutes.!!]</value></data>
+  <data name="Xaml_ScanAVolumeToSeeWhichFoldersConsumeTheMostSpace" xml:space="preserve"><value>[Scan a volume to see which folders consume the most space.!!]</value></data>
+  <data name="Xaml_ScanDiskUsage" xml:space="preserve"><value>[Scan disk usage!!]</value></data>
+  <data name="Xaml_ScanForFileSystemErrorsOrRunARepairModeOnTheSelectedVolume" xml:space="preserve"><value>[Scan for file-system errors or run a repair mode on the selected volume.!!]</value></data>
+  <data name="Xaml_ScanningDrive" xml:space="preserve"><value>[Scanning drive!!]</value></data>
+  <data name="Xaml_Sector" xml:space="preserve"><value>[Sector:!!]</value></data>
+  <data name="Xaml_SectorCloneOverwritesALLDataOnTheDestinationDiskTheDestina_75f97d43" xml:space="preserve"><value>[Sector clone overwrites ALL data on the destination disk. The destination must be at least as large as the source.!!]</value></data>
+  <data name="Xaml_SectorOffset" xml:space="preserve"><value>[Sector offset!!]</value></data>
+  <data name="Xaml_SelectAnISOVHDOrVHDXFileAndMountItAsADrive" xml:space="preserve"><value>[Select an ISO, VHD, or VHDX file and mount it as a drive.!!]</value></data>
+  <data name="Xaml_Selection" xml:space="preserve"><value>[Selection!!]</value></data>
+  <data name="Xaml_SelectTwoAdjacentPartitionsToMergeDataFromThePrimaryPartit_055a4e63" xml:space="preserve"><value>[Select two adjacent partitions to merge. Data from the primary partition is preserved. The secondary partition must be empty or its data will be lost.!!]</value></data>
+  <data name="Xaml_SetPartitionActive" xml:space="preserve"><value>[Set partition active!!]</value></data>
+  <data name="Xaml_Severity" xml:space="preserve"><value>[Severity!!]</value></data>
+  <data name="Xaml_Share" xml:space="preserve"><value>[Share!!]</value></data>
+  <data name="Xaml_ShortTest" xml:space="preserve"><value>[Short Test!!]</value></data>
+  <data name="Xaml_ShowFilesystemSupportMatrix" xml:space="preserve"><value>[Show filesystem support matrix!!]</value></data>
+  <data name="Xaml_ShowWhichOperationsEachFilesystemSupports" xml:space="preserve"><value>[Show which operations each filesystem supports!!]</value></data>
+  <data name="Xaml_Size" xml:space="preserve"><value>[Size!!]</value></data>
+  <data name="Xaml_SizeGB" xml:space="preserve"><value>[Size (GB)!!]</value></data>
+  <data name="Xaml_SMARTAttributesTable" xml:space="preserve"><value>[SMART attributes table!!]</value></data>
+  <data name="Xaml_SMARTReliabilityDataIsNotAvailableForTheSelectedDisk" xml:space="preserve"><value>[SMART reliability data is not available for the selected disk.!!]</value></data>
+  <data name="Xaml_SMARTSelfTestAvailability" xml:space="preserve"><value>[SMART self-test availability!!]</value></data>
+  <data name="Xaml_SMARTSelfTestStatus" xml:space="preserve"><value>[SMART self-test status!!]</value></data>
+  <data name="Xaml_SnapshotComparisonOutput" xml:space="preserve"><value>[Snapshot comparison output!!]</value></data>
+  <data name="Xaml_SnapshotPartitionTable" xml:space="preserve"><value>[Snapshot partition table!!]</value></data>
+  <data name="Xaml_SnapshotRecoveryGuidance" xml:space="preserve"><value>[Snapshot recovery guidance!!]</value></data>
+  <data name="Xaml_SnapshotsAreSavedBeforeDestructivePartitionOperationsAndWi_1843916b" xml:space="preserve"><value>[Snapshots are saved before destructive partition operations and will appear here.!!]</value></data>
+  <data name="Xaml_SnapshotsTab" xml:space="preserve"><value>[Snapshots tab!!]</value></data>
+  <data name="Xaml_SplitPartition" xml:space="preserve"><value>[Split Partition!!]</value></data>
+  <data name="Xaml_SplitTheSelectedVolumeIntoTwoVolumes" xml:space="preserve"><value>[Split the selected volume into two volumes!!]</value></data>
+  <data name="Xaml_SpotFix" xml:space="preserve"><value>[SpotFix!!]</value></data>
+  <data name="Xaml_SSDEndurance" xml:space="preserve"><value>[SSD Endurance!!]</value></data>
+  <data name="Xaml_StartSectorClone" xml:space="preserve"><value>[Start sector clone!!]</value></data>
+  <data name="Xaml_StartSecureWipe" xml:space="preserve"><value>[Start secure wipe!!]</value></data>
+  <data name="Xaml_StartWipe" xml:space="preserve"><value>[Start Wipe!!]</value></data>
+  <data name="Xaml_Status" xml:space="preserve"><value>[Status!!]</value></data>
+  <data name="Xaml_SurfaceTestResults" xml:space="preserve"><value>[Surface test results!!]</value></data>
+  <data name="Xaml_SurfaceTestVolumeSelector" xml:space="preserve"><value>[Surface test volume selector!!]</value></data>
+  <data name="Xaml_Temp" xml:space="preserve"><value>[Temp!!]</value></data>
+  <data name="Xaml_TemperatureAlertHistory" xml:space="preserve"><value>[Temperature alert history!!]</value></data>
+  <data name="Xaml_ThePartitionToRemoveWillBeDeletedThePrimaryPartitionWillBe_8e358bb5" xml:space="preserve"><value>[The partition to remove will be deleted. The primary partition will be extended into the freed space when the queued operation is applied.!!]</value></data>
+  <data name="Xaml_TheWorkspaceWillPopulateAfterDiskDiscoveryCompletesOrAfter_6ed26184" xml:space="preserve"><value>[The workspace will populate after disk discovery completes, or after you choose a disk.!!]</value></data>
+  <data name="Xaml_Time" xml:space="preserve"><value>[Time!!]</value></data>
+  <data name="Xaml_ToggleDiskIOMonitoring" xml:space="preserve"><value>[Toggle disk I/O monitoring!!]</value></data>
+  <data name="Xaml_ToggleTemperatureMonitoring" xml:space="preserve"><value>[Toggle temperature monitoring!!]</value></data>
+  <data name="Xaml_ToggleTheme" xml:space="preserve"><value>[Toggle theme!!]</value></data>
+  <data name="Xaml_ToolsTab" xml:space="preserve"><value>[Tools tab!!]</value></data>
+  <data name="Xaml_TRIM" xml:space="preserve"><value>[TRIM!!]</value></data>
+  <data name="Xaml_Type" xml:space="preserve"><value>[Type!!]</value></data>
+  <data name="Xaml_UnsafeShutdowns" xml:space="preserve"><value>[Unsafe Shutdowns!!]</value></data>
+  <data name="Xaml_UseArrowKeysToInspectFoldersPressEnterOrSpaceToSelect" xml:space="preserve"><value>[Use arrow keys to inspect folders. Press Enter or Space to select.!!]</value></data>
+  <data name="Xaml_UseAvailableUnallocatedSpaceToCreateAndFormatANewVolume" xml:space="preserve"><value>[Use available unallocated space to create and format a new volume.!!]</value></data>
+  <data name="Xaml_UseCryptoEraseFastestRequiresSelfEncryptingDrive" xml:space="preserve"><value>[Use Crypto Erase (fastest, requires self-encrypting drive)!!]</value></data>
+  <data name="Xaml_UseCryptoEraseInsteadOfBlockErase" xml:space="preserve"><value>[Use crypto erase instead of block erase!!]</value></data>
+  <data name="Xaml_Validate" xml:space="preserve"><value>[Validate!!]</value></data>
+  <data name="Xaml_ValidateFirstThenConvertACompatibleSystemDiskWithoutDeleti_3693ed34" xml:space="preserve"><value>[Validate first, then convert a compatible system disk without deleting partitions.!!]</value></data>
+  <data name="Xaml_ValidateMBRToGPTConversion" xml:space="preserve"><value>[Validate MBR to GPT conversion!!]</value></data>
+  <data name="Xaml_VerifyAfterClone" xml:space="preserve"><value>[Verify after clone!!]</value></data>
+  <data name="Xaml_VerifyCloneAfterCompletion" xml:space="preserve"><value>[Verify clone after completion!!]</value></data>
+  <data name="Xaml_VHDPath" xml:space="preserve"><value>[VHD path!!]</value></data>
+  <data name="Xaml_VHDSizeInGB" xml:space="preserve"><value>[VHD size in GB!!]</value></data>
+  <data name="Xaml_Volume" xml:space="preserve"><value>[Volume!!]</value></data>
+  <data name="Xaml_VolumeLabel" xml:space="preserve"><value>[Volume label!!]</value></data>
+  <data name="Xaml_WindowsVolume" xml:space="preserve"><value>[Windows Volume!!]</value></data>
+  <data name="Xaml_WindowsVolumeSelector" xml:space="preserve"><value>[Windows volume selector!!]</value></data>
+  <data name="Xaml_WipeDiskSelector" xml:space="preserve"><value>[Wipe disk selector!!]</value></data>
+  <data name="Xaml_WipeEntireDisk" xml:space="preserve"><value>[Wipe entire disk!!]</value></data>
+  <data name="Xaml_WipeFreeSpaceOnly" xml:space="preserve"><value>[Wipe free space only!!]</value></data>
+  <data name="Xaml_WipeVolumeSelector" xml:space="preserve"><value>[Wipe volume selector!!]</value></data>
+  <data name="Xaml_Working" xml:space="preserve"><value>[Working!!]</value></data>
+  <data name="Xaml_WorkingWithDiskImages" xml:space="preserve"><value>[Working with disk images!!]</value></data>
+  <data name="XamlValue" xml:space="preserve"><value>[#!!]</value></data>
 </root>

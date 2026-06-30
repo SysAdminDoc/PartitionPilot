@@ -31,17 +31,17 @@ public partial class CreatePartitionDialog : Window
     {
         if (!double.TryParse(txtSize.Text, out var size) || size <= 0)
         {
-            _dialog.ShowWarning("Enter a partition size greater than 0 GB.", "Size Required");
+            _dialog.ShowWarning(LocExtension.Get("DialogPartitionSizeRequired"), LocExtension.Get("DialogSizeRequired"));
             return;
         }
         if (cmbLetter.SelectedItem is not char letter)
         {
-            _dialog.ShowWarning("Select an available drive letter before continuing.", "Drive Letter Required");
+            _dialog.ShowWarning(LocExtension.Get("DialogSelectDriveLetterRequired"), LocExtension.Get("DialogDriveLetterRequired"));
             return;
         }
         SizeGB = size;
         SelectedLetter = letter;
-        FileSystem = (cmbFS.SelectedItem as System.Windows.Controls.ComboBoxItem)?.Content?.ToString() ?? "NTFS";
+        FileSystem = (cmbFS.SelectedItem as System.Windows.Controls.ComboBoxItem)?.Tag?.ToString() ?? "NTFS";
         VolumeLabel = txtLabel.Text.Trim();
         QuickFormat = chkQuick.IsChecked == true;
         DialogResult = true;

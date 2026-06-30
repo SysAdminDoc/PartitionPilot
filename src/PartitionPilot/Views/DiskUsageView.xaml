@@ -1,6 +1,7 @@
 <UserControl x:Class="PartitionPilot.Views.DiskUsageView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:PartitionPilot"
              xmlns:ctrl="clr-namespace:PartitionPilot.Controls">
     <Grid>
         <DockPanel IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}">
@@ -11,24 +12,24 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <StackPanel>
-                        <TextBlock Text="Disk Usage Analysis" Style="{StaticResource PageTitleText}"/>
-                        <TextBlock Text="Scan a volume to see which folders consume the most space."
+                        <TextBlock Text="{local:Loc Xaml_DiskUsageAnalysis}" Style="{StaticResource PageTitleText}"/>
+                        <TextBlock Text="{local:Loc Xaml_ScanAVolumeToSeeWhichFoldersConsumeTheMostSpace}"
                                    Style="{StaticResource CaptionText}"
                                    Margin="0,3,0,0"/>
                     </StackPanel>
                     <StackPanel Grid.Column="1" Orientation="Horizontal">
-                        <TextBlock Text="Drive" Style="{StaticResource FieldLabelText}"
+                        <TextBlock Text="{local:Loc Xaml_Drive}" Style="{StaticResource FieldLabelText}"
                                    VerticalAlignment="Center" Margin="0,0,8,0"/>
                         <ComboBox ItemsSource="{Binding DriveLetters}"
                                   SelectedItem="{Binding SelectedDrive}"
                                   Width="60" Height="34"
                                   Margin="0,0,10,0"
-                                  AutomationProperties.Name="Drive letter selector"/>
-                        <Button Content="Scan"
+                                  AutomationProperties.Name="{local:Loc Xaml_DriveLetterSelector}"/>
+                        <Button Content="{local:Loc Scan}"
                                 Command="{Binding ScanCommand}"
                                 Style="{StaticResource PrimaryButton}"
                                 MinWidth="80" Height="34"
-                                AutomationProperties.Name="Scan disk usage"/>
+                                AutomationProperties.Name="{local:Loc Xaml_ScanDiskUsage}"/>
                     </StackPanel>
                 </Grid>
             </Border>
@@ -43,24 +44,24 @@
                                  Height="200"
                                  Margin="0,0,0,10"
                                  Visibility="{Binding HasTreemapItems, Converter={StaticResource BoolVis}}"
-                                 ToolTip="Use arrow keys to inspect folders. Press Enter or Space to select."
-                                 AutomationProperties.Name="Disk usage treemap"/>
+                                 ToolTip="{local:Loc Xaml_UseArrowKeysToInspectFoldersPressEnterOrSpaceToSelect}"
+                                 AutomationProperties.Name="{local:Loc Xaml_DiskUsageTreemap}"/>
 
             <Border Style="{StaticResource Card}" Padding="0">
                 <Grid>
                     <ListView ItemsSource="{Binding TopFolders}"
                               BorderThickness="0"
                               Background="Transparent"
-                              AutomationProperties.Name="Disk usage results">
+                              AutomationProperties.Name="{local:Loc Xaml_DiskUsageResults}">
                         <ListView.View>
                             <GridView>
-                                <GridViewColumn Header="Folder" Width="320"
+                                <GridViewColumn Header="{local:Loc Xaml_Folder}" Width="320"
                                                 DisplayMemberBinding="{Binding Name}"/>
-                                <GridViewColumn Header="Size" Width="100"
+                                <GridViewColumn Header="{local:Loc Xaml_Size}" Width="100"
                                                 DisplayMemberBinding="{Binding SizeText}"/>
-                                <GridViewColumn Header="Files" Width="80"
+                                <GridViewColumn Header="{local:Loc Xaml_Files}" Width="80"
                                                 DisplayMemberBinding="{Binding FileCount}"/>
-                                <GridViewColumn Header="Share" Width="160">
+                                <GridViewColumn Header="{local:Loc Xaml_Share}" Width="160">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <Grid Width="140" Height="16">
@@ -96,8 +97,8 @@
                             </Style>
                         </Border.Style>
                         <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="No usage scan results" Style="{StaticResource EmptyStateTitle}"/>
-                            <TextBlock Text="Choose a drive and scan it to rank the largest top-level folders."
+                            <TextBlock Text="{local:Loc Xaml_NoUsageScanResults}" Style="{StaticResource EmptyStateTitle}"/>
+                            <TextBlock Text="{local:Loc Xaml_ChooseADriveAndScanItToRankTheLargestTopLevelFolders}"
                                        Style="{StaticResource EmptyStateText}"
                                        Margin="0"/>
                         </StackPanel>
@@ -109,7 +110,7 @@
         <Border Style="{StaticResource BusyOverlay}">
             <Border Style="{StaticResource BusyPanel}" HorizontalAlignment="Center" VerticalAlignment="Center">
                 <StackPanel>
-                    <TextBlock Text="Scanning drive"
+                    <TextBlock Text="{local:Loc Xaml_ScanningDrive}"
                                Style="{StaticResource PageTitleText}"
                                HorizontalAlignment="Center"/>
                     <ProgressBar Style="{StaticResource BusyProgress}" IsIndeterminate="True"/>
@@ -117,12 +118,12 @@
                                Foreground="{DynamicResource TextBrush}"
                                FontSize="13"
                                TextAlignment="Center"/>
-                    <Button Content="Cancel"
+                    <Button Content="{local:Loc Cancel}"
                             Command="{Binding CancelCommand}"
                             Style="{StaticResource ToolbarButton}"
                             HorizontalAlignment="Center"
                             Margin="0,12,0,0"
-                            AutomationProperties.Name="Cancel disk usage scan"/>
+                            AutomationProperties.Name="{local:Loc Xaml_CancelDiskUsageScan}"/>
                 </StackPanel>
             </Border>
         </Border>

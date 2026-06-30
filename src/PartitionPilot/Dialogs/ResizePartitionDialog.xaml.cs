@@ -31,7 +31,7 @@ public partial class ResizePartitionDialog : Window
     {
         if (!double.TryParse(txtSize.Text, out var sizeGB) || sizeGB <= 0)
         {
-            _dialog.ShowWarning("Enter a target size greater than 0 GB.", "Size Required");
+            _dialog.ShowWarning(LocExtension.Get("DialogTargetSizeRequired"), LocExtension.Get("DialogSizeRequired"));
             return;
         }
         NewSizeBytes = (long)Math.Round(sizeGB * (1L << 30));
