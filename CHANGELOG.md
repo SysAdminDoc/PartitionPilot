@@ -1,5 +1,12 @@
 # Changelog
 
+## PartitionPilot v0.9.10 - 2026-06-30
+
+### Release Integrity
+- Added `pp release-manifest` to generate `SHA256SUMS` and `SHA256SUMS.json` for local release artifacts.
+- Release manifest generation Authenticode-signs `.exe` artifacts when a signing certificate thumbprint is configured and marks unsigned outputs as `UnsignedLocalTest`.
+- Update checks now surface GitHub release asset digest/manifest status, and Velopack downloads require expected checksum metadata before apply.
+
 ## PartitionPilot v0.9.9 - 2026-06-30
 
 ### Recovery

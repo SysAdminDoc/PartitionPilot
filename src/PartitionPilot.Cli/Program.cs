@@ -34,6 +34,7 @@ try
         "benchmark" => await RunBenchmarkAsync(),
         "temperature" or "temp" => await ShowTemperatureAsync(),
         "apply-layout" => await ApplyLayoutAsync(),
+        "release-manifest" => await ReleaseManifestAsync(),
         "version" => ShowVersion(),
         "help" or "--help" or "-h" => PrintUsage(),
         _ => PrintUnknown(command)
@@ -68,6 +69,8 @@ int PrintUsage()
     Console.WriteLine("  recovery-scan --disk N [--mode fast|deep] [--state path]");
     Console.WriteLine("                            Scan for lost partition signatures (read-only)");
     Console.WriteLine("  apply-layout --file F --disk N  Apply a partition layout spec (add --apply, --replace to recreate)");
+    Console.WriteLine("  release-manifest --artifacts DIR [--cert-thumbprint THUMB]");
+    Console.WriteLine("                            Create SHA256SUMS and signing status manifest");
     Console.WriteLine("  version                   Show version");
     Console.WriteLine();
     Console.WriteLine("Plan operations:");
@@ -646,6 +649,48 @@ async Task<int> RunDiagnosticsAsync()
     }
     var errorCount = checks.Count(c => c.Status == "Error");
     return errorCount > 0 ? 1 : 0;
+}
+
+async Task<int> ReleaseManifestAsync()
+{
+    var artifactsDir = ParseStringArg("--artifacts") ?? "artifacts";
+    var certThumbprint = ParseStringArg("--cert-thumbprint");
+    var timestampUrl = ParseStringArg("--timestamp-url");
+
+    try
+    {
+        var manifest = await ReleaseArtifactService.CreateManifestAsync(
+            artifactsDir,
+            UpdateService.GetCurrentVersion(),
+            certThumbprint,
+            timestampUrl,
+            runner,
+            log);
+
+        var verification = await ReleaseArtifactService.VerifyManifestAsync(artifactsDir);
+        if (!verification.IsValid)
+        {
+            Console.Error.WriteLine("Release manifest verification failed:");
+            foreach (var error in verification.Errors)
+                Console.Error.WriteLine($"  {error}");
+            return 1;
+        }
+
+        Console.WriteLine($"Release manifest written: {Path.GetFullPath(artifactsDir)}");
+        Console.WriteLine($"Version: {manifest.AppVersion}");
+        Console.WriteLine($"Signing: {manifest.SigningStatus}");
+        if (manifest.IsLocalTestBuild)
+            Console.WriteLine("Status: unsigned local-test build; do not publish as a trusted release.");
+        foreach (var artifact in manifest.Artifacts)
+            Console.WriteLine($"  {artifact.Sha256}  {artifact.FileName}  ({artifact.AuthenticodeStatus})");
+
+        return 0;
+    }
+    catch (Exception ex)
+    {
+        Console.Error.WriteLine($"Release manifest failed: {ex.Message}");
+        return 1;
+    }
 }
 
 int ShowVersion()

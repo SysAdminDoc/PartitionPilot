@@ -2,13 +2,6 @@
 
 ## Research-Driven Additions
 
-- [ ] P1 - Add release and update artifact verification
-  Why: installer and update paths do not yet enforce project-level hash/signature verification, even though disk tools require high trust.
-  Evidence: `installer/PartitionPilot.iss`; `src/PartitionPilot.Core/Services/UpdateService.cs`; https://learn.microsoft.com/en-us/windows/win32/seccrypto/signtool; https://github.com/velopack/velopack
-  Touches: `installer/PartitionPilot.iss`, release build scripts/docs, `src/PartitionPilot.Core/Services/UpdateService.cs`, tests
-  Acceptance: local release builds produce SHA256 manifests and use Authenticode signing when a cert is configured; update checks verify expected hashes/signatures before apply; unsigned builds display explicit local-test status.
-  Complexity: M
-
 - [ ] P2 - Finish localization for XAML and automation names
   Why: many visible strings and `AutomationProperties.Name` values remain hardcoded despite the `.resx` localization pipeline.
   Evidence: `src/PartitionPilot/MainWindow.xaml`; `src/PartitionPilot/Views/*.xaml`; `src/PartitionPilot/Dialogs/*.xaml`; `src/PartitionPilot/Properties/Strings.resx`

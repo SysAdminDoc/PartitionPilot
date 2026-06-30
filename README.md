@@ -1,4 +1,4 @@
-![Version](https://img.shields.io/badge/version-0.9.9-4CC2FF)
+![Version](https://img.shields.io/badge/version-0.9.10-4CC2FF)
 ![License](https://img.shields.io/badge/license-MIT-5EE0A0)
 ![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-F4C96A)
 
@@ -32,6 +32,7 @@ PartitionPilot is a Windows disk partition management tool for power users and I
 - Privacy-preserving support bundle export (redacted serial numbers and user paths).
 - Structured native-command audit records with path redaction.
 - Auto-updates via Velopack with delta packages and GitHub Releases integration.
+- Release artifact verification with SHA256 manifests, optional Authenticode signing, and explicit unsigned local-test status.
 - .NET 10 Fluent theme with dark, light, and system (follows OS setting) modes.
 - CLI companion (pp.exe) for scripted disk management with JSON output.
 - SMART attribute history tracking with trend alerts for degradation detection.
@@ -62,7 +63,10 @@ The project targets `net10.0-windows` and publishes as a self-contained Windows 
 ```powershell
 dotnet publish .\src\PartitionPilot\PartitionPilot.csproj -c Release -r win-x64 --self-contained true
 dotnet publish .\src\PartitionPilot.Cli\PartitionPilot.Cli.csproj -c Release -r win-x64 --self-contained true
+dotnet run --project .\src\PartitionPilot.Cli\PartitionPilot.Cli.csproj -- release-manifest --artifacts .\artifacts
 ```
+
+Set `PARTITIONPILOT_SIGN_CERT_THUMBPRINT` before `release-manifest` to Authenticode-sign `.exe` artifacts with `signtool.exe`; without it, manifests are marked `UnsignedLocalTest`.
 
 ## Run
 
