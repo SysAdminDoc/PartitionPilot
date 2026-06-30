@@ -227,6 +227,9 @@ public class DiskImagesViewModel : ViewModelBase
             string ext = System.IO.Path.GetExtension(VhdPath).ToLowerInvariant();
             string vdiskType = ext == ".vhdx" ? "vhdx" : "vhd";
             VhdFileSystem = ProcessRunner.ValidateFileSystem(VhdFileSystem);
+            var createCapability = FilesystemCapabilityService.Evaluate(VhdFileSystem, FilesystemOperation.Create);
+            if (!createCapability.IsAllowed)
+                throw new InvalidOperationException(createCapability.Reason);
 
             _log.Log($"Creating {vdiskType.ToUpper()} ({diskType}): {VhdPath}, {VhdSizeGB:F1} GB...");
 

@@ -177,15 +177,8 @@ public class ProcessRunner : IProcessRunner
         return letter;
     }
 
-    private static readonly HashSet<string> AllowedFileSystems = new(StringComparer.OrdinalIgnoreCase)
-        { "NTFS", "FAT32", "FAT", "exFAT", "ReFS" };
-
     public static string ValidateFileSystem(string fs)
-    {
-        if (!AllowedFileSystems.Contains(fs))
-            throw new ArgumentException($"Unsupported file system: {fs}");
-        return fs;
-    }
+        => FilesystemCapabilityService.ValidateFormatTarget(fs);
 
     private static readonly HashSet<string> AllowedAllocationUnitSizes = new(StringComparer.Ordinal)
         { "512", "1024", "2048", "4096", "8192", "16384", "32768", "65536" };

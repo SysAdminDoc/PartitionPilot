@@ -93,9 +93,24 @@ public class LayoutDiffServiceTests
 
         var create = Assert.Single(diff.Where(entry => entry.Action == "Create"));
         Assert.Contains("create partition primary size=1024", create.DiskpartScript, StringComparison.Ordinal);
-        Assert.Contains("format fs=ntfs label=\"Data\" quick", create.DiskpartScript, StringComparison.Ordinal);
+        Assert.Contains("format fs=NTFS label=\"Data\" quick", create.DiskpartScript, StringComparison.Ordinal);
         Assert.Contains("assign letter=E", create.DiskpartScript, StringComparison.Ordinal);
         Assert.DoesNotContain(";&", create.DiskpartScript, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("FAT16")]
+    [InlineData("ext4")]
+    [InlineData("APFS")]
+    public void ComputeDiff_RejectsFilesystemsThatCannotBeCreated(string fileSystem)
+    {
+        var spec = ValidSpec();
+        spec.Partitions[0].FileSystem = fileSystem;
+
+        var ex = Assert.Throws<ArgumentException>(() =>
+            LayoutDiffService.ComputeDiff(spec, RawDisk(), []));
+
+        Assert.Contains("not supported", ex.Message, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]

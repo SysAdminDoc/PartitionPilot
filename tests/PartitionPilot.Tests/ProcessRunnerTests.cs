@@ -65,14 +65,15 @@ public class ProcessRunnerTests
     }
 
     [Theory]
-    [InlineData("NTFS")]
-    [InlineData("FAT32")]
-    [InlineData("exFAT")]
-    [InlineData("ReFS")]
-    [InlineData("ntfs")]
-    public void ValidateFileSystem_AcceptsAllowed(string fs)
+    [InlineData("NTFS", "NTFS")]
+    [InlineData("FAT32", "FAT32")]
+    [InlineData("exFAT", "exFAT")]
+    [InlineData("ReFS", "ReFS")]
+    [InlineData("ntfs", "NTFS")]
+    [InlineData("FAT", "FAT16")]
+    public void ValidateFileSystem_AcceptsAllowed(string fs, string expected)
     {
-        Assert.Equal(fs, ProcessRunner.ValidateFileSystem(fs));
+        Assert.Equal(expected, ProcessRunner.ValidateFileSystem(fs));
     }
 
     [Theory]

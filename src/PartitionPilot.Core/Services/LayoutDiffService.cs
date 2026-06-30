@@ -142,6 +142,10 @@ public static class LayoutDiffService
             throw new ArgumentException($"Partition {index + 1} is required.");
 
         var fileSystem = ProcessRunner.ValidateFileSystem((partition.FileSystem ?? "").Trim());
+        var createCapability = FilesystemCapabilityService.Evaluate(fileSystem, FilesystemOperation.Create);
+        if (!createCapability.IsAllowed)
+            throw new ArgumentException($"Partition {index + 1}: {createCapability.Reason}");
+
         var label = ProcessRunner.SanitizeLabel(partition.Label ?? "");
         var sizeMb = ValidateSizeMb(partition.SizeMB, partition.UseMaximumSize, index);
         var driveLetter = ValidateDriveLetter(partition.DriveLetter, index);

@@ -1,5 +1,12 @@
 # Changelog
 
+## PartitionPilot v0.9.8 - 2026-06-30
+
+### Safety & Reliability
+- Added a shared filesystem capability policy for create, format, resize, extend, check, and label support.
+- GUI partition, tools, VHD creation, CLI plan/apply, and layout-spec paths now fail closed before invoking native disk tools for unsupported filesystems.
+- Updated filesystem support dialog data and tests to cover NTFS, FAT32, exFAT, ReFS, FAT16, ext, APFS, HFS+, Linux swap, and LUKS behavior.
+
 ## PartitionPilot v0.9.7 - 2026-06-29
 
 ### Safety & Reliability
