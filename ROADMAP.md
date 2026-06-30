@@ -2,13 +2,6 @@
 
 ## Research-Driven Additions
 
-- [ ] P2 - Finish localization for XAML and automation names
-  Why: many visible strings and `AutomationProperties.Name` values remain hardcoded despite the `.resx` localization pipeline.
-  Evidence: `src/PartitionPilot/MainWindow.xaml`; `src/PartitionPilot/Views/*.xaml`; `src/PartitionPilot/Dialogs/*.xaml`; `src/PartitionPilot/Properties/Strings.resx`
-  Touches: XAML views/dialogs, `src/PartitionPilot/Properties/Strings*.resx`, `tests/PartitionPilot.Tests/LocExtensionTests.cs`
-  Acceptance: hardcoded user-visible English strings are either converted to `LocExtension` or documented as non-localized product/protocol tokens; pseudo-locale tests cover automation names and dialog strings.
-  Complexity: M
-
 - [ ] P2 - Add WinPE-compatible rescue distribution profile
   Why: commercial partition tools and GParted/Rescuezilla all treat offline rescue media as a high-value recovery path.
   Evidence: https://rescuezilla.com/; https://gparted.org/livecd.php; https://www.aomeitech.com/pa/; https://www.easeus.com/partition-manager/

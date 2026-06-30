@@ -1,6 +1,7 @@
 <UserControl x:Class="PartitionPilot.Views.PartitionsView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:PartitionPilot"
              xmlns:controls="clr-namespace:PartitionPilot.Controls">
     <Grid>
         <Grid IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}">
@@ -30,17 +31,17 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <StackPanel>
-                                <TextBlock Text="Partition Workspace" Style="{StaticResource PageTitleText}"/>
-                                <TextBlock Text="Review a disk layout before creating, resizing, formatting, or assigning volumes."
+                                <TextBlock Text="{local:Loc Xaml_PartitionWorkspace}" Style="{StaticResource PageTitleText}"/>
+                                <TextBlock Text="{local:Loc Xaml_ReviewADiskLayoutBeforeCreatingResizingFormattingOrAssigningVolumes}"
                                            Style="{StaticResource CaptionText}"
                                            Margin="0,2,0,0"/>
                             </StackPanel>
                             <Button Grid.Column="1"
-                                    Content="Refresh"
+                                    Content="{local:Loc Refresh}"
                                     Command="{Binding RefreshCommand}"
                                     Style="{StaticResource CommandBarButton}"
                                     Margin="10,0,0,0"
-                                    AutomationProperties.Name="Refresh disks"/>
+                                    AutomationProperties.Name="{local:Loc Xaml_RefreshDisks}"/>
                         </Grid>
 
                         <Grid Grid.Row="1">
@@ -50,7 +51,7 @@
                             </Grid.ColumnDefinitions>
 
                             <TextBlock Grid.Column="0"
-                                       Text="Select Disk"
+                                       Text="{local:Loc SelectDisk}"
                                        Style="{StaticResource FieldLabelText}"
                                        Margin="0,0,10,0"/>
 
@@ -61,7 +62,7 @@
                                       MinWidth="420"
                                       Height="34"
                                       FontSize="13"
-                                      AutomationProperties.Name="Disk selector"/>
+                                      AutomationProperties.Name="{local:Loc Xaml_DiskSelector}"/>
                         </Grid>
 
                         <Grid Grid.Row="2" Margin="0,12,0,0">
@@ -72,19 +73,19 @@
                             </Grid.ColumnDefinitions>
 
                             <StackPanel Grid.Column="0">
-                                <TextBlock Text="Capacity" Style="{StaticResource TinyLabelText}"/>
+                                <TextBlock Text="{local:Loc Capacity}" Style="{StaticResource TinyLabelText}"/>
                                 <TextBlock Text="{Binding DiskCapacityText}"
                                            Style="{StaticResource CaptionText}"
                                            TextTrimming="CharacterEllipsis"/>
                             </StackPanel>
                             <StackPanel Grid.Column="1" Margin="14,0,0,0">
-                                <TextBlock Text="Largest Free Extent" Style="{StaticResource TinyLabelText}"/>
+                                <TextBlock Text="{local:Loc Xaml_LargestFreeExtent}" Style="{StaticResource TinyLabelText}"/>
                                 <TextBlock Text="{Binding DiskFreeExtentText}"
                                            Style="{StaticResource CaptionText}"
                                            TextTrimming="CharacterEllipsis"/>
                             </StackPanel>
                             <StackPanel Grid.Column="2" Margin="14,0,0,0">
-                                <TextBlock Text="Partition Style" Style="{StaticResource TinyLabelText}"/>
+                                <TextBlock Text="{local:Loc Xaml_PartitionStyle}" Style="{StaticResource TinyLabelText}"/>
                                 <TextBlock Text="{Binding DiskPartitionStyleText}"
                                            Style="{StaticResource CaptionText}"
                                            TextTrimming="CharacterEllipsis"/>
@@ -104,7 +105,7 @@
                                   BorderThickness="0"
                                   Background="Transparent"
                                   FontSize="13"
-                                  AutomationProperties.Name="Partition table">
+                                  AutomationProperties.Name="{local:Loc Xaml_PartitionTable}">
                             <ListView.ItemContainerStyle>
                                 <Style TargetType="ListViewItem" BasedOn="{StaticResource {x:Type ListViewItem}}">
                                     <EventSetter Event="PreviewMouseRightButtonDown" Handler="OnPartitionRowRightClick"/>
@@ -112,31 +113,31 @@
                             </ListView.ItemContainerStyle>
                             <ListView.ContextMenu>
                                 <ContextMenu>
-                                    <MenuItem Header="Create partition" Click="OnCreate"/>
+                                    <MenuItem Header="{local:Loc Xaml_CreatePartition}" Click="OnCreate"/>
                                     <Separator/>
-                                    <MenuItem Header="Delete partition"
+                                    <MenuItem Header="{local:Loc Xaml_DeletePartition}"
                                               Command="{Binding PlacementTarget.DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
-                                    <MenuItem Header="Format partition" Click="OnFormat"/>
-                                    <MenuItem Header="Resize partition" Click="OnResize"/>
-                                    <MenuItem Header="Extend partition"
+                                    <MenuItem Header="{local:Loc Xaml_FormatPartition}" Click="OnFormat"/>
+                                    <MenuItem Header="{local:Loc Xaml_ResizePartition}" Click="OnResize"/>
+                                    <MenuItem Header="{local:Loc Xaml_ExtendPartition}"
                                               Command="{Binding PlacementTarget.DataContext.ExtendCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
-                                    <MenuItem Header="Split partition" Click="OnSplit"/>
-                                    <MenuItem Header="Change drive letter" Click="OnChangeLetter"/>
+                                    <MenuItem Header="{local:Loc Xaml_SplitPartition}" Click="OnSplit"/>
+                                    <MenuItem Header="{local:Loc Xaml_ChangeDriveLetter}" Click="OnChangeLetter"/>
                                     <Separator/>
-                                    <MenuItem Header="Set active"
+                                    <MenuItem Header="{local:Loc SetActive}"
                                               Command="{Binding PlacementTarget.DataContext.SetActiveCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
-                                    <MenuItem Header="Hide or unhide"
+                                    <MenuItem Header="{local:Loc Xaml_HideOrUnhide}"
                                               Command="{Binding PlacementTarget.DataContext.HideCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
                                 </ContextMenu>
                             </ListView.ContextMenu>
                             <ListView.View>
                                 <GridView>
-                                    <GridViewColumn Header="Partition" Width="180" DisplayMemberBinding="{Binding PartitionDisplay}"/>
-                                    <GridViewColumn Header="Type" Width="104" DisplayMemberBinding="{Binding Type}"/>
-                                    <GridViewColumn Header="File System" Width="112" DisplayMemberBinding="{Binding FileSystemDisplay}"/>
-                                    <GridViewColumn Header="Capacity" Width="108" DisplayMemberBinding="{Binding SizeText}"/>
-                                    <GridViewColumn Header="Free" Width="108" DisplayMemberBinding="{Binding FreeText}"/>
-                                    <GridViewColumn Header="Status" Width="260" DisplayMemberBinding="{Binding Details}"/>
+                                    <GridViewColumn Header="{local:Loc Xaml_Partition}" Width="180" DisplayMemberBinding="{Binding PartitionDisplay}"/>
+                                    <GridViewColumn Header="{local:Loc Xaml_Type}" Width="104" DisplayMemberBinding="{Binding Type}"/>
+                                    <GridViewColumn Header="{local:Loc Xaml_FileSystem}" Width="112" DisplayMemberBinding="{Binding FileSystemDisplay}"/>
+                                    <GridViewColumn Header="{local:Loc Capacity}" Width="108" DisplayMemberBinding="{Binding SizeText}"/>
+                                    <GridViewColumn Header="{local:Loc Xaml_Free}" Width="108" DisplayMemberBinding="{Binding FreeText}"/>
+                                    <GridViewColumn Header="{local:Loc Xaml_Status}" Width="260" DisplayMemberBinding="{Binding Details}"/>
                                 </GridView>
                             </ListView.View>
                         </ListView>
@@ -153,8 +154,8 @@
                                 </Style>
                             </Border.Style>
                             <StackPanel VerticalAlignment="Center">
-                                <TextBlock Text="No partition data loaded" Style="{StaticResource EmptyStateTitle}"/>
-                                <TextBlock Text="The workspace will populate after disk discovery completes, or after you choose a disk."
+                                <TextBlock Text="{local:Loc Xaml_NoPartitionDataLoaded}" Style="{StaticResource EmptyStateTitle}"/>
+                                <TextBlock Text="{local:Loc Xaml_TheWorkspaceWillPopulateAfterDiskDiscoveryCompletesOrAfter_6ed26184}"
                                            Style="{StaticResource EmptyStateText}"
                                            Margin="0"/>
                             </StackPanel>
@@ -168,73 +169,73 @@
                     Padding="0">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel Margin="14">
-                        <TextBlock Text="Partition Actions" Style="{StaticResource SectionTitleText}"/>
-                        <TextBlock Text="Actions are enabled only when the required disk or partition is selected."
+                        <TextBlock Text="{local:Loc Xaml_PartitionActions}" Style="{StaticResource SectionTitleText}"/>
+                        <TextBlock Text="{local:Loc Xaml_ActionsAreEnabledOnlyWhenTheRequiredDiskOrPartitionIsSelected}"
                                    Style="{StaticResource CaptionText}"
                                    Margin="0,2,0,12"/>
 
-                        <Button Content="Initialize Disk"
+                        <Button Content="{local:Loc InitializeDisk}"
                                 Style="{StaticResource ActionRailPrimaryButton}"
                                 Command="{Binding InitializeDiskCommand}"
                                 Visibility="{Binding IsSelectedDiskRaw, Converter={StaticResource BoolVis}}"
-                                ToolTip="Initialize this unpartitioned disk with a GPT partition table"
-                                AutomationProperties.Name="Initialize disk"/>
-                        <Button Content="Create Partition"
+                                ToolTip="{local:Loc Xaml_InitializeThisUnpartitionedDiskWithAGPTPartitionTable}"
+                                AutomationProperties.Name="{local:Loc InitializeDisk}"/>
+                        <Button Content="{local:Loc Xaml_CreatePartition}"
                                 Style="{StaticResource ActionRailPrimaryButton}"
                                 Click="OnCreate"
                                 IsEnabled="{Binding HasSelectedDisk}"
-                                ToolTip="Create a partition from unallocated space"
-                                AutomationProperties.Name="Create partition"/>
-                        <Button Content="Resize"
+                                ToolTip="{local:Loc Xaml_CreateAPartitionFromUnallocatedSpace}"
+                                AutomationProperties.Name="{local:Loc Xaml_CreatePartition}"/>
+                        <Button Content="{local:Loc Resize}"
                                 Style="{StaticResource ActionRailButton}"
                                 Click="OnResize"
                                 IsEnabled="{Binding HasSelectedPartition}"
-                                ToolTip="Resize the selected volume"
-                                AutomationProperties.Name="Resize partition"/>
-                        <Button Content="Extend"
+                                ToolTip="{local:Loc Xaml_ResizeTheSelectedVolume}"
+                                AutomationProperties.Name="{local:Loc Xaml_ResizePartition}"/>
+                        <Button Content="{local:Loc Extend}"
                                 Style="{StaticResource ActionRailButton}"
                                 Command="{Binding ExtendCommand}"
-                                ToolTip="Extend the selected partition into available space"
-                                AutomationProperties.Name="Extend partition"/>
-                        <Button Content="Split"
+                                ToolTip="{local:Loc Xaml_ExtendTheSelectedPartitionIntoAvailableSpace}"
+                                AutomationProperties.Name="{local:Loc Xaml_ExtendPartition}"/>
+                        <Button Content="{local:Loc Split}"
                                 Style="{StaticResource ActionRailButton}"
                                 Click="OnSplit"
                                 IsEnabled="{Binding HasSelectedPartition}"
-                                ToolTip="Split the selected volume into two volumes"
-                                AutomationProperties.Name="Split partition"/>
-                        <Button Content="Merge"
+                                ToolTip="{local:Loc Xaml_SplitTheSelectedVolumeIntoTwoVolumes}"
+                                AutomationProperties.Name="{local:Loc Xaml_SplitPartition}"/>
+                        <Button Content="{local:Loc Merge}"
                                 Style="{StaticResource ActionRailButton}"
                                 Click="OnMerge"
                                 IsEnabled="{Binding HasSelectedDisk}"
-                                ToolTip="Merge two adjacent partitions into one"
-                                AutomationProperties.Name="Merge partitions"/>
-                        <Button Content="Format"
+                                ToolTip="{local:Loc Xaml_MergeTwoAdjacentPartitionsIntoOne}"
+                                AutomationProperties.Name="{local:Loc Xaml_MergePartitions}"/>
+                        <Button Content="{local:Loc Format}"
                                 Style="{StaticResource ActionRailButton}"
                                 Click="OnFormat"
                                 IsEnabled="{Binding HasSelectedPartition}"
-                                ToolTip="Format the selected volume"
-                                AutomationProperties.Name="Format partition"/>
-                        <Button Content="Change Drive Letter"
+                                ToolTip="{local:Loc Xaml_FormatTheSelectedVolume}"
+                                AutomationProperties.Name="{local:Loc Xaml_FormatPartition}"/>
+                        <Button Content="{local:Loc Xaml_ChangeDriveLetter}"
                                 Style="{StaticResource ActionRailButton}"
                                 Click="OnChangeLetter"
                                 IsEnabled="{Binding HasSelectedPartition}"
-                                ToolTip="Assign or change the selected partition drive letter"
-                                AutomationProperties.Name="Change drive letter"/>
-                        <Button Content="Hide or Unhide"
+                                ToolTip="{local:Loc Xaml_AssignOrChangeTheSelectedPartitionDriveLetter}"
+                                AutomationProperties.Name="{local:Loc Xaml_ChangeDriveLetter}"/>
+                        <Button Content="{local:Loc Xaml_HideOrUnhide}"
                                 Style="{StaticResource ActionRailButton}"
                                 Command="{Binding HideCommand}"
-                                ToolTip="Hide or unhide the selected partition"
-                                AutomationProperties.Name="Hide or unhide partition"/>
-                        <Button Content="Set Active"
+                                ToolTip="{local:Loc Xaml_HideOrUnhideTheSelectedPartition}"
+                                AutomationProperties.Name="{local:Loc Xaml_HideOrUnhidePartition}"/>
+                        <Button Content="{local:Loc SetActive}"
                                 Style="{StaticResource ActionRailButton}"
                                 Command="{Binding SetActiveCommand}"
-                                ToolTip="Mark the selected partition as active"
-                                AutomationProperties.Name="Set partition active"/>
-                        <Button Content="Delete"
+                                ToolTip="{local:Loc Xaml_MarkTheSelectedPartitionAsActive}"
+                                AutomationProperties.Name="{local:Loc Xaml_SetPartitionActive}"/>
+                        <Button Content="{local:Loc Delete}"
                                 Style="{StaticResource ActionRailDangerButton}"
                                 Command="{Binding DeleteCommand}"
-                                ToolTip="Delete the selected partition"
-                                AutomationProperties.Name="Delete partition"/>
+                                ToolTip="{local:Loc Xaml_DeleteTheSelectedPartition}"
+                                AutomationProperties.Name="{local:Loc Xaml_DeletePartition}"/>
 
                         <Border Height="1"
                                 Background="{DynamicResource TableRuleBrush}"
@@ -272,13 +273,13 @@
                                                 </StackPanel>
                                             </StackPanel>
                                             <Button Grid.Column="1"
-                                                    Content="Remove"
+                                                    Content="{local:Loc Remove}"
                                                     Command="{Binding DataContext.RemoveQueuedOperationCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                                     CommandParameter="{Binding}"
                                                     Style="{StaticResource InlineButton}"
                                                     Margin="8,0,0,0"
                                                     VerticalAlignment="Top"
-                                                    AutomationProperties.Name="Remove pending operation"/>
+                                                    AutomationProperties.Name="{local:Loc Xaml_RemovePendingOperation}"/>
                                         </Grid>
                                     </Border>
                                 </DataTemplate>
@@ -286,23 +287,23 @@
                         </ItemsControl>
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,6"
                                     Visibility="{Binding HasPendingOperations, Converter={StaticResource BoolVis}}">
-                            <Button Content="Apply All"
+                            <Button Content="{local:Loc Xaml_ApplyAll}"
                                     Command="{Binding ApplyQueueCommand}"
                                     Style="{StaticResource ActionRailPrimaryButton}"
                                     Width="100" Margin="0,0,6,0"
-                                    AutomationProperties.Name="Apply all pending operations"/>
-                            <Button Content="Clear All"
+                                    AutomationProperties.Name="{local:Loc Xaml_ApplyAllPendingOperations}"/>
+                            <Button Content="{local:Loc ClearAll}"
                                     Command="{Binding ClearQueueCommand}"
                                     Style="{StaticResource ActionRailButton}"
                                     Width="78"
-                                    AutomationProperties.Name="Clear pending operations"/>
+                                    AutomationProperties.Name="{local:Loc Xaml_ClearPendingOperations}"/>
                         </StackPanel>
 
                         <Border Height="1"
                                 Background="{DynamicResource TableRuleBrush}"
                                 Margin="0,4,0,12"/>
 
-                        <TextBlock Text="Selection" Style="{StaticResource SectionTitleText}"/>
+                        <TextBlock Text="{local:Loc Xaml_Selection}" Style="{StaticResource SectionTitleText}"/>
                         <TextBlock Text="{Binding SelectedPartitionName}"
                                    Style="{StaticResource CaptionText}"
                                    FontWeight="SemiBold"
@@ -314,8 +315,8 @@
                                 Background="{DynamicResource TableRuleBrush}"
                                 Margin="0,12,0,12"/>
 
-                        <TextBlock Text="Safety" Style="{StaticResource SectionTitleText}"/>
-                        <TextBlock Text="Destructive operations require confirmation, log their command output, and refresh the partition map afterward."
+                        <TextBlock Text="{local:Loc Xaml_Safety}" Style="{StaticResource SectionTitleText}"/>
+                        <TextBlock Text="{local:Loc Xaml_DestructiveOperationsRequireConfirmationLogTheirCommandOut_3d2db885}"
                                    Style="{StaticResource CaptionText}"
                                    Margin="0,5,0,0"/>
                     </StackPanel>
@@ -326,11 +327,11 @@
         <Border Style="{StaticResource BusyOverlay}">
             <Border Style="{StaticResource BusyPanel}" HorizontalAlignment="Center" VerticalAlignment="Center">
                 <StackPanel>
-                    <TextBlock Text="Working"
+                    <TextBlock Text="{local:Loc Xaml_Working}"
                                Style="{StaticResource PageTitleText}"
                                HorizontalAlignment="Center"/>
                     <ProgressBar Style="{StaticResource BusyProgress}" IsIndeterminate="True"/>
-                    <TextBlock Text="Querying disks or applying the requested partition operation."
+                    <TextBlock Text="{local:Loc Xaml_QueryingDisksOrApplyingTheRequestedPartitionOperation}"
                                Style="{StaticResource CaptionText}"
                                TextAlignment="Center"/>
                 </StackPanel>

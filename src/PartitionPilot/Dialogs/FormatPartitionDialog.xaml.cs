@@ -19,32 +19,32 @@ public partial class FormatPartitionDialog : Window
     private void OnPresetChanged(object sender, SelectionChangedEventArgs e)
     {
         if (cmbFS is null) return;
-        var preset = (cmbPreset.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "";
+        var preset = (cmbPreset.SelectedItem as ComboBoxItem)?.Tag?.ToString() ?? "";
         AllocationUnitSize = null;
 
-        if (preset.StartsWith("Camera"))
+        if (preset == "Camera")
         {
             SelectFileSystem("FAT32");
             AllocationUnitSize = "32768";
             txtLabel.Text = "";
         }
-        else if (preset.StartsWith("Nintendo"))
+        else if (preset == "Nintendo")
         {
             SelectFileSystem("FAT32");
             AllocationUnitSize = "65536";
             txtLabel.Text = "";
         }
-        else if (preset.StartsWith("Raspberry"))
+        else if (preset == "Raspberry")
         {
             SelectFileSystem("FAT32");
             txtLabel.Text = "boot";
         }
-        else if (preset.StartsWith("Large USB"))
+        else if (preset == "LargeUsb")
         {
             SelectFileSystem("exFAT");
             txtLabel.Text = "";
         }
-        else if (preset.StartsWith("General NTFS"))
+        else if (preset == "GeneralNtfs")
         {
             SelectFileSystem("NTFS");
             txtLabel.Text = "";
@@ -55,7 +55,7 @@ public partial class FormatPartitionDialog : Window
     {
         foreach (ComboBoxItem item in cmbFS.Items)
         {
-            if (item.Content?.ToString() == fs)
+            if (item.Tag?.ToString() == fs)
             {
                 cmbFS.SelectedItem = item;
                 return;
@@ -65,7 +65,7 @@ public partial class FormatPartitionDialog : Window
 
     private void OnOk(object sender, RoutedEventArgs e)
     {
-        FileSystem = (cmbFS.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "NTFS";
+        FileSystem = (cmbFS.SelectedItem as ComboBoxItem)?.Tag?.ToString() ?? "NTFS";
         VolumeLabel = txtLabel.Text.Trim();
         QuickFormat = chkQuick.IsChecked == true;
         DialogResult = true;

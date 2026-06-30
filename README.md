@@ -1,4 +1,4 @@
-![Version](https://img.shields.io/badge/version-0.9.14-4CC2FF)
+![Version](https://img.shields.io/badge/version-0.9.15-4CC2FF)
 ![License](https://img.shields.io/badge/license-MIT-5EE0A0)
 ![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-F4C96A)
 
@@ -43,7 +43,7 @@ PartitionPilot is a Windows disk partition management tool for power users and I
 - Real-time disk temperature monitoring with configurable threshold alerts.
 - MFT-direct NTFS scanning for near-instant disk usage analysis.
 - Sector-level disk-to-disk clone with progress reporting and cancel support.
-- i18n-ready string resources with LocExtension markup for localization.
+- XAML localization resources with pseudo-locale coverage for visible labels and automation names.
 - Activity log with export, filtering, and auto-save.
 - Cancellable long-running operations with progress and rate reporting.
 - Screen reader accessibility (AutomationProperties on all interactive controls).

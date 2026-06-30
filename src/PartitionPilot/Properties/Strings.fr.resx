@@ -83,6 +83,8 @@
   <data name="Format" xml:space="preserve"><value>Formater</value></data>
   <data name="Resize" xml:space="preserve"><value>Redimensionner</value></data>
   <data name="OK" xml:space="preserve"><value>OK</value></data>
+  <data name="Yes" xml:space="preserve"><value>Yes</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="No" xml:space="preserve"><value>No</value><comment>English fallback pending verified translation.</comment></data>
 
   <!-- Disk health -->
   <data name="DiskHealthTitle" xml:space="preserve"><value>État du disque</value></data>
@@ -109,6 +111,17 @@
   <data name="Confirm" xml:space="preserve"><value>Confirmer</value></data>
   <data name="ConfirmDelete" xml:space="preserve"><value>Confirmer la suppression</value></data>
   <data name="ConfirmFormat" xml:space="preserve"><value>Confirmer le formatage</value></data>
+  <data name="DialogSizeRequired" xml:space="preserve"><value>Size Required</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="DialogDriveLetterRequired" xml:space="preserve"><value>Drive Letter Required</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="DialogPartitionSizeRequired" xml:space="preserve"><value>Enter a partition size greater than 0 GB.</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="DialogTargetSizeRequired" xml:space="preserve"><value>Enter a target size greater than 0 GB.</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="DialogNewPartitionSizeRequired" xml:space="preserve"><value>Enter a new partition size greater than 0 GB.</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="DialogSelectDriveLetterRequired" xml:space="preserve"><value>Select an available drive letter before continuing.</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="DialogNoCurrentDriveLetter" xml:space="preserve"><value>(none)</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="DialogMergeDeleteExtends" xml:space="preserve"><value>The partition to remove will be deleted. The primary partition will be extended into the freed space when the queued operation is applied.</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="DialogMergeChoosePrimaryDataPartition" xml:space="preserve"><value>Choose a primary data partition that is immediately followed by another mergeable data partition.</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="DialogMergePrimaryAdjacentRequired" xml:space="preserve"><value>Choose a primary partition that is immediately followed by another mergeable partition.</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="DialogMergeTwoAdjacentRequired" xml:space="preserve"><value>Select two adjacent partitions.</value><comment>English fallback pending verified translation.</comment></data>
 
   <!-- SMART labels -->
   <data name="Temperature" xml:space="preserve"><value>Température</value></data>
@@ -198,4 +211,351 @@
   <data name="SectorSizes" xml:space="preserve"><value>Tailles de secteur</value></data>
   <data name="MaxReadLatency" xml:space="preserve"><value>Latence max. lecture</value></data>
   <data name="MaxWriteLatency" xml:space="preserve"><value>Latence max. écriture</value></data>
+  <!-- XAML localized literals -->
+  <data name="Xaml_4KAlignmentAuditTable" xml:space="preserve"><value>4K alignment audit table</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_ActionsAreEnabledOnlyWhenTheRequiredDiskOrPartitionIsSelected" xml:space="preserve"><value>Actions are enabled only when the required disk or partition is selected.</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_ActivityLogEntries" xml:space="preserve"><value>Activity log entries</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_Aligned" xml:space="preserve"><value>Aligned</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_AlignmentDetailsWillAppearAfterHealthDataLoads" xml:space="preserve"><value>Alignment details will appear after health data loads.</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_Analyze" xml:space="preserve"><value>Analyze</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_AnalyzeOrOptimizeHDDsAndSendRetrimToSSDBackedVolumes" xml:space="preserve"><value>Analyze or optimize HDDs, and send retrim to SSD-backed volumes.</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_ApplyAll" xml:space="preserve"><value>Apply All</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_ApplyAllPendingOperations" xml:space="preserve"><value>Apply all pending operations</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_ApplyAWIMOrVHDXImageToATargetDiskAllDataOnTheTargetWillBeDestroyed" xml:space="preserve"><value>Apply a WIM or VHDX image to a target disk. All data on the target will be destroyed.</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_AssignANewLetterToTheSelectedPartition" xml:space="preserve"><value>Assign a new letter to the selected partition.</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_AssignOrChangeTheSelectedPartitionDriveLetter" xml:space="preserve"><value>Assign or change the selected partition drive letter</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_Attribute" xml:space="preserve"><value>Attribute</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_AvailableSpace" xml:space="preserve"><value>Available space</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_BenchmarkDriveSelector" xml:space="preserve"><value>Benchmark drive selector</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_BenchmarkResults" xml:space="preserve"><value>Benchmark results</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_BootloaderRepair" xml:space="preserve"><value>Bootloader Repair</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_BrowseForImageToMount" xml:space="preserve"><value>Browse for image to mount</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_BrowseForVHDSaveLocation" xml:space="preserve"><value>Browse for VHD save location</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_BrowseImageSavePath" xml:space="preserve"><value>Browse image save path</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_BrowseRestoreImage" xml:space="preserve"><value>Browse restore image</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_CameraFAT3232KBClusters" xml:space="preserve"><value>Camera (FAT32, 32 KB clusters)</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_CancelCloningOperation" xml:space="preserve"><value>Cancel cloning operation</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_CancelDiskUsageScan" xml:space="preserve"><value>Cancel disk usage scan</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_CancelMerge" xml:space="preserve"><value>Cancel merge</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_CancelToolOperation" xml:space="preserve"><value>Cancel tool operation</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_CaptureAVolumeToAWIMOrVHDXFile" xml:space="preserve"><value>Capture a volume to a WIM or VHDX file.</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_Captured" xml:space="preserve"><value>Captured</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_ChangeDriveLetter" xml:space="preserve"><value>Change Drive Letter</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_Check" xml:space="preserve"><value>Check</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_ChooseADriveAndScanItToRankTheLargestTopLevelFolders" xml:space="preserve"><value>Choose a drive and scan it to rank the largest top-level folders.</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_ChooseASupportedTargetSizeForTheSelectedVolume" xml:space="preserve"><value>Choose a supported target size for the selected volume.</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_ChooseAVolumeForFreeSpaceWipeOrADiskForFullDestructiveWipe" xml:space="preserve"><value>Choose a volume for free-space wipe or a disk for full destructive wipe.</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_ClearActivityLog" xml:space="preserve"><value>Clear activity log</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_ClearPendingOperations" xml:space="preserve"><value>Clear pending operations</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_CloneDestinationDisk" xml:space="preserve"><value>Clone destination disk</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_CloneProgress" xml:space="preserve"><value>Clone progress</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_CloneSizeSummary" xml:space="preserve"><value>Clone size summary</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_CloneSourceDisk" xml:space="preserve"><value>Clone source disk</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_Close" xml:space="preserve"><value>Close</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_CompareCurrentLayout" xml:space="preserve"><value>Compare Current Layout</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_CompareSelectedSnapshotWithCurrentDiskLayout" xml:space="preserve"><value>Compare selected snapshot with current disk layout</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_ConfirmMerge" xml:space="preserve"><value>Confirm merge</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_ControllerBusyTime" xml:space="preserve"><value>Controller Busy Time</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_Convert" xml:space="preserve"><value>Convert</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_ConvertFAT32ToNTFS" xml:space="preserve"><value>Convert FAT32 to NTFS</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_ConvertMBRToGPT" xml:space="preserve"><value>Convert MBR to GPT</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_ConvertVolume" xml:space="preserve"><value>Convert Volume</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_CopyEverySectorFromASourceDiskToADestinationDiskCreatesAnE_85d7e317" xml:space="preserve"><value>Copy every sector from a source disk to a destination disk. Creates an exact byte-for-byte duplicate.</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_CopyGuidance" xml:space="preserve"><value>Copy Guidance</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_CopySnapshotRecoveryGuidance" xml:space="preserve"><value>Copy snapshot recovery guidance</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_CreateADevDriveVolumeReFSWithOptimizedIOAndAntivirusFilter_d75777a5" xml:space="preserve"><value>Create a Dev Drive volume (ReFS) with optimized I/O and antivirus filter control. Requires Windows 11 23H2+.</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_CreateADynamicallyExpandingVHD" xml:space="preserve"><value>Create a dynamically expanding VHD</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_CreateAFixedSizeVHD" xml:space="preserve"><value>Create a fixed-size VHD</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_CreateAPartitionFromUnallocatedSpace" xml:space="preserve"><value>Create a partition from unallocated space</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_CreateAVHDOrVHDXInitializeItFormatItAndMountIt" xml:space="preserve"><value>Create a VHD or VHDX, initialize it, format it, and mount it.</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_CreateDevDrive" xml:space="preserve"><value>Create Dev Drive</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_CreateDiskImage" xml:space="preserve"><value>Create disk image</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_CreatePartition" xml:space="preserve"><value>Create Partition</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_CreateVHD" xml:space="preserve"><value>Create VHD</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_CreateVirtualHardDisk" xml:space="preserve"><value>Create Virtual Hard Disk</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_CriticalWarning" xml:space="preserve"><value>Critical Warning</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_CurrentLetter" xml:space="preserve"><value>Current letter</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_CurrentlyMountedImages" xml:space="preserve"><value>Currently Mounted Images</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_CurrentSize" xml:space="preserve"><value>Current size</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_CurrentVolume" xml:space="preserve"><value>Current volume</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_Custom" xml:space="preserve"><value>Custom</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_Defrag" xml:space="preserve"><value>Defrag</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_DeletePartition" xml:space="preserve"><value>Delete partition</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_DeleteTheSelectedPartition" xml:space="preserve"><value>Delete the selected partition</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_DestructiveOperationsRequireConfirmationLogTheirCommandOut_3d2db885" xml:space="preserve"><value>Destructive operations require confirmation, log their command output, and refresh the partition map afterward.</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_Details" xml:space="preserve"><value>Details</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_DevDriveReFS" xml:space="preserve"><value>Dev Drive (ReFS)</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_DevDriveVolumeSelector" xml:space="preserve"><value>Dev Drive volume selector</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_DevicePreset" xml:space="preserve"><value>Device preset</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_Direction" xml:space="preserve"><value>Direction</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_Disk" xml:space="preserve"><value>Disk</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_DiskBenchmark" xml:space="preserve"><value>Disk Benchmark</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_DiskCloningTab" xml:space="preserve"><value>Disk Cloning tab</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_DiskDoD3Pass" xml:space="preserve"><value>Disk (DoD 3-pass)</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_DiskDoD7Pass" xml:space="preserve"><value>Disk (DoD 7-pass)</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_DiskHealthStatus" xml:space="preserve"><value>Disk health status</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_DiskHealthTab" xml:space="preserve"><value>Disk Health tab</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_DiskImagesTab" xml:space="preserve"><value>Disk Images tab</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_DiskIOActivity" xml:space="preserve"><value>Disk I/O Activity</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_DiskIOPerformanceCounters" xml:space="preserve"><value>Disk I/O performance counters</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_DiskNVMeSanitize" xml:space="preserve"><value>Disk (NVMe Sanitize)</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_DiskSelector" xml:space="preserve"><value>Disk selector</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_DiskUsageAnalysis" xml:space="preserve"><value>Disk Usage Analysis</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_DiskUsageResults" xml:space="preserve"><value>Disk usage results</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_DiskUsageTab" xml:space="preserve"><value>Disk Usage tab</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_DiskUsageTreemap" xml:space="preserve"><value>Disk usage treemap</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_DismountSelected" xml:space="preserve"><value>Dismount Selected</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_DismountSelectedImage" xml:space="preserve"><value>Dismount selected image</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_DoD3Pass" xml:space="preserve"><value>DoD 3-pass</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_DoD3PassWipe" xml:space="preserve"><value>DoD 3-pass wipe</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_DoD3PassWipeDiskSelector" xml:space="preserve"><value>DoD 3-pass wipe disk selector</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_DoD522022M3PassOverwriteZerosOnesRandom" xml:space="preserve"><value>DoD 5220.22-M 3-pass overwrite (zeros, ones, random)</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_DoD522022M7PassOverwrite" xml:space="preserve"><value>DoD 5220.22-M 7-pass overwrite</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_DoD7Pass" xml:space="preserve"><value>DoD 7-pass</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_DoD7PassWipe" xml:space="preserve"><value>DoD 7-pass wipe</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_DoD7PassWipeDiskSelector" xml:space="preserve"><value>DoD 7-pass wipe disk selector</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_Drive" xml:space="preserve"><value>Drive</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_DriveLetter" xml:space="preserve"><value>Drive letter</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_DriveLetterSelector" xml:space="preserve"><value>Drive letter selector</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_Dynamic" xml:space="preserve"><value>Dynamic</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_ElevateToAdministrator" xml:space="preserve"><value>Elevate to administrator</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_EncryptDiskImage" xml:space="preserve"><value>Encrypt disk image</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_EncryptImageAES256GCM" xml:space="preserve"><value>Encrypt image (AES-256-GCM)</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_EnduranceStatus" xml:space="preserve"><value>Endurance status</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_EntireDisk" xml:space="preserve"><value>Entire disk</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_EntireDiskWipeIsDestructiveConfirmTheSelectedTargetBeforeStarting" xml:space="preserve"><value>Entire disk wipe is destructive. Confirm the selected target before starting.</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_ErrorLogEntries" xml:space="preserve"><value>Error Log Entries</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_ExFAT" xml:space="preserve"><value>exFAT</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_ExportActivityLog" xml:space="preserve"><value>Export activity log</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_ExportAMismatchCheckedRecoveryPlanForThisSnapshot" xml:space="preserve"><value>Export a mismatch-checked recovery plan for this snapshot</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_ExportARedactedDiagnosticBundleForTroubleshooting" xml:space="preserve"><value>Export a redacted diagnostic bundle for troubleshooting</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_ExportBenchmarkResults" xml:space="preserve"><value>Export benchmark results</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_ExportJSON" xml:space="preserve"><value>Export JSON</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_ExportRecoveryPlan" xml:space="preserve"><value>Export recovery plan</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_ExportReport" xml:space="preserve"><value>Export Report</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_ExportResults" xml:space="preserve"><value>Export Results</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_ExportSelectedPartitionSnapshot" xml:space="preserve"><value>Export selected partition snapshot</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_ExportSMARTDiagnosticReport" xml:space="preserve"><value>Export SMART diagnostic report</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_ExportSupportBundle" xml:space="preserve"><value>Export support bundle</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_ExtendedTest" xml:space="preserve"><value>Extended Test</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_ExtendPartition" xml:space="preserve"><value>Extend partition</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_ExtendTheSelectedPartitionIntoAvailableSpace" xml:space="preserve"><value>Extend the selected partition into available space</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_FAT32" xml:space="preserve"><value>FAT32</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_FAT32VolumeSelector" xml:space="preserve"><value>FAT32 volume selector</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_FilePath" xml:space="preserve"><value>File path</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_Files" xml:space="preserve"><value>Files</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_FileSystem" xml:space="preserve"><value>File system</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_FilesystemColumn" xml:space="preserve"><value>Filesystem</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_FilesystemCheckAndRepair" xml:space="preserve"><value>Filesystem Check and Repair</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_FilesystemCheckVolumeSelector" xml:space="preserve"><value>Filesystem check volume selector</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_FilesystemSupport" xml:space="preserve"><value>Filesystem Support</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_FilesystemSupportMatrix" xml:space="preserve"><value>Filesystem support matrix</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_Fixed" xml:space="preserve"><value>Fixed</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_Folder" xml:space="preserve"><value>Folder</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_FormatPartition" xml:space="preserve"><value>Format partition</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_FormatTheSelectedVolume" xml:space="preserve"><value>Format the selected volume</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_FormattingReplacesTheFileSystemOnThisVolumeAndRemovesItsEx_b589b663" xml:space="preserve"><value>Formatting replaces the file system on this volume and removes its existing files.</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_Free" xml:space="preserve"><value>Free</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_FreeSpace" xml:space="preserve"><value>Free space</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_FSSupport" xml:space="preserve"><value>FS Support</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_GB" xml:space="preserve"><value>GB</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_GeneralNTFS" xml:space="preserve"><value>General NTFS</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_HexDumpDisplay" xml:space="preserve"><value>Hex dump display</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_HexViewerDiskSelector" xml:space="preserve"><value>Hex viewer disk selector</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_HexViewerStatus" xml:space="preserve"><value>Hex viewer status</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_HexViewerTab" xml:space="preserve"><value>Hex Viewer tab</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_HideOrUnhide" xml:space="preserve"><value>Hide or Unhide</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_HideOrUnhidePartition" xml:space="preserve"><value>Hide or unhide partition</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_HideOrUnhideTheSelectedPartition" xml:space="preserve"><value>Hide or unhide the selected partition</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_History" xml:space="preserve"><value>History:</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_ID" xml:space="preserve"><value>ID</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_ImageDestinationPreflight" xml:space="preserve"><value>Image destination preflight</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_ImageFile" xml:space="preserve"><value>Image File</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_ImageFilePath" xml:space="preserve"><value>Image file path</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_InitializeThisUnpartitionedDiskWithAGPTPartitionTable" xml:space="preserve"><value>Initialize this unpartitioned disk with a GPT partition table</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_Label" xml:space="preserve"><value>Label</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_LargestFreeExtent" xml:space="preserve"><value>Largest Free Extent</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_LargeUSBExFAT" xml:space="preserve"><value>Large USB (exFAT)</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_Layout" xml:space="preserve"><value>Layout</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_Letter" xml:space="preserve"><value>Letter</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_Level" xml:space="preserve"><value>Level</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_LiveDiskTemperatures" xml:space="preserve"><value>Live disk temperatures</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_LiveTemperatureMonitor" xml:space="preserve"><value>Live Temperature Monitor</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_LoadingHealthData" xml:space="preserve"><value>Loading health data</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_LoadingSnapshots" xml:space="preserve"><value>Loading snapshots</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_MaintenanceTools" xml:space="preserve"><value>Maintenance Tools</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_MarkTheSelectedPartitionAsActive" xml:space="preserve"><value>Mark the selected partition as active</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_MBRDiskSelector" xml:space="preserve"><value>MBR disk selector</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_MergePartitions" xml:space="preserve"><value>Merge Partitions</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_MergePartitionsDialog" xml:space="preserve"><value>Merge partitions dialog</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_MergeTwoAdjacentPartitions" xml:space="preserve"><value>Merge Two Adjacent Partitions</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_MergeTwoAdjacentPartitionsIntoOne" xml:space="preserve"><value>Merge two adjacent partitions into one</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_MountDiskImage" xml:space="preserve"><value>Mount Disk Image</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_MountDismountAndCreateISOVHDAndVHDXImages" xml:space="preserve"><value>Mount, dismount, and create ISO, VHD, and VHDX images.</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_MountDismountAndVHDOperationsAreBeingLogged" xml:space="preserve"><value>Mount, dismount, and VHD operations are being logged.</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_MountedImagesTable" xml:space="preserve"><value>Mounted images table</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_MountedISOVHDAndVHDXFilesWillAppearHere" xml:space="preserve"><value>Mounted ISO, VHD, and VHDX files will appear here.</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_MountImage" xml:space="preserve"><value>Mount image</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_NewDriveLetter" xml:space="preserve"><value>New drive letter</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_NewLetter" xml:space="preserve"><value>New letter</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_NewPartitionSizeGB" xml:space="preserve"><value>New partition size (GB)</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_NewPartitionSizeInGB" xml:space="preserve"><value>New partition size in GB</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_NewSizeGB" xml:space="preserve"><value>New size (GB)</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_NewSizeInGB" xml:space="preserve"><value>New size in GB</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_Next" xml:space="preserve"><value>Next</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_NextSector" xml:space="preserve"><value>Next sector</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_NintendoSwitchFAT3264KBClusters" xml:space="preserve"><value>Nintendo Switch (FAT32, 64 KB clusters)</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_NoAlignmentEntries" xml:space="preserve"><value>No alignment entries</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_NoCloningTargetsLoaded" xml:space="preserve"><value>No cloning targets loaded</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_NoDiskHealthDataLoaded" xml:space="preserve"><value>No disk health data loaded</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_NoMountedImages" xml:space="preserve"><value>No mounted images</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_NoPartitionDataLoaded" xml:space="preserve"><value>No partition data loaded</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_NoSnapshotsSaved" xml:space="preserve"><value>No snapshots saved</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_Notes" xml:space="preserve"><value>Notes</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_NoUsageScanResults" xml:space="preserve"><value>No usage scan results</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_NTFS" xml:space="preserve"><value>NTFS</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_NVMeFirmwareErase" xml:space="preserve"><value>NVMe firmware erase</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_NVMeSanitizeDiskSelector" xml:space="preserve"><value>NVMe sanitize disk selector</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_OfflineRepair" xml:space="preserve"><value>Offline repair</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_Offset" xml:space="preserve"><value>Offset</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_OneWayConversionForFAT32VolumesThatNeedNTFSFeatures" xml:space="preserve"><value>One-way conversion for FAT32 volumes that need NTFS features.</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_OperationsSupportedByPartitionPilotPerFilesystemTypeLimita_c6dd9bed" xml:space="preserve"><value>Operations supported by PartitionPilot per filesystem type. Limitations are imposed by Windows Storage APIs.</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_OptimizeAndTRIM" xml:space="preserve"><value>Optimize and TRIM</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_OptimizeVolumeSelector" xml:space="preserve"><value>Optimize volume selector</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_OutputIsBeingCapturedInTheActivityLog" xml:space="preserve"><value>Output is being captured in the activity log.</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_Partition" xml:space="preserve"><value>Partition</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_PartitionActions" xml:space="preserve"><value>Partition Actions</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_PartitionSizeInGB" xml:space="preserve"><value>Partition size in GB</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_PartitionSnapshotHistory" xml:space="preserve"><value>Partition snapshot history</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_PartitionsTab" xml:space="preserve"><value>Partitions tab</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_PartitionStyle" xml:space="preserve"><value>Partition Style</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_PartitionTable" xml:space="preserve"><value>Partition table</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_PartitionToRemove" xml:space="preserve"><value>Partition to Remove</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_PartitionToRemoveDuringMerge" xml:space="preserve"><value>Partition to remove during merge</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_PartitionWorkspace" xml:space="preserve"><value>Partition Workspace</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_Path" xml:space="preserve"><value>Path</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_PhysicalDiskSelector" xml:space="preserve"><value>Physical disk selector</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_Prev" xml:space="preserve"><value>Prev</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_PreviousSector" xml:space="preserve"><value>Previous sector</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_PrimaryPartition" xml:space="preserve"><value>Primary Partition</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_PrimaryPartitionSelector" xml:space="preserve"><value>Primary partition selector</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_QueryingDisksOrApplyingTheRequestedPartitionOperation" xml:space="preserve"><value>Querying disks or applying the requested partition operation.</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_QueueMerge" xml:space="preserve"><value>Queue Merge</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_QuickFormat" xml:space="preserve"><value>Quick format</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_RaspberryPiFAT32" xml:space="preserve"><value>Raspberry Pi (FAT32)</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_RatedTBWInTerabytes" xml:space="preserve"><value>Rated TBW in terabytes</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_RatedTBWTB" xml:space="preserve"><value>Rated TBW (TB):</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_RawValue" xml:space="preserve"><value>Raw Value</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_Read" xml:space="preserve"><value>Read</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_ReadingPhysicalDiskSMARTAndAlignmentDetails" xml:space="preserve"><value>Reading physical disk, SMART, and alignment details.</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_ReadingSavedPartitionLayoutsAndComparisonData" xml:space="preserve"><value>Reading saved partition layouts and comparison data.</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_ReadSector" xml:space="preserve"><value>Read sector</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_RebuildBootFilesForADetectedWindowsInstallation" xml:space="preserve"><value>Rebuild boot files for a detected Windows installation.</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_RefreshCurrentWorkspace" xml:space="preserve"><value>Refresh current workspace</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_RefreshDiskHealth" xml:space="preserve"><value>Refresh disk health</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_RefreshDiskImages" xml:space="preserve"><value>Refresh disk images</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_RefreshDiskList" xml:space="preserve"><value>Refresh disk list</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_RefreshDisks" xml:space="preserve"><value>Refresh disks</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_RefreshLists" xml:space="preserve"><value>Refresh Lists</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_RefreshPartitionSnapshots" xml:space="preserve"><value>Refresh partition snapshots</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_RefreshToLoadPhysicalDiskSMARTReliabilityAndAlignmentDetails" xml:space="preserve"><value>Refresh to load physical disk, SMART reliability, and alignment details.</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_RefreshToLoadSourceVolumesAndTargetDisksBeforeCreatingOrRe_ac385bff" xml:space="preserve"><value>Refresh to load source volumes and target disks before creating or restoring an image.</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_RefreshToolLists" xml:space="preserve"><value>Refresh tool lists</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_ReFS" xml:space="preserve"><value>ReFS</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_RemovePendingOperation" xml:space="preserve"><value>Remove pending operation</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_RepairBootloader" xml:space="preserve"><value>Repair bootloader</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_RequiresWindows1123H2OrNewerWithDevDriveSupport" xml:space="preserve"><value>Requires Windows 11 23H2 or newer with Dev Drive support.</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_RescueModeContinueOnReadErrors" xml:space="preserve"><value>Rescue mode (continue on read errors)</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_RescueModeForBadSectors" xml:space="preserve"><value>Rescue mode for bad sectors</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_ResizePartition" xml:space="preserve"><value>Resize partition</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_ResizeTheSelectedVolume" xml:space="preserve"><value>Resize the selected volume</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_RestoreDiskImage" xml:space="preserve"><value>Restore disk image</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_RestoreImageFilePath" xml:space="preserve"><value>Restore image file path</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_RestoreWritesToTheSelectedTargetDiskAndReplacesItsContents" xml:space="preserve"><value>Restore writes to the selected target disk and replaces its contents.</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_ReviewADiskLayoutBeforeCreatingResizingFormattingOrAssigningVolumes" xml:space="preserve"><value>Review a disk layout before creating, resizing, formatting, or assigning volumes.</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_ReviewSavedPartitionTableSnapshotsExportEvidenceAndCopyGui_d4ae9b65" xml:space="preserve"><value>Review saved partition-table snapshots, export evidence, and copy guided recovery notes.</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_Role" xml:space="preserve"><value>Role</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_RunBenchmark" xml:space="preserve"><value>Run benchmark</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_RunCheck" xml:space="preserve"><value>Run Check</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_RunDiskSpdSequentialAndRandomProfilesAgainstATemporaryTest_8ed7a19c" xml:space="preserve"><value>Run DiskSpd sequential and random profiles against a temporary test file, then export the evidence.</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_RunFilesystemCheck" xml:space="preserve"><value>Run filesystem check</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_RunNativeWindowsDiskUtilitiesWithClearerTargetingAndLoggedOutput" xml:space="preserve"><value>Run native Windows disk utilities with clearer targeting and logged output.</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_RunningTool" xml:space="preserve"><value>Running tool</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_RunOptimize" xml:space="preserve"><value>Run optimize</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_RunSMARTExtendedSelfTest" xml:space="preserve"><value>Run SMART extended self-test</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_RunSMARTShortSelfTest" xml:space="preserve"><value>Run SMART short self-test</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_RunSurfaceTest" xml:space="preserve"><value>Run surface test</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_Safety" xml:space="preserve"><value>Safety</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_ScanAVolumeForBadSectorsUsingRepairVolumeOfflineScanAndFix_b4beca22" xml:space="preserve"><value>Scan a volume for bad sectors using Repair-Volume OfflineScanAndFix. May take several minutes.</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_ScanAVolumeToSeeWhichFoldersConsumeTheMostSpace" xml:space="preserve"><value>Scan a volume to see which folders consume the most space.</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_ScanDiskUsage" xml:space="preserve"><value>Scan disk usage</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_ScanForFileSystemErrorsOrRunARepairModeOnTheSelectedVolume" xml:space="preserve"><value>Scan for file-system errors or run a repair mode on the selected volume.</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_ScanningDrive" xml:space="preserve"><value>Scanning drive</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_Sector" xml:space="preserve"><value>Sector:</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_SectorCloneOverwritesALLDataOnTheDestinationDiskTheDestina_75f97d43" xml:space="preserve"><value>Sector clone overwrites ALL data on the destination disk. The destination must be at least as large as the source.</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_SectorOffset" xml:space="preserve"><value>Sector offset</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_SelectAnISOVHDOrVHDXFileAndMountItAsADrive" xml:space="preserve"><value>Select an ISO, VHD, or VHDX file and mount it as a drive.</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_Selection" xml:space="preserve"><value>Selection</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_SelectTwoAdjacentPartitionsToMergeDataFromThePrimaryPartit_055a4e63" xml:space="preserve"><value>Select two adjacent partitions to merge. Data from the primary partition is preserved. The secondary partition must be empty or its data will be lost.</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_SetPartitionActive" xml:space="preserve"><value>Set partition active</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_Severity" xml:space="preserve"><value>Severity</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_Share" xml:space="preserve"><value>Share</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_ShortTest" xml:space="preserve"><value>Short Test</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_ShowFilesystemSupportMatrix" xml:space="preserve"><value>Show filesystem support matrix</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_ShowWhichOperationsEachFilesystemSupports" xml:space="preserve"><value>Show which operations each filesystem supports</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_Size" xml:space="preserve"><value>Size</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_SizeGB" xml:space="preserve"><value>Size (GB)</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_SMARTAttributesTable" xml:space="preserve"><value>SMART attributes table</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_SMARTReliabilityDataIsNotAvailableForTheSelectedDisk" xml:space="preserve"><value>SMART reliability data is not available for the selected disk.</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_SMARTSelfTestAvailability" xml:space="preserve"><value>SMART self-test availability</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_SMARTSelfTestStatus" xml:space="preserve"><value>SMART self-test status</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_SnapshotComparisonOutput" xml:space="preserve"><value>Snapshot comparison output</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_SnapshotPartitionTable" xml:space="preserve"><value>Snapshot partition table</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_SnapshotRecoveryGuidance" xml:space="preserve"><value>Snapshot recovery guidance</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_SnapshotsAreSavedBeforeDestructivePartitionOperationsAndWi_1843916b" xml:space="preserve"><value>Snapshots are saved before destructive partition operations and will appear here.</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_SnapshotsTab" xml:space="preserve"><value>Snapshots tab</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_SplitPartition" xml:space="preserve"><value>Split Partition</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_SplitTheSelectedVolumeIntoTwoVolumes" xml:space="preserve"><value>Split the selected volume into two volumes</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_SpotFix" xml:space="preserve"><value>SpotFix</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_SSDEndurance" xml:space="preserve"><value>SSD Endurance</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_StartSectorClone" xml:space="preserve"><value>Start sector clone</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_StartSecureWipe" xml:space="preserve"><value>Start secure wipe</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_StartWipe" xml:space="preserve"><value>Start Wipe</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_Status" xml:space="preserve"><value>Status</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_SurfaceTestResults" xml:space="preserve"><value>Surface test results</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_SurfaceTestVolumeSelector" xml:space="preserve"><value>Surface test volume selector</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_Temp" xml:space="preserve"><value>Temp</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_TemperatureAlertHistory" xml:space="preserve"><value>Temperature alert history</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_ThePartitionToRemoveWillBeDeletedThePrimaryPartitionWillBe_8e358bb5" xml:space="preserve"><value>The partition to remove will be deleted. The primary partition will be extended into the freed space when the queued operation is applied.</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_TheWorkspaceWillPopulateAfterDiskDiscoveryCompletesOrAfter_6ed26184" xml:space="preserve"><value>The workspace will populate after disk discovery completes, or after you choose a disk.</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_Time" xml:space="preserve"><value>Time</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_ToggleDiskIOMonitoring" xml:space="preserve"><value>Toggle disk I/O monitoring</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_ToggleTemperatureMonitoring" xml:space="preserve"><value>Toggle temperature monitoring</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_ToggleTheme" xml:space="preserve"><value>Toggle theme</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_ToolsTab" xml:space="preserve"><value>Tools tab</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_TRIM" xml:space="preserve"><value>TRIM</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_Type" xml:space="preserve"><value>Type</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_UnsafeShutdowns" xml:space="preserve"><value>Unsafe Shutdowns</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_UseArrowKeysToInspectFoldersPressEnterOrSpaceToSelect" xml:space="preserve"><value>Use arrow keys to inspect folders. Press Enter or Space to select.</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_UseAvailableUnallocatedSpaceToCreateAndFormatANewVolume" xml:space="preserve"><value>Use available unallocated space to create and format a new volume.</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_UseCryptoEraseFastestRequiresSelfEncryptingDrive" xml:space="preserve"><value>Use Crypto Erase (fastest, requires self-encrypting drive)</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_UseCryptoEraseInsteadOfBlockErase" xml:space="preserve"><value>Use crypto erase instead of block erase</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_Validate" xml:space="preserve"><value>Validate</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_ValidateFirstThenConvertACompatibleSystemDiskWithoutDeleti_3693ed34" xml:space="preserve"><value>Validate first, then convert a compatible system disk without deleting partitions.</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_ValidateMBRToGPTConversion" xml:space="preserve"><value>Validate MBR to GPT conversion</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_VerifyAfterClone" xml:space="preserve"><value>Verify after clone</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_VerifyCloneAfterCompletion" xml:space="preserve"><value>Verify clone after completion</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_VHDPath" xml:space="preserve"><value>VHD path</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_VHDSizeInGB" xml:space="preserve"><value>VHD size in GB</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_Volume" xml:space="preserve"><value>Volume</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_VolumeLabel" xml:space="preserve"><value>Volume label</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_WindowsVolume" xml:space="preserve"><value>Windows Volume</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_WindowsVolumeSelector" xml:space="preserve"><value>Windows volume selector</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_WipeDiskSelector" xml:space="preserve"><value>Wipe disk selector</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_WipeEntireDisk" xml:space="preserve"><value>Wipe entire disk</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_WipeFreeSpaceOnly" xml:space="preserve"><value>Wipe free space only</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_WipeVolumeSelector" xml:space="preserve"><value>Wipe volume selector</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_Working" xml:space="preserve"><value>Working</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_WorkingWithDiskImages" xml:space="preserve"><value>Working with disk images</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="XamlValue" xml:space="preserve"><value>#</value><comment>English fallback pending verified translation.</comment></data>
 </root>

@@ -1,13 +1,14 @@
 <Window x:Class="PartitionPilot.Dialogs.FilesystemSupportDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Filesystem Support Matrix" Width="700" SizeToContent="Height"
+             xmlns:local="clr-namespace:PartitionPilot"
+        Title="{local:Loc Xaml_FilesystemSupportMatrix}" Width="700" SizeToContent="Height"
         WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
         Style="{StaticResource DialogWindow}">
     <Border Style="{StaticResource Card}" Margin="16">
         <StackPanel>
-            <TextBlock Text="Filesystem Support" Style="{StaticResource SectionTitleText}" Margin="0,0,0,6"/>
-            <TextBlock Text="Operations supported by PartitionPilot per filesystem type. Limitations are imposed by Windows Storage APIs."
+            <TextBlock Text="{local:Loc Xaml_FilesystemSupport}" Style="{StaticResource SectionTitleText}" Margin="0,0,0,6"/>
+            <TextBlock Text="{local:Loc Xaml_OperationsSupportedByPartitionPilotPerFilesystemTypeLimita_c6dd9bed}"
                        Style="{StaticResource CaptionText}" TextWrapping="Wrap" Margin="0,0,0,14"/>
 
             <DataGrid x:Name="matrixGrid" AutoGenerateColumns="False" IsReadOnly="True"
@@ -18,21 +19,21 @@
                       AlternatingRowBackground="{DynamicResource SurfaceBrush}"
                       CanUserSortColumns="False" CanUserResizeRows="False"
                       CanUserReorderColumns="False"
-                      AutomationProperties.Name="Filesystem support matrix">
+                      AutomationProperties.Name="{local:Loc Xaml_FilesystemSupportMatrix}">
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="Filesystem" Binding="{Binding FileSystem}" Width="90" FontWeight="SemiBold"/>
-                    <DataGridTextColumn Header="Create" Binding="{Binding Create}" Width="70"/>
-                    <DataGridTextColumn Header="Format" Binding="{Binding Format}" Width="70"/>
-                    <DataGridTextColumn Header="Resize" Binding="{Binding Resize}" Width="70"/>
-                    <DataGridTextColumn Header="Extend" Binding="{Binding Extend}" Width="70"/>
-                    <DataGridTextColumn Header="Check" Binding="{Binding Check}" Width="70"/>
-                    <DataGridTextColumn Header="Label" Binding="{Binding Label}" Width="70"/>
-                    <DataGridTextColumn Header="Notes" Binding="{Binding Notes}" Width="*"/>
+                    <DataGridTextColumn Header="{local:Loc Xaml_FilesystemColumn}" Binding="{Binding FileSystem}" Width="90" FontWeight="SemiBold"/>
+                    <DataGridTextColumn Header="{local:Loc Create}" Binding="{Binding Create}" Width="70"/>
+                    <DataGridTextColumn Header="{local:Loc Format}" Binding="{Binding Format}" Width="70"/>
+                    <DataGridTextColumn Header="{local:Loc Resize}" Binding="{Binding Resize}" Width="70"/>
+                    <DataGridTextColumn Header="{local:Loc Extend}" Binding="{Binding Extend}" Width="70"/>
+                    <DataGridTextColumn Header="{local:Loc Xaml_Check}" Binding="{Binding Check}" Width="70"/>
+                    <DataGridTextColumn Header="{local:Loc Xaml_Label}" Binding="{Binding Label}" Width="70"/>
+                    <DataGridTextColumn Header="{local:Loc Xaml_Notes}" Binding="{Binding Notes}" Width="*"/>
                 </DataGrid.Columns>
             </DataGrid>
 
             <Border Style="{StaticResource DialogFooter}" Margin="0,14,0,0">
-                <Button Content="Close" Width="96" Height="34" HorizontalAlignment="Right" IsCancel="True"/>
+                <Button Content="{local:Loc Xaml_Close}" Width="96" Height="34" HorizontalAlignment="Right" IsCancel="True"/>
             </Border>
         </StackPanel>
     </Border>

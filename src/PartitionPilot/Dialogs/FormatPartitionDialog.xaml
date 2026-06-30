@@ -1,53 +1,54 @@
 <Window x:Class="PartitionPilot.Dialogs.FormatPartitionDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Format Partition" Width="440" SizeToContent="Height"
+             xmlns:local="clr-namespace:PartitionPilot"
+        Title="{local:Loc Xaml_FormatPartition}" Width="440" SizeToContent="Height"
         WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
         Style="{StaticResource DialogWindow}">
     <Border Style="{StaticResource Card}" Margin="16">
         <StackPanel>
-            <TextBlock Text="Format Partition" Style="{StaticResource SectionTitleText}" Margin="0,0,0,6"/>
+            <TextBlock Text="{local:Loc Xaml_FormatPartition}" Style="{StaticResource SectionTitleText}" Margin="0,0,0,6"/>
             <Border Style="{StaticResource DangerNoticePanel}">
-                <TextBlock Text="Formatting replaces the file system on this volume and removes its existing files."
+                <TextBlock Text="{local:Loc Xaml_FormattingReplacesTheFileSystemOnThisVolumeAndRemovesItsEx_b589b663}"
                            Style="{StaticResource CaptionText}"
                            Foreground="{DynamicResource DangerBtnFgBrush}"/>
             </Border>
 
-            <TextBlock Text="Current volume" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
+            <TextBlock Text="{local:Loc Xaml_CurrentVolume}" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
             <TextBlock x:Name="txtInfo" Foreground="{DynamicResource PrimaryBrush}" FontSize="13" FontWeight="SemiBold" Margin="0,0,0,12"/>
 
-            <TextBlock Text="Device preset" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
+            <TextBlock Text="{local:Loc Xaml_DevicePreset}" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
             <ComboBox x:Name="cmbPreset" Height="34" FontSize="13" Margin="0,0,0,10"
                       SelectionChanged="OnPresetChanged"
-                      AutomationProperties.Name="Device preset">
-                <ComboBoxItem Content="Custom" IsSelected="True"/>
-                <ComboBoxItem Content="Camera (FAT32, 32 KB clusters)"/>
-                <ComboBoxItem Content="Nintendo Switch (FAT32, 64 KB clusters)"/>
-                <ComboBoxItem Content="Raspberry Pi (FAT32)"/>
-                <ComboBoxItem Content="Large USB (exFAT)"/>
-                <ComboBoxItem Content="General NTFS"/>
+                      AutomationProperties.Name="{local:Loc Xaml_DevicePreset}">
+                <ComboBoxItem Content="{local:Loc Xaml_Custom}" Tag="Custom" IsSelected="True"/>
+                <ComboBoxItem Content="{local:Loc Xaml_CameraFAT3232KBClusters}" Tag="Camera"/>
+                <ComboBoxItem Content="{local:Loc Xaml_NintendoSwitchFAT3264KBClusters}" Tag="Nintendo"/>
+                <ComboBoxItem Content="{local:Loc Xaml_RaspberryPiFAT32}" Tag="Raspberry"/>
+                <ComboBoxItem Content="{local:Loc Xaml_LargeUSBExFAT}" Tag="LargeUsb"/>
+                <ComboBoxItem Content="{local:Loc Xaml_GeneralNTFS}" Tag="GeneralNtfs"/>
             </ComboBox>
 
-            <TextBlock Text="File system" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
+            <TextBlock Text="{local:Loc Xaml_FileSystem}" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
             <ComboBox x:Name="cmbFS" Height="34" FontSize="13" Margin="0,0,0,10"
-                      AutomationProperties.Name="File system">
-                <ComboBoxItem Content="NTFS" IsSelected="True"/>
-                <ComboBoxItem Content="FAT32"/>
-                <ComboBoxItem Content="exFAT"/>
-                <ComboBoxItem Content="ReFS"/>
+                      AutomationProperties.Name="{local:Loc Xaml_FileSystem}">
+                <ComboBoxItem Content="{local:Loc Xaml_NTFS}" Tag="NTFS" IsSelected="True"/>
+                <ComboBoxItem Content="{local:Loc Xaml_FAT32}" Tag="FAT32"/>
+                <ComboBoxItem Content="{local:Loc Xaml_ExFAT}" Tag="exFAT"/>
+                <ComboBoxItem Content="{local:Loc Xaml_ReFS}" Tag="ReFS"/>
             </ComboBox>
 
-            <TextBlock Text="Volume label" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
+            <TextBlock Text="{local:Loc Xaml_VolumeLabel}" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
             <TextBox x:Name="txtLabel" Height="34" FontSize="13" Margin="0,0,0,10"
-                     AutomationProperties.Name="Volume label"/>
+                     AutomationProperties.Name="{local:Loc Xaml_VolumeLabel}"/>
 
-            <CheckBox x:Name="chkQuick" Content="Quick format" IsChecked="True" Margin="0,0,0,16"/>
+            <CheckBox x:Name="chkQuick" Content="{local:Loc Xaml_QuickFormat}" IsChecked="True" Margin="0,0,0,16"/>
 
             <Border Style="{StaticResource DialogFooter}">
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                    <Button Content="Format" Width="96" Height="34" Style="{StaticResource DangerButton}"
+                    <Button Content="{local:Loc Format}" Width="96" Height="34" Style="{StaticResource DangerButton}"
                             IsDefault="True" Click="OnOk"/>
-                    <Button Content="Cancel" Width="96" Height="34" Margin="8,0,0,0" IsCancel="True"/>
+                    <Button Content="{local:Loc Cancel}" Width="96" Height="34" Margin="8,0,0,0" IsCancel="True"/>
                 </StackPanel>
             </Border>
         </StackPanel>

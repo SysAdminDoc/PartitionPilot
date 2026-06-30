@@ -1,51 +1,52 @@
 <Window x:Class="PartitionPilot.Dialogs.CreatePartitionDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Create Partition" Width="440" SizeToContent="Height"
+             xmlns:local="clr-namespace:PartitionPilot"
+        Title="{local:Loc Xaml_CreatePartition}" Width="440" SizeToContent="Height"
         WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
         Style="{StaticResource DialogWindow}">
     <Border Style="{StaticResource Card}" Margin="16">
         <StackPanel>
-            <TextBlock Text="Create Partition" Style="{StaticResource SectionTitleText}" Margin="0,0,0,6"/>
-            <TextBlock Text="Use available unallocated space to create and format a new volume."
+            <TextBlock Text="{local:Loc Xaml_CreatePartition}" Style="{StaticResource SectionTitleText}" Margin="0,0,0,6"/>
+            <TextBlock Text="{local:Loc Xaml_UseAvailableUnallocatedSpaceToCreateAndFormatANewVolume}"
                        Style="{StaticResource CaptionText}"
                        Margin="0,0,0,14"/>
 
             <Border Style="{StaticResource NoticePanel}">
                 <StackPanel>
-                    <TextBlock Text="Available space" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
+                    <TextBlock Text="{local:Loc Xaml_AvailableSpace}" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
                     <TextBlock x:Name="txtInfo" Foreground="{DynamicResource PrimaryBrush}" FontSize="13" FontWeight="SemiBold"/>
                 </StackPanel>
             </Border>
 
-            <TextBlock Text="Size (GB)" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
+            <TextBlock Text="{local:Loc Xaml_SizeGB}" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
             <TextBox x:Name="txtSize" Height="34" FontSize="13" Margin="0,0,0,10"
-                     AutomationProperties.Name="Partition size in GB"/>
+                     AutomationProperties.Name="{local:Loc Xaml_PartitionSizeInGB}"/>
 
-            <TextBlock Text="Drive letter" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
+            <TextBlock Text="{local:Loc Xaml_DriveLetter}" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
             <ComboBox x:Name="cmbLetter" Height="34" FontSize="13" Margin="0,0,0,10"
-                      AutomationProperties.Name="Drive letter"/>
+                      AutomationProperties.Name="{local:Loc Xaml_DriveLetter}"/>
 
-            <TextBlock Text="File system" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
+            <TextBlock Text="{local:Loc Xaml_FileSystem}" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
             <ComboBox x:Name="cmbFS" Height="34" FontSize="13" Margin="0,0,0,10"
-                      AutomationProperties.Name="File system">
-                <ComboBoxItem Content="NTFS" IsSelected="True"/>
-                <ComboBoxItem Content="FAT32"/>
-                <ComboBoxItem Content="exFAT"/>
-                <ComboBoxItem Content="ReFS"/>
+                      AutomationProperties.Name="{local:Loc Xaml_FileSystem}">
+                <ComboBoxItem Content="{local:Loc Xaml_NTFS}" Tag="NTFS" IsSelected="True"/>
+                <ComboBoxItem Content="{local:Loc Xaml_FAT32}" Tag="FAT32"/>
+                <ComboBoxItem Content="{local:Loc Xaml_ExFAT}" Tag="exFAT"/>
+                <ComboBoxItem Content="{local:Loc Xaml_ReFS}" Tag="ReFS"/>
             </ComboBox>
 
-            <TextBlock Text="Volume label" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
+            <TextBlock Text="{local:Loc Xaml_VolumeLabel}" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
             <TextBox x:Name="txtLabel" Height="34" FontSize="13" Margin="0,0,0,10"
-                     AutomationProperties.Name="Volume label"/>
+                     AutomationProperties.Name="{local:Loc Xaml_VolumeLabel}"/>
 
-            <CheckBox x:Name="chkQuick" Content="Quick format" IsChecked="True" Margin="0,0,0,16"/>
+            <CheckBox x:Name="chkQuick" Content="{local:Loc Xaml_QuickFormat}" IsChecked="True" Margin="0,0,0,16"/>
 
             <Border Style="{StaticResource DialogFooter}">
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                    <Button Content="Create" Width="96" Height="34" Style="{StaticResource PrimaryButton}"
+                    <Button Content="{local:Loc Create}" Width="96" Height="34" Style="{StaticResource PrimaryButton}"
                             IsDefault="True" Click="OnOk"/>
-                    <Button Content="Cancel" Width="96" Height="34" Margin="8,0,0,0" IsCancel="True"/>
+                    <Button Content="{local:Loc Cancel}" Width="96" Height="34" Margin="8,0,0,0" IsCancel="True"/>
                 </StackPanel>
             </Border>
         </StackPanel>

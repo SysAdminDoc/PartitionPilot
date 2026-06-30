@@ -1,6 +1,7 @@
 <UserControl x:Class="PartitionPilot.Views.DiskHealthView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:PartitionPilot">
     <Grid>
         <DockPanel IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}">
             <Border DockPanel.Dock="Top" Style="{StaticResource PanelCard}" Margin="0,0,0,10">
@@ -11,8 +12,8 @@
                     </Grid.RowDefinitions>
 
                     <StackPanel Grid.Row="0" Margin="0,0,0,12">
-                        <TextBlock Text="Disk Health" Style="{StaticResource PageTitleText}"/>
-                        <TextBlock Text="Review physical disk status, reliability telemetry, and alignment."
+                        <TextBlock Text="{local:Loc TabDiskHealth}" Style="{StaticResource PageTitleText}"/>
+                        <TextBlock Text="{local:Loc DiskHealthDescription}"
                                    Style="{StaticResource CaptionText}"
                                    Margin="0,2,0,0"/>
                     </StackPanel>
@@ -30,7 +31,7 @@
                         </Grid.ColumnDefinitions>
 
                         <TextBlock Grid.Column="0"
-                                   Text="Physical Disk"
+                                   Text="{local:Loc PhysicalDisk}"
                                    Style="{StaticResource FieldLabelText}"
                                    Margin="0,0,10,0"/>
                         <ComboBox Grid.Column="1"
@@ -40,47 +41,47 @@
                                   MinWidth="420"
                                   Height="34"
                                   FontSize="13"
-                                  AutomationProperties.Name="Physical disk selector"/>
+                                  AutomationProperties.Name="{local:Loc Xaml_PhysicalDiskSelector}"/>
                         <Button Grid.Column="2"
-                                Content="Refresh"
+                                Content="{local:Loc Refresh}"
                                 Command="{Binding RefreshCommand}"
                                 Style="{StaticResource ToolbarButton}"
                                 Margin="10,0,0,0"
-                                AutomationProperties.Name="Refresh disk health"/>
+                                AutomationProperties.Name="{local:Loc Xaml_RefreshDiskHealth}"/>
                         <Button Grid.Column="3"
                                 Content="{Binding MonitorButtonText}"
                                 Command="{Binding ToggleMonitorCommand}"
                                 Style="{StaticResource ToolbarButton}"
                                 Margin="6,0,0,0"
-                                AutomationProperties.Name="Toggle temperature monitoring"/>
+                                AutomationProperties.Name="{local:Loc Xaml_ToggleTemperatureMonitoring}"/>
                         <Button Grid.Column="4"
-                                Content="Export Report"
+                                Content="{local:Loc Xaml_ExportReport}"
                                 Command="{Binding ExportReportCommand}"
                                 Style="{StaticResource ToolbarButton}"
                                 Margin="6,0,0,0"
-                                AutomationProperties.Name="Export SMART diagnostic report"/>
+                                AutomationProperties.Name="{local:Loc Xaml_ExportSMARTDiagnosticReport}"/>
                         <Button Grid.Column="5"
-                                Content="Short Test"
+                                Content="{local:Loc Xaml_ShortTest}"
                                 Command="{Binding RunShortTestCommand}"
                                 IsEnabled="{Binding CanRunSmartSelfTest}"
                                 Style="{StaticResource ToolbarButton}"
                                 Margin="6,0,0,0"
                                 ToolTip="{Binding SmartSelfTestSupportText}"
-                                AutomationProperties.Name="Run SMART short self-test"/>
+                                AutomationProperties.Name="{local:Loc Xaml_RunSMARTShortSelfTest}"/>
                         <Button Grid.Column="6"
-                                Content="Extended Test"
+                                Content="{local:Loc Xaml_ExtendedTest}"
                                 Command="{Binding RunExtendedTestCommand}"
                                 IsEnabled="{Binding CanRunSmartSelfTest}"
                                 Style="{StaticResource ToolbarButton}"
                                 Margin="6,0,0,0"
                                 ToolTip="{Binding SmartSelfTestSupportText}"
-                                AutomationProperties.Name="Run SMART extended self-test"/>
+                                AutomationProperties.Name="{local:Loc Xaml_RunSMARTExtendedSelfTest}"/>
                         <Button Grid.Column="7"
                                 Content="{Binding PerfButtonText}"
                                 Command="{Binding TogglePerfCountersCommand}"
                                 Style="{StaticResource ToolbarButton}"
                                 Margin="6,0,0,0"
-                                AutomationProperties.Name="Toggle disk I/O monitoring"/>
+                                AutomationProperties.Name="{local:Loc Xaml_ToggleDiskIOMonitoring}"/>
                     </Grid>
                 </Grid>
             </Border>
@@ -99,14 +100,14 @@
                             </Style>
                         </Border.Style>
                         <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="No disk health data loaded" Style="{StaticResource EmptyStateTitle}"/>
-                            <TextBlock Text="Refresh to load physical disk, SMART reliability, and alignment details."
+                            <TextBlock Text="{local:Loc Xaml_NoDiskHealthDataLoaded}" Style="{StaticResource EmptyStateTitle}"/>
+                            <TextBlock Text="{local:Loc Xaml_RefreshToLoadPhysicalDiskSMARTReliabilityAndAlignmentDetails}"
                                        Style="{StaticResource EmptyStateText}"
                                        Margin="0"/>
                         </StackPanel>
                     </Border>
 
-                    <GroupBox Header="Disk Information">
+                    <GroupBox Header="{local:Loc DiskInformation}">
                         <GroupBox.Style>
                             <Style TargetType="GroupBox" BasedOn="{StaticResource SectionGroup}">
                                 <Style.Triggers>
@@ -132,27 +133,27 @@
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
 
-                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Model" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="{local:Loc Model}" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
                             <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SelectedDisk.FriendlyName}" Margin="0,3"/>
-                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Serial Number" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="{local:Loc SerialNumber}" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
                             <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedDisk.SerialNumber}" Margin="0,3"/>
-                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Firmware" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="{local:Loc Firmware}" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
                             <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SelectedDisk.FirmwareVersion}" Margin="0,3"/>
-                            <TextBlock Grid.Row="3" Grid.Column="0" Text="Media Type" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="3" Grid.Column="0" Text="{local:Loc MediaType}" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
                             <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding SelectedDisk.MediaType}" Margin="0,3"/>
-                            <TextBlock Grid.Row="4" Grid.Column="0" Text="Bus Type" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="4" Grid.Column="0" Text="{local:Loc BusType}" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
                             <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding SelectedDisk.BusType}" Margin="0,3"/>
-                            <TextBlock Grid.Row="5" Grid.Column="0" Text="Capacity" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="5" Grid.Column="0" Text="{local:Loc Capacity}" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
                             <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding DiskSizeText}" Margin="0,3"/>
-                            <TextBlock Grid.Row="6" Grid.Column="0" Text="Health" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="6" Grid.Column="0" Text="{local:Loc Health}" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
                             <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding SelectedDisk.HealthStatus}" FontWeight="SemiBold" Margin="0,3"/>
-                            <TextBlock Grid.Row="7" Grid.Column="0" Text="Sector Sizes" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="7" Grid.Column="0" Text="{local:Loc SectorSizes}" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
                             <TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding SectorSizeText}" Margin="0,3"/>
                         </Grid>
                     </GroupBox>
 
                     <Border Margin="0,0,0,10" Padding="12,10" CornerRadius="5"
-                            AutomationProperties.Name="Disk health status">
+                            AutomationProperties.Name="{local:Loc Xaml_DiskHealthStatus}">
                         <Border.Style>
                             <Style TargetType="Border" BasedOn="{StaticResource NoticePanel}">
                                 <Setter Property="Visibility" Value="Visible"/>
@@ -188,11 +189,11 @@
                             <TextBlock Text="{Binding SelfTestStatus}" FontSize="12"
                                        Foreground="{DynamicResource SubtextBrush}" Margin="0,4,0,0"
                                        TextWrapping="Wrap"
-                                       AutomationProperties.Name="SMART self-test status"/>
+                                       AutomationProperties.Name="{local:Loc Xaml_SMARTSelfTestStatus}"/>
                             <TextBlock Text="{Binding SmartSelfTestSupportText}" FontSize="12"
                                        Foreground="{DynamicResource SubtextBrush}" Margin="0,4,0,0"
                                        TextWrapping="Wrap"
-                                       AutomationProperties.Name="SMART self-test availability"/>
+                                       AutomationProperties.Name="{local:Loc Xaml_SMARTSelfTestAvailability}"/>
                         </StackPanel>
                     </Border>
 
@@ -208,15 +209,15 @@
                             </Style>
                         </Border.Style>
                         <StackPanel>
-                            <TextBlock Text="Live Temperature Monitor" FontWeight="SemiBold" FontSize="13"
+                            <TextBlock Text="{local:Loc Xaml_LiveTemperatureMonitor}" FontWeight="SemiBold" FontSize="13"
                                        Foreground="{DynamicResource TextBrush}" Margin="0,0,0,4"/>
                             <TextBlock Text="{Binding LiveTemperatureText}"
                                        Foreground="{DynamicResource SubtextBrush}" FontSize="13"
-                                       AutomationProperties.Name="Live disk temperatures"/>
+                                       AutomationProperties.Name="{local:Loc Xaml_LiveDiskTemperatures}"/>
                         </StackPanel>
                     </Border>
 
-                    <GroupBox Header="Temperature Alerts">
+                    <GroupBox Header="{local:Loc TemperatureAlerts}">
                         <GroupBox.Style>
                             <Style TargetType="GroupBox" BasedOn="{StaticResource SectionGroup}">
                                 <Setter Property="Visibility" Value="Collapsed"/>
@@ -231,20 +232,20 @@
                                   BorderThickness="0"
                                   FontSize="12.5"
                                   MaxHeight="200"
-                                  AutomationProperties.Name="Temperature alert history">
+                                  AutomationProperties.Name="{local:Loc Xaml_TemperatureAlertHistory}">
                             <ListView.View>
                                 <GridView>
-                                    <GridViewColumn Header="Time" Width="80" DisplayMemberBinding="{Binding Timestamp, StringFormat=HH:mm:ss}"/>
-                                    <GridViewColumn Header="Severity" Width="80" DisplayMemberBinding="{Binding Severity}"/>
-                                    <GridViewColumn Header="Disk" Width="200" DisplayMemberBinding="{Binding DeviceName}"/>
-                                    <GridViewColumn Header="Temp" Width="60" DisplayMemberBinding="{Binding Temperature, StringFormat={}{0} C}"/>
-                                    <GridViewColumn Header="Details" Width="350" DisplayMemberBinding="{Binding Message}"/>
+                                    <GridViewColumn Header="{local:Loc Xaml_Time}" Width="80" DisplayMemberBinding="{Binding Timestamp, StringFormat=HH:mm:ss}"/>
+                                    <GridViewColumn Header="{local:Loc Xaml_Severity}" Width="80" DisplayMemberBinding="{Binding Severity}"/>
+                                    <GridViewColumn Header="{local:Loc Xaml_Disk}" Width="200" DisplayMemberBinding="{Binding DeviceName}"/>
+                                    <GridViewColumn Header="{local:Loc Xaml_Temp}" Width="60" DisplayMemberBinding="{Binding Temperature, StringFormat={}{0} C}"/>
+                                    <GridViewColumn Header="{local:Loc Xaml_Details}" Width="350" DisplayMemberBinding="{Binding Message}"/>
                                 </GridView>
                             </ListView.View>
                         </ListView>
                     </GroupBox>
 
-                    <GroupBox Header="Disk I/O Activity">
+                    <GroupBox Header="{local:Loc Xaml_DiskIOActivity}">
                         <GroupBox.Style>
                             <Style TargetType="GroupBox" BasedOn="{StaticResource SectionGroup}">
                                 <Setter Property="Visibility" Value="Collapsed"/>
@@ -258,10 +259,10 @@
                         <TextBlock Text="{Binding PerfText}" FontFamily="Consolas" FontSize="12"
                                    Foreground="{DynamicResource TextBrush}"
                                    TextWrapping="NoWrap"
-                                   AutomationProperties.Name="Disk I/O performance counters"/>
+                                   AutomationProperties.Name="{local:Loc Xaml_DiskIOPerformanceCounters}"/>
                     </GroupBox>
 
-                    <GroupBox Header="SMART / Reliability Data">
+                    <GroupBox Header="{local:Loc SmartReliabilityData}">
                         <GroupBox.Style>
                             <Style TargetType="GroupBox" BasedOn="{StaticResource SectionGroup}">
                                 <Setter Property="Visibility" Value="Collapsed"/>
@@ -297,48 +298,48 @@
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
 
-                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Temperature" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="{local:Loc Temperature}" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
                             <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding TemperatureText}" Margin="0,3"/>
-                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Wear Used" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="{local:Loc WearUsed}" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
                             <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding WearText}" Margin="0,3"/>
-                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Power-On Time" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="{local:Loc PowerOnTime}" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
                             <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding PowerOnText}" Margin="0,3"/>
-                            <TextBlock Grid.Row="3" Grid.Column="0" Text="Read Errors" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="3" Grid.Column="0" Text="{local:Loc ReadErrors}" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
                             <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding ReadErrorsText}" Margin="0,3"/>
-                            <TextBlock Grid.Row="4" Grid.Column="0" Text="Write Errors" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="4" Grid.Column="0" Text="{local:Loc WriteErrors}" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
                             <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding WriteErrorsText}" Margin="0,3"/>
-                            <TextBlock Grid.Row="5" Grid.Column="0" Text="Max Read Latency" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="5" Grid.Column="0" Text="{local:Loc MaxReadLatency}" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
                             <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding ReadLatencyText}" Margin="0,3"/>
-                            <TextBlock Grid.Row="6" Grid.Column="0" Text="Max Write Latency" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="6" Grid.Column="0" Text="{local:Loc MaxWriteLatency}" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
                             <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding WriteLatencyText}" Margin="0,3"/>
 
-                            <TextBlock Grid.Row="0" Grid.Column="3" Text="Reallocated Sectors" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="0" Grid.Column="3" Text="{local:Loc ReallocatedSectors}" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
                             <TextBlock Grid.Row="0" Grid.Column="4" Text="{Binding ReallocatedSectorsText}" Margin="0,3"/>
-                            <TextBlock Grid.Row="1" Grid.Column="3" Text="Pending Sectors" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="1" Grid.Column="3" Text="{local:Loc PendingSectors}" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
                             <TextBlock Grid.Row="1" Grid.Column="4" Text="{Binding PendingSectorsText}" Margin="0,3"/>
-                            <TextBlock Grid.Row="2" Grid.Column="3" Text="Power Cycles" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="2" Grid.Column="3" Text="{local:Loc PowerCycles}" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
                             <TextBlock Grid.Row="2" Grid.Column="4" Text="{Binding PowerCycleText}" Margin="0,3"/>
-                            <TextBlock Grid.Row="3" Grid.Column="3" Text="Total Written" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="3" Grid.Column="3" Text="{local:Loc TotalWritten}" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
                             <TextBlock Grid.Row="3" Grid.Column="4" Text="{Binding TotalWrittenText}" Margin="0,3"/>
-                            <TextBlock Grid.Row="4" Grid.Column="3" Text="Total Read" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="4" Grid.Column="3" Text="{local:Loc TotalRead}" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
                             <TextBlock Grid.Row="4" Grid.Column="4" Text="{Binding TotalReadText}" Margin="0,3"/>
-                            <TextBlock Grid.Row="5" Grid.Column="3" Text="NVMe Available Spare" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="5" Grid.Column="3" Text="{local:Loc NvmeAvailableSpare}" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
                             <TextBlock Grid.Row="5" Grid.Column="4" Text="{Binding NvmeAvailableSpareText}" Margin="0,3"/>
-                            <TextBlock Grid.Row="6" Grid.Column="3" Text="NVMe Media Errors" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="6" Grid.Column="3" Text="{local:Loc NvmeMediaErrors}" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
                             <TextBlock Grid.Row="6" Grid.Column="4" Text="{Binding NvmeMediaErrorsText}" Margin="0,3"/>
-                            <TextBlock Grid.Row="7" Grid.Column="3" Text="Unsafe Shutdowns" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="7" Grid.Column="3" Text="{local:Loc Xaml_UnsafeShutdowns}" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
                             <TextBlock Grid.Row="7" Grid.Column="4" Text="{Binding NvmeUnsafeShutdownsText}" Margin="0,3"/>
-                            <TextBlock Grid.Row="8" Grid.Column="3" Text="Controller Busy Time" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="8" Grid.Column="3" Text="{local:Loc Xaml_ControllerBusyTime}" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
                             <TextBlock Grid.Row="8" Grid.Column="4" Text="{Binding NvmeControllerBusyText}" Margin="0,3"/>
-                            <TextBlock Grid.Row="9" Grid.Column="3" Text="Error Log Entries" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="9" Grid.Column="3" Text="{local:Loc Xaml_ErrorLogEntries}" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
                             <TextBlock Grid.Row="9" Grid.Column="4" Text="{Binding NvmeErrorLogText}" Margin="0,3"/>
-                            <TextBlock Grid.Row="10" Grid.Column="3" Text="Critical Warning" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
+                            <TextBlock Grid.Row="10" Grid.Column="3" Text="{local:Loc Xaml_CriticalWarning}" Style="{StaticResource FieldLabelText}" Margin="0,3"/>
                             <TextBlock Grid.Row="10" Grid.Column="4" Text="{Binding NvmeCriticalWarningText}" Margin="0,3"
                                        TextWrapping="Wrap"/>
                         </Grid>
                     </GroupBox>
 
-                    <GroupBox Header="SSD Endurance">
+                    <GroupBox Header="{local:Loc Xaml_SSDEndurance}">
                         <GroupBox.Style>
                             <Style TargetType="GroupBox" BasedOn="{StaticResource SectionGroup}">
                                 <Setter Property="Visibility" Value="Collapsed"/>
@@ -351,20 +352,20 @@
                         </GroupBox.Style>
                         <StackPanel>
                             <TextBlock Text="{Binding EnduranceText}" Style="{StaticResource CaptionText}" Margin="0,0,0,6"
-                                       AutomationProperties.Name="Endurance status"/>
+                                       AutomationProperties.Name="{local:Loc Xaml_EnduranceStatus}"/>
                             <ProgressBar Value="{Binding EndurancePercent}" Maximum="100" Height="6"
                                          Foreground="{DynamicResource PrimaryBrush}"
                                          Background="{DynamicResource BorderBrush}"
                                          BorderThickness="0" Margin="0,0,0,8"/>
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="Rated TBW (TB):" Style="{StaticResource FieldLabelText}" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="{local:Loc Xaml_RatedTBWTB}" Style="{StaticResource FieldLabelText}" Margin="0,0,8,0" VerticalAlignment="Center"/>
                                 <TextBox Text="{Binding RatedTbwTB, UpdateSourceTrigger=LostFocus}" Width="80" Height="28"
-                                         AutomationProperties.Name="Rated TBW in terabytes"/>
+                                         AutomationProperties.Name="{local:Loc Xaml_RatedTBWInTerabytes}"/>
                             </StackPanel>
                         </StackPanel>
                     </GroupBox>
 
-                    <GroupBox Header="SMART Trend Alerts">
+                    <GroupBox Header="{local:Loc SmartTrendAlerts}">
                         <GroupBox.Style>
                             <Style TargetType="GroupBox" BasedOn="{StaticResource SectionGroup}">
                                 <Setter Property="Visibility" Value="Collapsed"/>
@@ -377,26 +378,26 @@
                         </GroupBox.Style>
                         <StackPanel>
                             <TextBlock Style="{StaticResource CaptionText}" Margin="0,0,0,8">
-                                <Run Text="History:"/>
+                                <Run Text="{local:Loc Xaml_History}"/>
                                 <Run Text="{Binding HistoryCountText, Mode=OneWay}"/>
                             </TextBlock>
                             <ListView ItemsSource="{Binding Trends}"
                                       BorderThickness="0"
                                       FontSize="12.5"
-                                      AutomationProperties.Name="SMART trend alerts">
+                                      AutomationProperties.Name="{local:Loc SmartTrendAlerts}">
                                 <ListView.View>
                                     <GridView>
-                                        <GridViewColumn Header="Severity" Width="80" DisplayMemberBinding="{Binding Severity}"/>
-                                        <GridViewColumn Header="Attribute" Width="170" DisplayMemberBinding="{Binding Attribute}"/>
-                                        <GridViewColumn Header="Direction" Width="100" DisplayMemberBinding="{Binding Direction}"/>
-                                        <GridViewColumn Header="Details" Width="420" DisplayMemberBinding="{Binding Message}"/>
+                                        <GridViewColumn Header="{local:Loc Xaml_Severity}" Width="80" DisplayMemberBinding="{Binding Severity}"/>
+                                        <GridViewColumn Header="{local:Loc Xaml_Attribute}" Width="170" DisplayMemberBinding="{Binding Attribute}"/>
+                                        <GridViewColumn Header="{local:Loc Xaml_Direction}" Width="100" DisplayMemberBinding="{Binding Direction}"/>
+                                        <GridViewColumn Header="{local:Loc Xaml_Details}" Width="420" DisplayMemberBinding="{Binding Message}"/>
                                     </GridView>
                                 </ListView.View>
                             </ListView>
                         </StackPanel>
                     </GroupBox>
 
-                    <GroupBox Header="All SMART Attributes">
+                    <GroupBox Header="{local:Loc AllSmartAttributes}">
                         <GroupBox.Style>
                             <Style TargetType="GroupBox" BasedOn="{StaticResource SectionGroup}">
                                 <Setter Property="Visibility" Value="Collapsed"/>
@@ -411,12 +412,12 @@
                                   BorderThickness="0"
                                   FontSize="12.5"
                                   MaxHeight="300"
-                                  AutomationProperties.Name="SMART attributes table">
+                                  AutomationProperties.Name="{local:Loc Xaml_SMARTAttributesTable}">
                             <ListView.View>
                                 <GridView>
-                                    <GridViewColumn Header="ID" Width="50" DisplayMemberBinding="{Binding Id}"/>
-                                    <GridViewColumn Header="Attribute" Width="250" DisplayMemberBinding="{Binding Name}"/>
-                                    <GridViewColumn Header="Raw Value" Width="150" DisplayMemberBinding="{Binding RawDisplay}"/>
+                                    <GridViewColumn Header="{local:Loc Xaml_ID}" Width="50" DisplayMemberBinding="{Binding Id}"/>
+                                    <GridViewColumn Header="{local:Loc Xaml_Attribute}" Width="250" DisplayMemberBinding="{Binding Name}"/>
+                                    <GridViewColumn Header="{local:Loc Xaml_RawValue}" Width="150" DisplayMemberBinding="{Binding RawDisplay}"/>
                                 </GridView>
                             </ListView.View>
                         </ListView>
@@ -436,11 +437,11 @@
                                 </Style.Triggers>
                             </Style>
                         </Border.Style>
-                        <TextBlock Text="SMART reliability data is not available for the selected disk."
+                        <TextBlock Text="{local:Loc Xaml_SMARTReliabilityDataIsNotAvailableForTheSelectedDisk}"
                                    Style="{StaticResource CaptionText}"/>
                     </Border>
 
-                    <GroupBox Header="4K Alignment Audit">
+                    <GroupBox Header="{local:Loc AlignmentAudit}">
                         <GroupBox.Style>
                             <Style TargetType="GroupBox" BasedOn="{StaticResource SectionGroup}">
                                 <Style.Triggers>
@@ -455,14 +456,14 @@
                                       BorderThickness="0"
                                       FontSize="12.5"
                                       MinHeight="150"
-                                      AutomationProperties.Name="4K alignment audit table">
+                                      AutomationProperties.Name="{local:Loc Xaml_4KAlignmentAuditTable}">
                                 <ListView.View>
                                     <GridView>
-                                        <GridViewColumn Header="Partition" Width="140" DisplayMemberBinding="{Binding PartitionDisplay}"/>
-                                        <GridViewColumn Header="Letter" Width="70" DisplayMemberBinding="{Binding LetterDisplay}"/>
-                                        <GridViewColumn Header="Offset" Width="150" DisplayMemberBinding="{Binding OffsetDisplay}"/>
-                                        <GridViewColumn Header="Aligned" Width="86" DisplayMemberBinding="{Binding AlignedDisplay}"/>
-                                        <GridViewColumn Header="Status" Width="320" DisplayMemberBinding="{Binding Status}"/>
+                                        <GridViewColumn Header="{local:Loc Xaml_Partition}" Width="140" DisplayMemberBinding="{Binding PartitionDisplay}"/>
+                                        <GridViewColumn Header="{local:Loc Xaml_Letter}" Width="70" DisplayMemberBinding="{Binding LetterDisplay}"/>
+                                        <GridViewColumn Header="{local:Loc Xaml_Offset}" Width="150" DisplayMemberBinding="{Binding OffsetDisplay}"/>
+                                        <GridViewColumn Header="{local:Loc Xaml_Aligned}" Width="86" DisplayMemberBinding="{Binding AlignedDisplay}"/>
+                                        <GridViewColumn Header="{local:Loc Xaml_Status}" Width="320" DisplayMemberBinding="{Binding Status}"/>
                                     </GridView>
                                 </ListView.View>
                             </ListView>
@@ -479,8 +480,8 @@
                                     </Style>
                                 </Border.Style>
                                 <StackPanel VerticalAlignment="Center">
-                                    <TextBlock Text="No alignment entries" Style="{StaticResource EmptyStateTitle}"/>
-                                    <TextBlock Text="Alignment details will appear after health data loads."
+                                    <TextBlock Text="{local:Loc Xaml_NoAlignmentEntries}" Style="{StaticResource EmptyStateTitle}"/>
+                                    <TextBlock Text="{local:Loc Xaml_AlignmentDetailsWillAppearAfterHealthDataLoads}"
                                                Style="{StaticResource EmptyStateText}"
                                                Margin="0"/>
                                 </StackPanel>
@@ -494,11 +495,11 @@
         <Border Style="{StaticResource BusyOverlay}">
             <Border Style="{StaticResource BusyPanel}" HorizontalAlignment="Center" VerticalAlignment="Center">
                 <StackPanel>
-                    <TextBlock Text="Loading health data"
+                    <TextBlock Text="{local:Loc Xaml_LoadingHealthData}"
                                Style="{StaticResource PageTitleText}"
                                HorizontalAlignment="Center"/>
                     <ProgressBar Style="{StaticResource BusyProgress}" IsIndeterminate="True"/>
-                    <TextBlock Text="Reading physical disk, SMART, and alignment details."
+                    <TextBlock Text="{local:Loc Xaml_ReadingPhysicalDiskSMARTAndAlignmentDetails}"
                                Style="{StaticResource CaptionText}"
                                TextAlignment="Center"/>
                 </StackPanel>

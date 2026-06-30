@@ -24,7 +24,7 @@ public partial class FilesystemSupportDialog : Window
                 c.Notes))
             .ToList();
 
-    private static string YesNo(bool value) => value ? "Yes" : "No";
+    private static string YesNo(bool value) => value ? LocExtension.Get("Yes") : LocExtension.Get("No");
 
     private record FsSupport(string FileSystem, string Create, string Format,
         string Resize, string Extend, string Check, string Label, string Notes);
