@@ -55,6 +55,10 @@ public class AsyncRelayCommand(Func<object?, Task> execute, Func<object?, bool>?
         {
             await _execute(parameter);
         }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Trace.TraceError($"Unhandled command exception: {ex}");
+        }
         finally
         {
             IsExecuting = false;

@@ -50,10 +50,6 @@ public class TreemapControl : FrameworkElement
         new SolidColorBrush(Color.FromRgb(0xFF, 0x6B, 0x6B)),
     };
 
-    private static readonly Brush SelectedStroke = new SolidColorBrush(Colors.White);
-    private static readonly Brush LabelBrush = new SolidColorBrush(Color.FromRgb(0x11, 0x13, 0x15));
-    private static readonly Pen BorderPen = new(new SolidColorBrush(Color.FromRgb(0x20, 0x24, 0x2A)), 1);
-    private static readonly Pen SelectedPen = new(SelectedStroke, 2);
     private static readonly Typeface LabelTypeface = new("Segoe UI");
 
     private List<(Rect Bounds, TreemapItem Item)> _layout = new();
@@ -61,11 +57,11 @@ public class TreemapControl : FrameworkElement
     static TreemapControl()
     {
         foreach (var b in Palette) b.Freeze();
-        SelectedStroke.Freeze();
-        LabelBrush.Freeze();
-        BorderPen.Freeze();
-        SelectedPen.Freeze();
     }
+
+    private Brush GetLabelBrush() => TryFindResource("WindowBgBrush") as Brush ?? Brushes.Black;
+    private Pen GetBorderPen() => new((TryFindResource("BorderBrush") as Brush ?? Brushes.Gray), 1);
+    private Pen GetSelectedPen() => new((TryFindResource("PrimaryBrush") as Brush ?? Brushes.White), 2);
 
     protected override void OnRender(DrawingContext dc)
     {
@@ -87,16 +83,18 @@ public class TreemapControl : FrameworkElement
 
             var brush = Palette[i % Palette.Length];
             var isSelected = item == SelectedItem;
-            var pen = isSelected ? (IsKeyboardFocused ? GetFocusPen() : SelectedPen) : BorderPen;
+            var borderPen = GetBorderPen();
+            var pen = isSelected ? (IsKeyboardFocused ? GetFocusPen() : GetSelectedPen()) : borderPen;
 
             dc.DrawRectangle(brush, pen, rect);
 
+            var labelBrush = GetLabelBrush();
             if (rect.Width > 40 && rect.Height > 16)
             {
                 var label = item.Label;
                 if (label.Length > 20) label = label[..17] + "...";
                 var text = new FormattedText(label, CultureInfo.CurrentCulture,
-                    FlowDirection.LeftToRight, LabelTypeface, 11, LabelBrush,
+                    FlowDirection.LeftToRight, LabelTypeface, 11, labelBrush,
                     VisualTreeHelper.GetDpi(this).PixelsPerDip) { MaxTextWidth = rect.Width - 4 };
                 dc.DrawText(text, new Point(rect.X + 3, rect.Y + 2));
             }
@@ -105,7 +103,7 @@ public class TreemapControl : FrameworkElement
             {
                 var sizeText = new FormattedText(SizeUtil.Format(item.Size),
                     CultureInfo.CurrentCulture, FlowDirection.LeftToRight, LabelTypeface,
-                    10, LabelBrush, VisualTreeHelper.GetDpi(this).PixelsPerDip)
+                    10, labelBrush, VisualTreeHelper.GetDpi(this).PixelsPerDip)
                     { MaxTextWidth = rect.Width - 4 };
                 dc.DrawText(sizeText, new Point(rect.X + 3, rect.Y + 16));
             }

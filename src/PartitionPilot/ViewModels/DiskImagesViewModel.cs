@@ -216,7 +216,7 @@ public class DiskImagesViewModel : ViewModelBase
 
     private async Task CreateVhdAsync()
     {
-        if (string.IsNullOrWhiteSpace(VhdPath) || VhdSizeGB <= 0) return;
+        if (string.IsNullOrWhiteSpace(VhdPath) || VhdSizeGB <= 0 || VhdSizeGB > 64_000) return;
 
         IsBusy = true;
         try
