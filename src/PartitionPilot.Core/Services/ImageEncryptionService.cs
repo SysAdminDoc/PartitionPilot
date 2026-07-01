@@ -27,48 +27,55 @@ public static class ImageEncryptionService
 
         var salt = RandomNumberGenerator.GetBytes(SaltSize);
         var key = DeriveKey(password, salt);
-        var sourceLength = new FileInfo(sourcePath).Length;
-
-        log.Log($"Encrypting image to {Path.GetFileName(destPath)}...");
-
-        await using var input = new FileStream(sourcePath, FileMode.Open, FileAccess.Read, FileShare.Read, chunkSize, FileOptions.SequentialScan);
-        await using var output = new FileStream(destPath, FileMode.Create, FileAccess.Write, FileShare.None, chunkSize, FileOptions.SequentialScan);
-
-        await output.WriteAsync(ChunkedMagic, ct);
-        await output.WriteAsync(salt, ct);
-        await WriteInt32Async(output, chunkSize, ct);
-        await WriteInt64Async(output, sourceLength, ct);
-
-        using var aes = new AesGcm(key, TagSize);
-        var plaintext = new byte[chunkSize];
-        var ciphertext = new byte[chunkSize];
-        var tag = new byte[TagSize];
-        long processed = 0;
-        long chunkIndex = 0;
-
-        while (true)
+        try
         {
-            ct.ThrowIfCancellationRequested();
-            var read = await input.ReadAsync(plaintext.AsMemory(0, plaintext.Length), ct);
-            if (read == 0)
-                break;
+            var sourceLength = new FileInfo(sourcePath).Length;
 
-            var nonce = RandomNumberGenerator.GetBytes(NonceSize);
-            var aad = BuildAad(sourceLength, chunkSize, chunkIndex, read);
-            aes.Encrypt(nonce, plaintext.AsSpan(0, read), ciphertext.AsSpan(0, read), tag, aad);
+            log.Log($"Encrypting image to {Path.GetFileName(destPath)}...");
 
-            await output.WriteAsync(nonce, ct);
-            await WriteInt32Async(output, read, ct);
-            await output.WriteAsync(tag, ct);
-            await output.WriteAsync(ciphertext.AsMemory(0, read), ct);
+            await using var input = new FileStream(sourcePath, FileMode.Open, FileAccess.Read, FileShare.Read, chunkSize, FileOptions.SequentialScan);
+            await using var output = new FileStream(destPath, FileMode.Create, FileAccess.Write, FileShare.None, chunkSize, FileOptions.SequentialScan);
 
-            processed += read;
-            chunkIndex++;
-            progress?.Report(sourceLength == 0 ? 100 : processed * 100.0 / sourceLength);
+            await output.WriteAsync(ChunkedMagic, ct);
+            await output.WriteAsync(salt, ct);
+            await WriteInt32Async(output, chunkSize, ct);
+            await WriteInt64Async(output, sourceLength, ct);
+
+            using var aes = new AesGcm(key, TagSize);
+            var plaintext = new byte[chunkSize];
+            var ciphertext = new byte[chunkSize];
+            var tag = new byte[TagSize];
+            long processed = 0;
+            long chunkIndex = 0;
+
+            while (true)
+            {
+                ct.ThrowIfCancellationRequested();
+                var read = await input.ReadAsync(plaintext.AsMemory(0, plaintext.Length), ct);
+                if (read == 0)
+                    break;
+
+                var nonce = RandomNumberGenerator.GetBytes(NonceSize);
+                var aad = BuildAad(sourceLength, chunkSize, chunkIndex, read);
+                aes.Encrypt(nonce, plaintext.AsSpan(0, read), ciphertext.AsSpan(0, read), tag, aad);
+
+                await output.WriteAsync(nonce, ct);
+                await WriteInt32Async(output, read, ct);
+                await output.WriteAsync(tag, ct);
+                await output.WriteAsync(ciphertext.AsMemory(0, read), ct);
+
+                processed += read;
+                chunkIndex++;
+                progress?.Report(sourceLength == 0 ? 100 : processed * 100.0 / sourceLength);
+            }
+
+            progress?.Report(100);
+            log.Log($"Image encrypted: {SizeUtil.Format(sourceLength)} -> {Path.GetFileName(destPath)}");
         }
-
-        progress?.Report(100);
-        log.Log($"Image encrypted: {SizeUtil.Format(sourceLength)} -> {Path.GetFileName(destPath)}");
+        finally
+        {
+            CryptographicOperations.ZeroMemory(key);
+        }
     }
 
     public static async Task DecryptFileAsync(string sourcePath, string destPath, string password,
@@ -119,46 +126,53 @@ public static class ImageEncryptionService
             throw new InvalidOperationException("Encrypted image length is invalid.");
 
         var key = DeriveKey(password, salt);
-        using var aes = new AesGcm(key, TagSize);
-        await using var output = new FileStream(destPath, FileMode.Create, FileAccess.Write, FileShare.None, chunkSize, FileOptions.SequentialScan);
-
-        var nonce = new byte[NonceSize];
-        var tag = new byte[TagSize];
-        var ciphertext = new byte[chunkSize];
-        var plaintext = new byte[chunkSize];
-        long remaining = plaintextLength;
-        long chunkIndex = 0;
-
         try
         {
-            while (remaining > 0)
+            using var aes = new AesGcm(key, TagSize);
+            await using var output = new FileStream(destPath, FileMode.Create, FileAccess.Write, FileShare.None, chunkSize, FileOptions.SequentialScan);
+
+            var nonce = new byte[NonceSize];
+            var tag = new byte[TagSize];
+            var ciphertext = new byte[chunkSize];
+            var plaintext = new byte[chunkSize];
+            long remaining = plaintextLength;
+            long chunkIndex = 0;
+
+            try
             {
-                ct.ThrowIfCancellationRequested();
-                var expectedLength = (int)Math.Min(chunkSize, remaining);
-                await ReadExactlyAsync(input, nonce, ct);
-                var actualLength = await ReadInt32Async(input, ct);
-                if (actualLength != expectedLength)
-                    throw new InvalidOperationException("Encrypted image chunk length is invalid.");
-                await ReadExactlyAsync(input, tag, ct);
-                await ReadExactlyAsync(input, ciphertext.AsMemory(0, actualLength), ct);
+                while (remaining > 0)
+                {
+                    ct.ThrowIfCancellationRequested();
+                    var expectedLength = (int)Math.Min(chunkSize, remaining);
+                    await ReadExactlyAsync(input, nonce, ct);
+                    var actualLength = await ReadInt32Async(input, ct);
+                    if (actualLength != expectedLength)
+                        throw new InvalidOperationException("Encrypted image chunk length is invalid.");
+                    await ReadExactlyAsync(input, tag, ct);
+                    await ReadExactlyAsync(input, ciphertext.AsMemory(0, actualLength), ct);
 
-                var aad = BuildAad(plaintextLength, chunkSize, chunkIndex, actualLength);
-                aes.Decrypt(nonce, ciphertext.AsSpan(0, actualLength), tag, plaintext.AsSpan(0, actualLength), aad);
-                await output.WriteAsync(plaintext.AsMemory(0, actualLength), ct);
+                    var aad = BuildAad(plaintextLength, chunkSize, chunkIndex, actualLength);
+                    aes.Decrypt(nonce, ciphertext.AsSpan(0, actualLength), tag, plaintext.AsSpan(0, actualLength), aad);
+                    await output.WriteAsync(plaintext.AsMemory(0, actualLength), ct);
 
-                remaining -= actualLength;
-                chunkIndex++;
+                    remaining -= actualLength;
+                    chunkIndex++;
+                }
             }
+            catch (CryptographicException)
+            {
+                throw new InvalidOperationException("Decryption failed - incorrect password or corrupted file.");
+            }
+
+            if (input.ReadByte() != -1)
+                throw new InvalidOperationException("Encrypted image has unexpected trailing data.");
+
+            log.Log($"Image decrypted: {SizeUtil.Format(plaintextLength)} -> {Path.GetFileName(destPath)}");
         }
-        catch (CryptographicException)
+        finally
         {
-            throw new InvalidOperationException("Decryption failed - incorrect password or corrupted file.");
+            CryptographicOperations.ZeroMemory(key);
         }
-
-        if (input.ReadByte() != -1)
-            throw new InvalidOperationException("Encrypted image has unexpected trailing data.");
-
-        log.Log($"Image decrypted: {SizeUtil.Format(plaintextLength)} -> {Path.GetFileName(destPath)}");
     }
 
     private static async Task DecryptLegacyAsync(string sourcePath, string destPath, string password,
@@ -179,20 +193,27 @@ public static class ImageEncryptionService
         var ciphertext = data.AsSpan(offset).ToArray();
 
         var key = DeriveKey(password, salt);
-        var plaintext = new byte[ciphertext.Length];
-
-        using var aes = new AesGcm(key, TagSize);
         try
         {
-            aes.Decrypt(nonce, ciphertext, tag, plaintext);
-        }
-        catch (CryptographicException)
-        {
-            throw new InvalidOperationException("Decryption failed - incorrect password or corrupted file.");
-        }
+            var plaintext = new byte[ciphertext.Length];
 
-        await File.WriteAllBytesAsync(destPath, plaintext, ct);
-        log.Log($"Image decrypted: {SizeUtil.Format(plaintext.Length)} -> {Path.GetFileName(destPath)}");
+            using var aes = new AesGcm(key, TagSize);
+            try
+            {
+                aes.Decrypt(nonce, ciphertext, tag, plaintext);
+            }
+            catch (CryptographicException)
+            {
+                throw new InvalidOperationException("Decryption failed - incorrect password or corrupted file.");
+            }
+
+            await File.WriteAllBytesAsync(destPath, plaintext, ct);
+            log.Log($"Image decrypted: {SizeUtil.Format(plaintext.Length)} -> {Path.GetFileName(destPath)}");
+        }
+        finally
+        {
+            CryptographicOperations.ZeroMemory(key);
+        }
     }
 
     private static async Task ReadExactlyAsync(Stream stream, Memory<byte> buffer, CancellationToken ct)

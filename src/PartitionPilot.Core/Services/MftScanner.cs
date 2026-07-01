@@ -134,8 +134,10 @@ public static class MftScanner
         {
             if (entry.IsDirectory || entry.Size <= 0) continue;
 
+            const int maxDepth = 256;
             var parentRef = entry.ParentRef;
-            while (parentRef != rootRef && entries.TryGetValue(parentRef, out var parent))
+            int depth = 0;
+            while (parentRef != rootRef && entries.TryGetValue(parentRef, out var parent) && depth++ < maxDepth)
             {
                 parentRef = parent.ParentRef;
             }
@@ -144,7 +146,8 @@ public static class MftScanner
             if (entries.TryGetValue(entry.ParentRef, out var directParent))
             {
                 var ancestor = entry.ParentRef;
-                while (ancestor != rootRef && entries.TryGetValue(ancestor, out var anc))
+                depth = 0;
+                while (ancestor != rootRef && entries.TryGetValue(ancestor, out var anc) && depth++ < maxDepth)
                 {
                     if (anc.ParentRef == rootRef)
                     {
