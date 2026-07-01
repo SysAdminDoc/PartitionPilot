@@ -1,4 +1,4 @@
-![Version](https://img.shields.io/badge/version-0.9.18-4CC2FF)
+![Version](https://img.shields.io/badge/version-0.9.19-4CC2FF)
 ![License](https://img.shields.io/badge/license-MIT-5EE0A0)
 ![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-F4C96A)
 
@@ -107,6 +107,88 @@ Recovery scans default to fast mode:
 pp recovery-scan --disk 1 --mode fast
 pp recovery-scan --disk 1 --mode deep --state C:\ProgramData\PartitionPilot\recovery\scan-disk1.json
 ```
+
+## Layout Specs
+
+`pp apply-layout --file layout.json --disk N` reads a declarative JSON layout and prints a dry-run plan by default. Add `--apply` to execute the plan. Add `--replace` only when the current disk layout intentionally differs from the spec and the disk should be cleared and recreated.
+
+```json
+{
+  "Style": "GPT",
+  "TargetDisk": {
+    "DiskNumber": 2,
+    "FriendlyName": "Contoso USB SSD",
+    "Size": 1024209543168,
+    "PartitionStyle": "GPT",
+    "UniqueId": "5000C500AABBCCDD",
+    "SerialNumber": "SN123456",
+    "Path": "\\\\?\\scsi#disk&ven_contoso",
+    "BusType": "USB",
+    "Location": "Port_#0004.Hub_#0001"
+  },
+  "Partitions": [
+    {
+      "SizeMB": "131072",
+      "FileSystem": "NTFS",
+      "Label": "System",
+      "DriveLetter": "S"
+    },
+    {
+      "UseMaximumSize": true,
+      "FileSystem": "exFAT",
+      "Label": "Data",
+      "DriveLetter": "D"
+    }
+  ]
+}
+```
+
+Rules enforced before DiskPart runs:
+
+- `Style` must be `GPT` or `MBR`.
+- Each partition must either set a positive whole-number `SizeMB` or set `UseMaximumSize: true`, not both.
+- Filesystems are validated through the shared capability policy; unsupported create targets such as APFS are rejected before native tools run.
+- `Label` is sanitized with the same label policy used by CLI plans.
+- `DriveLetter` must be a single `A`-`Z` letter, with or without a trailing colon.
+- `TargetDisk` is optional, but when present it must still match the current disk number, size, and stable identity fields. Use `pp disks --json` to capture the current identity block.
+
+## Encrypted Images
+
+PartitionPilot encrypted disk images are normal captured `.wim` or `.vhdx` files wrapped with a `.enc` suffix. Current writes use the chunked `PPENC2` container:
+
+- AES-256-GCM with PBKDF2-SHA256 key derivation, 600,000 iterations, a 16-byte salt, 12-byte per-chunk nonces, and 16-byte authentication tags.
+- Default plaintext chunks are 4 MiB; the encrypted header records chunk size and original plaintext length.
+- Chunk authentication binds the container magic, plaintext length, chunk size, chunk index, and chunk length.
+- Restores still read legacy `PPENC1` whole-file encrypted images for compatibility.
+- A sidecar manifest is written next to the image as `<image>.ppmanifest.json`; encrypted captures rebind the manifest to the `.enc` file hash and keep the original plaintext hash as `PlainImageSha256`.
+
+Restore behavior is fail-closed for mismatched image hashes. Missing or unreadable manifests, or plaintext hash mismatches after decrypting an encrypted image, require an explicit degraded-mode confirmation before the target disk can be cleared.
+
+## Recovery Scan Modes
+
+`pp recovery-scan` is read-only. It scans raw disk sectors for filesystem signatures and reports candidate partitions without changing the partition table.
+
+- `--mode fast` probes common boot and alignment offsets, including legacy sector starts and 1 MiB boundaries. Use it first for quick triage.
+- `--mode deep` scans every 512-byte sector, checkpoints progress, and can take hours on large disks.
+- Deep scans default their resume file to `C:\ProgramData\PartitionPilot\recovery\recovery-scan-diskN.json`; pass `--state path` to use a specific file.
+- Ctrl+C during deep mode saves resume state and exits with code 130. Resume with the command printed by the CLI.
+- Completed deep scans remove their resume file automatically.
+- Reports include scan mode, checked-offset count, coverage bytes and percent, completion status, resume path, candidate filesystem, offset, estimated size, confidence, and details.
+
+## Release Verification
+
+PartitionPilot releases are built locally. A release candidate should have fresh published GUI and CLI folders, an Inno Setup installer, and release manifests:
+
+```powershell
+dotnet publish .\src\PartitionPilot\PartitionPilot.csproj -c Release -r win-x64 --self-contained true
+dotnet publish .\src\PartitionPilot.Cli\PartitionPilot.Cli.csproj -c Release -r win-x64 --self-contained true
+& "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" .\installer\PartitionPilot.iss
+.\src\PartitionPilot.Cli\bin\Release\net10.0-windows\win-x64\publish\pp.exe release-manifest --artifacts .\artifacts
+.\src\PartitionPilot.Cli\bin\Release\net10.0-windows\win-x64\publish\pp.exe rescue-profile --source .\src\PartitionPilot.Cli\bin\Release\net10.0-windows\win-x64\publish --output .\artifacts\rescue-profile
+.\tools\run-ui-smoke.ps1
+```
+
+`release-manifest` writes `SHA256SUMS` and `SHA256SUMS.json`, then verifies every listed artifact hash. Set `PARTITIONPILOT_SIGN_CERT_THUMBPRINT` or pass `--cert-thumbprint` to Authenticode-sign `.exe` artifacts; unsigned builds are marked `UnsignedLocalTest` and should be treated as local-test outputs, not trusted releases.
 
 ## Safety
 
