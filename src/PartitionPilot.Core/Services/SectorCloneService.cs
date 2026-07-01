@@ -300,11 +300,12 @@ public static class SectorCloneService
                 throw new Win32Exception(Marshal.GetLastWin32Error(),
                     $"Destination read failed during verification at offset {verified}");
 
-            int compareLen = Math.Min(srcRead, dstRead);
-            if (!sourceBuffer.AsSpan(0, compareLen).SequenceEqual(destBuffer.AsSpan(0, compareLen)))
+            if (srcRead != dstRead)
+                mismatches++;
+            else if (!sourceBuffer.AsSpan(0, srcRead).SequenceEqual(destBuffer.AsSpan(0, dstRead)))
                 mismatches++;
 
-            verified += compareLen;
+            verified += Math.Min(srcRead, dstRead);
             ReportProgress(progress, verified, totalBytes, sw, ref lastReport, "Verifying");
         }
 

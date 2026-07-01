@@ -136,6 +136,29 @@ public class WorkflowServiceTests
         return dir;
     }
 
+    [Theory]
+    [InlineData("10GB", 10240)]
+    [InlineData("1TB", 1048576)]
+    [InlineData("512MB", 512)]
+    [InlineData("  2GB  ", 2048)]
+    public void ParseSizeMB_ValidInputs(string input, long expected)
+    {
+        Assert.Equal(expected, PartitionPlanService.ParseSizeMB(input));
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    [InlineData("-5GB")]
+    [InlineData("0GB")]
+    [InlineData("NaNGB")]
+    [InlineData("InfinityTB")]
+    [InlineData("abc")]
+    public void ParseSizeMB_RejectsInvalidInputs(string input)
+    {
+        Assert.ThrowsAny<Exception>(() => PartitionPlanService.ParseSizeMB(input));
+    }
+
     private sealed class FakeWmiDiskService : IWmiDiskService
     {
         public Task<List<DiskInfo>> GetDisksAsync() => Task.FromResult(new List<DiskInfo>
