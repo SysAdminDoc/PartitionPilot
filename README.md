@@ -1,4 +1,4 @@
-![Version](https://img.shields.io/badge/version-0.9.15-4CC2FF)
+![Version](https://img.shields.io/badge/version-0.9.16-4CC2FF)
 ![License](https://img.shields.io/badge/license-MIT-5EE0A0)
 ![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-F4C96A)
 
@@ -17,7 +17,7 @@ PartitionPilot is a Windows disk partition management tool for power users and I
 - Lost-partition recovery scanning with fast boundary probes, resumable deep mode, duplicate candidate coalescing, and coverage reporting.
 - Create, delete, format, resize, extend, split, hide, and drive-letter operations.
 - Disk initialization for RAW/unpartitioned disks (GPT).
-- Extended SMART health monitoring via LibreHardwareMonitorLib: reallocated sectors, pending sectors, power cycles, total writes, NVMe available spare, NVMe media errors, and vendor-specific attributes.
+- Extended SMART health monitoring via LibreHardwareMonitorLib: curated SATA/NVMe advisory metadata, reallocated sectors, pending sectors, power cycles, total writes, NVMe available spare, NVMe media errors, and vendor-specific attributes with raw fallback.
 - 4K alignment review and disk health classification (Good/Warning/Critical).
 - BitLocker encryption status with mutation and destruction preflights.
 - Storage Spaces pool detection with integrity warnings on pooled disks.

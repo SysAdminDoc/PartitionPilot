@@ -309,6 +309,7 @@ public class SmartHistoryService
             var healthClass = smart.Health switch { HealthStatus.Good => "good", HealthStatus.Warning => "warn", _ => "crit" };
             sb.AppendLine("<h2>Health Status</h2>");
             sb.AppendLine($"<p class='{healthClass}'><strong>{smart.Health}</strong> &mdash; {smart.HealthReason}</p>");
+            sb.AppendLine($"<p><strong>SMART metadata:</strong> {smart.MetadataVersion}</p>");
 
             sb.AppendLine("<h2>SMART Attributes</h2><table><tr><th>Metric</th><th>Value</th></tr>");
             if (smart.Temperature.HasValue) sb.AppendLine($"<tr><td>Temperature</td><td>{smart.Temperature} C</td></tr>");
@@ -327,11 +328,22 @@ public class SmartHistoryService
             if (smart.CriticalWarningFlags.Count > 0) sb.AppendLine($"<tr><td>Critical Warnings</td><td class='crit'>{string.Join(", ", smart.CriticalWarningFlags)}</td></tr>");
             sb.AppendLine("</table>");
 
+            if (smart.Advisories.Count > 0)
+            {
+                sb.AppendLine("<h2>Curated Advisories</h2><table><tr><th>Severity</th><th>Name</th><th>Raw</th><th>Detail</th><th>Recommendation</th></tr>");
+                foreach (var advisory in smart.Advisories)
+                {
+                    var cls = advisory.Severity == "Critical" ? "crit" : advisory.Severity == "Warning" ? "warn" : "";
+                    sb.AppendLine($"<tr class='{cls}'><td>{advisory.Severity}</td><td>{advisory.Name}</td><td>{advisory.RawValue?.ToString("N0") ?? ""}</td><td>{advisory.Detail}</td><td>{advisory.Recommendation}</td></tr>");
+                }
+                sb.AppendLine("</table>");
+            }
+
             if (smart.AllAttributes.Count > 0)
             {
-                sb.AppendLine("<h2>Raw SMART Attributes</h2><table><tr><th>ID</th><th>Name</th><th>Current</th><th>Worst</th><th>Raw</th></tr>");
+                sb.AppendLine("<h2>Raw SMART Attributes</h2><table><tr><th>ID</th><th>Name</th><th>Severity</th><th>Current</th><th>Worst</th><th>Raw</th><th>Metadata</th></tr>");
                 foreach (var a in smart.AllAttributes)
-                    sb.AppendLine($"<tr><td>{a.Id}</td><td>{a.Name}</td><td>{a.Current}</td><td>{a.Worst}</td><td>{a.RawDisplay}</td></tr>");
+                    sb.AppendLine($"<tr><td>{a.Id}</td><td>{a.DisplayName}</td><td>{a.AdvisorySeverity}</td><td>{a.Current}</td><td>{a.Worst}</td><td>{a.RawDisplay}</td><td>{a.AdvisoryText}</td></tr>");
                 sb.AppendLine("</table>");
             }
         }

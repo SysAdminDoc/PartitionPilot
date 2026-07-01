@@ -22,10 +22,3 @@
   Touches: `README.md`, `CLAUDE.md`, `CHANGELOG.md`
   Acceptance: docs include layout JSON schema examples, encryption compatibility notes, recovery scan mode tradeoffs, and release verification steps without adding extra markdown files.
   Complexity: S
-
-- [ ] P2 - Add curated drive-health advisory metadata
-  Why: PartitionPilot collects SMART/NVMe data but still relies heavily on raw attributes and generic text, while mature health tools use curated drive and attribute metadata to turn telemetry into guidance.
-  Evidence: `src/PartitionPilot.Core/Services/SmartQueryService.cs`; `src/PartitionPilot.Core/Services/WmiDiskService.cs`; `src/PartitionPilot.Core/Services/SmartHistoryService.cs`; https://www.smartmontools.org/; https://github.com/smartmontools/smartmontools/blob/master/smartmontools/drivedb.h; https://crystalmark.info/en/software/crystaldiskinfo/
-  Touches: `src/PartitionPilot.Core/Models/SmartData.cs`, `src/PartitionPilot.Core/Services/`, `src/PartitionPilot/ViewModels/DiskHealthViewModel.cs`, `src/PartitionPilot.Cli/Program.cs`, `tests/PartitionPilot.Tests/`
-  Acceptance: a local metadata layer maps known SATA/NVMe/USB attributes to names, severity, and explanations; unknown attributes remain visible as raw data; disk-health UI/CLI show advisory text with metadata version; tests cover known and unknown attribute fallback.
-  Complexity: L

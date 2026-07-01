@@ -10,6 +10,23 @@ public class SmartAttribute
     public int Worst { get; set; }
     public long RawValue { get; set; }
     public string RawDisplay => RawValue.ToString("N0");
+    public string DisplayName => SmartAttributeMetadataService.DescribeAttribute(this).Name;
+    public string AdvisorySeverity => SmartAttributeMetadataService.DescribeAttribute(this).Severity;
+    public string AdvisoryText => SmartAttributeMetadataService.DescribeAttribute(this).Explanation;
+    public string Recommendation => SmartAttributeMetadataService.DescribeAttribute(this).Recommendation;
+    public string MetadataVersion => SmartAttributeMetadataService.MetadataVersion;
+    public bool HasCuratedMetadata => SmartAttributeMetadataService.DescribeAttribute(this).HasCuratedMetadata;
+}
+
+public class SmartAdvisory
+{
+    public string Source { get; set; } = "";
+    public string Name { get; set; } = "";
+    public string Severity { get; set; } = "";
+    public string Detail { get; set; } = "";
+    public string Recommendation { get; set; } = "";
+    public long? RawValue { get; set; }
+    public string MetadataVersion { get; set; } = SmartAttributeMetadataService.MetadataVersion;
 }
 
 public class SmartData
@@ -37,6 +54,8 @@ public class SmartData
     public byte? NvmeCriticalWarning { get; set; }
 
     public List<SmartAttribute> AllAttributes { get; set; } = new();
+    public string MetadataVersion => SmartAttributeMetadataService.MetadataVersion;
+    public IReadOnlyList<SmartAdvisory> Advisories => SmartAttributeMetadataService.BuildAdvisories(this);
 
     public List<string> CriticalWarningFlags
     {
