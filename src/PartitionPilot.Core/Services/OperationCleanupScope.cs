@@ -37,7 +37,29 @@ public sealed class OperationCleanupScope : IDisposable, IAsyncDisposable
 
     public void Dispose()
     {
-        DisposeAsync().AsTask().GetAwaiter().GetResult();
+        if (_disposed)
+            return;
+
+        _disposed = true;
+
+        for (var i = _registrations.Count - 1; i >= 0; i--)
+        {
+            var registration = _registrations[i];
+            if (!registration.IsActive)
+                continue;
+
+            try
+            {
+                _log.Log($"Cleanup: {registration.Description}...");
+                registration.Cleanup().ConfigureAwait(false).GetAwaiter().GetResult();
+                registration.Complete();
+                _log.Log($"Cleanup complete: {registration.Description}.");
+            }
+            catch (Exception ex)
+            {
+                _log.Log($"Cleanup failed: {registration.Description}: {ex.Message}. Recovery: {registration.RecoveryHint}");
+            }
+        }
     }
 
     public async ValueTask DisposeAsync()

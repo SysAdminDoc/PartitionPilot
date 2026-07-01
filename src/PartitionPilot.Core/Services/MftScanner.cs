@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.IO;
 using System.Runtime.InteropServices;
+using Microsoft.Win32.SafeHandles;
 
 namespace PartitionPilot;
 
@@ -21,44 +22,34 @@ public static class MftScanner
     }
 
     [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-    private static extern IntPtr CreateFileW(
+    private static extern SafeFileHandle CreateFileW(
         string lpFileName, uint dwDesiredAccess, uint dwShareMode,
         IntPtr lpSecurityAttributes, uint dwCreationDisposition,
         uint dwFlagsAndAttributes, IntPtr hTemplateFile);
 
     [DllImport("kernel32.dll", SetLastError = true)]
     private static extern bool DeviceIoControl(
-        IntPtr hDevice, uint dwIoControlCode,
+        SafeFileHandle hDevice, uint dwIoControlCode,
         ref MFT_ENUM_DATA_V0 lpInBuffer, int nInBufferSize,
         IntPtr lpOutBuffer, int nOutBufferSize,
         out int lpBytesReturned, IntPtr lpOverlapped);
-
-    [DllImport("kernel32.dll", SetLastError = true)]
-    private static extern bool CloseHandle(IntPtr hObject);
 
     private sealed record MftEntry(string Name, long ParentRef, long Size, bool IsDirectory);
 
     public static List<FolderSizeInfo> ScanVolume(char driveLetter, int topN = 30, CancellationToken ct = default)
     {
         var volumePath = $"\\\\.\\{driveLetter}:";
-        var handle = CreateFileW(volumePath, 0, FILE_SHARE_READ | FILE_SHARE_WRITE,
+        using var handle = CreateFileW(volumePath, 0, FILE_SHARE_READ | FILE_SHARE_WRITE,
             IntPtr.Zero, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, IntPtr.Zero);
 
-        if (handle == new IntPtr(-1))
+        if (handle.IsInvalid)
             throw new Win32Exception(Marshal.GetLastWin32Error(), $"Cannot open volume {driveLetter}:");
 
-        try
-        {
-            var entries = EnumerateMft(handle, ct);
-            return BuildTopFolders(entries, driveLetter, topN);
-        }
-        finally
-        {
-            CloseHandle(handle);
-        }
+        var entries = EnumerateMft(handle, ct);
+        return BuildTopFolders(entries, driveLetter, topN);
     }
 
-    private static Dictionary<long, MftEntry> EnumerateMft(IntPtr handle, CancellationToken ct)
+    private static Dictionary<long, MftEntry> EnumerateMft(SafeFileHandle handle, CancellationToken ct)
     {
         var entries = new Dictionary<long, MftEntry>();
         const int bufferSize = 64 * 1024;

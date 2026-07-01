@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Runtime.InteropServices;
+using Microsoft.Win32.SafeHandles;
 
 namespace PartitionPilot;
 
@@ -16,17 +17,14 @@ public static class NvmeHealthService
     private const int NVME_LOG_PAGE_HEALTH_INFO = 2;
 
     [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-    private static extern IntPtr CreateFileW(
+    private static extern SafeFileHandle CreateFileW(
         string lpFileName, uint dwDesiredAccess, uint dwShareMode,
         IntPtr lpSecurityAttributes, uint dwCreationDisposition,
         uint dwFlagsAndAttributes, IntPtr hTemplateFile);
 
     [DllImport("kernel32.dll", SetLastError = true)]
-    private static extern bool CloseHandle(IntPtr hObject);
-
-    [DllImport("kernel32.dll", SetLastError = true)]
     private static extern bool DeviceIoControl(
-        IntPtr hDevice, uint dwIoControlCode,
+        SafeFileHandle hDevice, uint dwIoControlCode,
         IntPtr lpInBuffer, int nInBufferSize,
         IntPtr lpOutBuffer, int nOutBufferSize,
         out int lpBytesReturned, IntPtr lpOverlapped);
@@ -57,61 +55,60 @@ public static class NvmeHealthService
     public static void EnrichSmartData(SmartData data, int diskNumber, IActivityLog? log = null)
     {
         var path = $"\\\\.\\PhysicalDrive{diskNumber}";
-        var handle = CreateFileW(path, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
+        using var handle = CreateFileW(path, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
             IntPtr.Zero, OPEN_EXISTING, 0, IntPtr.Zero);
-        if (handle == new IntPtr(-1))
+        if (handle.IsInvalid)
         {
             log?.Log($"NVMe health query: cannot open PhysicalDrive{diskNumber}");
             return;
         }
 
+        var querySize = Marshal.SizeOf<STORAGE_PROPERTY_QUERY>();
+        int bufferSize = querySize + 512;
+        var buffer = Marshal.AllocHGlobal(bufferSize);
+
         try
         {
-            var querySize = Marshal.SizeOf<STORAGE_PROPERTY_QUERY>();
-            int bufferSize = querySize + 512;
-            var buffer = Marshal.AllocHGlobal(bufferSize);
+            for (int i = 0; i < bufferSize; i++)
+                Marshal.WriteByte(buffer, i, 0);
 
-            try
+            var query = new STORAGE_PROPERTY_QUERY
             {
-                for (int i = 0; i < bufferSize; i++)
-                    Marshal.WriteByte(buffer, i, 0);
-
-                var query = new STORAGE_PROPERTY_QUERY
+                PropertyId = StorageDeviceProtocolSpecificProperty,
+                QueryType = 0,
+                ProtocolSpecific = new STORAGE_PROTOCOL_SPECIFIC_DATA
                 {
-                    PropertyId = StorageDeviceProtocolSpecificProperty,
-                    QueryType = 0,
-                    ProtocolSpecific = new STORAGE_PROTOCOL_SPECIFIC_DATA
-                    {
-                        ProtocolType = ProtocolTypeNvme,
-                        DataType = NVMeDataTypeLogPage,
-                        ProtocolDataRequestValue = NVME_LOG_PAGE_HEALTH_INFO,
-                        ProtocolDataOffset = querySize,
-                        ProtocolDataLength = 512
-                    }
-                };
-
-                Marshal.StructureToPtr(query, buffer, false);
-
-                if (!DeviceIoControl(handle, IOCTL_STORAGE_QUERY_PROPERTY,
-                    buffer, bufferSize, buffer, bufferSize, out _, IntPtr.Zero))
-                {
-                    log?.Log($"NVMe health IOCTL failed for drive {diskNumber} (not NVMe or access denied)");
-                    return;
+                    ProtocolType = ProtocolTypeNvme,
+                    DataType = NVMeDataTypeLogPage,
+                    ProtocolDataRequestValue = NVME_LOG_PAGE_HEALTH_INFO,
+                    ProtocolDataOffset = querySize,
+                    ProtocolDataLength = 512
                 }
+            };
 
-                var healthData = new byte[512];
-                Marshal.Copy(buffer + querySize, healthData, 0, 512);
-                ParseHealthLog(data, healthData);
-                log?.Log($"NVMe health log parsed for drive {diskNumber}");
-            }
-            finally
+            Marshal.StructureToPtr(query, buffer, false);
+
+            if (!DeviceIoControl(handle, IOCTL_STORAGE_QUERY_PROPERTY,
+                buffer, bufferSize, buffer, bufferSize, out int bytesReturned, IntPtr.Zero))
             {
-                Marshal.FreeHGlobal(buffer);
+                log?.Log($"NVMe health IOCTL failed for drive {diskNumber} (not NVMe or access denied)");
+                return;
             }
+
+            if (bytesReturned < querySize + 512)
+            {
+                log?.Log($"NVMe health IOCTL returned insufficient data ({bytesReturned} bytes) for drive {diskNumber}");
+                return;
+            }
+
+            var healthData = new byte[512];
+            Marshal.Copy(buffer + querySize, healthData, 0, 512);
+            ParseHealthLog(data, healthData);
+            log?.Log($"NVMe health log parsed for drive {diskNumber}");
         }
         finally
         {
-            CloseHandle(handle);
+            Marshal.FreeHGlobal(buffer);
         }
     }
 
