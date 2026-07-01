@@ -5,6 +5,7 @@ namespace PartitionPilot.Dialogs;
 public partial class SplitPartitionDialog : Window
 {
     private readonly IDialogService _dialog;
+    private readonly double _maxNewGB;
 
     public double NewPartSizeGB { get; private set; }
     public char NewLetter { get; private set; }
@@ -19,6 +20,7 @@ public partial class SplitPartitionDialog : Window
     internal SplitPartitionDialog(char driveLetter, long currentBytes, long minKeepBytes, double maxNewGB, IEnumerable<char> availableLetters, IDialogService dialog)
     {
         _dialog = dialog;
+        _maxNewGB = maxNewGB;
         InitializeComponent();
         var curGB = Math.Round(currentBytes / (double)(1L << 30), 2);
         var minKeepGB = Math.Ceiling(minKeepBytes / (double)(1L << 30));
@@ -30,7 +32,7 @@ public partial class SplitPartitionDialog : Window
 
     private void OnOk(object sender, RoutedEventArgs e)
     {
-        if (!double.TryParse(txtNewSize.Text, out var size) || size <= 0)
+        if (!double.TryParse(txtNewSize.Text, out var size) || size <= 0 || size > _maxNewGB)
         {
             _dialog.ShowWarning(LocExtension.Get("DialogNewPartitionSizeRequired"), LocExtension.Get("DialogSizeRequired"));
             return;

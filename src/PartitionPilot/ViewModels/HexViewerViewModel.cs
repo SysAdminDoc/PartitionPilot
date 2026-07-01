@@ -1,7 +1,9 @@
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Windows;
 using System.Windows.Input;
+using Microsoft.Win32.SafeHandles;
 
 namespace PartitionPilot;
 
@@ -18,17 +20,14 @@ public class HexViewerViewModel : ViewModelBase
     private const int DISPLAY_SIZE = 512;
 
     [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-    private static extern IntPtr CreateFileW(string lpFileName, uint dwDesiredAccess, uint dwShareMode,
+    private static extern SafeFileHandle CreateFileW(string lpFileName, uint dwDesiredAccess, uint dwShareMode,
         IntPtr lpSecurity, uint dwCreation, uint dwFlags, IntPtr hTemplate);
 
     [DllImport("kernel32.dll", SetLastError = true)]
-    private static extern bool ReadFile(IntPtr hFile, byte[] lpBuffer, int nBytes, out int bytesRead, IntPtr lpOverlapped);
+    private static extern bool ReadFile(SafeFileHandle hFile, byte[] lpBuffer, int nBytes, out int bytesRead, IntPtr lpOverlapped);
 
     [DllImport("kernel32.dll", SetLastError = true)]
-    private static extern bool SetFilePointerEx(IntPtr hFile, long distance, out long newPos, uint method);
-
-    [DllImport("kernel32.dll", SetLastError = true)]
-    private static extern bool CloseHandle(IntPtr hObject);
+    private static extern bool SetFilePointerEx(SafeFileHandle hFile, long distance, out long newPos, uint method);
 
     public System.Collections.ObjectModel.ObservableCollection<DiskInfo> Disks { get; } = new();
 
@@ -113,10 +112,13 @@ public class HexViewerViewModel : ViewModelBase
     public async Task RefreshAsync()
     {
         var disks = await _wmiService.GetDisksAsync();
-        Disks.Clear();
-        foreach (var d in disks) Disks.Add(d);
-        if (Disks.Count > 0 && SelectedDisk is null)
-            SelectedDisk = Disks[0];
+        Application.Current.Dispatcher.Invoke(() =>
+        {
+            Disks.Clear();
+            foreach (var d in disks) Disks.Add(d);
+            if (Disks.Count > 0 && SelectedDisk is null)
+                SelectedDisk = Disks[0];
+        });
     }
 
     private async Task ReadSectorAsync()
@@ -146,33 +148,26 @@ public class HexViewerViewModel : ViewModelBase
     private static byte[] ReadRawSector(int diskNumber, long sectorLba)
     {
         var path = $"\\\\.\\PhysicalDrive{diskNumber}";
-        var handle = CreateFileW(path, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
+        using var handle = CreateFileW(path, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
             IntPtr.Zero, OPEN_EXISTING, FILE_FLAG_NO_BUFFERING, IntPtr.Zero);
 
-        if (handle == new IntPtr(-1))
+        if (handle.IsInvalid)
             throw new Win32Exception(Marshal.GetLastWin32Error(), $"Cannot open disk {diskNumber}");
 
-        try
-        {
-            long byteOffset = sectorLba * DISPLAY_SIZE;
-            long alignedOffset = byteOffset / 4096 * 4096;
-            int offsetInBuffer = (int)(byteOffset - alignedOffset);
+        long byteOffset = sectorLba * DISPLAY_SIZE;
+        long alignedOffset = byteOffset / 4096 * 4096;
+        int offsetInBuffer = (int)(byteOffset - alignedOffset);
 
-            var readBuffer = new byte[4096];
-            if (!SetFilePointerEx(handle, alignedOffset, out _, 0))
-                throw new Win32Exception(Marshal.GetLastWin32Error(), "Seek failed");
+        var readBuffer = new byte[4096];
+        if (!SetFilePointerEx(handle, alignedOffset, out _, 0))
+            throw new Win32Exception(Marshal.GetLastWin32Error(), "Seek failed");
 
-            if (!ReadFile(handle, readBuffer, readBuffer.Length, out int bytesRead, IntPtr.Zero) || bytesRead == 0)
-                throw new Win32Exception(Marshal.GetLastWin32Error(), "Read failed");
+        if (!ReadFile(handle, readBuffer, readBuffer.Length, out int bytesRead, IntPtr.Zero) || bytesRead == 0)
+            throw new Win32Exception(Marshal.GetLastWin32Error(), "Read failed");
 
-            var result = new byte[Math.Min(DISPLAY_SIZE, bytesRead - offsetInBuffer)];
-            Buffer.BlockCopy(readBuffer, offsetInBuffer, result, 0, result.Length);
-            return result;
-        }
-        finally
-        {
-            CloseHandle(handle);
-        }
+        var result = new byte[Math.Min(DISPLAY_SIZE, bytesRead - offsetInBuffer)];
+        Buffer.BlockCopy(readBuffer, offsetInBuffer, result, 0, result.Length);
+        return result;
     }
 
     private static string FormatHexDump(byte[] data, long baseOffset)

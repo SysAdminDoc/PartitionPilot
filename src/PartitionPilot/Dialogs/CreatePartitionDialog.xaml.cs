@@ -5,6 +5,7 @@ namespace PartitionPilot.Dialogs;
 public partial class CreatePartitionDialog : Window
 {
     private readonly IDialogService _dialog;
+    private readonly double _availableGB;
 
     public double SizeGB { get; private set; }
     public char SelectedLetter { get; private set; }
@@ -20,6 +21,7 @@ public partial class CreatePartitionDialog : Window
     internal CreatePartitionDialog(double availableGB, IEnumerable<char> availableLetters, IDialogService dialog)
     {
         _dialog = dialog;
+        _availableGB = availableGB;
         InitializeComponent();
         txtInfo.Text = $"{availableGB} GB";
         txtSize.Text = availableGB.ToString("F2");
@@ -29,7 +31,7 @@ public partial class CreatePartitionDialog : Window
 
     private void OnOk(object sender, RoutedEventArgs e)
     {
-        if (!double.TryParse(txtSize.Text, out var size) || size <= 0)
+        if (!double.TryParse(txtSize.Text, out var size) || size <= 0 || size > _availableGB)
         {
             _dialog.ShowWarning(LocExtension.Get("DialogPartitionSizeRequired"), LocExtension.Get("DialogSizeRequired"));
             return;

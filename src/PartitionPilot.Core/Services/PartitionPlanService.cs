@@ -42,14 +42,27 @@ public static class PartitionPlanService
         if (normalized.Length == 0)
             throw new ArgumentException("Size is required.");
 
+        long result;
         if (normalized.EndsWith("TB", StringComparison.Ordinal))
-            return checked((long)(double.Parse(normalized.Replace("TB", ""), CultureInfo.InvariantCulture) * 1024 * 1024));
-        if (normalized.EndsWith("GB", StringComparison.Ordinal))
-            return checked((long)(double.Parse(normalized.Replace("GB", ""), CultureInfo.InvariantCulture) * 1024));
-        if (normalized.EndsWith("MB", StringComparison.Ordinal))
-            return checked((long)double.Parse(normalized.Replace("MB", ""), CultureInfo.InvariantCulture));
+            result = checked((long)(ParsePositiveDouble(normalized.Replace("TB", "")) * 1024 * 1024));
+        else if (normalized.EndsWith("GB", StringComparison.Ordinal))
+            result = checked((long)(ParsePositiveDouble(normalized.Replace("GB", "")) * 1024));
+        else if (normalized.EndsWith("MB", StringComparison.Ordinal))
+            result = checked((long)ParsePositiveDouble(normalized.Replace("MB", "")));
+        else
+            result = long.Parse(normalized, NumberStyles.None, CultureInfo.InvariantCulture);
 
-        return long.Parse(normalized, NumberStyles.None, CultureInfo.InvariantCulture);
+        if (result <= 0)
+            throw new ArgumentException($"Size must be positive: {sizeText}");
+        return result;
+    }
+
+    private static double ParsePositiveDouble(string text)
+    {
+        var value = double.Parse(text, CultureInfo.InvariantCulture);
+        if (!double.IsFinite(value) || value <= 0)
+            throw new ArgumentException($"Size must be a positive finite number: {text}");
+        return value;
     }
 
     private static PartitionPlanResult BuildDelete(PartitionPlanRequest request)

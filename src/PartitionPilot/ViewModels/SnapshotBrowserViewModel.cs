@@ -86,11 +86,14 @@ public class SnapshotBrowserViewModel : ViewModelBase
         {
             var snapshots = await _backup.ListSnapshotsAsync();
 
-            Snapshots.Clear();
-            foreach (var snapshot in snapshots)
-                Snapshots.Add(snapshot);
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                Snapshots.Clear();
+                foreach (var snapshot in snapshots)
+                    Snapshots.Add(snapshot);
 
-            SelectedSnapshot = Snapshots.FirstOrDefault();
+                SelectedSnapshot = Snapshots.FirstOrDefault();
+            });
             SummaryText = snapshots.Count == 0
                 ? $"No snapshots found in {PartitionTableBackup.BackupDirectory}."
                 : $"{snapshots.Count} snapshot(s) loaded from {PartitionTableBackup.BackupDirectory}.";
