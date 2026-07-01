@@ -1,5 +1,35 @@
 # Changelog
 
+## PartitionPilot v0.9.20 - 2026-06-30
+
+### Security
+- Replaced `Random.Shared` with `RandomNumberGenerator` for DoD wipe random passes to provide cryptographically secure randomness.
+- Migrated raw `IntPtr` kernel handles to `SafeFileHandle` in SectorCloneService, MftScanner, NvmeHealthService, PartitionRecoveryScanner, and HexViewerViewModel to prevent handle leaks on exceptions.
+- Added `CryptographicOperations.ZeroMemory` for derived encryption keys in all encrypt/decrypt paths.
+- Sanitized physical disk DeviceId to alphanumeric-only before using in file paths to prevent path traversal.
+- Fixed WQL double-quoting in storage pool membership query that caused incorrect pool-to-disk assignment.
+
+### Correctness
+- Fixed `AsyncRelayCommand` to catch unhandled exceptions in `async void Execute` instead of crashing the app.
+- Fixed `MainViewModel.CheckForUpdateAsync` to wrap the entire method in try/catch to prevent unobserved task exception crash.
+- Fixed `SectorCloneService` verification to count read-length mismatches as failures instead of silently comparing partial reads.
+- Fixed `NvmeHealthService.ReadUInt128AsLong` to read as unsigned and clamp to `long.MaxValue` instead of returning negative values.
+- Fixed bad-sector percentage calculation dividing by megabytes instead of block count.
+- Fixed `OperationCleanupScope.Dispose` sync-over-async deadlock risk with `ConfigureAwait(false)`.
+- Fixed `HexViewerViewModel.RefreshAsync` and `SnapshotBrowserViewModel.RefreshAsync` modifying `ObservableCollection` off the UI thread.
+- Added upper-bound validation to Create Partition and Split Partition dialogs.
+- Added 64 TB cap to VHD size input to prevent `long` overflow in size calculations.
+- Rejected NaN, Infinity, zero, and negative values in `PartitionPlanService.ParseSizeMB`.
+- Fixed NVMe health IOCTL to validate `bytesReturned` before reading health data.
+- Added MFT parent-chain cycle guard (256 depth limit) in `MftScanner`.
+
+### UX
+- Fixed `TreemapControl` labels and borders invisible in light theme by replacing frozen dark-theme-only brushes with theme-aware resource lookups.
+- Fixed benchmark result associating disk 0 metadata regardless of which drive was benchmarked.
+
+### Testing
+- Added 11 tests for `ParseSizeMB` covering valid inputs and invalid edge cases.
+
 ## PartitionPilot v0.9.19 - 2026-06-30
 
 ### Operator Documentation
