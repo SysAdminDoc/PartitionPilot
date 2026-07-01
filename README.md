@@ -1,4 +1,4 @@
-![Version](https://img.shields.io/badge/version-0.9.16-4CC2FF)
+![Version](https://img.shields.io/badge/version-0.9.17-4CC2FF)
 ![License](https://img.shields.io/badge/license-MIT-5EE0A0)
 ![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-F4C96A)
 
@@ -36,6 +36,7 @@ PartitionPilot is a Windows disk partition management tool for power users and I
 - Auto-updates via Velopack with delta packages and GitHub Releases integration.
 - Release artifact verification with SHA256 manifests, optional Authenticode signing, and explicit unsigned local-test status.
 - Release-gated UI smoke tests with TRX logs, screenshots, and fail-closed all-skipped detection.
+- WinPE rescue profile packaging with portable CLI launchers, source validation, and `diagnostics --rescue` checks for WMI, DiskPart, DISM, BitLocker, and storage APIs.
 - .NET 10 Fluent theme with dark, light, and system (follows OS setting) modes.
 - CLI companion (pp.exe) for scripted disk management with JSON output.
 - SMART attribute history tracking with trend alerts for degradation detection.
@@ -68,6 +69,7 @@ The project targets `net10.0-windows` and publishes as a self-contained Windows 
 dotnet publish .\src\PartitionPilot\PartitionPilot.csproj -c Release -r win-x64 --self-contained true
 dotnet publish .\src\PartitionPilot.Cli\PartitionPilot.Cli.csproj -c Release -r win-x64 --self-contained true
 dotnet run --project .\src\PartitionPilot.Cli\PartitionPilot.Cli.csproj -- release-manifest --artifacts .\artifacts
+dotnet run --project .\src\PartitionPilot.Cli\PartitionPilot.Cli.csproj -- rescue-profile --source .\src\PartitionPilot.Cli\bin\Release\net10.0-windows\win-x64\publish --output .\artifacts\rescue-profile
 ```
 
 Set `PARTITIONPILOT_SIGN_CERT_THUMBPRINT` before `release-manifest` to Authenticode-sign `.exe` artifacts with `signtool.exe`; without it, manifests are marked `UnsignedLocalTest`.
@@ -96,7 +98,7 @@ dotnet run --project .\src\PartitionPilot.Cli\PartitionPilot.Cli.csproj -- parti
 dotnet run --project .\src\PartitionPilot.Cli\PartitionPilot.Cli.csproj -- health --json
 ```
 
-Commands: `disks`, `partitions`, `volumes`, `smart`, `smart-history`, `smart-trends`, `health`, `alignment`, `temperature`, `benchmark`, `snapshot`, `diagnostics`, `boot-audit`, `plan`, `apply-layout`, `recovery-scan`, `version`. All support `--json` for scripted automation.
+Commands: `disks`, `partitions`, `volumes`, `smart`, `smart-history`, `smart-trends`, `health`, `alignment`, `temperature`, `benchmark`, `snapshot`, `diagnostics`, `boot-audit`, `plan`, `apply-layout`, `recovery-scan`, `release-manifest`, `rescue-profile`, `version`. All support `--json` for scripted automation.
 
 Recovery scans default to fast mode:
 

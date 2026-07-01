@@ -1,5 +1,12 @@
 # Changelog
 
+## PartitionPilot v0.9.17 - 2026-06-30
+
+### WinPE Rescue Profile
+- Added `pp rescue-profile --output DIR [--source DIR]` to create a guarded portable rescue folder with `pp-rescue.cmd`, optional GUI launcher, operator notes, and `rescue-profile.json`.
+- Added `pp diagnostics --rescue` checks for WinPE runtime detection, MSFT_Disk storage API access, BitLocker WMI/provider support, DiskPart, DISM, manage-bde, and BCDBoot.
+- Added tests for rescue source validation, launcher/manifest generation, and WinPE runtime detection.
+
 ## PartitionPilot v0.9.16 - 2026-06-30
 
 ### Drive Health Metadata
