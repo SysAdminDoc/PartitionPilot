@@ -845,10 +845,8 @@ public class ToolsViewModel : ViewModelBase
         if (!ConfirmBitLockerDestructiveVolume($"Wipe free space on {letter}:", letter, encryptionStatus))
             return;
 
-        var encryptionLine = string.IsNullOrWhiteSpace(encryptionStatus) ? "" : $"\nEncryption: {encryptionStatus}\n";
-        if (!_dialog.Confirm(
-            $"Wipe free space on {letter}:?\n{encryptionLine}\nExisting files remain in place. Previously deleted data in free space will be overwritten.",
-            "Confirm Free-Space Wipe")) return;
+        var freeSpacePrompt = WipeWorkflowService.BuildFreeSpacePrompt(letter, encryptionStatus);
+        if (!_dialog.Confirm(freeSpacePrompt.Message, freeSpacePrompt.Title)) return;
 
         var ct = BeginOperation($"Wiping free space on {letter}:...");
         try
@@ -903,18 +901,8 @@ public class ToolsViewModel : ViewModelBase
             return;
         }
 
-        if (!_dialog.ConfirmDanger(
-            $"NVMe FIRMWARE ERASE target:\n{diskIdentity.ConfirmationSummary}\n\n" +
-            $"Method: {method}\n\n" +
-            "This sends a firmware-level sanitize command directly to the drive controller. " +
-            "ALL DATA WILL BE PERMANENTLY AND IRREVERSIBLY DESTROYED.\n\n" +
-            "This operation cannot be cancelled once started.",
-            "NVMe Sanitize -- Confirmation 1 of 2")) return;
-
-        if (!_dialog.ConfirmDanger(
-            "FINAL WARNING: NVMe sanitize is a hardware-level operation that erases ALL data " +
-            "including data in over-provisioned and remapped sectors.\n\nProceed?",
-            "NVMe Sanitize -- FINAL Confirmation")) return;
+        if (!ConfirmWorkflowPrompts(WipeWorkflowService.BuildNvmeSanitizePrompts(diskIdentity, method)))
+            return;
 
         if (!await VerifyDiskIdentityBeforeExecuteAsync(diskIdentity, "NVMe Sanitize Target Changed"))
             return;
@@ -965,16 +953,8 @@ public class ToolsViewModel : ViewModelBase
             return;
         }
 
-        if (!_dialog.ConfirmWarning(
-            $"DoD 5220.22-M {passCount}-PASS WIPE target:\n{diskIdentity.ConfirmationSummary}\n\n" +
-            $"Size: {SizeUtil.Format(SelectedWipeDrive.Size)}\n\n" +
-            "ALL DATA WILL BE PERMANENTLY DESTROYED with multiple overwrite passes.\n\nContinue?",
-            $"DoD {passCount}-Pass Wipe -- Confirmation 1 of 2")) return;
-
-        if (!_dialog.ConfirmDanger(
-            $"FINAL WARNING: {passCount}-pass wipe will write the entire disk {passCount} times. " +
-            "This may take hours on large drives. Click Yes to begin.",
-            $"DoD {passCount}-Pass Wipe -- FINAL Confirmation")) return;
+        if (!ConfirmWorkflowPrompts(WipeWorkflowService.BuildDodPrompts(diskIdentity, passCount, SelectedWipeDrive.Size)))
+            return;
 
         if (!await VerifyDiskIdentityBeforeExecuteAsync(diskIdentity, "DoD Wipe Target Changed"))
             return;
@@ -1048,21 +1028,8 @@ public class ToolsViewModel : ViewModelBase
             return;
         }
 
-        if (!_dialog.ConfirmWarning(
-            $"WARNING: You are about to wipe:\n{diskIdentity.ConfirmationSummary}\n\n" +
-            "ALL DATA ON THIS DISK WILL BE PERMANENTLY DESTROYED.\n\nContinue?",
-            "Wipe Disk -- Confirmation 1 of 3")) return;
-
-        if (!_dialog.ConfirmWarning(
-            $"Are you absolutely sure you want to wipe Disk {SelectedWipeDrive.Number}?\n\n" +
-            $"Target:\n{diskIdentity.ConfirmationSummary}\n" +
-            $"Size: {SizeUtil.Format(SelectedWipeDrive.Size)}\n" +
-            $"Mode: {WipeMode}\n\nThis CANNOT be undone.",
-            "Wipe Disk -- Confirmation 2 of 3")) return;
-
-        if (!_dialog.ConfirmDanger(
-            "FINAL WARNING: Click Yes to begin disk wipe immediately.",
-            "Wipe Disk -- FINAL Confirmation")) return;
+        if (!ConfirmWorkflowPrompts(WipeWorkflowService.BuildFullDiskPrompts(diskIdentity, WipeMode, SelectedWipeDrive.Size)))
+            return;
 
         if (!await VerifyDiskIdentityBeforeExecuteAsync(diskIdentity, "Wipe Target Changed"))
             return;
@@ -1143,6 +1110,20 @@ public class ToolsViewModel : ViewModelBase
     private bool ConfirmBitLockerDestructiveVolume(string operation, char letter)
     {
         return ConfirmBitLockerDestructiveVolume(operation, letter, GetVolumeEncryptionStatus(letter));
+    }
+
+    private bool ConfirmWorkflowPrompts(IEnumerable<WorkflowPrompt> prompts)
+    {
+        foreach (var prompt in prompts)
+        {
+            var confirmed = prompt.IsDanger
+                ? _dialog.ConfirmDanger(prompt.Message, prompt.Title)
+                : _dialog.ConfirmWarning(prompt.Message, prompt.Title);
+            if (!confirmed)
+                return false;
+        }
+
+        return true;
     }
 
     private bool ConfirmBitLockerDestructiveVolume(string operation, char letter, string? encryptionStatus)

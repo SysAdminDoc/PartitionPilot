@@ -25,7 +25,7 @@ public class DiskImageManifestServiceTests
             };
 
             var manifest = await DiskImageManifestService.CreateManifestAsync(
-                image, 'T', source, volume, "0.9.17");
+                image, 'T', source, volume, "0.9.18");
 
             Assert.Equal("capture.vhdx", manifest.ImageFileName);
             Assert.Equal("T:", manifest.SourceDrive);
@@ -53,7 +53,7 @@ public class DiskImageManifestServiceTests
 
             var image = Path.Combine(dir, "capture.wim");
             await File.WriteAllTextAsync(image, "image");
-            await DiskImageManifestService.CreateManifestAsync(image, 'T', source, null, "0.9.17");
+            await DiskImageManifestService.CreateManifestAsync(image, 'T', source, null, "0.9.18");
 
             await File.WriteAllTextAsync(image, "tampered");
             var validation = await DiskImageManifestService.ValidateManifestAsync(image);
@@ -79,7 +79,7 @@ public class DiskImageManifestServiceTests
 
             var image = Path.Combine(dir, "capture.vhdx");
             await File.WriteAllTextAsync(image, "plain image");
-            var manifest = await DiskImageManifestService.CreateManifestAsync(image, 'T', source, null, "0.9.17");
+            var manifest = await DiskImageManifestService.CreateManifestAsync(image, 'T', source, null, "0.9.18");
             var plainHash = manifest.ImageSha256;
 
             var encrypted = image + ".enc";

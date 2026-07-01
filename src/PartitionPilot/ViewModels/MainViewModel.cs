@@ -1,8 +1,5 @@
 using System.IO;
-using System.IO.Compression;
 using System.Security.Principal;
-using System.Text.Json;
-using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Input;
 
@@ -262,73 +259,20 @@ public partial class MainViewModel : ViewModelBase
             StatusText = "Generating support bundle...";
             Log.Log("Generating support bundle...");
 
-            var tempDir = Path.Combine(Path.GetTempPath(), $"pp_support_{Guid.NewGuid():N}");
-            Directory.CreateDirectory(tempDir);
+            await SupportBundleService.CreateAsync(
+                new SupportBundleOptions(
+                    dlg.FileName,
+                    GetVersionText(),
+                    ElevationContextText,
+                    Log.FullText,
+                    PartitionTableBackup.BackupDirectory,
+                    IsRunningAsAdministrator(),
+                    DateTimeOffset.Now),
+                _wmiService);
 
-            try
-            {
-                var info = new
-                {
-                    AppVersion = GetVersionText(),
-                    OSVersion = Environment.OSVersion.VersionString,
-                    OSBuild = Environment.OSVersion.Version.Build,
-                    Is64Bit = Environment.Is64BitOperatingSystem,
-                    IsAdmin = IsRunningAsAdministrator(),
-                    ElevationContext = ElevationContextText,
-                    DotNetVersion = Environment.Version.ToString(),
-                    Timestamp = DateTimeOffset.Now.ToString("o")
-                };
-                await File.WriteAllTextAsync(
-                    Path.Combine(tempDir, "system-info.json"),
-                    JsonSerializer.Serialize(info, new JsonSerializerOptions { WriteIndented = true }));
-
-                await File.WriteAllTextAsync(
-                    Path.Combine(tempDir, "activity-log.txt"),
-                    RedactSupportBundleText(Log.FullText));
-
-                var disks = await _wmiService.GetDisksAsync();
-                var redactedDisks = disks.Select(d => new
-                {
-                    d.Number,
-                    d.FriendlyName,
-                    Size = SizeUtil.Format(d.Size),
-                    d.PartitionStyle,
-                    d.NumberOfPartitions,
-                    d.StoragePoolName
-                });
-                await File.WriteAllTextAsync(
-                    Path.Combine(tempDir, "disk-summary.json"),
-                    JsonSerializer.Serialize(redactedDisks, new JsonSerializerOptions { WriteIndented = true }));
-
-                var snapshotDir = PartitionTableBackup.BackupDirectory;
-                if (Directory.Exists(snapshotDir))
-                {
-                    var snapshotOut = Path.Combine(tempDir, "snapshots");
-                    Directory.CreateDirectory(snapshotOut);
-                    foreach (var file in Directory.EnumerateFiles(snapshotDir, "*.json")
-                                 .OrderByDescending(File.GetCreationTimeUtc)
-                                 .Take(10))
-                    {
-                        var content = await File.ReadAllTextAsync(file);
-                        content = RedactSupportBundleText(content);
-                        await File.WriteAllTextAsync(
-                            Path.Combine(snapshotOut, Path.GetFileName(file)),
-                            content);
-                    }
-                }
-
-                if (File.Exists(dlg.FileName))
-                    File.Delete(dlg.FileName);
-                ZipFile.CreateFromDirectory(tempDir, dlg.FileName);
-
-                Log.Log($"Support bundle exported to: {dlg.FileName}");
-                _dialog.ShowInfo($"Support bundle exported to:\n{dlg.FileName}\n\nSerial numbers and user paths have been redacted.",
-                    "Support Bundle Exported");
-            }
-            finally
-            {
-                try { Directory.Delete(tempDir, recursive: true); } catch { }
-            }
+            Log.Log($"Support bundle exported to: {dlg.FileName}");
+            _dialog.ShowInfo($"Support bundle exported to:\n{dlg.FileName}\n\nSerial numbers and user paths have been redacted.",
+                "Support Bundle Exported");
 
             StatusText = "Ready";
         }
@@ -340,24 +284,9 @@ public partial class MainViewModel : ViewModelBase
         }
     }
 
-    [GeneratedRegex("""(?i)("serial(?:number)?"\s*:\s*")[^"]*(")""")]
-    private static partial Regex JsonSerialPattern();
-
-    [GeneratedRegex("""(?i)(serial(?:number)?\s*[:=]\s*)[^\s,;]+""")]
-    private static partial Regex TextSerialPattern();
-
-    [GeneratedRegex("""(?i)[A-Z]:\\[^\r\n'"]+""")]
-    private static partial Regex SupportPathPattern();
-
     public static string RedactSupportBundleText(string text)
     {
-        if (string.IsNullOrEmpty(text))
-            return text;
-
-        var redacted = SupportPathPattern().Replace(text, "[path]");
-        redacted = JsonSerialPattern().Replace(redacted, "$1[redacted]$2");
-        redacted = TextSerialPattern().Replace(redacted, "$1[redacted]");
-        return redacted;
+        return SupportBundleService.RedactText(text);
     }
 
     private static void RelaunchElevated()
