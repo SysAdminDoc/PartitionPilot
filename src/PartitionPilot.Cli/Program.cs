@@ -37,6 +37,7 @@ try
         "temperature" or "temp" => await ShowTemperatureAsync(),
         "apply-layout" => await ApplyLayoutAsync(),
         "release-manifest" => await ReleaseManifestAsync(),
+        "rescue-profile" => await RescueProfileAsync(),
         "version" => ShowVersion(),
         "help" or "--help" or "-h" => PrintUsage(),
         _ => PrintUnknown(command)
@@ -66,7 +67,7 @@ int PrintUsage()
     Console.WriteLine("  temperature               Show current disk temperatures");
     Console.WriteLine("  benchmark --drive C       Run DiskSpd benchmark on a drive");
     Console.WriteLine("  snapshot --disk N         Capture partition layout snapshot to JSON");
-    Console.WriteLine("  diagnostics               Check environment prerequisites");
+    Console.WriteLine("  diagnostics [--rescue]    Check environment prerequisites");
     Console.WriteLine("  boot-audit --disk N [--windows C]");
     Console.WriteLine("                            Audit Windows bootability and print a repair plan");
     Console.WriteLine("  plan <op> [args]          Preview a partition operation (add --apply to execute)");
@@ -75,6 +76,8 @@ int PrintUsage()
     Console.WriteLine("  apply-layout --file F --disk N  Apply a partition layout spec (add --apply, --replace to recreate)");
     Console.WriteLine("  release-manifest --artifacts DIR [--cert-thumbprint THUMB]");
     Console.WriteLine("                            Create SHA256SUMS and signing status manifest");
+    Console.WriteLine("  rescue-profile --output DIR [--source DIR]");
+    Console.WriteLine("                            Create a portable WinPE rescue folder");
     Console.WriteLine("  version                   Show version");
     Console.WriteLine();
     Console.WriteLine("Plan operations:");
@@ -673,7 +676,10 @@ async Task<int> RecoveryScanAsync()
 
 async Task<int> RunDiagnosticsAsync()
 {
-    var checks = await EnvironmentDiagnostics.RunAllAsync(runner, log);
+    var includeRescue = args.Contains("--rescue", StringComparer.OrdinalIgnoreCase);
+    var checks = includeRescue
+        ? await EnvironmentDiagnostics.RunRescueAsync(runner, log)
+        : await EnvironmentDiagnostics.RunAllAsync(runner, log);
     if (json)
     {
         Console.WriteLine(EnvironmentDiagnostics.FormatJson(checks));
@@ -758,6 +764,59 @@ async Task<int> ReleaseManifestAsync()
     catch (Exception ex)
     {
         Console.Error.WriteLine($"Release manifest failed: {ex.Message}");
+        return 1;
+    }
+}
+
+async Task<int> RescueProfileAsync()
+{
+    var sourceDir = ParseStringArg("--source") ?? AppContext.BaseDirectory;
+    var outputDir = ParseStringArg("--output") ?? ParseStringArg("--out") ??
+                    Path.Combine("artifacts", "rescue-profile");
+
+    try
+    {
+        var result = await RescueProfileService.CreateAsync(
+            sourceDir,
+            outputDir,
+            UpdateService.GetCurrentVersion());
+
+        if (json)
+        {
+            Console.WriteLine(JsonSerializer.Serialize(new
+            {
+                result.OutputDirectory,
+                result.ManifestPath,
+                result.NotesPath,
+                result.Manifest
+            }, new JsonSerializerOptions { WriteIndented = true }));
+            return 0;
+        }
+
+        Console.WriteLine($"Rescue profile written: {result.OutputDirectory}");
+        Console.WriteLine($"Version: {result.Manifest.AppVersion}");
+        Console.WriteLine($"Diagnostics: {result.Manifest.DiagnosticsCommand}");
+        Console.WriteLine($"Manifest: {result.ManifestPath}");
+        Console.WriteLine($"Notes: {result.NotesPath}");
+        Console.WriteLine($"Files: {result.Manifest.CopiedFiles.Count}");
+        Console.WriteLine("Launchers:");
+        foreach (var launcher in result.Manifest.Launchers)
+            Console.WriteLine($"  {launcher}");
+
+        Console.WriteLine();
+        Console.WriteLine("Source checks:");
+        foreach (var check in result.Manifest.SourceChecks)
+        {
+            Console.WriteLine($"  [{check.Status}] {check.Name}: {check.Detail}");
+            if (!string.IsNullOrWhiteSpace(check.Remediation))
+                Console.WriteLine($"       Fix: {check.Remediation}");
+        }
+
+        return 0;
+    }
+    catch (Exception ex)
+    {
+        Console.Error.WriteLine($"Rescue profile failed: {ex.Message}");
         return 1;
     }
 }

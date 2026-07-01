@@ -20,7 +20,10 @@ public static class EnvironmentDiagnostics
 {
     private static readonly JsonSerializerOptions JsonOpts = new() { WriteIndented = true };
 
-    public static async Task<List<DiagnosticCheck>> RunAllAsync(IProcessRunner runner, IActivityLog log)
+    public static async Task<List<DiagnosticCheck>> RunAllAsync(
+        IProcessRunner runner,
+        IActivityLog log,
+        bool includeRescueChecks = false)
     {
         var checks = new List<DiagnosticCheck>();
 
@@ -31,8 +34,55 @@ public static class EnvironmentDiagnostics
         checks.AddRange(await CheckNativeToolsAsync(runner, log));
         checks.Add(CheckDiskSpdCache());
         checks.Add(CheckDataDirectory());
+        if (includeRescueChecks)
+            checks.AddRange(await RunRescueAsync(runner, log));
 
         return checks;
+    }
+
+    public static async Task<List<DiagnosticCheck>> RunRescueAsync(IProcessRunner runner, IActivityLog log)
+    {
+        var checks = new List<DiagnosticCheck>
+        {
+            CheckWinPeRuntime(),
+            CheckWmiClass(@"\\.\root\Microsoft\Windows\Storage", "MSFT_Disk", "WinPE Storage API", "MSFT_Disk enumeration"),
+            CheckWmiScope(@"\\.\root\CIMV2\Security\MicrosoftVolumeEncryption", "WinPE BitLocker WMI", "BitLocker provider")
+        };
+
+        checks.Add(await CheckNativeToolPathAsync(runner, log, "diskpart.exe", "WinPE DiskPart", "Partition scripting"));
+        checks.Add(await CheckNativeToolPathAsync(runner, log, "dism.exe", "WinPE DISM", "WIM capture/apply"));
+        checks.Add(await CheckNativeToolPathAsync(runner, log, "manage-bde.exe", "WinPE BitLocker Tool", "BitLocker unlock/status"));
+        checks.Add(await CheckNativeToolPathAsync(runner, log, "bcdboot.exe", "WinPE BCDBoot", "Boot repair"));
+
+        return checks;
+    }
+
+    public static bool IsWinPeRuntime(
+        Func<string, string?>? getEnvironmentVariable = null,
+        Func<bool>? miniNtRegistryExists = null)
+    {
+        getEnvironmentVariable ??= Environment.GetEnvironmentVariable;
+        miniNtRegistryExists ??= MiniNtRegistryExists;
+
+        var systemDrive = getEnvironmentVariable("SystemDrive") ?? "";
+        return systemDrive.Equals("X:", StringComparison.OrdinalIgnoreCase) || miniNtRegistryExists();
+    }
+
+    public static DiagnosticCheck CheckWinPeRuntime(
+        Func<string, string?>? getEnvironmentVariable = null,
+        Func<bool>? miniNtRegistryExists = null)
+    {
+        var isWinPe = IsWinPeRuntime(getEnvironmentVariable, miniNtRegistryExists);
+        return new DiagnosticCheck
+        {
+            Category = "WinPE Rescue",
+            Name = "WinPE Runtime",
+            Status = isWinPe ? "OK" : "Info",
+            Detail = isWinPe
+                ? "Running in Windows Preinstallation Environment"
+                : "Not running in WinPE; rescue prerequisites are being checked against the current Windows environment",
+            Remediation = isWinPe ? "" : "Boot the rescue media and run `pp diagnostics --rescue` again for final validation"
+        };
     }
 
     public static string FormatReport(List<DiagnosticCheck> checks)
@@ -147,6 +197,38 @@ public static class EnvironmentDiagnostics
         }
     }
 
+    private static DiagnosticCheck CheckWmiClass(string scopePath, string className, string name, string description)
+    {
+        try
+        {
+            var scope = new ManagementScope(scopePath);
+            scope.Connect();
+            using var searcher = new ManagementObjectSearcher(scope, new ObjectQuery($"SELECT * FROM {className}"));
+            searcher.Options.Timeout = TimeSpan.FromSeconds(5);
+            using var results = searcher.Get();
+            var count = results.Cast<ManagementBaseObject>().Count();
+
+            return new DiagnosticCheck
+            {
+                Category = "WinPE Rescue",
+                Name = name,
+                Status = "OK",
+                Detail = $"{description} - returned {count} object(s)"
+            };
+        }
+        catch (Exception ex)
+        {
+            return new DiagnosticCheck
+            {
+                Category = "WinPE Rescue",
+                Name = name,
+                Status = "Error",
+                Detail = $"{description} - {ex.Message}",
+                Remediation = "Add WinPE-WMI and WinPE-StorageWMI optional components, then rebuild the rescue media"
+            };
+        }
+    }
+
     private static async Task<List<DiagnosticCheck>> CheckNativeToolsAsync(IProcessRunner runner, IActivityLog log)
     {
         var checks = new List<DiagnosticCheck>();
@@ -233,6 +315,54 @@ public static class EnvironmentDiagnostics
         }
     }
 
+    private static async Task<DiagnosticCheck> CheckNativeToolPathAsync(
+        IProcessRunner runner,
+        IActivityLog log,
+        string tool,
+        string name,
+        string description)
+    {
+        var system32Path = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.Windows),
+            "System32",
+            tool);
+        if (File.Exists(system32Path))
+        {
+            return new DiagnosticCheck
+            {
+                Category = "WinPE Rescue",
+                Name = name,
+                Status = "OK",
+                Detail = $"{description} - available at {system32Path}"
+            };
+        }
+
+        try
+        {
+            var output = await runner.RunExeAsync("where.exe", tool, log, ignoreStderrOnSuccess: true);
+            var path = output.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
+                .FirstOrDefault() ?? tool;
+            return new DiagnosticCheck
+            {
+                Category = "WinPE Rescue",
+                Name = name,
+                Status = "OK",
+                Detail = $"{description} - available at {path}"
+            };
+        }
+        catch
+        {
+            return new DiagnosticCheck
+            {
+                Category = "WinPE Rescue",
+                Name = name,
+                Status = "Error",
+                Detail = $"{description} - {tool} not found",
+                Remediation = $"Add the WinPE optional component that provides {tool}, or copy it into the rescue image PATH"
+            };
+        }
+    }
+
     private static DiagnosticCheck CheckDiskSpdCache()
     {
         var cacheDir = Path.Combine(
@@ -289,6 +419,19 @@ public static class EnvironmentDiagnostics
                 Detail = $"{programData} — {ex.Message}",
                 Remediation = "Ensure the application has write access to the ProgramData directory"
             };
+        }
+    }
+
+    private static bool MiniNtRegistryExists()
+    {
+        try
+        {
+            using var key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Control\MiniNT");
+            return key is not null;
+        }
+        catch
+        {
+            return false;
         }
     }
 }
