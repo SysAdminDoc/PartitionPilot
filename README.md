@@ -1,4 +1,4 @@
-![Version](https://img.shields.io/badge/version-0.9.17-4CC2FF)
+![Version](https://img.shields.io/badge/version-0.9.18-4CC2FF)
 ![License](https://img.shields.io/badge/license-MIT-5EE0A0)
 ![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-F4C96A)
 
@@ -32,6 +32,7 @@ PartitionPilot is a Windows disk partition management tool for power users and I
 - Disk image sidecar manifests with image SHA256, source-volume evidence, sampled source file hashes, encrypted-image rebinding, and restore-time validation before target clearing.
 - Post-restore and post-clone bootability audit for Windows targets, with BCD/WinRE checks and a non-destructive repair plan.
 - Privacy-preserving support bundle export (redacted serial numbers and user paths).
+- Core workflow services centralize image preflight, support-bundle assembly, layout-plan generation, wipe prompts, and clone confirmations for GUI/CLI parity.
 - Structured native-command audit records with path redaction.
 - Auto-updates via Velopack with delta packages and GitHub Releases integration.
 - Release artifact verification with SHA256 manifests, optional Authenticode signing, and explicit unsigned local-test status.

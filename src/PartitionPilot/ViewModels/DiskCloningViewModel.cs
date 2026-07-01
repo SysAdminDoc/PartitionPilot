@@ -619,14 +619,7 @@ public class DiskCloningViewModel : ViewModelBase
                 "Confirm BitLocker-Protected Clone"))
             return;
 
-        if (!_dialog.ConfirmDanger(
-            $"WARNING: This will overwrite ALL data on the destination disk with a sector-by-sector copy.\n\nSource:\n{sourceIdentity.ConfirmationSummary}\n\nDestination:\n{destIdentity.ConfirmationSummary}\n\nThis operation cannot be undone. Continue?",
-            "Confirm Sector Clone"))
-            return;
-
-        if (!_dialog.ConfirmDanger(
-            "FINAL CONFIRMATION: All data on the destination disk will be permanently overwritten with a raw sector copy.",
-            "Confirm Clone"))
+        if (!ConfirmWorkflowPrompts(CloneWorkflowService.BuildSectorClonePrompts(sourceIdentity, destIdentity)))
             return;
 
         if (!await VerifyDiskIdentityBeforeExecuteAsync(sourceIdentity, "Clone Source Changed"))
@@ -676,7 +669,11 @@ public class DiskCloningViewModel : ViewModelBase
             _log.Log(bootAuditReport);
             CloneProgressText = $"{cloneResult.FormatReport()}\n\n{bootAuditReport}";
 
-            var summary = $"Sector clone complete.\n\nDisk {CloneSourceDisk.Number} -> Disk {CloneDestDisk.Number}\n{cloneResult.FormatReport()}\n\n{bootAuditReport}";
+            var summary = CloneWorkflowService.BuildCompletionSummary(
+                CloneSourceDisk.Number,
+                CloneDestDisk.Number,
+                cloneResult.FormatReport(),
+                bootAuditReport);
             if (cloneResult.HasBadSectors || !cloneResult.VerificationPassed || bootAudit.Status != BootabilityAuditStatus.Pass)
                 _dialog.ShowWarning(summary, "Clone Complete (With Warnings)");
             else
@@ -741,7 +738,7 @@ public class DiskCloningViewModel : ViewModelBase
     private ImageDestinationPreflight PreflightSelectedImageDestination()
     {
         var requiredBytes = EstimateSelectedImageBytes();
-        return PreflightImageDestination(
+        return DiskImageWorkflowService.PreflightDestination(
             ImagePath,
             SelectedSourceDrive,
             requiredBytes,
@@ -753,18 +750,13 @@ public class DiskCloningViewModel : ViewModelBase
     private long EstimateSelectedImageBytes()
     {
         return _volumeByLetter.TryGetValue(char.ToUpperInvariant(SelectedSourceDrive), out var volume)
-            ? EstimateImageBytes(volume.Size, volume.SizeRemaining)
+            ? DiskImageWorkflowService.EstimateImageBytes(volume.Size, volume.SizeRemaining)
             : 0;
     }
 
     private void GuardSourceVolumeForImageCapture(char sourceDrive)
     {
-        var key = char.ToUpperInvariant(sourceDrive);
-        if (!_sourceBitLockerByLetter.TryGetValue(key, out var status) || !BitLockerPreflight.RequiresUnlockForRead(status))
-            return;
-
-        throw new InvalidOperationException(
-            BitLockerPreflight.BuildUnlockRequiredMessage($"Create an image from {key}:", $"{key}:", status));
+        DiskImageWorkflowService.GuardSourceVolumeForCapture(sourceDrive, _sourceBitLockerByLetter);
     }
 
     private Task<List<string>> GetBitLockerProtectedTargetsAsync(int diskNumber) =>
@@ -858,94 +850,18 @@ public class DiskCloningViewModel : ViewModelBase
         }
     }
 
-    public static long EstimateImageBytes(long sourceSizeBytes, long sourceFreeBytes)
+    private bool ConfirmWorkflowPrompts(IEnumerable<WorkflowPrompt> prompts)
     {
-        if (sourceSizeBytes <= 0) return 0;
-
-        var hasUsableFreeSpace = sourceFreeBytes >= 0 && sourceFreeBytes <= sourceSizeBytes;
-        var usedBytes = hasUsableFreeSpace ? sourceSizeBytes - sourceFreeBytes : sourceSizeBytes;
-        var minimumImageBytes = 1L << 30;
-        var overheadBytes = 512L * 1024L * 1024L;
-        var estimatedBytes = Math.Max(usedBytes, minimumImageBytes);
-
-        return estimatedBytes > long.MaxValue - overheadBytes
-            ? long.MaxValue
-            : estimatedBytes + overheadBytes;
-    }
-
-    public static ImageDestinationPreflight PreflightImageDestination(
-        string imagePath,
-        char sourceDrive,
-        long estimatedRequiredBytes,
-        Func<string, bool> directoryExists,
-        Func<string, bool> fileExists,
-        Func<string, long> getAvailableFreeSpace)
-    {
-        if (sourceDrive == default)
-            throw new InvalidOperationException("Select a source volume before creating an image.");
-
-        if (string.IsNullOrWhiteSpace(imagePath))
-            throw new InvalidOperationException("Choose a destination path before creating an image.");
-
-        var trimmedPath = imagePath.Trim();
-        if (!Path.IsPathFullyQualified(trimmedPath))
-            throw new InvalidOperationException("Choose a fully qualified destination path.");
-
-        string fullPath;
-        try
+        foreach (var prompt in prompts)
         {
-            fullPath = Path.GetFullPath(trimmedPath);
-        }
-        catch (Exception ex) when (ex is ArgumentException or NotSupportedException or PathTooLongException)
-        {
-            throw new InvalidOperationException($"The destination path is invalid: {ex.Message}", ex);
+            var confirmed = prompt.IsDanger
+                ? _dialog.ConfirmDanger(prompt.Message, prompt.Title)
+                : _dialog.ConfirmWarning(prompt.Message, prompt.Title);
+            if (!confirmed)
+                return false;
         }
 
-        var extension = Path.GetExtension(fullPath).ToLowerInvariant();
-        if (extension is not ".wim" and not ".vhdx")
-            throw new InvalidOperationException("Choose a .wim or .vhdx destination file.");
-
-        var root = Path.GetPathRoot(fullPath);
-        if (string.IsNullOrWhiteSpace(root) || !directoryExists(root))
-            throw new InvalidOperationException("The destination drive or share is not available.");
-
-        var parent = Path.GetDirectoryName(fullPath);
-        if (string.IsNullOrWhiteSpace(parent) || !directoryExists(parent))
-            throw new InvalidOperationException("Create the destination folder before starting the image capture.");
-
-        if (fileExists(fullPath))
-            throw new InvalidOperationException("Choose a new image path or delete the existing file first.");
-
-        if (TryGetDriveLetter(root) is { } destinationDrive &&
-            char.ToUpperInvariant(destinationDrive) == char.ToUpperInvariant(sourceDrive))
-        {
-            throw new InvalidOperationException("Choose a destination outside the source volume; capturing a volume into itself is unsafe.");
-        }
-
-        long availableBytes;
-        try
-        {
-            availableBytes = getAvailableFreeSpace(root);
-        }
-        catch (Exception ex)
-        {
-            throw new InvalidOperationException($"Could not read free space for the destination: {ex.Message}", ex);
-        }
-
-        if (estimatedRequiredBytes > 0 && availableBytes < estimatedRequiredBytes)
-        {
-            throw new InvalidOperationException(
-                $"The destination has {SizeUtil.Format(availableBytes)} free, but the image may require up to {SizeUtil.Format(estimatedRequiredBytes)}.");
-        }
-
-        return new ImageDestinationPreflight(fullPath, root, Math.Max(estimatedRequiredBytes, 0), availableBytes);
-    }
-
-    private static char? TryGetDriveLetter(string root)
-    {
-        return root.Length >= 2 && root[1] == ':' && char.IsLetter(root[0])
-            ? char.ToUpperInvariant(root[0])
-            : null;
+        return true;
     }
 
     private static string? PromptForInput(string message, string title)
@@ -980,9 +896,4 @@ public class DiskCloningViewModel : ViewModelBase
         return dialog.ShowDialog() == true ? result : null;
     }
 
-    public sealed record ImageDestinationPreflight(
-        string FullPath,
-        string DestinationRoot,
-        long EstimatedRequiredBytes,
-        long DestinationFreeBytes);
 }

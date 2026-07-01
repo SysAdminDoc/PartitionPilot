@@ -1,5 +1,12 @@
 # Changelog
 
+## PartitionPilot v0.9.18 - 2026-06-30
+
+### Workflow Boundaries
+- Extracted image destination preflight, BitLocker capture guards, support-bundle assembly, layout-plan generation, wipe confirmations, and clone summaries into Core workflow services.
+- Updated the WPF view models and CLI plan command to call Core services instead of duplicating orchestration logic.
+- Added unit coverage for layout planning, destructive prompt sequences, clone summaries, support-bundle redaction, and existing image preflight behavior.
+
 ## PartitionPilot v0.9.17 - 2026-06-30
 
 ### WinPE Rescue Profile

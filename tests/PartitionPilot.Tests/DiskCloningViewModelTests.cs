@@ -28,7 +28,7 @@ public class DiskCloningViewModelTests
     [Fact]
     public void EstimateImageBytes_UsesUsedSpacePlusOverhead()
     {
-        var estimated = DiskCloningViewModel.EstimateImageBytes(10 * GiB, 4 * GiB);
+        var estimated = DiskImageWorkflowService.EstimateImageBytes(10 * GiB, 4 * GiB);
 
         Assert.Equal((6 * GiB) + (512L * 1024L * 1024L), estimated);
     }
@@ -36,7 +36,7 @@ public class DiskCloningViewModelTests
     [Fact]
     public void EstimateImageBytes_UsesMinimumForMostlyEmptyVolumes()
     {
-        var estimated = DiskCloningViewModel.EstimateImageBytes(10 * GiB, 10 * GiB);
+        var estimated = DiskImageWorkflowService.EstimateImageBytes(10 * GiB, 10 * GiB);
 
         Assert.Equal(GiB + (512L * 1024L * 1024L), estimated);
     }
@@ -44,7 +44,7 @@ public class DiskCloningViewModelTests
     [Fact]
     public void PreflightImageDestination_AcceptsSafeDestination()
     {
-        var result = DiskCloningViewModel.PreflightImageDestination(
+        var result = DiskImageWorkflowService.PreflightDestination(
             @"D:\Images\capture.vhdx",
             'C',
             6 * GiB,
@@ -62,7 +62,7 @@ public class DiskCloningViewModelTests
     public void PreflightImageDestination_RejectsSelfReferentialDestination()
     {
         var ex = Assert.Throws<InvalidOperationException>(() =>
-            DiskCloningViewModel.PreflightImageDestination(
+            DiskImageWorkflowService.PreflightDestination(
                 @"C:\Images\capture.wim",
                 'C',
                 GiB,
@@ -77,7 +77,7 @@ public class DiskCloningViewModelTests
     public void PreflightImageDestination_RejectsMissingDestinationFolder()
     {
         var ex = Assert.Throws<InvalidOperationException>(() =>
-            DiskCloningViewModel.PreflightImageDestination(
+            DiskImageWorkflowService.PreflightDestination(
                 @"D:\Missing\capture.vhdx",
                 'C',
                 GiB,
@@ -92,7 +92,7 @@ public class DiskCloningViewModelTests
     public void PreflightImageDestination_RejectsExistingImageFile()
     {
         var ex = Assert.Throws<InvalidOperationException>(() =>
-            DiskCloningViewModel.PreflightImageDestination(
+            DiskImageWorkflowService.PreflightDestination(
                 @"D:\Images\capture.vhdx",
                 'C',
                 GiB,
@@ -107,7 +107,7 @@ public class DiskCloningViewModelTests
     public void PreflightImageDestination_RejectsInsufficientFreeSpace()
     {
         var ex = Assert.Throws<InvalidOperationException>(() =>
-            DiskCloningViewModel.PreflightImageDestination(
+            DiskImageWorkflowService.PreflightDestination(
                 @"D:\Images\capture.vhdx",
                 'C',
                 8 * GiB,
@@ -122,7 +122,7 @@ public class DiskCloningViewModelTests
     public void PreflightImageDestination_RejectsUnsupportedExtensions()
     {
         var ex = Assert.Throws<InvalidOperationException>(() =>
-            DiskCloningViewModel.PreflightImageDestination(
+            DiskImageWorkflowService.PreflightDestination(
                 @"D:\Images\capture.iso",
                 'C',
                 GiB,

@@ -426,103 +426,59 @@ async Task<int> PlanOperationAsync()
     var partNum = ParseIntArg("--partition");
     var apply = args.Contains("--apply", StringComparer.OrdinalIgnoreCase);
 
-    var plan = new
+    PartitionPlanResult planResult;
+    try
     {
-        Operation = op,
-        DiskNumber = diskNum,
-        PartitionNumber = partNum,
-        FileSystem = ParseStringArg("--fs"),
-        Label = ParseStringArg("--label"),
-        Letter = ParseStringArg("--letter"),
-        Size = ParseStringArg("--size"),
-        Apply = apply
-    };
-
-    string description;
-    string riskLevel;
-    string diskpartScript;
-
-    switch (op)
+        planResult = PartitionPlanService.Build(new PartitionPlanRequest(
+            op,
+            diskNum,
+            partNum,
+            ParseStringArg("--fs"),
+            ParseStringArg("--label"),
+            ParseStringArg("--letter"),
+            ParseStringArg("--size"),
+            apply));
+    }
+    catch (Exception ex) when (ex is ArgumentException or FormatException or OverflowException)
     {
-        case "delete":
-            if (!diskNum.HasValue || !partNum.HasValue) { Console.Error.WriteLine("--disk N and --partition P required for delete."); return 1; }
-            description = $"Delete partition {partNum.Value} on disk {diskNum.Value}";
-            riskLevel = "High";
-            diskpartScript = $"select disk {diskNum.Value}\nselect partition {partNum.Value}\ndelete partition override";
-            break;
-
-        case "format":
-            if (!diskNum.HasValue || !partNum.HasValue) { Console.Error.WriteLine("--disk N and --partition P required for format."); return 1; }
-            var fs = ProcessRunner.ValidateFileSystem(plan.FileSystem ?? "NTFS");
-            if (RejectUnsupportedFilesystem(FilesystemCapabilityService.Evaluate(fs, FilesystemOperation.Format)))
-                return 1;
-            var label = ProcessRunner.SanitizeLabel(plan.Label ?? "");
-            description = $"Format partition {partNum.Value} on disk {diskNum.Value} as {fs}" + (label.Length > 0 ? $" (label: {label})" : "");
-            riskLevel = "High";
-            diskpartScript = $"select disk {diskNum.Value}\nselect partition {partNum.Value}\nformat fs={fs}{(label.Length > 0 ? $" label=\"{label}\"" : "")} quick";
-            break;
-
-        case "change-letter":
-            if (!diskNum.HasValue || !partNum.HasValue) { Console.Error.WriteLine("--disk N and --partition P required."); return 1; }
-            var letter = plan.Letter?.Trim().ToUpperInvariant();
-            if (string.IsNullOrEmpty(letter) || letter.Length != 1 || !char.IsLetter(letter[0])) { Console.Error.WriteLine("--letter X required (single letter A-Z)."); return 1; }
-            description = $"Assign letter {letter}: to partition {partNum.Value} on disk {diskNum.Value}";
-            riskLevel = "Normal";
-            diskpartScript = $"select disk {diskNum.Value}\nselect partition {partNum.Value}\nassign letter={letter}";
-            break;
-
-        case "create":
-            if (!diskNum.HasValue) { Console.Error.WriteLine("--disk N required for create."); return 1; }
-            var sizeStr = plan.Size ?? "max";
-            var sizeClause = sizeStr.Equals("max", StringComparison.OrdinalIgnoreCase) ? "" : $" size={ParseSizeMB(sizeStr)}";
-            var createFs = ProcessRunner.ValidateFileSystem(plan.FileSystem ?? "NTFS");
-            if (RejectUnsupportedFilesystem(FilesystemCapabilityService.Evaluate(createFs, FilesystemOperation.Create)))
-                return 1;
-            var createLabel = ProcessRunner.SanitizeLabel(plan.Label ?? "");
-            description = $"Create{(sizeClause.Length > 0 ? sizeClause.Trim() + " MB" : " max-size")} {createFs} partition on disk {diskNum.Value}";
-            riskLevel = "Normal";
-            diskpartScript = $"select disk {diskNum.Value}\ncreate partition primary{sizeClause}\nformat fs={createFs}{(createLabel.Length > 0 ? $" label=\"{createLabel}\"" : "")} quick\nassign";
-            break;
-
-        default:
-            Console.Error.WriteLine($"Unknown plan operation: {op}. Supported: delete, format, change-letter, create.");
-            return 1;
+        Console.Error.WriteLine(ex.Message);
+        return 1;
     }
 
     DiskInfo? targetDisk = null;
     DiskIdentitySnapshot? targetIdentity = null;
-    if (diskNum.HasValue)
+    if (planResult.DiskNumber.HasValue)
     {
         var disks = await wmi.GetDisksAsync();
-        targetDisk = disks.FirstOrDefault(d => d.Number == diskNum.Value);
+        targetDisk = disks.FirstOrDefault(d => d.Number == planResult.DiskNumber.Value);
         if (targetDisk is null)
         {
-            Console.Error.WriteLine($"Disk {diskNum.Value} not found.");
+            Console.Error.WriteLine($"Disk {planResult.DiskNumber.Value} not found.");
             return 1;
         }
         targetIdentity = targetDisk.ToIdentitySnapshot();
     }
 
-    var planOutput = new
+    var jsonPlan = new
     {
-        plan.Operation,
-        Description = description,
-        RiskLevel = riskLevel,
-        DiskPartScript = diskpartScript,
+        Operation = planResult.Operation,
+        planResult.Description,
+        planResult.RiskLevel,
+        DiskPartScript = planResult.DiskpartScript,
         TargetDisk = targetIdentity,
-        WillApply = apply
+        WillApply = planResult.WillApply
     };
 
     if (json)
-        Console.WriteLine(JsonSerializer.Serialize(planOutput, new JsonSerializerOptions { WriteIndented = true }));
+        Console.WriteLine(JsonSerializer.Serialize(jsonPlan, new JsonSerializerOptions { WriteIndented = true }));
     else
     {
-        Console.WriteLine($"Plan: {description}");
-        Console.WriteLine($"Risk: {riskLevel}");
+        Console.WriteLine($"Plan: {planResult.Description}");
+        Console.WriteLine($"Risk: {planResult.RiskLevel}");
         if (targetDisk is not null)
             PrintTargetIdentity(targetDisk);
         Console.WriteLine($"DiskPart script:");
-        foreach (var line in diskpartScript.Split('\n'))
+        foreach (var line in planResult.DiskpartScript.Split('\n'))
             Console.WriteLine($"  {line}");
     }
 
@@ -532,7 +488,7 @@ async Task<int> PlanOperationAsync()
         return 0;
     }
 
-    if (riskLevel == "High")
+    if (planResult.RiskLevel == "High")
     {
         if (targetIdentity is not null)
             Console.Error.WriteLine($"\nTarget identity:\n{targetIdentity.ConfirmationSummary}");
@@ -549,8 +505,8 @@ async Task<int> PlanOperationAsync()
     {
         if (targetIdentity is not null)
             await targetIdentity.VerifyCurrentAsync(wmi);
-        Console.Error.WriteLine($"Executing: {description}...");
-        await runner.RunDiskpartAsync(diskpartScript, log);
+        Console.Error.WriteLine($"Executing: {planResult.Description}...");
+        await runner.RunDiskpartAsync(planResult.DiskpartScript, log);
         Console.Error.WriteLine("Operation completed successfully.");
         return 0;
     }
@@ -559,15 +515,6 @@ async Task<int> PlanOperationAsync()
         Console.Error.WriteLine($"Operation failed: {ex.Message}");
         return 1;
     }
-}
-
-bool RejectUnsupportedFilesystem(FilesystemCapabilityResult result)
-{
-    if (result.IsAllowed)
-        return false;
-
-    Console.Error.WriteLine(result.Reason);
-    return true;
 }
 
 string? ParseStringArg(string name)
@@ -588,15 +535,6 @@ char? ParseDriveLetterArg(string name)
     return val is { Length: 1 } && char.IsLetter(val[0])
         ? char.ToUpperInvariant(val[0])
         : null;
-}
-
-long ParseSizeMB(string sizeStr)
-{
-    sizeStr = sizeStr.Trim().ToUpperInvariant();
-    if (sizeStr.EndsWith("TB")) return (long)(double.Parse(sizeStr.Replace("TB", "")) * 1024 * 1024);
-    if (sizeStr.EndsWith("GB")) return (long)(double.Parse(sizeStr.Replace("GB", "")) * 1024);
-    if (sizeStr.EndsWith("MB")) return (long)double.Parse(sizeStr.Replace("MB", ""));
-    return long.Parse(sizeStr);
 }
 
 async Task<int> RecoveryScanAsync()
