@@ -1,5 +1,12 @@
 # Changelog
 
+## PartitionPilot v0.9.19 - 2026-06-30
+
+### Operator Documentation
+- Documented layout JSON fields, validation rules, target identity matching, and dry-run/apply/replace behavior.
+- Documented encrypted image container compatibility, manifest rebinding, and degraded restore confirmations.
+- Documented recovery scan mode tradeoffs, deep-scan resume behavior, and local release verification artifacts.
+
 ## PartitionPilot v0.9.18 - 2026-06-30
 
 ### Workflow Boundaries
