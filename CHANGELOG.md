@@ -1,5 +1,12 @@
 # Changelog
 
+## PartitionPilot v0.9.16 - 2026-06-30
+
+### Drive Health Metadata
+- Added a curated SMART/NVMe metadata layer with attribute names, severity, operator guidance, and a visible metadata version.
+- Disk Health, CLI SMART output, JSON output, and exported SMART reports now surface advisory text while preserving unknown vendor attributes as raw telemetry.
+- Added tests for known ATA mappings, unknown attribute fallback, and NVMe top-level advisory generation.
+
 ## PartitionPilot v0.9.15 - 2026-06-30
 
 ### Localization

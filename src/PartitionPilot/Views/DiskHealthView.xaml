@@ -397,6 +397,33 @@
                         </StackPanel>
                     </GroupBox>
 
+                    <GroupBox Header="{Binding SmartMetadataVersionText}">
+                        <GroupBox.Style>
+                            <Style TargetType="GroupBox" BasedOn="{StaticResource SectionGroup}">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasSmartAdvisories}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </GroupBox.Style>
+                        <ListView ItemsSource="{Binding SmartAdvisories}"
+                                  BorderThickness="0"
+                                  FontSize="12.5"
+                                  MaxHeight="220"
+                                  AutomationProperties.Name="{Binding SmartMetadataVersionText}">
+                            <ListView.View>
+                                <GridView>
+                                    <GridViewColumn Header="{local:Loc Xaml_Severity}" Width="86" DisplayMemberBinding="{Binding Severity}"/>
+                                    <GridViewColumn Header="{local:Loc Xaml_Attribute}" Width="190" DisplayMemberBinding="{Binding Name}"/>
+                                    <GridViewColumn Header="{local:Loc Xaml_RawValue}" Width="86" DisplayMemberBinding="{Binding RawValue}"/>
+                                    <GridViewColumn Header="{local:Loc Xaml_Details}" Width="360" DisplayMemberBinding="{Binding Detail}"/>
+                                </GridView>
+                            </ListView.View>
+                        </ListView>
+                    </GroupBox>
+
                     <GroupBox Header="{local:Loc AllSmartAttributes}">
                         <GroupBox.Style>
                             <Style TargetType="GroupBox" BasedOn="{StaticResource SectionGroup}">
@@ -416,8 +443,10 @@
                             <ListView.View>
                                 <GridView>
                                     <GridViewColumn Header="{local:Loc Xaml_ID}" Width="50" DisplayMemberBinding="{Binding Id}"/>
-                                    <GridViewColumn Header="{local:Loc Xaml_Attribute}" Width="250" DisplayMemberBinding="{Binding Name}"/>
+                                    <GridViewColumn Header="{local:Loc Xaml_Attribute}" Width="230" DisplayMemberBinding="{Binding DisplayName}"/>
+                                    <GridViewColumn Header="{local:Loc Xaml_Severity}" Width="86" DisplayMemberBinding="{Binding AdvisorySeverity}"/>
                                     <GridViewColumn Header="{local:Loc Xaml_RawValue}" Width="150" DisplayMemberBinding="{Binding RawDisplay}"/>
+                                    <GridViewColumn Header="{local:Loc Xaml_Details}" Width="320" DisplayMemberBinding="{Binding AdvisoryText}"/>
                                 </GridView>
                             </ListView.View>
                         </ListView>

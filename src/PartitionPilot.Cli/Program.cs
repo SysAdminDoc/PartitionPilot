@@ -251,6 +251,7 @@ async Task<int> ShowSmartAsync()
             {
                 phys.DeviceId, phys.FriendlyName, phys.MediaType, phys.BusType,
                 Health = smart?.Health.ToString() ?? "Unknown", smart?.HealthReason,
+                MetadataVersion = smart?.MetadataVersion,
                 smart?.Temperature, smart?.Wear, smart?.PowerOnHours,
                 smart?.ReallocatedSectors, smart?.PendingSectors, smart?.PowerCycleCount,
                 TotalWritten = smart?.TotalBytesWritten, TotalRead = smart?.TotalBytesRead,
@@ -258,7 +259,16 @@ async Task<int> ShowSmartAsync()
                 smart?.NvmeUnsafeShutdowns, smart?.NvmeControllerBusyMinutes,
                 smart?.NvmeErrorLogEntries, smart?.NvmeCriticalWarning,
                 CriticalWarningFlags = smart?.CriticalWarningFlags,
-                Attributes = smart?.AllAttributes.Select(a => new { a.Id, a.Name, a.Current, a.Worst, a.RawValue })
+                Advisories = smart?.Advisories.Select(a => new
+                {
+                    a.Source, a.Name, a.Severity, a.Detail, a.Recommendation, a.RawValue, a.MetadataVersion
+                }),
+                Attributes = smart?.AllAttributes.Select(a => new
+                {
+                    a.Id, a.Name, a.DisplayName, a.Current, a.Worst, a.RawValue,
+                    a.AdvisorySeverity, a.AdvisoryText, a.Recommendation, a.MetadataVersion,
+                    a.HasCuratedMetadata
+                })
             });
             continue;
         }
@@ -271,6 +281,7 @@ async Task<int> ShowSmartAsync()
         else
         {
             Console.WriteLine($"  Health:             {smart.Health} — {smart.HealthReason}");
+            Console.WriteLine($"  SMART metadata:     {smart.MetadataVersion}");
             if (smart.Temperature.HasValue) Console.WriteLine($"  Temperature:        {smart.Temperature} C");
             if (smart.Wear.HasValue) Console.WriteLine($"  Wear:               {smart.Wear}%");
             if (smart.PowerOnHours.HasValue) Console.WriteLine($"  Power-On Hours:     {smart.PowerOnHours:N0}");
@@ -286,14 +297,26 @@ async Task<int> ShowSmartAsync()
             if (smart.NvmeErrorLogEntries.HasValue) Console.WriteLine($"  Error Log Entries:  {smart.NvmeErrorLogEntries:N0}");
             if (smart.CriticalWarningFlags.Count > 0) Console.WriteLine($"  Critical Warning:   {string.Join(", ", smart.CriticalWarningFlags)}");
 
+            if (smart.Advisories.Count > 0)
+            {
+                Console.WriteLine();
+                Console.WriteLine("  Advisories:");
+                foreach (var advisory in smart.Advisories)
+                {
+                    var raw = advisory.RawValue.HasValue ? $" raw={advisory.RawValue:N0}" : "";
+                    Console.WriteLine($"    [{advisory.Severity}] {advisory.Name}{raw}: {advisory.Detail}");
+                    Console.WriteLine($"        {advisory.Recommendation}");
+                }
+            }
+
             if (smart.AllAttributes.Count > 0)
             {
                 Console.WriteLine();
-                Console.WriteLine($"  {"ID",-6} {"Attribute",-32} {"Current",-10} {"Worst",-10} Raw");
-                Console.WriteLine($"  {new string('-', 74)}");
+                Console.WriteLine($"  {"ID",-6} {"Attribute",-30} {"Severity",-10} {"Current",-10} {"Worst",-10} Raw");
+                Console.WriteLine($"  {new string('-', 88)}");
                 foreach (var a in smart.AllAttributes)
                 {
-                    Console.WriteLine($"  {a.Id,-6} {Trunc(a.Name, 32),-32} {a.Current,-10} {a.Worst,-10} {a.RawDisplay}");
+                    Console.WriteLine($"  {a.Id,-6} {Trunc(a.DisplayName, 30),-30} {a.AdvisorySeverity,-10} {a.Current,-10} {a.Worst,-10} {a.RawDisplay}");
                 }
             }
         }

@@ -74,6 +74,9 @@ public class DiskHealthViewModel : ViewModelBase
                 OnPropertyChanged(nameof(EndurancePercent));
                 OnPropertyChanged(nameof(HasExtendedSmartData));
                 OnPropertyChanged(nameof(SmartAttributes));
+                OnPropertyChanged(nameof(HasSmartAdvisories));
+                OnPropertyChanged(nameof(SmartAdvisories));
+                OnPropertyChanged(nameof(SmartMetadataVersionText));
                 OnPropertyChanged(nameof(HealthStatusText));
                 OnPropertyChanged(nameof(HealthReasonText));
             }
@@ -232,6 +235,12 @@ public class DiskHealthViewModel : ViewModelBase
     public bool HasExtendedSmartData => Smart?.AllAttributes.Count > 0;
 
     public IReadOnlyList<SmartAttribute> SmartAttributes => Smart?.AllAttributes ?? new List<SmartAttribute>();
+
+    public bool HasSmartAdvisories => Smart?.Advisories.Count > 0;
+
+    public IReadOnlyList<SmartAdvisory> SmartAdvisories => Smart?.Advisories ?? new List<SmartAdvisory>();
+
+    public string SmartMetadataVersionText => Smart is null ? "" : $"SMART metadata {Smart.MetadataVersion}";
 
     public ObservableCollection<SmartTrend> Trends { get; } = new();
     public bool HasTrends => Trends.Count > 0;
