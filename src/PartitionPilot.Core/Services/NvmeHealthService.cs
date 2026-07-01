@@ -145,6 +145,7 @@ public static class NvmeHealthService
     private static long ReadUInt128AsLong(byte[] data, int offset)
     {
         if (offset + 8 > data.Length) return 0;
-        return BitConverter.ToInt64(data, offset);
+        var value = (long)BitConverter.ToUInt64(data, offset);
+        return value < 0 ? long.MaxValue : value;
     }
 }

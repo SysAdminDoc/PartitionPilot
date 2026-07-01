@@ -1336,7 +1336,26 @@ public class ToolsViewModel : ViewModelBase
 
             var driveModel = "";
             long driveCapacity = 0;
-            var physDisk = _physicalDisks.FirstOrDefault(p => p.DeviceId == "0") ?? _physicalDisks.FirstOrDefault();
+            PhysicalDiskInfo? physDisk = null;
+            try
+            {
+                var allDisks = await _wmiService.GetDisksAsync();
+                var parts = await _wmiService.GetPartitionsAsync(
+                    allDisks.FirstOrDefault()?.Number ?? 0);
+                foreach (var disk in allDisks)
+                {
+                    var diskParts = await _wmiService.GetPartitionsAsync(disk.Number);
+                    if (diskParts.Any(p => p.DriveLetter.HasValue &&
+                        char.ToUpperInvariant(p.DriveLetter.Value) == char.ToUpperInvariant(driveLetter)))
+                    {
+                        physDisk = _physicalDisks.FirstOrDefault(pd =>
+                            pd.DeviceId == disk.Number.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                        break;
+                    }
+                }
+            }
+            catch { }
+            physDisk ??= _physicalDisks.FirstOrDefault();
             if (physDisk is not null)
             {
                 driveModel = physDisk.FriendlyName;

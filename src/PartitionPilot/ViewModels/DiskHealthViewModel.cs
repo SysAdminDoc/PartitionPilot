@@ -227,10 +227,13 @@ public class DiskHealthViewModel : ViewModelBase
         File.WriteAllText(GetRatedTbwPath(SelectedDisk.DeviceId), _ratedTbwTB.ToString("F0"));
     }
 
-    private static string GetRatedTbwPath(string deviceId) =>
-        Path.Combine(
+    private static string GetRatedTbwPath(string deviceId)
+    {
+        var safeId = string.Concat(deviceId.Where(char.IsLetterOrDigit));
+        return Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
-            "PartitionPilot", "settings", $"tbw_disk{deviceId}.txt");
+            "PartitionPilot", "settings", $"tbw_disk{safeId}.txt");
+    }
 
     public bool HasExtendedSmartData => Smart?.AllAttributes.Count > 0;
 
