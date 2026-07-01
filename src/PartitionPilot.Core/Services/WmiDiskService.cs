@@ -644,7 +644,7 @@ public class WmiDiskService : IWmiDiskService
                 {
                     var escaped = WqlStringLiteral(poolId);
                     using var assocSearcher = new ManagementObjectSearcher(scope,
-                        new ObjectQuery($"SELECT DeviceId FROM MSFT_PhysicalDisk WHERE ObjectId IN (SELECT PhysicalDisk FROM MSFT_StoragePoolToPhysicalDisk WHERE StoragePool = '{escaped}')"));
+                        new ObjectQuery($"SELECT DeviceId FROM MSFT_PhysicalDisk WHERE ObjectId IN (SELECT PhysicalDisk FROM MSFT_StoragePoolToPhysicalDisk WHERE StoragePool = {escaped})"));
 
                     bool found = false;
                     foreach (ManagementObject disk in assocSearcher.Get())

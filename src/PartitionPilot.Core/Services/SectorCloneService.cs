@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
+using Microsoft.Win32.SafeHandles;
 
 namespace PartitionPilot;
 
@@ -38,7 +39,10 @@ public class SectorCloneResult
         };
 
         if (HasBadSectors)
-            lines.Add($"Bad sectors: {BadSectorOffsets.Count} ({BadSectorOffsets.Count * 100.0 / (TotalBytes / 1048576):F4}% of blocks)");
+        {
+            long totalBlocks = TotalBytes > 0 ? (TotalBytes + 1048575) / 1048576 : 1;
+            lines.Add($"Bad sectors: {BadSectorOffsets.Count} ({BadSectorOffsets.Count * 100.0 / totalBlocks:F4}% of blocks)");
+        }
 
         if (VerifyDuration > TimeSpan.Zero)
         {
@@ -65,27 +69,24 @@ public static class SectorCloneService
     private const int BUFFER_SIZE = 1024 * 1024;
 
     [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-    private static extern IntPtr CreateFileW(
+    private static extern SafeFileHandle CreateFileW(
         string lpFileName, uint dwDesiredAccess, uint dwShareMode,
         IntPtr lpSecurityAttributes, uint dwCreationDisposition,
         uint dwFlagsAndAttributes, IntPtr hTemplateFile);
 
     [DllImport("kernel32.dll", SetLastError = true)]
     private static extern bool ReadFile(
-        IntPtr hFile, byte[] lpBuffer, int nNumberOfBytesToRead,
+        SafeFileHandle hFile, byte[] lpBuffer, int nNumberOfBytesToRead,
         out int lpNumberOfBytesRead, IntPtr lpOverlapped);
 
     [DllImport("kernel32.dll", SetLastError = true)]
     private static extern bool WriteFile(
-        IntPtr hFile, byte[] lpBuffer, int nNumberOfBytesToWrite,
+        SafeFileHandle hFile, byte[] lpBuffer, int nNumberOfBytesToWrite,
         out int lpNumberOfBytesWritten, IntPtr lpOverlapped);
 
     [DllImport("kernel32.dll", SetLastError = true)]
-    private static extern bool CloseHandle(IntPtr hObject);
-
-    [DllImport("kernel32.dll", SetLastError = true)]
     private static extern bool DeviceIoControl(
-        IntPtr hDevice, uint dwIoControlCode,
+        SafeFileHandle hDevice, uint dwIoControlCode,
         IntPtr lpInBuffer, int nInBufferSize,
         IntPtr lpOutBuffer, int nOutBufferSize,
         out int lpBytesReturned, IntPtr lpOverlapped);
@@ -116,41 +117,30 @@ public static class SectorCloneService
 
         log.Log($"Starting sector clone: Disk {sourceDiskNumber} -> Disk {destDiskNumber} ({SizeUtil.Format(sourceSize)}){(rescue ? " [rescue mode]" : "")}");
 
-        var sourceHandle = CreateFileW(sourcePath, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
+        using var sourceHandle = CreateFileW(sourcePath, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
             IntPtr.Zero, OPEN_EXISTING, FILE_FLAG_NO_BUFFERING, IntPtr.Zero);
-        if (sourceHandle == new IntPtr(-1))
+        if (sourceHandle.IsInvalid)
             throw new Win32Exception(Marshal.GetLastWin32Error(), $"Cannot open source disk {sourceDiskNumber}");
 
-        var destHandle = CreateFileW(destPath, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE,
+        using var destHandle = CreateFileW(destPath, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE,
             IntPtr.Zero, OPEN_EXISTING, FILE_FLAG_NO_BUFFERING | FILE_FLAG_WRITE_THROUGH, IntPtr.Zero);
-        if (destHandle == new IntPtr(-1))
-        {
-            CloseHandle(sourceHandle);
+        if (destHandle.IsInvalid)
             throw new Win32Exception(Marshal.GetLastWin32Error(), $"Cannot open destination disk {destDiskNumber}");
-        }
 
-        try
-        {
-            DeviceIoControl(destHandle, FSCTL_LOCK_VOLUME, IntPtr.Zero, 0, IntPtr.Zero, 0, out _, IntPtr.Zero);
-            DeviceIoControl(destHandle, FSCTL_DISMOUNT_VOLUME, IntPtr.Zero, 0, IntPtr.Zero, 0, out _, IntPtr.Zero);
+        DeviceIoControl(destHandle, FSCTL_LOCK_VOLUME, IntPtr.Zero, 0, IntPtr.Zero, 0, out _, IntPtr.Zero);
+        DeviceIoControl(destHandle, FSCTL_DISMOUNT_VOLUME, IntPtr.Zero, 0, IntPtr.Zero, 0, out _, IntPtr.Zero);
 
-            EraseTargetSignatures(destHandle, log);
+        EraseTargetSignatures(destHandle, log);
 
-            var copyResult = await Task.Run(() => CopyLoop(sourceHandle, destHandle, sourceSize, log, progress, ct, rescue), ct);
-            result.BytesCopied = copyResult.BytesCopied;
-            result.CopyDuration = copyResult.CopyDuration;
-            result.BadSectorOffsets = copyResult.BadSectors;
+        var copyResult = await Task.Run(() => CopyLoop(sourceHandle, destHandle, sourceSize, log, progress, ct, rescue), ct);
+        result.BytesCopied = copyResult.BytesCopied;
+        result.CopyDuration = copyResult.CopyDuration;
+        result.BadSectorOffsets = copyResult.BadSectors;
 
-            if (result.HasBadSectors)
-                log.Log($"Sector clone completed with {result.BadSectorOffsets.Count} bad sector(s) zeroed");
+        if (result.HasBadSectors)
+            log.Log($"Sector clone completed with {result.BadSectorOffsets.Count} bad sector(s) zeroed");
 
-            log.Log($"Sector clone complete: {SizeUtil.Format(result.BytesCopied)} copied from Disk {sourceDiskNumber} to Disk {destDiskNumber}");
-        }
-        finally
-        {
-            CloseHandle(destHandle);
-            CloseHandle(sourceHandle);
-        }
+        log.Log($"Sector clone complete: {SizeUtil.Format(result.BytesCopied)} copied from Disk {sourceDiskNumber} to Disk {destDiskNumber}");
 
         if (verify)
         {
@@ -175,31 +165,20 @@ public static class SectorCloneService
         var sourcePath = $"\\\\.\\PhysicalDrive{sourceDiskNumber}";
         var destPath = $"\\\\.\\PhysicalDrive{destDiskNumber}";
 
-        var sourceHandle = CreateFileW(sourcePath, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
+        using var sourceHandle = CreateFileW(sourcePath, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
             IntPtr.Zero, OPEN_EXISTING, FILE_FLAG_NO_BUFFERING, IntPtr.Zero);
-        if (sourceHandle == new IntPtr(-1))
+        if (sourceHandle.IsInvalid)
             throw new Win32Exception(Marshal.GetLastWin32Error(), $"Cannot open source disk {sourceDiskNumber} for verification");
 
-        var destHandle = CreateFileW(destPath, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
+        using var destHandle = CreateFileW(destPath, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
             IntPtr.Zero, OPEN_EXISTING, FILE_FLAG_NO_BUFFERING, IntPtr.Zero);
-        if (destHandle == new IntPtr(-1))
-        {
-            CloseHandle(sourceHandle);
+        if (destHandle.IsInvalid)
             throw new Win32Exception(Marshal.GetLastWin32Error(), $"Cannot open destination disk {destDiskNumber} for verification");
-        }
 
-        try
-        {
-            return await Task.Run(() => VerifyLoop(sourceHandle, destHandle, totalBytes, progress, ct), ct);
-        }
-        finally
-        {
-            CloseHandle(destHandle);
-            CloseHandle(sourceHandle);
-        }
+        return await Task.Run(() => VerifyLoop(sourceHandle, destHandle, totalBytes, progress, ct), ct);
     }
 
-    private static void EraseTargetSignatures(IntPtr destHandle, IActivityLog log)
+    private static void EraseTargetSignatures(SafeFileHandle destHandle, IActivityLog log)
     {
         const int eraseSize = 65536;
         var zeroBlock = new byte[eraseSize];
@@ -210,7 +189,7 @@ public static class SectorCloneService
     }
 
     private static (long BytesCopied, TimeSpan CopyDuration, List<long> BadSectors) CopyLoop(
-        IntPtr source, IntPtr dest, long totalBytes,
+        SafeFileHandle source, SafeFileHandle dest, long totalBytes,
         IActivityLog log, IProgress<SectorCloneProgress>? progress, CancellationToken ct, bool rescue)
     {
         var buffer = new byte[BUFFER_SIZE];
@@ -297,7 +276,7 @@ public static class SectorCloneService
         return (copied, sw.Elapsed, badSectors);
     }
 
-    private static VerifyResult VerifyLoop(IntPtr source, IntPtr dest, long totalBytes,
+    private static VerifyResult VerifyLoop(SafeFileHandle source, SafeFileHandle dest, long totalBytes,
         IProgress<SectorCloneProgress>? progress, CancellationToken ct)
     {
         var sourceBuffer = new byte[BUFFER_SIZE];

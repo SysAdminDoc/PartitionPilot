@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using Microsoft.Win32.SafeHandles;
 
 namespace PartitionPilot;
@@ -128,7 +129,7 @@ public static class SecureEraseService
                 if (passes[i] >= 0)
                     Array.Fill(buffer, (byte)passes[i]);
                 else
-                    Random.Shared.NextBytes(buffer);
+                    RandomNumberGenerator.Fill(buffer);
 
                 using var fs = new System.IO.FileStream(tempPath,
                     System.IO.FileMode.Create, System.IO.FileAccess.Write,
@@ -142,7 +143,7 @@ public static class SecureEraseService
                     try
                     {
                         if (passes[i] == -1)
-                            Random.Shared.NextBytes(buffer);
+                            RandomNumberGenerator.Fill(buffer);
                         fs.Write(buffer, 0, blockSize);
                         written += blockSize;
 

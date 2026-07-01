@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
+using Microsoft.Win32.SafeHandles;
 
 namespace PartitionPilot;
 
@@ -68,22 +69,19 @@ public static class PartitionRecoveryScanner
     };
 
     [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-    private static extern IntPtr CreateFileW(
+    private static extern SafeFileHandle CreateFileW(
         string lpFileName, uint dwDesiredAccess, uint dwShareMode,
         IntPtr lpSecurityAttributes, uint dwCreationDisposition,
         uint dwFlagsAndAttributes, IntPtr hTemplateFile);
 
     [DllImport("kernel32.dll", SetLastError = true)]
     private static extern bool ReadFile(
-        IntPtr hFile, byte[] lpBuffer, int nNumberOfBytesToRead,
+        SafeFileHandle hFile, byte[] lpBuffer, int nNumberOfBytesToRead,
         out int lpNumberOfBytesRead, IntPtr lpOverlapped);
 
     [DllImport("kernel32.dll", SetLastError = true)]
     private static extern bool SetFilePointerEx(
-        IntPtr hFile, long liDistanceToMove, out long lpNewFilePointer, uint dwMoveMethod);
-
-    [DllImport("kernel32.dll", SetLastError = true)]
-    private static extern bool CloseHandle(IntPtr hObject);
+        SafeFileHandle hFile, long liDistanceToMove, out long lpNewFilePointer, uint dwMoveMethod);
 
     private static readonly byte[] NtfsSignature = "NTFS    "u8.ToArray();
     private static readonly byte[] Fat32Signature = "FAT32   "u8.ToArray();
@@ -214,25 +212,18 @@ public static class PartitionRecoveryScanner
         RecoveryScanOptions options, string? statePath, IProgress<double>? progress, CancellationToken ct)
     {
         var path = $"\\\\.\\PhysicalDrive{diskNumber}";
-        var handle = CreateFileW(path, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
+        using var handle = CreateFileW(path, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
             IntPtr.Zero, OPEN_EXISTING, FILE_FLAG_NO_BUFFERING, IntPtr.Zero);
 
-        if (handle == new IntPtr(-1))
+        if (handle.IsInvalid)
             throw new Win32Exception(Marshal.GetLastWin32Error(), $"Cannot open disk {diskNumber} for read-only scan");
 
-        try
-        {
-            return options.Mode == RecoveryScanMode.Deep
-                ? ScanDeep(handle, diskNumber, diskSize, log, options, statePath, progress, ct)
-                : ScanFast(handle, diskSize, log, progress, ct);
-        }
-        finally
-        {
-            CloseHandle(handle);
-        }
+        return options.Mode == RecoveryScanMode.Deep
+            ? ScanDeep(handle, diskNumber, diskSize, log, options, statePath, progress, ct)
+            : ScanFast(handle, diskSize, log, progress, ct);
     }
 
-    private static ScanWorkResult ScanFast(IntPtr handle, long diskSize,
+    private static ScanWorkResult ScanFast(SafeFileHandle handle, long diskSize,
         IActivityLog log, IProgress<double>? progress, CancellationToken ct)
     {
         var offsets = BuildFastProbeOffsets(diskSize);
@@ -268,7 +259,7 @@ public static class PartitionRecoveryScanner
         };
     }
 
-    private static ScanWorkResult ScanDeep(IntPtr handle, int diskNumber, long diskSize,
+    private static ScanWorkResult ScanDeep(SafeFileHandle handle, int diskNumber, long diskSize,
         IActivityLog log, RecoveryScanOptions options, string? statePath, IProgress<double>? progress, CancellationToken ct)
     {
         var state = LoadResumeState(statePath, diskNumber, diskSize, log);
@@ -334,7 +325,7 @@ public static class PartitionRecoveryScanner
         };
     }
 
-    private static bool TryReadAt(IntPtr handle, long offset, byte[] buffer, out int bytesRead)
+    private static bool TryReadAt(SafeFileHandle handle, long offset, byte[] buffer, out int bytesRead)
     {
         Array.Clear(buffer);
         bytesRead = 0;
