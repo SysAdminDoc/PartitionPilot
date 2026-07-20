@@ -344,7 +344,7 @@
                         <StackPanel>
                             <TextBlock Text="{Binding EnduranceText}" Style="{StaticResource CaptionText}" Margin="0,0,0,6"
                                        AutomationProperties.Name="Endurance status"/>
-                            <ProgressBar Value="{Binding EndurancePercent}" Maximum="100" Height="6"
+                            <ProgressBar Value="{Binding EndurancePercent, Mode=OneWay}" Maximum="100" Height="6"
                                          Foreground="{DynamicResource PrimaryBrush}"
                                          Background="{DynamicResource BorderBrush}"
                                          BorderThickness="0" Margin="0,0,0,8"/>
