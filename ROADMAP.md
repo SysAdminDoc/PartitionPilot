@@ -1,5 +1,9 @@
 # PartitionPilot Roadmap
 
+Actionable work only. Historical and completed roadmap material is archived in CHANGELOG.md; blocked work is kept in Roadmap_Blocked.md.
+
+## Actionable Items
+
 - [ ] P1 — Hex viewer uses hardcoded 512-byte sector size for LBA offset
   Why: 4Kn drives use 4096-byte logical sectors; LBA-to-byte offset is wrong past LBA 0
   Where: src/PartitionPilot/ViewModels/HexViewerViewModel.cs
