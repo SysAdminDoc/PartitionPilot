@@ -8,10 +8,12 @@ public class PartitionsViewModel : ViewModelBase
 {
     private readonly IWmiDiskService _wmiService;
     private readonly ProcessRunner _processRunner;
-    private readonly ActivityLog _log;
+    private readonly IActivityLog _log;
     private readonly IDialogService _dialog;
     private readonly PartitionTableBackup _backup;
+    private readonly Action<Action> _invokeOnUiThread;
     private CancellationTokenSource? _loadCts;
+    private int _activeLoadCount;
 
     public ObservableCollection<DiskInfo> Disks { get; } = new();
     public ObservableCollection<PartitionInfo> Partitions { get; } = new();
@@ -134,13 +136,19 @@ public class PartitionsViewModel : ViewModelBase
     private const string DefaultColor = "#B18CFF";
     private const double MinProportion = 0.018;
 
-    public PartitionsViewModel(IWmiDiskService wmiService, ProcessRunner processRunner, ActivityLog log, IDialogService dialog)
+    public PartitionsViewModel(
+        IWmiDiskService wmiService,
+        ProcessRunner processRunner,
+        IActivityLog log,
+        IDialogService dialog,
+        Action<Action>? invokeOnUiThread = null)
     {
         _wmiService = wmiService;
         _processRunner = processRunner;
         _log = log;
         _dialog = dialog;
         _backup = new PartitionTableBackup(wmiService, log);
+        _invokeOnUiThread = invokeOnUiThread ?? InvokeOnUiThread;
 
         RefreshCommand = new AsyncRelayCommand(_ => LoadDisksAsync());
         DeleteCommand = new AsyncRelayCommand(_ => ExecuteDeleteAsync(), _ => SelectedPartition is not null);
@@ -172,7 +180,7 @@ public class PartitionsViewModel : ViewModelBase
 
     public async Task LoadDisksAsync()
     {
-        IsBusy = true;
+        BeginLoad();
         try
         {
             if (!_journalCheckDone)
@@ -200,7 +208,7 @@ public class PartitionsViewModel : ViewModelBase
                 }
             }
 
-            Application.Current.Dispatcher.Invoke(() =>
+            _invokeOnUiThread(() =>
             {
                 Disks.Clear();
                 foreach (var d in disks)
@@ -217,7 +225,7 @@ public class PartitionsViewModel : ViewModelBase
         }
         finally
         {
-            IsBusy = false;
+            EndLoad();
         }
     }
 
@@ -227,7 +235,7 @@ public class PartitionsViewModel : ViewModelBase
     {
         if (SelectedDisk is null)
         {
-            Application.Current.Dispatcher.Invoke(() =>
+            _invokeOnUiThread(() =>
             {
                 Partitions.Clear();
                 DiskBarSegments.Clear();
@@ -235,7 +243,7 @@ public class PartitionsViewModel : ViewModelBase
             return;
         }
 
-        IsBusy = true;
+        BeginLoad();
         try
         {
             var disk = SelectedDisk;
@@ -262,7 +270,7 @@ public class PartitionsViewModel : ViewModelBase
             }
 
             ct.ThrowIfCancellationRequested();
-            Application.Current.Dispatcher.Invoke(() =>
+            _invokeOnUiThread(() =>
             {
                 Partitions.Clear();
                 foreach (var p in parts)
@@ -282,8 +290,29 @@ public class PartitionsViewModel : ViewModelBase
         }
         finally
         {
-            IsBusy = false;
+            EndLoad();
         }
+    }
+
+    private void BeginLoad()
+    {
+        if (Interlocked.Increment(ref _activeLoadCount) == 1)
+            _invokeOnUiThread(() => IsBusy = true);
+    }
+
+    private void EndLoad()
+    {
+        if (Interlocked.Decrement(ref _activeLoadCount) == 0)
+            _invokeOnUiThread(() => IsBusy = false);
+    }
+
+    private static void InvokeOnUiThread(Action action)
+    {
+        var dispatcher = Application.Current?.Dispatcher;
+        if (dispatcher is null || dispatcher.CheckAccess())
+            action();
+        else
+            dispatcher.Invoke(action);
     }
 
     // ──────────────────────── Disk Bar ────────────────────────
