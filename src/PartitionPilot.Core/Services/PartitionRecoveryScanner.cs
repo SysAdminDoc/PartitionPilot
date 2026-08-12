@@ -459,8 +459,9 @@ public static class PartitionRecoveryScanner
 
         if (MatchesAt(buffer, 3, ExfatSignature))
         {
-            long volumeLength = BitConverter.ToInt64(buffer, 0x48);
-            long estimatedSize = volumeLength > 0 ? volumeLength * SECTOR_SIZE : 0;
+            ulong volumeLength = BitConverter.ToUInt64(buffer, 0x48);
+            int bytesPerSectorShift = buffer[0x6C];
+            long estimatedSize = EstimateExfatSize(volumeLength, bytesPerSectorShift);
 
             return new CandidatePartition
             {
@@ -576,6 +577,17 @@ public static class PartitionRecoveryScanner
         }
 
         return null;
+    }
+
+    private static long EstimateExfatSize(ulong volumeLength, int bytesPerSectorShift)
+    {
+        if (volumeLength == 0 || bytesPerSectorShift is < 9 or > 12)
+            return 0;
+
+        var bytesPerSector = 1UL << bytesPerSectorShift;
+        return volumeLength <= (ulong)long.MaxValue / bytesPerSector
+            ? (long)(volumeLength * bytesPerSector)
+            : 0;
     }
 
     private static bool MatchesAt(byte[] buffer, int offset, byte[] pattern)

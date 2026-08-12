@@ -4,18 +4,6 @@ Actionable work only. Historical and completed roadmap material is archived in C
 
 ## Actionable Items
 
-- [ ] P2 — SmartHistoryService HTML report does not HTML-encode interpolated values
-  Why: Disk model names or attribute names with HTML metacharacters produce malformed HTML
-  Where: src/PartitionPilot.Core/Services/SmartHistoryService.cs
-
-- [ ] P2 — exFAT recovery scanner uses hardcoded 512-byte sector size
-  Why: exFAT VolumeLength field's sector size comes from BytesPerSectorShift, not always 512
-  Where: src/PartitionPilot.Core/Services/PartitionRecoveryScanner.cs
-
-- [ ] P2 — MftScanner.EnumerateMft lacks record-length bounds validation
-  Why: USN_RECORD fields read up to offset+58 without checking recordLength >= 60
-  Where: src/PartitionPilot.Core/Services/MftScanner.cs
-
 - [ ] P3 — Password prompt dialog in DiskCloningViewModel ignores theme
   Why: Inline Window construction doesn't apply DialogWindow style or theme resources
   Where: src/PartitionPilot/ViewModels/DiskCloningViewModel.cs

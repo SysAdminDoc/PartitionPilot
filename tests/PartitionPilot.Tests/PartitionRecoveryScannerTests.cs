@@ -36,6 +36,35 @@ public class PartitionRecoveryScannerTests
     }
 
     [Fact]
+    public void DetectCandidate_UsesExfatBytesPerSectorShift()
+    {
+        var buffer = new byte[4096];
+        "EXFAT   "u8.CopyTo(buffer.AsSpan(3));
+        BitConverter.GetBytes(2048UL).CopyTo(buffer, 0x48);
+        buffer[0x6C] = 12;
+
+        var candidate = PartitionRecoveryScanner.DetectCandidate(buffer, 1024L * 1024);
+
+        Assert.NotNull(candidate);
+        Assert.Equal("exFAT", candidate.FileSystem);
+        Assert.Equal(2048L * 4096, candidate.EstimatedSize);
+    }
+
+    [Fact]
+    public void DetectCandidate_ReportsUnknownSizeForInvalidExfatSectorShift()
+    {
+        var buffer = new byte[4096];
+        "EXFAT   "u8.CopyTo(buffer.AsSpan(3));
+        BitConverter.GetBytes(2048UL).CopyTo(buffer, 0x48);
+        buffer[0x6C] = 63;
+
+        var candidate = PartitionRecoveryScanner.DetectCandidate(buffer, 0);
+
+        Assert.NotNull(candidate);
+        Assert.Equal(0, candidate.EstimatedSize);
+    }
+
+    [Fact]
     public void CoalesceCandidates_KeepsHighestConfidencePerFilesystemAndOffset()
     {
         var candidates = PartitionRecoveryScanner.CoalesceCandidates(

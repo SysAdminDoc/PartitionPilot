@@ -236,4 +236,53 @@ public class SmartHistoryServiceTests
         Assert.Equal(0, reading.NvmeMediaErrors);
         Assert.True(reading.Timestamp > DateTimeOffset.UtcNow.AddSeconds(-5));
     }
+
+    [Fact]
+    public void FormatHtmlReport_EncodesDynamicValues()
+    {
+        var disk = new PhysicalDiskInfo
+        {
+            DeviceId = "1",
+            FriendlyName = "<script>alert('x')</script> & drive",
+            MediaType = "SSD & NVMe",
+            BusType = "PCIe \"Gen5\"",
+            FirmwareVersion = "<firmware>"
+        };
+        var smart = new SmartData
+        {
+            Temperature = 35,
+            AllAttributes =
+            [
+                new SmartAttribute
+                {
+                    Id = 250,
+                    Name = "<img src=x onerror=\"boom\">",
+                    Current = 100,
+                    Worst = 100
+                }
+            ]
+        };
+        var trends = new List<SmartTrend>
+        {
+            new()
+            {
+                Severity = "Warning",
+                Attribute = "Wear < limit",
+                Direction = "up & down",
+                Message = "<strong>replace</strong>"
+            }
+        };
+
+        var html = SmartHistoryService.FormatHtmlReport(
+            disk, smart, new List<SmartReading>(), trends, new List<AlignmentInfo>());
+
+        Assert.Contains("&lt;script&gt;", html);
+        Assert.Contains("SSD &amp; NVMe", html);
+        Assert.Contains("PCIe &quot;Gen5&quot;", html);
+        Assert.Contains("&lt;img src=x onerror=&quot;boom&quot;&gt;", html);
+        Assert.Contains("up &amp; down", html);
+        Assert.Contains("&lt;strong&gt;replace&lt;/strong&gt;", html);
+        Assert.DoesNotContain("<script>", html, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("<img", html, StringComparison.OrdinalIgnoreCase);
+    }
 }
