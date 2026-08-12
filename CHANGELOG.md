@@ -2,10 +2,15 @@
 
 ## Unreleased
 
+### Security
+- HTML-encoded all dynamic SMART report values so disk metadata and attribute text cannot alter report markup.
+
 ### Correctness
 - Made hex-viewer LBA addressing and reads honor each disk's logical sector size, including 4Kn media.
 - Matched LibreHardwareMonitor storage devices by their Windows disk number instead of enumeration order.
 - Kept the partition workspace busy state active until all overlapping disk and partition refreshes finish.
+- Used exFAT's bytes-per-sector shift when estimating recovered partition sizes.
+- Rejected truncated or internally out-of-bounds USN records during MFT scans.
 
 ## PartitionPilot v0.9.20 - 2026-06-30
 

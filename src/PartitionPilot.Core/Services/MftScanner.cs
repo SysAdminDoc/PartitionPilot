@@ -1,6 +1,8 @@
+using System.Buffers.Binary;
 using System.ComponentModel;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Text;
 using Microsoft.Win32.SafeHandles;
 
 namespace PartitionPilot;
@@ -36,6 +38,14 @@ public static class MftScanner
 
     private sealed record MftEntry(string Name, long ParentRef, long Size, bool IsDirectory);
 
+    internal readonly record struct UsnRecord(
+        int RecordLength,
+        long FileReference,
+        long ParentReference,
+        long Size,
+        bool IsDirectory,
+        string Name);
+
     public static List<FolderSizeInfo> ScanVolume(char driveLetter, int topN = 30, CancellationToken ct = default)
     {
         var volumePath = $"\\\\.\\{driveLetter}:";
@@ -54,6 +64,7 @@ public static class MftScanner
         var entries = new Dictionary<long, MftEntry>();
         const int bufferSize = 64 * 1024;
         var buffer = Marshal.AllocHGlobal(bufferSize);
+        var managedBuffer = new byte[bufferSize];
 
         try
         {
@@ -72,46 +83,27 @@ public static class MftScanner
                     ref enumData, Marshal.SizeOf<MFT_ENUM_DATA_V0>(),
                     buffer, bufferSize, out int bytesReturned, IntPtr.Zero);
 
-                if (!success || bytesReturned <= 8)
+                if (!success || bytesReturned <= 8 || bytesReturned > bufferSize)
                     break;
 
                 enumData.StartFileReferenceNumber = Marshal.ReadInt64(buffer);
+                Marshal.Copy(buffer, managedBuffer, 0, bytesReturned);
 
                 int offset = 8;
                 while (offset < bytesReturned)
                 {
-                    int recordLength = Marshal.ReadInt32(buffer, offset);
-                    if (recordLength == 0) break;
+                    if (!TryParseUsnRecord(managedBuffer.AsSpan(offset, bytesReturned - offset), out var record))
+                        break;
 
-                    long fileRef = Marshal.ReadInt64(buffer, offset + 8);
-                    long parentRef = Marshal.ReadInt64(buffer, offset + 16);
-                    int fileNameLength = Marshal.ReadInt16(buffer, offset + 56);
-                    int fileNameOffset = Marshal.ReadInt16(buffer, offset + 58);
-                    int attributes = Marshal.ReadInt32(buffer, offset + 52);
+                    long maskedRef = record.FileReference & 0x0000FFFFFFFFFFFF;
+                    long maskedParent = record.ParentReference & 0x0000FFFFFFFFFFFF;
 
-                    long maskedRef = fileRef & 0x0000FFFFFFFFFFFF;
-                    long maskedParent = parentRef & 0x0000FFFFFFFFFFFF;
-                    bool isDir = (attributes & 0x10) != 0;
-
-                    string name = "";
-                    if (fileNameLength > 0)
+                    if (!string.IsNullOrEmpty(record.Name) && record.Name != "." && record.Name != "..")
                     {
-                        name = Marshal.PtrToStringUni(buffer + offset + fileNameOffset, fileNameLength / 2) ?? "";
+                        entries[maskedRef] = new MftEntry(record.Name, maskedParent, record.Size, record.IsDirectory);
                     }
 
-                    if (!string.IsNullOrEmpty(name) && name != "." && name != "..")
-                    {
-                        long size = 0;
-                        if (!isDir)
-                        {
-                            size = Marshal.ReadInt64(buffer, offset + 40);
-                            if (size < 0) size = 0;
-                        }
-
-                        entries[maskedRef] = new MftEntry(name, maskedParent, size, isDir);
-                    }
-
-                    offset += recordLength;
+                    offset += record.RecordLength;
                 }
             }
         }
@@ -121,6 +113,42 @@ public static class MftScanner
         }
 
         return entries;
+    }
+
+    internal static bool TryParseUsnRecord(ReadOnlySpan<byte> data, out UsnRecord record)
+    {
+        record = default;
+        const int minimumRecordLength = 60;
+
+        if (data.Length < sizeof(int))
+            return false;
+
+        int recordLength = BinaryPrimitives.ReadInt32LittleEndian(data);
+        if (recordLength < minimumRecordLength || recordLength > data.Length)
+            return false;
+
+        var boundedRecord = data[..recordLength];
+        int fileNameLength = BinaryPrimitives.ReadUInt16LittleEndian(boundedRecord[56..]);
+        int fileNameOffset = BinaryPrimitives.ReadUInt16LittleEndian(boundedRecord[58..]);
+        if ((fileNameLength & 1) != 0 ||
+            fileNameOffset < minimumRecordLength ||
+            fileNameOffset > recordLength ||
+            fileNameLength > recordLength - fileNameOffset)
+        {
+            return false;
+        }
+
+        long fileReference = BinaryPrimitives.ReadInt64LittleEndian(boundedRecord[8..]);
+        long parentReference = BinaryPrimitives.ReadInt64LittleEndian(boundedRecord[16..]);
+        int attributes = BinaryPrimitives.ReadInt32LittleEndian(boundedRecord[52..]);
+        bool isDirectory = (attributes & 0x10) != 0;
+        long size = isDirectory ? 0 : Math.Max(0, BinaryPrimitives.ReadInt64LittleEndian(boundedRecord[40..]));
+        string name = fileNameLength == 0
+            ? ""
+            : Encoding.Unicode.GetString(boundedRecord.Slice(fileNameOffset, fileNameLength));
+
+        record = new UsnRecord(recordLength, fileReference, parentReference, size, isDirectory, name);
+        return true;
     }
 
     private static List<FolderSizeInfo> BuildTopFolders(Dictionary<long, MftEntry> entries,
