@@ -5,7 +5,7 @@ using System.Windows.Input;
 
 namespace PartitionPilot;
 
-public class DiskHealthViewModel : ViewModelBase
+public class DiskHealthViewModel : ViewModelBase, IDisposable
 {
     private readonly IWmiDiskService _wmiService;
     private readonly IProcessRunner _runner;
@@ -14,6 +14,7 @@ public class DiskHealthViewModel : ViewModelBase
     private readonly TemperatureMonitorService _tempMonitor;
     private readonly DiskPerfCounterService _perfCounters = new();
     private CancellationTokenSource? _healthCts;
+    private bool _disposed;
 
     public ObservableCollection<PhysicalDiskInfo> PhysicalDisks { get; } = new();
     public ObservableCollection<AlignmentInfo> AlignmentEntries { get; } = new();
@@ -25,6 +26,8 @@ public class DiskHealthViewModel : ViewModelBase
         get => _selectedDisk;
         set
         {
+            if (_disposed) return;
+
             if (SetProperty(ref _selectedDisk, value))
             {
                 OnPropertyChanged(nameof(DiskSizeText));
@@ -412,6 +415,8 @@ public class DiskHealthViewModel : ViewModelBase
 
     private void OnPerfUpdated(List<DiskPerfSnapshot> snapshots)
     {
+        if (_disposed) return;
+
         var sb = new System.Text.StringBuilder();
         foreach (var s in snapshots)
         {
@@ -423,6 +428,7 @@ public class DiskHealthViewModel : ViewModelBase
         }
         Application.Current?.Dispatcher?.BeginInvoke(() =>
         {
+            if (_disposed) return;
             PerfText = sb.ToString().TrimEnd();
             OnPropertyChanged(nameof(HasPerfData));
         });
@@ -651,8 +657,11 @@ public class DiskHealthViewModel : ViewModelBase
 
     private void OnTemperatureAlert(object? sender, TemperatureAlert alert)
     {
+        if (_disposed) return;
+
         Application.Current?.Dispatcher?.BeginInvoke(() =>
         {
+            if (_disposed) return;
             TemperatureAlerts.Insert(0, alert);
             if (TemperatureAlerts.Count > 50)
                 TemperatureAlerts.RemoveAt(TemperatureAlerts.Count - 1);
@@ -662,9 +671,34 @@ public class DiskHealthViewModel : ViewModelBase
 
     private void OnTemperaturesUpdated(object? sender, Dictionary<string, int> temps)
     {
-        if (temps.Count == 0) return;
+        if (_disposed || temps.Count == 0) return;
         var parts = temps.Select(kv => $"Disk {kv.Key}: {kv.Value} C");
         var text = string.Join("  |  ", parts);
-        Application.Current?.Dispatcher?.BeginInvoke(() => LiveTemperatureText = text);
+        Application.Current?.Dispatcher?.BeginInvoke(() =>
+        {
+            if (!_disposed)
+                LiveTemperatureText = text;
+        });
+    }
+
+    public void Dispose()
+    {
+        if (_disposed) return;
+        _disposed = true;
+
+        _healthCts?.Cancel();
+        _healthCts?.Dispose();
+        _healthCts = null;
+
+        _tempMonitor.AlertRaised -= OnTemperatureAlert;
+        _tempMonitor.TemperaturesUpdated -= OnTemperaturesUpdated;
+        _tempMonitor.Stop();
+
+        _perfCounters.Updated -= OnPerfUpdated;
+        _perfCounters.Dispose();
+
+        IsMonitoring = false;
+        IsPerfMonitoring = false;
+        GC.SuppressFinalize(this);
     }
 }

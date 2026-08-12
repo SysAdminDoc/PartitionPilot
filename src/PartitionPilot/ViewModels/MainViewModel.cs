@@ -170,6 +170,7 @@ public partial class MainViewModel : ViewModelBase
 
     public void OnClosing()
     {
+        DiskHealth.Dispose();
         Log.AutoSave();
     }
 
