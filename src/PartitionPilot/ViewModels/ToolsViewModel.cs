@@ -901,10 +901,12 @@ public class ToolsViewModel : ViewModelBase
             return;
         }
 
-        if (!ConfirmWorkflowPrompts(WipeWorkflowService.BuildNvmeSanitizePrompts(diskIdentity, method)))
+        if (!DestructiveWorkflowGuard.ConfirmPrompts(
+                WipeWorkflowService.BuildNvmeSanitizePrompts(diskIdentity, method), _dialog))
             return;
 
-        if (!await VerifyDiskIdentityBeforeExecuteAsync(diskIdentity, "NVMe Sanitize Target Changed"))
+        if (!await DestructiveWorkflowGuard.VerifyDiskIdentityBeforeExecuteAsync(
+                diskIdentity, "NVMe Sanitize Target Changed", _wmiService, _log, _dialog))
             return;
 
         var ct = BeginOperation($"NVMe sanitize ({method}) on Disk {SelectedWipeDrive.Number}...");
@@ -953,10 +955,12 @@ public class ToolsViewModel : ViewModelBase
             return;
         }
 
-        if (!ConfirmWorkflowPrompts(WipeWorkflowService.BuildDodPrompts(diskIdentity, passCount, SelectedWipeDrive.Size)))
+        if (!DestructiveWorkflowGuard.ConfirmPrompts(
+                WipeWorkflowService.BuildDodPrompts(diskIdentity, passCount, SelectedWipeDrive.Size), _dialog))
             return;
 
-        if (!await VerifyDiskIdentityBeforeExecuteAsync(diskIdentity, "DoD Wipe Target Changed"))
+        if (!await DestructiveWorkflowGuard.VerifyDiskIdentityBeforeExecuteAsync(
+                diskIdentity, "DoD Wipe Target Changed", _wmiService, _log, _dialog))
             return;
 
         var ct = BeginOperation($"DoD {passCount}-pass wipe on Disk {SelectedWipeDrive.Number}...");
@@ -1028,10 +1032,12 @@ public class ToolsViewModel : ViewModelBase
             return;
         }
 
-        if (!ConfirmWorkflowPrompts(WipeWorkflowService.BuildFullDiskPrompts(diskIdentity, WipeMode, SelectedWipeDrive.Size)))
+        if (!DestructiveWorkflowGuard.ConfirmPrompts(
+                WipeWorkflowService.BuildFullDiskPrompts(diskIdentity, WipeMode, SelectedWipeDrive.Size), _dialog))
             return;
 
-        if (!await VerifyDiskIdentityBeforeExecuteAsync(diskIdentity, "Wipe Target Changed"))
+        if (!await DestructiveWorkflowGuard.VerifyDiskIdentityBeforeExecuteAsync(
+                diskIdentity, "Wipe Target Changed", _wmiService, _log, _dialog))
             return;
 
         var ct = BeginOperation($"Wiping Disk {SelectedWipeDrive.Number}...");
@@ -1112,20 +1118,6 @@ public class ToolsViewModel : ViewModelBase
         return ConfirmBitLockerDestructiveVolume(operation, letter, GetVolumeEncryptionStatus(letter));
     }
 
-    private bool ConfirmWorkflowPrompts(IEnumerable<WorkflowPrompt> prompts)
-    {
-        foreach (var prompt in prompts)
-        {
-            var confirmed = prompt.IsDanger
-                ? _dialog.ConfirmDanger(prompt.Message, prompt.Title)
-                : _dialog.ConfirmWarning(prompt.Message, prompt.Title);
-            if (!confirmed)
-                return false;
-        }
-
-        return true;
-    }
-
     private bool ConfirmBitLockerDestructiveVolume(string operation, char letter, string? encryptionStatus)
     {
         if (!BitLockerPreflight.IsProtected(encryptionStatus))
@@ -1167,21 +1159,6 @@ public class ToolsViewModel : ViewModelBase
 
     private Task<List<string>> GetBitLockerProtectedTargetsAsync(int diskNumber) =>
         _wmiService.GetBitLockerProtectedTargetsAsync(diskNumber);
-
-    private async Task<bool> VerifyDiskIdentityBeforeExecuteAsync(DiskIdentitySnapshot identity, string title)
-    {
-        try
-        {
-            await identity.VerifyCurrentAsync(_wmiService);
-            return true;
-        }
-        catch (Exception ex)
-        {
-            _log.Log($"Target identity check failed: {ex.Message}");
-            _dialog.ShowError(ex.Message, title);
-            return false;
-        }
-    }
 
     // ──────────────────────── Boot Repair ────────────────────────
 

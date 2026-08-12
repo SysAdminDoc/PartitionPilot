@@ -79,6 +79,38 @@ public class WorkflowServiceTests
     }
 
     [Fact]
+    public void DestructiveWorkflowGuard_StopsPromptSequenceAfterRejection()
+    {
+        var dialog = new RecordingDialogService(true, false, true);
+        var prompts = new[]
+        {
+            new WorkflowPrompt("Review", "First", IsDanger: false),
+            new WorkflowPrompt("Confirm", "Second", IsDanger: true),
+            new WorkflowPrompt("Never shown", "Third", IsDanger: true)
+        };
+
+        var confirmed = DestructiveWorkflowGuard.ConfirmPrompts(prompts, dialog);
+
+        Assert.False(confirmed);
+        Assert.Equal(new[] { "Warning:Review", "Danger:Confirm" }, dialog.Confirmations);
+    }
+
+    [Fact]
+    public async Task DestructiveWorkflowGuard_ReportsIdentityMismatch()
+    {
+        var dialog = new RecordingDialogService();
+        var log = new RecordingLog();
+        var identity = new DiskIdentitySnapshot { DiskNumber = 99, FriendlyName = "Removed disk", Size = 1024 };
+
+        var verified = await DestructiveWorkflowGuard.VerifyDiskIdentityBeforeExecuteAsync(
+            identity, "Target Changed", new FakeWmiDiskService(), log, dialog);
+
+        Assert.False(verified);
+        Assert.Contains("Target identity check failed", Assert.Single(log.Messages));
+        Assert.Equal("Target Changed", Assert.Single(dialog.Errors).Title);
+    }
+
+    [Fact]
     public async Task SupportBundleService_CreatesRedactedZip()
     {
         var root = CreateTempDir();
@@ -180,5 +212,38 @@ public class WorkflowServiceTests
         public Task<Dictionary<int, string>> GetStoragePoolMembershipAsync() => Task.FromResult(new Dictionary<int, string>());
         public Task<Dictionary<string, (string Health, string Status, bool ReadOnly)>> GetStoragePoolHealthAsync() =>
             Task.FromResult(new Dictionary<string, (string Health, string Status, bool ReadOnly)>());
+    }
+
+    private sealed class RecordingLog : IActivityLog
+    {
+        public List<string> Messages { get; } = new();
+        public void Log(string message) => Messages.Add(message);
+    }
+
+    private sealed class RecordingDialogService(params bool[] confirmations) : IDialogService
+    {
+        private readonly Queue<bool> _confirmations = new(confirmations);
+
+        public List<string> Confirmations { get; } = new();
+        public List<(string Message, string Title)> Errors { get; } = new();
+
+        public void ShowInfo(string message, string title) { }
+        public void ShowWarning(string message, string title) { }
+        public void ShowError(string message, string title) => Errors.Add((message, title));
+        public bool Confirm(string message, string title) => NextConfirmation();
+
+        public bool ConfirmWarning(string message, string title)
+        {
+            Confirmations.Add($"Warning:{title}");
+            return NextConfirmation();
+        }
+
+        public bool ConfirmDanger(string message, string title)
+        {
+            Confirmations.Add($"Danger:{title}");
+            return NextConfirmation();
+        }
+
+        private bool NextConfirmation() => _confirmations.Count == 0 || _confirmations.Dequeue();
     }
 }

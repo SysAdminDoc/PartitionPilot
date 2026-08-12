@@ -8,6 +8,7 @@
 ### Reliability
 - Detached Windows theme notifications before dispatcher shutdown to prevent callbacks during app exit.
 - Stopped Disk Health background monitoring, canceled active health work, and released performance counters on window close.
+- Centralized destructive workflow confirmations and final disk-identity checks so cloning and wipe paths enforce one safety gate.
 
 ### Correctness
 - Made hex-viewer LBA addressing and reads honor each disk's logical sector size, including 4Kn media.
@@ -16,6 +17,9 @@
 - Used exFAT's bytes-per-sector shift when estimating recovered partition sizes.
 - Rejected truncated or internally out-of-bounds USN records during MFT scans.
 - Returned a successful CLI exit code for boot-audit warnings while preserving exit code 2 for failed audits.
+
+### UX
+- Replaced the inline encryption password window with a focused dialog that follows active theme colors and button styles.
 
 ## PartitionPilot v0.9.20 - 2026-06-30
 
