@@ -9,6 +9,15 @@ public enum BootabilityAuditStatus
     Fail
 }
 
+public static class BootabilityAuditExitCode
+{
+    public static int FromStatus(BootabilityAuditStatus status) => status switch
+    {
+        BootabilityAuditStatus.Pass or BootabilityAuditStatus.Warning => 0,
+        _ => 2
+    };
+}
+
 public sealed class BootabilityAuditIssue
 {
     public BootabilityAuditStatus Severity { get; set; }

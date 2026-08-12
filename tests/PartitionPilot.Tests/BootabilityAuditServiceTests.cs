@@ -2,6 +2,15 @@ namespace PartitionPilot.Tests;
 
 public class BootabilityAuditServiceTests
 {
+    [Theory]
+    [InlineData(BootabilityAuditStatus.Pass, 0)]
+    [InlineData(BootabilityAuditStatus.Warning, 0)]
+    [InlineData(BootabilityAuditStatus.Fail, 2)]
+    public void ExitCode_OnlyFailsForFailedAudit(BootabilityAuditStatus status, int expected)
+    {
+        Assert.Equal(expected, BootabilityAuditExitCode.FromStatus(status));
+    }
+
     [Fact]
     public async Task AuditAsync_PassesForGptWindowsInstallWithEspBcdAndWinRe()
     {
