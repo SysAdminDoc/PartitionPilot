@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows;
@@ -17,7 +18,6 @@ public class HexViewerViewModel : ViewModelBase
     private const uint FILE_SHARE_WRITE = 0x02;
     private const uint OPEN_EXISTING = 3;
     private const uint FILE_FLAG_NO_BUFFERING = 0x20000000;
-    private const int DISPLAY_SIZE = 512;
 
     [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
     private static extern SafeFileHandle CreateFileW(string lpFileName, uint dwDesiredAccess, uint dwShareMode,
@@ -41,6 +41,7 @@ public class HexViewerViewModel : ViewModelBase
             {
                 SectorOffset = 0;
                 OnPropertyChanged(nameof(DiskSummary));
+                OnPropertyChanged(nameof(SectorOffsetText));
                 CommandManager.InvalidateRequerySuggested();
                 if (value is not null)
                     _ = ReadSectorAsync();
@@ -60,7 +61,20 @@ public class HexViewerViewModel : ViewModelBase
         }
     }
 
-    public string SectorOffsetText => $"LBA {SectorOffset} (offset {SectorOffset * DISPLAY_SIZE:N0})";
+    public string SectorOffsetText
+    {
+        get
+        {
+            try
+            {
+                return $"LBA {SectorOffset} (offset {DiskGeometry.GetByteOffset(SectorOffset, LogicalSectorSize):N0})";
+            }
+            catch (OverflowException)
+            {
+                return $"LBA {SectorOffset} (offset exceeds supported range)";
+            }
+        }
+    }
 
     private string _hexText = "";
     public string HexText
@@ -79,6 +93,8 @@ public class HexViewerViewModel : ViewModelBase
     public string DiskSummary => SelectedDisk is not null
         ? $"Disk {SelectedDisk.Number}: {SelectedDisk.FriendlyName} ({SizeUtil.Format(SelectedDisk.Size)})"
         : "";
+
+    private int LogicalSectorSize => DiskGeometry.NormalizeLogicalSectorSize(SelectedDisk?.LogicalSectorSize ?? 0);
 
     private bool _isBusy;
     public bool IsBusy
@@ -123,15 +139,19 @@ public class HexViewerViewModel : ViewModelBase
 
     private async Task ReadSectorAsync()
     {
-        if (SelectedDisk is null) return;
+        var selectedDisk = SelectedDisk;
+        if (selectedDisk is null) return;
+
+        var sectorLba = SectorOffset;
+        var logicalSectorSize = LogicalSectorSize;
         IsBusy = true;
-        StatusText = $"Reading sector {SectorOffset}...";
+        StatusText = $"Reading sector {sectorLba}...";
 
         try
         {
-            var data = await Task.Run(() => ReadRawSector(SelectedDisk.Number, SectorOffset));
-            HexText = FormatHexDump(data, SectorOffset * DISPLAY_SIZE);
-            StatusText = $"Sector {SectorOffset} read ({data.Length} bytes)";
+            var data = await Task.Run(() => ReadRawSector(selectedDisk.Number, sectorLba, logicalSectorSize));
+            HexText = FormatHexDump(data, DiskGeometry.GetByteOffset(sectorLba, logicalSectorSize));
+            StatusText = $"Sector {sectorLba} read ({data.Length} bytes)";
         }
         catch (Exception ex)
         {
@@ -145,7 +165,7 @@ public class HexViewerViewModel : ViewModelBase
         }
     }
 
-    private static byte[] ReadRawSector(int diskNumber, long sectorLba)
+    private static byte[] ReadRawSector(int diskNumber, long sectorLba, int logicalSectorSize)
     {
         var path = $"\\\\.\\PhysicalDrive{diskNumber}";
         using var handle = CreateFileW(path, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
@@ -154,18 +174,23 @@ public class HexViewerViewModel : ViewModelBase
         if (handle.IsInvalid)
             throw new Win32Exception(Marshal.GetLastWin32Error(), $"Cannot open disk {diskNumber}");
 
-        long byteOffset = sectorLba * DISPLAY_SIZE;
-        long alignedOffset = byteOffset / 4096 * 4096;
+        logicalSectorSize = DiskGeometry.NormalizeLogicalSectorSize(logicalSectorSize);
+        long byteOffset = DiskGeometry.GetByteOffset(sectorLba, logicalSectorSize);
+        int bufferAlignment = Math.Max(4096, logicalSectorSize);
+        long alignedOffset = byteOffset / bufferAlignment * bufferAlignment;
         int offsetInBuffer = (int)(byteOffset - alignedOffset);
 
-        var readBuffer = new byte[4096];
+        var readBuffer = new byte[bufferAlignment];
         if (!SetFilePointerEx(handle, alignedOffset, out _, 0))
             throw new Win32Exception(Marshal.GetLastWin32Error(), "Seek failed");
 
         if (!ReadFile(handle, readBuffer, readBuffer.Length, out int bytesRead, IntPtr.Zero) || bytesRead == 0)
             throw new Win32Exception(Marshal.GetLastWin32Error(), "Read failed");
 
-        var result = new byte[Math.Min(DISPLAY_SIZE, bytesRead - offsetInBuffer)];
+        if (bytesRead <= offsetInBuffer)
+            throw new IOException("The disk read ended before the requested sector.");
+
+        var result = new byte[Math.Min(logicalSectorSize, bytesRead - offsetInBuffer)];
         Buffer.BlockCopy(readBuffer, offsetInBuffer, result, 0, result.Length);
         return result;
     }

@@ -4,7 +4,7 @@ namespace PartitionPilot;
 
 public static class SmartQueryService
 {
-    public static SmartData? QueryDisk(int diskIndex, IActivityLog? log = null)
+    public static SmartData? QueryDisk(int diskNumber, IActivityLog? log = null)
     {
         Computer? computer = null;
         try
@@ -16,10 +16,15 @@ public static class SmartQueryService
                 .Where(h => h.HardwareType == HardwareType.Storage)
                 .ToList();
 
-            if (diskIndex >= storageDevices.Count)
-                return null;
+            var device = storageDevices.FirstOrDefault(hardware =>
+                GetStorageDiskNumber(hardware.Identifier.ToString()) == diskNumber);
 
-            var device = storageDevices[diskIndex];
+            if (device is null)
+            {
+                log?.Log($"LibreHardwareMonitor did not report a storage device for Windows disk {diskNumber}.");
+                return null;
+            }
+
             device.Update();
 
             var data = new SmartData();
@@ -87,7 +92,7 @@ public static class SmartQueryService
             }
 
             data.AllAttributes = attributes;
-            log?.Log($"LibreHardwareMonitor returned {attributes.Count} SMART attribute(s) for device index {diskIndex}.");
+            log?.Log($"LibreHardwareMonitor returned {attributes.Count} SMART attribute(s) for Windows disk {diskNumber}.");
             return data;
         }
         catch (Exception ex)
@@ -99,5 +104,19 @@ public static class SmartQueryService
         {
             computer?.Close();
         }
+    }
+
+    public static int? GetStorageDiskNumber(string? identifier)
+    {
+        if (string.IsNullOrWhiteSpace(identifier))
+            return null;
+
+        var separatorIndex = identifier.LastIndexOf('/');
+        if (separatorIndex < 0 || separatorIndex == identifier.Length - 1)
+            return null;
+
+        return int.TryParse(identifier[(separatorIndex + 1)..], out var diskNumber) && diskNumber >= 0
+            ? diskNumber
+            : null;
     }
 }

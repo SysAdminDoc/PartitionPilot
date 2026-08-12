@@ -100,6 +100,7 @@ public class WmiDiskService : IWmiDiskService
                         Path = GetString(obj, "Path"),
                         BusType = MapBusType(GetInt32(obj, "BusType")),
                         Location = GetString(obj, "Location"),
+                        LogicalSectorSize = DiskGeometry.NormalizeLogicalSectorSize(GetInt32(obj, "LogicalSectorSize")),
                         LargestFreeExtent = GetInt64(obj, "LargestFreeExtent"),
                         NumberOfPartitions = GetInt32(obj, "NumberOfPartitions")
                     });

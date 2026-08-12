@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Correctness
+- Made hex-viewer LBA addressing and reads honor each disk's logical sector size, including 4Kn media.
+- Matched LibreHardwareMonitor storage devices by their Windows disk number instead of enumeration order.
+
 ## PartitionPilot v0.9.20 - 2026-06-30
 
 ### Security
