@@ -11,7 +11,3 @@ Actionable work only. Historical and completed roadmap material is archived in C
 - [ ] P3 — ConfirmWorkflowPrompts and VerifyDiskIdentityBeforeExecuteAsync duplicated
   Why: Identical methods in ToolsViewModel and DiskCloningViewModel should be shared
   Where: src/PartitionPilot/ViewModels/ToolsViewModel.cs, DiskCloningViewModel.cs
-
-- [ ] P3 — boot-audit exit code 1 (Warning) conflicts with error convention
-  Why: Scripts checking $LASTEXITCODE -ne 0 treat warnings as hard failures
-  Where: src/PartitionPilot.Cli/Program.cs

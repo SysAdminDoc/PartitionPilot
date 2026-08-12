@@ -656,12 +656,7 @@ async Task<int> BootAuditAsync()
     else
         Console.WriteLine(report.FormatReport());
 
-    return report.Status switch
-    {
-        BootabilityAuditStatus.Pass => 0,
-        BootabilityAuditStatus.Warning => 1,
-        _ => 2
-    };
+    return BootabilityAuditExitCode.FromStatus(report.Status);
 }
 
 async Task<int> ReleaseManifestAsync()

@@ -15,6 +15,7 @@
 - Kept the partition workspace busy state active until all overlapping disk and partition refreshes finish.
 - Used exFAT's bytes-per-sector shift when estimating recovered partition sizes.
 - Rejected truncated or internally out-of-bounds USN records during MFT scans.
+- Returned a successful CLI exit code for boot-audit warnings while preserving exit code 2 for failed audits.
 
 ## PartitionPilot v0.9.20 - 2026-06-30
 
