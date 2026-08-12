@@ -4,10 +4,10 @@ public class SimulatedDiskService : IWmiDiskService
 {
     public Task<List<DiskInfo>> GetDisksAsync() => Task.FromResult(new List<DiskInfo>
     {
-        new() { Number = 0, FriendlyName = "Samsung SSD 990 PRO 2TB", Size = 2_000_398_934_016, PartitionStyle = "GPT", UniqueId = "SIM-DISK-0", SerialNumber = "SIM990PRO0000", Path = @"\\?\simdisk#0", BusType = "NVMe", Location = "Simulated slot 0", LargestFreeExtent = 0, NumberOfPartitions = 4 },
-        new() { Number = 1, FriendlyName = "WD Blue SN580 1TB", Size = 1_000_204_886_016, PartitionStyle = "GPT", UniqueId = "SIM-DISK-1", SerialNumber = "SIMSN5800001", Path = @"\\?\simdisk#1", BusType = "NVMe", Location = "Simulated slot 1", LargestFreeExtent = 107_374_182_400, NumberOfPartitions = 2 },
-        new() { Number = 2, FriendlyName = "Seagate Barracuda 4TB", Size = 4_000_787_030_016, PartitionStyle = "GPT", UniqueId = "SIM-DISK-2", SerialNumber = "SIMBARRA0002", Path = @"\\?\simdisk#2", BusType = "SATA", Location = "Simulated bay 2", LargestFreeExtent = 0, NumberOfPartitions = 1 },
-        new() { Number = 3, FriendlyName = "USB Flash Drive", Size = 32_017_047_552, PartitionStyle = "MBR", UniqueId = "SIM-DISK-3", SerialNumber = "SIMUSB0003", Path = @"\\?\simdisk#3", BusType = "USB", Location = "Simulated USB", LargestFreeExtent = 0, NumberOfPartitions = 1 },
+        new() { Number = 0, FriendlyName = "Samsung SSD 990 PRO 2TB", Size = 2_000_398_934_016, PartitionStyle = "GPT", UniqueId = "SIM-DISK-0", SerialNumber = "SIM990PRO0000", Path = @"\\?\simdisk#0", BusType = "NVMe", Location = "Simulated slot 0", LogicalSectorSize = 512, LargestFreeExtent = 0, NumberOfPartitions = 4 },
+        new() { Number = 1, FriendlyName = "WD Blue SN580 1TB", Size = 1_000_204_886_016, PartitionStyle = "GPT", UniqueId = "SIM-DISK-1", SerialNumber = "SIMSN5800001", Path = @"\\?\simdisk#1", BusType = "NVMe", Location = "Simulated slot 1", LogicalSectorSize = 512, LargestFreeExtent = 107_374_182_400, NumberOfPartitions = 2 },
+        new() { Number = 2, FriendlyName = "Seagate Barracuda 4TB", Size = 4_000_787_030_016, PartitionStyle = "GPT", UniqueId = "SIM-DISK-2", SerialNumber = "SIMBARRA0002", Path = @"\\?\simdisk#2", BusType = "SATA", Location = "Simulated bay 2", LogicalSectorSize = 4096, LargestFreeExtent = 0, NumberOfPartitions = 1 },
+        new() { Number = 3, FriendlyName = "USB Flash Drive", Size = 32_017_047_552, PartitionStyle = "MBR", UniqueId = "SIM-DISK-3", SerialNumber = "SIMUSB0003", Path = @"\\?\simdisk#3", BusType = "USB", Location = "Simulated USB", LogicalSectorSize = 512, LargestFreeExtent = 0, NumberOfPartitions = 1 },
     });
 
     public Task<List<PartitionInfo>> GetPartitionsAsync(int diskNumber) => Task.FromResult(diskNumber switch
@@ -48,7 +48,7 @@ public class SimulatedDiskService : IWmiDiskService
     {
         new() { DeviceId = "0", FriendlyName = "Samsung SSD 990 PRO 2TB", SerialNumber = "[sim]", FirmwareVersion = "4B2QJXD7", Size = 2_000_398_934_016, LogicalSectorSize = 512, PhysicalSectorSize = 512, HealthStatus = "Healthy", MediaType = "SSD", BusType = "NVMe" },
         new() { DeviceId = "1", FriendlyName = "WD Blue SN580 1TB", SerialNumber = "[sim]", FirmwareVersion = "234113WD", Size = 1_000_204_886_016, LogicalSectorSize = 512, PhysicalSectorSize = 512, HealthStatus = "Healthy", MediaType = "SSD", BusType = "NVMe" },
-        new() { DeviceId = "2", FriendlyName = "Seagate Barracuda 4TB", SerialNumber = "[sim]", FirmwareVersion = "SC60", Size = 4_000_787_030_016, LogicalSectorSize = 512, PhysicalSectorSize = 4096, HealthStatus = "Healthy", MediaType = "HDD", BusType = "SATA" },
+        new() { DeviceId = "2", FriendlyName = "Seagate Barracuda 4TB", SerialNumber = "[sim]", FirmwareVersion = "SC60", Size = 4_000_787_030_016, LogicalSectorSize = 4096, PhysicalSectorSize = 4096, HealthStatus = "Healthy", MediaType = "HDD", BusType = "SATA" },
         new() { DeviceId = "3", FriendlyName = "USB Flash Drive", SerialNumber = "[sim]", FirmwareVersion = "1.00", Size = 32_017_047_552, LogicalSectorSize = 512, PhysicalSectorSize = 512, HealthStatus = "Healthy", MediaType = "SSD", BusType = "USB" },
     });
 

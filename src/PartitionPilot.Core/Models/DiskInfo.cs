@@ -13,6 +13,7 @@ public class DiskInfo
     public string Path { get; set; } = "";
     public string BusType { get; set; } = "";
     public string Location { get; set; } = "";
+    public int LogicalSectorSize { get; set; } = DiskGeometry.DefaultLogicalSectorSize;
     public long LargestFreeExtent { get; set; }
     public int NumberOfPartitions { get; set; }
     public string StoragePoolName { get; set; } = "";

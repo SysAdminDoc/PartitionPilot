@@ -4,14 +4,6 @@ Actionable work only. Historical and completed roadmap material is archived in C
 
 ## Actionable Items
 
-- [ ] P1 — Hex viewer uses hardcoded 512-byte sector size for LBA offset
-  Why: 4Kn drives use 4096-byte logical sectors; LBA-to-byte offset is wrong past LBA 0
-  Where: src/PartitionPilot/ViewModels/HexViewerViewModel.cs
-
-- [ ] P1 — SmartQueryService uses array index instead of disk number for LHM device lookup
-  Why: LibreHardwareMonitor enumeration order may not match Windows disk numbering
-  Where: src/PartitionPilot.Core/Services/SmartQueryService.cs
-
 - [ ] P2 — DiskHealthViewModel perf-counter and temperature events fire on thread pool
   Why: DiskPerfCounterService.Updated and TemperatureMonitorService events not marshaled to UI
   Where: src/PartitionPilot.Core/Services/DiskPerfCounterService.cs, TemperatureMonitorService.cs
