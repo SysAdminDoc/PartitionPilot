@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## PartitionPilot v0.9.21 - 2026-08-12
 
 ### Security
 - HTML-encoded all dynamic SMART report values so disk metadata and attribute text cannot alter report markup.
