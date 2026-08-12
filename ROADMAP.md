@@ -4,14 +4,6 @@ Actionable work only. Historical and completed roadmap material is archived in C
 
 ## Actionable Items
 
-- [ ] P2 — DiskHealthViewModel perf-counter and temperature events fire on thread pool
-  Why: DiskPerfCounterService.Updated and TemperatureMonitorService events not marshaled to UI
-  Where: src/PartitionPilot.Core/Services/DiskPerfCounterService.cs, TemperatureMonitorService.cs
-
-- [ ] P2 — PartitionsViewModel IsBusy race between LoadDisksAsync and LoadPartitionsAsync
-  Why: Disk refresh sets IsBusy=false while partition loading is still in progress
-  Where: src/PartitionPilot/ViewModels/PartitionsViewModel.cs
-
 - [ ] P2 — SmartHistoryService HTML report does not HTML-encode interpolated values
   Why: Disk model names or attribute names with HTML metacharacters produce malformed HTML
   Where: src/PartitionPilot.Core/Services/SmartHistoryService.cs
