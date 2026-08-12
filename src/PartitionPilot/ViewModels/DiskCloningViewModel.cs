@@ -477,7 +477,8 @@ public class DiskCloningViewModel : ViewModelBase
             }
         }
 
-        if (!await VerifyDiskIdentityBeforeExecuteAsync(targetIdentity, "Restore Target Changed"))
+        if (!await DestructiveWorkflowGuard.VerifyDiskIdentityBeforeExecuteAsync(
+                targetIdentity, "Restore Target Changed", _wmiService, _log, _dialog))
             return;
 
         _cts?.Cancel();
@@ -619,12 +620,15 @@ public class DiskCloningViewModel : ViewModelBase
                 "Confirm BitLocker-Protected Clone"))
             return;
 
-        if (!ConfirmWorkflowPrompts(CloneWorkflowService.BuildSectorClonePrompts(sourceIdentity, destIdentity)))
+        if (!DestructiveWorkflowGuard.ConfirmPrompts(
+                CloneWorkflowService.BuildSectorClonePrompts(sourceIdentity, destIdentity), _dialog))
             return;
 
-        if (!await VerifyDiskIdentityBeforeExecuteAsync(sourceIdentity, "Clone Source Changed"))
+        if (!await DestructiveWorkflowGuard.VerifyDiskIdentityBeforeExecuteAsync(
+                sourceIdentity, "Clone Source Changed", _wmiService, _log, _dialog))
             return;
-        if (!await VerifyDiskIdentityBeforeExecuteAsync(destIdentity, "Clone Destination Changed"))
+        if (!await DestructiveWorkflowGuard.VerifyDiskIdentityBeforeExecuteAsync(
+                destIdentity, "Clone Destination Changed", _wmiService, _log, _dialog))
             return;
 
         _cts?.Cancel();
@@ -835,65 +839,13 @@ public class DiskCloningViewModel : ViewModelBase
             "Decrypted Image Verification");
     }
 
-    private async Task<bool> VerifyDiskIdentityBeforeExecuteAsync(DiskIdentitySnapshot identity, string title)
-    {
-        try
-        {
-            await identity.VerifyCurrentAsync(_wmiService);
-            return true;
-        }
-        catch (Exception ex)
-        {
-            _log.Log($"Target identity check failed: {ex.Message}");
-            _dialog.ShowError(ex.Message, title);
-            return false;
-        }
-    }
-
-    private bool ConfirmWorkflowPrompts(IEnumerable<WorkflowPrompt> prompts)
-    {
-        foreach (var prompt in prompts)
-        {
-            var confirmed = prompt.IsDanger
-                ? _dialog.ConfirmDanger(prompt.Message, prompt.Title)
-                : _dialog.ConfirmWarning(prompt.Message, prompt.Title);
-            if (!confirmed)
-                return false;
-        }
-
-        return true;
-    }
-
     private static string? PromptForInput(string message, string title)
     {
-        var dialog = new System.Windows.Window
+        var dialog = new Dialogs.PasswordPromptDialog(message, title)
         {
-            Title = title,
-            Width = 400,
-            SizeToContent = System.Windows.SizeToContent.Height,
-            WindowStartupLocation = System.Windows.WindowStartupLocation.CenterOwner,
-            ResizeMode = System.Windows.ResizeMode.NoResize,
             Owner = System.Windows.Application.Current.MainWindow
         };
-
-        var passwordBox = new System.Windows.Controls.PasswordBox { Margin = new System.Windows.Thickness(12), Height = 30 };
-        var okButton = new System.Windows.Controls.Button { Content = "OK", Width = 80, Height = 30, IsDefault = true, Margin = new System.Windows.Thickness(0, 0, 8, 12) };
-        var cancelButton = new System.Windows.Controls.Button { Content = "Cancel", Width = 80, Height = 30, IsCancel = true, Margin = new System.Windows.Thickness(0, 0, 12, 12) };
-
-        string? result = null;
-        okButton.Click += (_, _) => { result = passwordBox.Password; dialog.DialogResult = true; };
-
-        var buttonPanel = new System.Windows.Controls.StackPanel { Orientation = System.Windows.Controls.Orientation.Horizontal, HorizontalAlignment = System.Windows.HorizontalAlignment.Right };
-        buttonPanel.Children.Add(okButton);
-        buttonPanel.Children.Add(cancelButton);
-
-        var panel = new System.Windows.Controls.StackPanel();
-        panel.Children.Add(new System.Windows.Controls.TextBlock { Text = message, Margin = new System.Windows.Thickness(12, 12, 12, 4), TextWrapping = System.Windows.TextWrapping.Wrap });
-        panel.Children.Add(passwordBox);
-        panel.Children.Add(buttonPanel);
-
-        dialog.Content = panel;
-        return dialog.ShowDialog() == true ? result : null;
+        return dialog.ShowDialog() == true ? dialog.Password : null;
     }
 
 }

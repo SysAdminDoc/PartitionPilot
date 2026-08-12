@@ -82,6 +82,7 @@
   <data name="Delete" xml:space="preserve"><value>Supprimer</value></data>
   <data name="Format" xml:space="preserve"><value>Formater</value></data>
   <data name="Resize" xml:space="preserve"><value>Redimensionner</value></data>
+  <data name="Password" xml:space="preserve"><value>Mot de passe</value></data>
   <data name="OK" xml:space="preserve"><value>OK</value></data>
   <data name="Yes" xml:space="preserve"><value>Yes</value><comment>English fallback pending verified translation.</comment></data>
   <data name="No" xml:space="preserve"><value>No</value><comment>English fallback pending verified translation.</comment></data>

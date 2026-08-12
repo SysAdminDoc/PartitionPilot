@@ -82,6 +82,7 @@
   <data name="Delete" xml:space="preserve"><value>[Delete!!]</value></data>
   <data name="Format" xml:space="preserve"><value>[Format!!]</value></data>
   <data name="Resize" xml:space="preserve"><value>[Resize!!]</value></data>
+  <data name="Password" xml:space="preserve"><value>[Password!!]</value></data>
   <data name="OK" xml:space="preserve"><value>[OK!!]</value></data>
   <data name="Yes" xml:space="preserve"><value>[Yes!!]</value></data>
   <data name="No" xml:space="preserve"><value>[No!!]</value></data>
