@@ -10,6 +10,7 @@ public static class ThemeService
 {
     private static readonly string SettingsDir = ResolveSettingsDir();
     private static readonly string SettingsFile = Path.Combine(SettingsDir, "settings.txt");
+    private static volatile bool _isListeningForSystemChanges;
 
     public static ThemePreference Preference { get; private set; } = ThemePreference.Dark;
     public static bool IsDarkMode => ResolveIsDark();
@@ -19,7 +20,20 @@ public static class ThemeService
     {
         Preference = LoadPreference();
         ApplyTheme();
-        SystemEvents.UserPreferenceChanged += OnSystemPreferenceChanged;
+        if (!_isListeningForSystemChanges)
+        {
+            SystemEvents.UserPreferenceChanged += OnSystemPreferenceChanged;
+            _isListeningForSystemChanges = true;
+        }
+    }
+
+    public static void Shutdown()
+    {
+        if (!_isListeningForSystemChanges)
+            return;
+
+        SystemEvents.UserPreferenceChanged -= OnSystemPreferenceChanged;
+        _isListeningForSystemChanges = false;
     }
 
     public static void CycleTheme()
@@ -87,9 +101,31 @@ public static class ThemeService
 
     private static void OnSystemPreferenceChanged(object sender, UserPreferenceChangedEventArgs e)
     {
+        if (!_isListeningForSystemChanges) return;
         if (e.Category != UserPreferenceCategory.General) return;
         if (Preference != ThemePreference.System) return;
-        Application.Current.Dispatcher.BeginInvoke(ApplyTheme);
+
+        var dispatcher = Application.Current?.Dispatcher;
+        if (dispatcher is null || dispatcher.HasShutdownStarted || dispatcher.HasShutdownFinished)
+            return;
+
+        try
+        {
+            dispatcher.BeginInvoke(() =>
+            {
+                if (_isListeningForSystemChanges &&
+                    Application.Current is not null &&
+                    !dispatcher.HasShutdownStarted &&
+                    !dispatcher.HasShutdownFinished)
+                {
+                    ApplyTheme();
+                }
+            });
+        }
+        catch (InvalidOperationException)
+        {
+            // The dispatcher completed shutdown between the state check and queueing.
+        }
     }
 
     private static ThemePreference LoadPreference()

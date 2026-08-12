@@ -15,4 +15,10 @@ public partial class App : Application
         IsSimulationMode = e.Args.Contains("--simulate", StringComparer.OrdinalIgnoreCase);
         ThemeService.LoadAndApply();
     }
+
+    protected override void OnExit(ExitEventArgs e)
+    {
+        ThemeService.Shutdown();
+        base.OnExit(e);
+    }
 }

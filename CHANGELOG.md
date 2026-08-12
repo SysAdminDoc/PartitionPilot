@@ -5,6 +5,10 @@
 ### Security
 - HTML-encoded all dynamic SMART report values so disk metadata and attribute text cannot alter report markup.
 
+### Reliability
+- Detached Windows theme notifications before dispatcher shutdown to prevent callbacks during app exit.
+- Stopped Disk Health background monitoring, canceled active health work, and released performance counters on window close.
+
 ### Correctness
 - Made hex-viewer LBA addressing and reads honor each disk's logical sector size, including 4Kn media.
 - Matched LibreHardwareMonitor storage devices by their Windows disk number instead of enumeration order.
