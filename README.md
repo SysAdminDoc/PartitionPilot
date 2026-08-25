@@ -177,18 +177,20 @@ Restore behavior is fail-closed for mismatched image hashes. Missing or unreadab
 
 ## Release Verification
 
-PartitionPilot releases are built locally. A release candidate should have fresh published GUI and CLI folders, an Inno Setup installer, and release manifests:
+PartitionPilot releases are built locally. A release candidate needs fresh published GUI and CLI folders, a Velopack package set, and release manifests. The Velopack assets are what the built-in updater reads, so every release must ship the full `.nupkg` and `releases.win.json` alongside the setup executable:
 
 ```powershell
 dotnet publish .\src\PartitionPilot\PartitionPilot.csproj -c Release -r win-x64 --self-contained true
 dotnet publish .\src\PartitionPilot.Cli\PartitionPilot.Cli.csproj -c Release -r win-x64 --self-contained true
-& "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" .\installer\PartitionPilot.iss
-.\src\PartitionPilot.Cli\bin\Release\net10.0-windows\win-x64\publish\pp.exe release-manifest --artifacts .\artifacts
+Copy-Item .\src\PartitionPilot.Cli\bin\Release\net10.0-windows\win-x64\publish\pp.exe .\src\PartitionPilot\bin\Release\net10.0-windows\win-x64\publish\
+Copy-Item .\src\PartitionPilot.Cli\bin\Release\net10.0-windows\win-x64\publish\pp.pdb .\src\PartitionPilot\bin\Release\net10.0-windows\win-x64\publish\
+vpk download github --repoUrl https://github.com/SysAdminDoc/PartitionPilot -o .\artifacts\velopack
+vpk pack -u PartitionPilot -v {version} -p .\src\PartitionPilot\bin\Release\net10.0-windows\win-x64\publish -e PartitionPilot.exe --packTitle PartitionPilot --packAuthors SysAdminDoc --icon .\src\PartitionPilot\Assets\AppIcon.ico -o .\artifacts\velopack
 .\src\PartitionPilot.Cli\bin\Release\net10.0-windows\win-x64\publish\pp.exe rescue-profile --source .\src\PartitionPilot.Cli\bin\Release\net10.0-windows\win-x64\publish --output .\artifacts\rescue-profile
 .\tools\run-ui-smoke.ps1
 ```
 
-`release-manifest` writes `SHA256SUMS` and `SHA256SUMS.json`, then verifies every listed artifact hash. Set `PARTITIONPILOT_SIGN_CERT_THUMBPRINT` or pass `--cert-thumbprint` to Authenticode-sign `.exe` artifacts; unsigned builds are marked `UnsignedLocalTest` and should be treated as local-test outputs, not trusted releases.
+`vpk pack` writes the setup executable, a portable zip, the full update package, and `releases.win.json` into `.\artifacts\velopack`. Upload the setup (renamed to `PartitionPilot-{version}-Setup.exe`), the `-full.nupkg` under its exact generated name, `releases.win.json`, and `RELEASES` to the GitHub release. Installed copies read `releases.win.json` from the latest release, so a release without it is invisible to the updater. `pp.exe release-manifest --artifacts .\artifacts` is still available to write `SHA256SUMS` files and Authenticode-sign executables when `PARTITIONPILOT_SIGN_CERT_THUMBPRINT` is set; unsigned builds are marked `UnsignedLocalTest`.
 
 ## Safety
 
