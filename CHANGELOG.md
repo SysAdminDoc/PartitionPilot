@@ -1,5 +1,11 @@
 # Changelog
 
+## PartitionPilot v0.9.22 - 2026-08-24
+
+### Reliability
+- Fixed a startup crash on the Disk Health tab: ProgressBar.Value binds two-way by default, and binding it to the read-only EndurancePercent property threw InvalidOperationException while the window loaded. The binding is now explicitly one-way. Reported and patched by an80sPWNstar in PR #1.
+- Added a regression test that scans every view for default two-way bindings aimed at read-only view-model properties, so this class of crash gets caught at test time.
+
 ## PartitionPilot v0.9.21 - 2026-08-12
 
 ### Security
