@@ -10,6 +10,18 @@ public sealed class ReleaseArtifactManifest
     public DateTimeOffset GeneratedAt { get; set; }
     public bool IsLocalTestBuild { get; set; }
     public string SigningStatus { get; set; } = "";
+
+    /// <summary>
+    /// When the manifest stops being acceptable. A client that refuses an expired manifest cannot be
+    /// frozen on an old release list by a host that simply stops updating it.
+    /// </summary>
+    public DateTimeOffset? ExpiresAt { get; set; }
+
+    public string SignatureAlgorithm { get; set; } = "";
+
+    /// <summary>Base64 signature over the manifest, excluding this field. See <see cref="ReleaseManifestSigning"/>.</summary>
+    public string Signature { get; set; } = "";
+
     public List<ReleaseArtifactEntry> Artifacts { get; set; } = new();
 }
 
@@ -40,6 +52,8 @@ public static class ReleaseArtifactService
         string? timestampUrl = null,
         IProcessRunner? runner = null,
         IActivityLog? log = null,
+        string? manifestSigningKeyPem = null,
+        int? manifestValidDays = null,
         CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(artifactsDir))
@@ -91,6 +105,15 @@ public static class ReleaseArtifactService
             SigningStatus = signingConfigured ? "SignedWithConfiguredCertificate" : "UnsignedLocalTest",
             Artifacts = entries
         };
+
+        if (manifestValidDays is > 0)
+            manifest.ExpiresAt = manifest.GeneratedAt.AddDays(manifestValidDays.Value);
+
+        if (!string.IsNullOrWhiteSpace(manifestSigningKeyPem))
+        {
+            ReleaseManifestSigning.Sign(manifest, manifestSigningKeyPem);
+            log?.Log($"Release manifest signed with {manifest.SignatureAlgorithm}.");
+        }
 
         await WriteManifestFilesAsync(artifactsDir, manifest, ct);
         log?.Log(signingConfigured

@@ -667,6 +667,30 @@ async Task<int> ReleaseManifestAsync()
     var artifactsDir = ParseStringArg("--artifacts") ?? "artifacts";
     var certThumbprint = ParseStringArg("--cert-thumbprint");
     var timestampUrl = ParseStringArg("--timestamp-url");
+    var signKeyPath = ParseStringArg("--manifest-key");
+    var validDaysText = ParseStringArg("--manifest-valid-days");
+
+    int? validDays = null;
+    if (!string.IsNullOrWhiteSpace(validDaysText))
+    {
+        if (!int.TryParse(validDaysText, out var parsedDays) || parsedDays <= 0)
+        {
+            Console.Error.WriteLine("--manifest-valid-days must be a positive whole number of days.");
+            return 1;
+        }
+        validDays = parsedDays;
+    }
+
+    string? signingKeyPem = null;
+    if (!string.IsNullOrWhiteSpace(signKeyPath))
+    {
+        if (!File.Exists(signKeyPath))
+        {
+            Console.Error.WriteLine($"Manifest signing key not found: {signKeyPath}");
+            return 1;
+        }
+        signingKeyPem = File.ReadAllText(signKeyPath);
+    }
 
     try
     {
@@ -676,7 +700,9 @@ async Task<int> ReleaseManifestAsync()
             certThumbprint,
             timestampUrl,
             runner,
-            log);
+            log,
+            signingKeyPem,
+            validDays);
 
         var verification = await ReleaseArtifactService.VerifyManifestAsync(artifactsDir);
         if (!verification.IsValid)
