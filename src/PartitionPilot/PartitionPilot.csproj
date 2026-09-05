@@ -20,9 +20,7 @@
     <NuGetAuditLevel>low</NuGetAuditLevel>
     <NoWarn>$(NoWarn);WPF0001</NoWarn>
   </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
-  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\PartitionPilot.Core\PartitionPilot.Core.csproj" />
   </ItemGroup>
