@@ -109,7 +109,7 @@ public static class GptRepairService
 
         if (BitConverter.ToInt64(primary, AlternateLbaOffset) == newLastLba &&
             BitConverter.ToInt64(primary, LastUsableLbaOffset) == newLastUsableLba &&
-            BackupHeaderIsValidAt(disk, sectorSize, newLastLba, headerSize))
+            BackupHeaderIsValidAt(disk, sectorSize, newLastLba, destinationSectorCount, headerSize))
         {
             return new GptRepairResult(GptRepairOutcome.AlreadyCorrect,
                 $"Backup GPT already sits at LBA {newLastLba}.");
@@ -153,9 +153,13 @@ public static class GptRepairService
         return new GptRepairResult(GptRepairOutcome.Repaired, detail);
     }
 
-    private static bool BackupHeaderIsValidAt(Stream disk, int sectorSize, long lba, int headerSize)
+    private static bool BackupHeaderIsValidAt(
+        Stream disk, int sectorSize, long lba, long destinationSectorCount, int headerSize)
     {
-        if ((lba + 1) * (long)sectorSize > disk.Length)
+        // Bounds come from the caller's sector count, never from Stream.Length: GetFileSizeEx is not
+        // reliable against a raw \\.\PhysicalDriveN handle, and reading it here would throw on the one
+        // path that runs when the disk already needs no repair.
+        if (lba < 0 || lba >= destinationSectorCount)
             return false;
 
         var candidate = ReadSectors(disk, sectorSize, lba, 1);

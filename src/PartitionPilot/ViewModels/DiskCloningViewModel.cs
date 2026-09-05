@@ -292,6 +292,7 @@ public class DiskCloningViewModel : ViewModelBase
 
             var captureSource = $"{SelectedSourceDrive}:\\";
             VssSnapshot? vssSnapshot = null;
+            OperationCleanupScope.CleanupRegistration? vssCleanup = null;
             try
             {
                 StatusText = "Checking VSS writer health...";
@@ -301,7 +302,7 @@ public class DiskCloningViewModel : ViewModelBase
                 vssSnapshot = await VssSnapshotService.CreateSnapshotAsync(
                     SelectedSourceDrive, _shadowCopyProvider, _log, ct);
                 captureSource = vssSnapshot.ShadowCopyPath;
-                cleanup.Register(
+                vssCleanup = cleanup.Register(
                     $"Delete VSS shadow copy {vssSnapshot.ShadowCopyId}",
                     async () => await vssSnapshot.DisposeAsync(),
                     $"Run vssadmin delete shadows /Shadow={vssSnapshot.ShadowCopyId} /Quiet");
@@ -359,9 +360,21 @@ public class DiskCloningViewModel : ViewModelBase
                 var vhdLetter = (await _processRunner.RunPowerShellAsync(letterCmd, _log, ct)).Trim();
                 var mountedLetter = RequireDriveLetter(vhdLetter, "mounted VHDX target");
 
-                await _processRunner.RunExeAsync("robocopy",
-                    CloneWorkflowService.BuildVhdxCaptureArguments(captureSource, mountedLetter),
-                    _log, ignoreStderrOnSuccess: true, ct: ct);
+                try
+                {
+                    await _processRunner.RunExeAsync("robocopy",
+                        CloneWorkflowService.BuildVhdxCaptureArguments(captureSource, mountedLetter),
+                        _log, ignoreStderrOnSuccess: true, ct: ct);
+                }
+                catch (Exception ex) when (CloneWorkflowService.IsMissingPrivilegeFailure(ex.Message))
+                {
+                    _log.Log("Robocopy refused auditing or backup-mode copies because this session lacks the " +
+                             "required user rights. Retrying with ACLs and ownership only — audit entries will " +
+                             "not be captured.");
+                    await _processRunner.RunExeAsync("robocopy",
+                        CloneWorkflowService.BuildVhdxCaptureArguments(captureSource, mountedLetter, privileged: false),
+                        _log, ignoreStderrOnSuccess: true, ct: ct);
+                }
 
                 await _processRunner.RunDiskpartAsync(detachScript, _log, ct);
                 detachCleanup.Complete();
@@ -381,6 +394,7 @@ public class DiskCloningViewModel : ViewModelBase
             if (vssSnapshot is not null)
             {
                 await vssSnapshot.DisposeAsync();
+                vssCleanup?.Complete();
                 _log.Log("VSS snapshot cleaned up after successful capture.");
             }
 
