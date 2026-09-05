@@ -113,11 +113,60 @@ public class LanguageSwitchingTests : IDisposable
     }
 
     [Fact]
-    public void Apply_TreatsEnglishAsFollowingTheSystemRatherThanPinningACulture()
+    public void Apply_PinsEnglishToTheInvariantCulture()
     {
         LanguageService.Apply(Language(""));
 
-        Assert.Null(LocalizationSource.Instance.Culture);
+        Assert.Equal(CultureInfo.InvariantCulture, LocalizationSource.Instance.Culture);
+    }
+
+    /// <summary>
+    /// Switching away from a language has to work as well as switching into one. The first assertion is the
+    /// positive control: German has to actually take effect, or the second assertion proves nothing.
+    /// </summary>
+    [Theory]
+    [InlineData("de")]
+    [InlineData("es")]
+    [InlineData("fr")]
+    [InlineData("qps-ploc")]
+    public void Apply_ReturnsToEnglishAfterAnotherLanguageWasChosen(string code)
+    {
+        LanguageService.Apply(Language(""));
+        var english = LocExtension.Get("Refresh");
+
+        LanguageService.Apply(Language(code));
+        Assert.NotEqual(english, LocExtension.Get("Refresh"));
+
+        LanguageService.Apply(Language(""));
+        Assert.Equal(english, LocExtension.Get("Refresh"));
+    }
+
+    /// <summary>
+    /// A user on a non-English machine who picks English must get English. Before the invariant culture was
+    /// pinned, the null culture let the resource manager fall back to the thread's UI culture and answer in
+    /// the machine's language instead.
+    /// </summary>
+    [Fact]
+    public void Apply_ShowsEnglishEvenWhenTheAmbientCultureIsNot()
+    {
+        var previous = CultureInfo.CurrentUICulture;
+        try
+        {
+            LanguageService.Apply(Language(""));
+            var english = LocExtension.Get("Refresh");
+
+            CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("de");
+            LocalizationSource.Instance.Refresh();
+
+            LanguageService.Apply(Language(""));
+
+            Assert.Equal(english, LocExtension.Get("Refresh"));
+        }
+        finally
+        {
+            CultureInfo.CurrentUICulture = previous;
+            LanguageService.Apply(Language(""));
+        }
     }
 
     [Fact]

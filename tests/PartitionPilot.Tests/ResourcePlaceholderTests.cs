@@ -11,6 +11,7 @@ namespace PartitionPilot.Tests;
 /// crash inside the code that was trying to explain the first one.
 /// </para>
 /// </summary>
+[Collection(LocalizationCollection.Name)]
 public class ResourcePlaceholderTests
 {
     private static readonly Regex Placeholder = new(@"\{(?<index>\d+)(?:[,:][^}]*)?\}", RegexOptions.Compiled);
@@ -30,7 +31,7 @@ public class ResourcePlaceholderTests
         foreach (var (key, englishValue) in english)
         {
             if (!translated.TryGetValue(key, out var translatedValue))
-                continue; // parity is the localization gate's job, not this test's
+                continue; // key parity has its own test below
 
             var expected = PlaceholderIndexes(englishValue);
             var actual = PlaceholderIndexes(translatedValue);
@@ -41,6 +42,36 @@ public class ResourcePlaceholderTests
         }
 
         Assert.Empty(mismatches);
+    }
+
+    /// <summary>
+    /// A key added to English but forgotten in a translation shows the operator "[SomeKeyName]". The only
+    /// parity check that existed covered the pseudo-locale, which is the one language no user reads.
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(TranslatedFiles))]
+    public void EveryTranslation_HasEveryEnglishKey(string translatedFile)
+    {
+        var english = ReadResources("Strings.resx");
+        var translated = ReadResources(translatedFile);
+
+        var missing = english.Keys.Where(k => !translated.ContainsKey(k)).Order().ToList();
+
+        Assert.True(missing.Count == 0,
+            $"{translatedFile} is missing {missing.Count} key(s): {string.Join(", ", missing.Take(10))}");
+    }
+
+    [Theory]
+    [MemberData(nameof(TranslatedFiles))]
+    public void NoTranslation_HasAKeyEnglishDoesNot(string translatedFile)
+    {
+        var english = ReadResources("Strings.resx");
+        var translated = ReadResources(translatedFile);
+
+        var extra = translated.Keys.Where(k => !english.ContainsKey(k)).Order().ToList();
+
+        Assert.True(extra.Count == 0,
+            $"{translatedFile} has {extra.Count} key(s) English does not: {string.Join(", ", extra.Take(10))}");
     }
 
     [Theory]
@@ -83,7 +114,7 @@ public class ResourcePlaceholderTests
         // Deliberately too few arguments for the template's placeholders.
         var result = LocExtension.Format("HexSectorRead");
 
-        Assert.False(string.IsNullOrWhiteSpace(result));
+        Assert.Equal(LocExtension.Get("HexSectorRead"), result);
     }
 
     private static HashSet<int> PlaceholderIndexes(string value) =>
