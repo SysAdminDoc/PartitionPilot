@@ -1,5 +1,7 @@
+using System.Globalization;
 using System.IO;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace PartitionPilot;
 
@@ -136,19 +138,89 @@ public class PartitionTableBackup
         }
     }
 
-    private static void PurgeOldSnapshots(string backupDir)
+    /// <summary>Ad-hoc snapshots are named diskN_yyyyMMdd_HHmmssfff.json; anything with a trailing
+    /// operation suffix was taken before a destructive operation.</summary>
+    private static readonly Regex AdHocSnapshotName = new(
+        @"^disk\d+_(?<stamp>\d{8}_\d{9})\.json$",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+    private static readonly Regex PreDestructionSnapshotName = new(
+        @"^disk(?<disk>\d+)_(?<stamp>\d{8}_\d{9})_.+\.json$",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+    private const int AdHocRetentionDays = 30;
+    private const int PreDestructionRetainedPerDisk = 50;
+
+    /// <summary>
+    /// Prunes the snapshot directory.
+    /// <para>
+    /// Pre-destruction snapshots are never removed on age. They are the only record of what a disk looked
+    /// like before it was wiped, restored or cloned, and an operator who needs one needs it precisely
+    /// because time has passed. They are capped by count per disk instead, so the directory stays bounded.
+    /// Ad-hoc snapshots, which the operator took deliberately and can retake, still age out.
+    /// </para>
+    /// </summary>
+    private void PurgeOldSnapshots(string backupDir)
     {
         try
         {
-            var cutoff = DateTime.UtcNow.AddDays(-30);
+            var cutoff = DateTime.UtcNow.AddDays(-AdHocRetentionDays);
+            var preDestruction = new Dictionary<string, List<(string Path, string Stamp)>>(StringComparer.Ordinal);
+
             foreach (var file in Directory.EnumerateFiles(backupDir, "*.json"))
             {
-                if (File.GetCreationTimeUtc(file) < cutoff)
-                    File.Delete(file);
+                var name = Path.GetFileName(file);
+
+                var adHoc = AdHocSnapshotName.Match(name);
+                if (adHoc.Success)
+                {
+                    if (ParseStamp(adHoc.Groups["stamp"].Value) is { } taken && taken < cutoff)
+                        File.Delete(file);
+                    continue;
+                }
+
+                var preDestructionMatch = PreDestructionSnapshotName.Match(name);
+                if (!preDestructionMatch.Success)
+                    continue;
+
+                var disk = preDestructionMatch.Groups["disk"].Value;
+                if (!preDestruction.TryGetValue(disk, out var list))
+                    preDestruction[disk] = list = [];
+
+                list.Add((file, preDestructionMatch.Groups["stamp"].Value));
+            }
+
+            foreach (var (disk, snapshots) in preDestruction)
+            {
+                if (snapshots.Count <= PreDestructionRetainedPerDisk)
+                    continue;
+
+                foreach (var (path, _) in snapshots
+                             .OrderByDescending(s => s.Stamp, StringComparer.Ordinal)
+                             .Skip(PreDestructionRetainedPerDisk))
+                {
+                    File.Delete(path);
+                }
+
+                _log.Log($"Trimmed pre-destruction snapshots for Disk {disk} to the newest {PreDestructionRetainedPerDisk}.");
             }
         }
-        catch { }
+        catch (Exception ex)
+        {
+            _log.Log($"Snapshot directory could not be pruned ({ex.Message}); it will keep growing until this is resolved.");
+        }
     }
+
+    /// <summary>
+    /// Reads the UTC timestamp out of the filename rather than the filesystem. Creation time is reset by
+    /// a copy or a restore, which would age a snapshot out early or keep it forever.
+    /// </summary>
+    private static DateTime? ParseStamp(string stamp) =>
+        DateTime.TryParseExact(stamp, "yyyyMMdd_HHmmssfff",
+            CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal,
+            out var parsed)
+            ? parsed
+            : null;
 
     private static string SanitizeFileSuffix(string value)
     {
