@@ -7,7 +7,14 @@ namespace PartitionPilot;
 /// <param name="DisplayName">Shown in the selector, written in the language itself.</param>
 public sealed record AppLanguage(string Code, string DisplayName)
 {
-    public CultureInfo? Culture => string.IsNullOrEmpty(Code) ? null : CultureInfo.GetCultureInfo(Code);
+    /// <summary>
+    /// English maps to the invariant culture rather than to null. A null culture makes
+    /// <see cref="System.Resources.ResourceManager"/> fall back to whatever the thread's UI culture happens
+    /// to be, so on a German machine, or after the user had picked German, choosing English would keep
+    /// showing German.
+    /// </summary>
+    public CultureInfo Culture =>
+        string.IsNullOrEmpty(Code) ? CultureInfo.InvariantCulture : CultureInfo.GetCultureInfo(Code);
 
     public override string ToString() => DisplayName;
 }
@@ -57,12 +64,12 @@ public static class LanguageService
         Current = language;
         var culture = language.Culture;
 
-        // Both are set so that resource lookups and anything formatting through the current culture
-        // agree; a null culture means "follow the operating system", which is the English default.
+        // All three are set so a switch takes effect in every direction. Leaving the thread's UI culture
+        // alone would let a previously chosen language keep answering lookups after the user picked
+        // another one.
         LocalizationSource.Instance.SetCulture(culture);
         CultureInfo.DefaultThreadCurrentUICulture = culture;
-        if (culture is not null)
-            CultureInfo.CurrentUICulture = culture;
+        CultureInfo.CurrentUICulture = culture;
 
         LanguageChanged?.Invoke(null, EventArgs.Empty);
     }
@@ -80,7 +87,13 @@ public static class LanguageService
     /// Finds the shipped language matching the operating system, comparing on the two-letter language so
     /// that de-AT lands on German rather than falling through to English.
     /// </summary>
-    internal static AppLanguage? MatchOperatingSystem() => MatchCulture(CultureInfo.CurrentUICulture);
+    internal static AppLanguage? MatchOperatingSystem() => MatchCulture(StartupUICulture);
+
+    /// <summary>
+    /// The UI culture the process started with. Captured once because <see cref="Apply"/> overwrites the
+    /// thread's culture, which would otherwise make the operating system look like whatever was last chosen.
+    /// </summary>
+    private static readonly CultureInfo StartupUICulture = CultureInfo.CurrentUICulture;
 
     internal static AppLanguage? MatchCulture(CultureInfo? osCulture)
     {
