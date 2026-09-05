@@ -49,8 +49,7 @@ try
 }
 catch (Exception ex)
 {
-    Console.Error.WriteLine($"Error: {ex.Message}");
-    return 1;
+    return CliError.Failed(json, $"Error: {ex.Message}");
 }
 
 int PrintUsage()
@@ -1049,9 +1048,9 @@ async Task<int> RestoreSnapshotAsync()
     var diskNum = ParseDiskArg();
     var apply = args.Contains("--apply", StringComparer.OrdinalIgnoreCase);
 
-    if (string.IsNullOrEmpty(filePath)) { Console.Error.WriteLine("--file <path> required."); return 1; }
-    if (!diskNum.HasValue) { Console.Error.WriteLine("--disk N required."); return 1; }
-    if (!File.Exists(filePath)) { Console.Error.WriteLine($"Snapshot file not found: {filePath}"); return 1; }
+    if (string.IsNullOrEmpty(filePath)) return CliError.Usage(json, "--file <path> required.");
+    if (!diskNum.HasValue) return CliError.Usage(json, "--disk N required.");
+    if (!File.Exists(filePath)) return CliError.NotFound(json, $"Snapshot file not found: {filePath}");
 
     PartitionSnapshot? snapshot;
     try
@@ -1061,19 +1060,15 @@ async Task<int> RestoreSnapshotAsync()
     }
     catch (JsonException ex)
     {
-        Console.Error.WriteLine($"Snapshot file is not valid JSON: {ex.Message}");
-        return 1;
+        return CliError.Precondition(json, $"Snapshot file is not valid JSON: {ex.Message}");
     }
 
     if (snapshot is null || snapshot.Partitions.Count == 0)
-    {
-        Console.Error.WriteLine("Snapshot records no partitions, so there is no layout to restore.");
-        return 1;
-    }
+        return CliError.Precondition(json, "Snapshot records no partitions, so there is no layout to restore.");
 
     var disks = await wmi.GetDisksAsync();
     var disk = disks.FirstOrDefault(d => d.Number == diskNum.Value);
-    if (disk is null) { Console.Error.WriteLine($"Disk {diskNum.Value} not found."); return 1; }
+    if (disk is null) return CliError.NotFound(json, $"Disk {diskNum.Value} not found.");
 
     var currentPartitions = await wmi.GetPartitionsAsync(diskNum.Value);
 
@@ -1084,8 +1079,8 @@ async Task<int> RestoreSnapshotAsync()
     }
     catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
     {
-        Console.Error.WriteLine($"Restore blocked: {ex.Message}");
-        return 1;
+        // Nothing has been written at this point, which is exactly what the caller needs to know.
+        return CliError.Blocked(json, $"Restore blocked: {ex.Message}");
     }
 
     var targetIdentity = disk.ToIdentitySnapshot();
@@ -1120,10 +1115,7 @@ async Task<int> RestoreSnapshotAsync()
         "\nWARNING: Restoring this snapshot clears the disk and recreates its partitions. " +
         "All current data is destroyed. Type YES to confirm: ");
     if (!string.Equals(Console.ReadLine()?.Trim(), "YES", StringComparison.Ordinal))
-    {
-        Console.Error.WriteLine("Cancelled.");
-        return 1;
-    }
+        return CliError.Cancelled(json);
 
     foreach (var step in plan.Steps)
     {
@@ -1142,8 +1134,9 @@ async Task<int> RestoreSnapshotAsync()
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"  Failed: {ex.Message}");
-            return 1;
+            return CliError.Failed(json,
+                $"  Failed: {ex.Message}. Disk {diskNum.Value} has already been cleared and its partition " +
+                "table is incomplete. Re-run the restore once the cause is resolved.");
         }
     }
 
@@ -1162,16 +1155,13 @@ async Task<int> CloneAsync()
     var skipVerify = args.Contains("--no-verify", StringComparer.OrdinalIgnoreCase);
 
     if (!source.HasValue || !dest.HasValue)
-    {
-        Console.Error.WriteLine("--source N and --dest N required (physical disk numbers).");
-        return 1;
-    }
+        return CliError.Usage(json, "--source N and --dest N required (physical disk numbers).");
 
     var disks = await wmi.GetDisksAsync();
     var sourceDisk = disks.FirstOrDefault(d => d.Number == source.Value);
     var destDisk = disks.FirstOrDefault(d => d.Number == dest.Value);
-    if (sourceDisk is null) { Console.Error.WriteLine($"Source disk {source.Value} not found."); return 1; }
-    if (destDisk is null) { Console.Error.WriteLine($"Destination disk {dest.Value} not found."); return 1; }
+    if (sourceDisk is null) return CliError.NotFound(json, $"Source disk {source.Value} not found.");
+    if (destDisk is null) return CliError.NotFound(json, $"Destination disk {dest.Value} not found.");
 
     try
     {
@@ -1179,8 +1169,7 @@ async Task<int> CloneAsync()
     }
     catch (Exception ex)
     {
-        Console.Error.WriteLine($"Clone blocked: {ex.Message}");
-        return 1;
+        return CliError.Blocked(json, $"Clone blocked: {ex.Message}");
     }
 
     var identity = destDisk.ToIdentitySnapshot();
@@ -1212,10 +1201,7 @@ async Task<int> CloneAsync()
     Console.Error.Write(
         $"\nWARNING: every byte on Disk {destDisk.Number} will be overwritten. Type YES to confirm: ");
     if (!string.Equals(Console.ReadLine()?.Trim(), "YES", StringComparison.Ordinal))
-    {
-        Console.Error.WriteLine("Cancelled.");
-        return 1;
-    }
+        return CliError.Cancelled(json);
 
     var backup = new PartitionTableBackup(wmi, log);
     try
@@ -1230,12 +1216,13 @@ async Task<int> CloneAsync()
                 log, progress: null, ct: token, rescue: rescue, verify: !skipVerify));
 
         Console.WriteLine(result!.FormatReport());
-        return result.HasBadSectors || (!skipVerify && !result.VerificationPassed) ? 2 : 0;
+        return result.HasBadSectors || (!skipVerify && !result.VerificationPassed)
+            ? CliExit.CompletedWithWarnings
+            : CliExit.Success;
     }
     catch (Exception ex)
     {
-        Console.Error.WriteLine($"Clone failed: {ex.Message}");
-        return 1;
+        return CliError.Failed(json, $"Clone failed: {ex.Message}");
     }
 }
 
@@ -1245,18 +1232,15 @@ async Task<int> WipeAsync()
     var apply = args.Contains("--apply", StringComparer.OrdinalIgnoreCase);
     var passesText = ParseStringArg("--passes");
 
-    if (!diskNum.HasValue) { Console.Error.WriteLine("--disk N required."); return 1; }
+    if (!diskNum.HasValue) return CliError.Usage(json, "--disk N required.");
 
     var passes = 1;
     if (!string.IsNullOrWhiteSpace(passesText) && (!int.TryParse(passesText, out passes) || passes is < 1 or > 7))
-    {
-        Console.Error.WriteLine("--passes must be between 1 and 7.");
-        return 1;
-    }
+        return CliError.Usage(json, "--passes must be between 1 and 7.");
 
     var disks = await wmi.GetDisksAsync();
     var disk = disks.FirstOrDefault(d => d.Number == diskNum.Value);
-    if (disk is null) { Console.Error.WriteLine($"Disk {diskNum.Value} not found."); return 1; }
+    if (disk is null) return CliError.NotFound(json, $"Disk {diskNum.Value} not found.");
 
     var identity = disk.ToIdentitySnapshot();
 
@@ -1281,10 +1265,7 @@ async Task<int> WipeAsync()
     Console.Error.Write(
         $"\nWARNING: every byte on Disk {disk.Number} will be destroyed. Type YES to confirm: ");
     if (!string.Equals(Console.ReadLine()?.Trim(), "YES", StringComparison.Ordinal))
-    {
-        Console.Error.WriteLine("Cancelled.");
-        return 1;
-    }
+        return CliError.Cancelled(json);
 
     var backup = new PartitionTableBackup(wmi, log);
     try
@@ -1295,12 +1276,11 @@ async Task<int> WipeAsync()
             token => SecureEraseService.ExecuteMultiPassWipeAsync(disk.Number, passes, runner, log, token));
 
         Console.WriteLine($"Wipe complete on Disk {disk.Number}.");
-        return 0;
+        return CliExit.Success;
     }
     catch (Exception ex)
     {
-        Console.Error.WriteLine($"Wipe failed: {ex.Message}");
-        return 1;
+        return CliError.Failed(json, $"Wipe failed: {ex.Message}");
     }
 }
 
