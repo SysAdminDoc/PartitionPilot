@@ -162,6 +162,43 @@
   <data name="Export" xml:space="preserve"><value>Exportieren</value></data>
   <data name="Compare" xml:space="preserve"><value>Vergleichen</value></data>
   <data name="RecoveryPlan" xml:space="preserve"><value>Wiederherstellungsplan</value></data>
+  <data name="UsageScanSummary" xml:space="preserve"><value>{0} Ordner der obersten Ebene über {1} gescannt. Gesamt: {2} in {3} s</value></data>
+  <data name="UsageMethodMft" xml:space="preserve"><value>MFT</value></data>
+  <data name="UsageMethodEnumeration" xml:space="preserve"><value>Verzeichnisauflistung</value></data>
+  <data name="UsageScanCancelledSummary" xml:space="preserve"><value>Datenträgernutzungsanalyse abgebrochen.</value></data>
+  <data name="UsageScanFailedSummary" xml:space="preserve"><value>Analyse fehlgeschlagen: {0}</value></data>
+  <data name="HexSelectDiskPrompt" xml:space="preserve"><value>Wählen Sie einen Datenträger und lesen Sie einen Sektor.</value></data>
+  <data name="SnapshotsRefreshPrompt" xml:space="preserve"><value>Aktualisieren Sie, um gespeicherte Partitionstabellen-Snapshots zu laden.</value></data>
+  <data name="RecoveryGuidanceCopied" xml:space="preserve"><value>Wiederherstellungshinweise in die Zwischenablage kopiert.</value></data>
+  <data name="RecoveryGuidanceTitle" xml:space="preserve"><value>Wiederherstellungshinweise</value></data>
+  <data name="SnapshotSelectPrompt" xml:space="preserve"><value>Wählen Sie einen Snapshot und vergleichen Sie ihn mit dem aktuellen Datenträgerlayout.</value></data>
+  <data name="SnapshotSelectedHint" xml:space="preserve"><value>{0} ausgewählt. Klicken Sie auf „Aktuelles Layout vergleichen“, um Abweichungen zu prüfen.</value></data>
+  <data name="SnapshotsNoneFound" xml:space="preserve"><value>Keine Snapshots in {0} gefunden.</value></data>
+  <data name="SnapshotsLoaded" xml:space="preserve"><value>{0} Snapshot(s) aus {1} geladen.</value></data>
+  <data name="ExportPartitionSnapshotTitle" xml:space="preserve"><value>Partitions-Snapshot exportieren</value></data>
+  <data name="ExportRecoveryPlanTitle" xml:space="preserve"><value>Wiederherstellungsplan exportieren</value></data>
+  <data name="RestoreSnapshotTitle" xml:space="preserve"><value>Snapshot wiederherstellen</value></data>
+  <data name="RestoreCannotProceed" xml:space="preserve"><value>Wiederherstellung nicht möglich:&#10;{0}</value></data>
+  <data name="RestoreNotRecreatedHeading" xml:space="preserve"><value>&#10;&#10;Von diesem Plan nicht neu erstellt:&#10;{0}</value></data>
+  <data name="RestoreWarningPrompt" xml:space="preserve"><value>WARNUNG: Das Wiederherstellen dieses Snapshots leert Datenträger {0} und erstellt seine Partitionstabelle neu.&#10;&#10;Ziel:&#10;{1}&#10;&#10;{2}{3}&#10;&#10;Fortfahren?</value></data>
+  <data name="RestoreFinalPrompt" xml:space="preserve"><value>LETZTE BESTÄTIGUNG: Alle Daten auf Datenträger {0} werden unwiderruflich zerstört und die Partitionen aus dem Snapshot neu erstellt.</value></data>
+  <data name="RestoreComplete" xml:space="preserve"><value>Partitionstabelle auf Datenträger {0} wiederhergestellt.{1}</value></data>
+  <data name="RestoreFailedPartway" xml:space="preserve"><value>Wiederherstellung mittendrin fehlgeschlagen:&#10;{0}&#10;&#10;Datenträger {1} wurde bereits geleert und seine Partitionstabelle ist unvollständig. Schalten Sie das Gerät nicht aus. Führen Sie die Wiederherstellung erneut aus, sobald die Ursache behoben ist.</value></data>
+  <data name="RestoreStoppedAfterClear" xml:space="preserve"><value>Wiederherstellung wurde gestoppt, nachdem Datenträger {0} bereits geleert wurde. Er hat derzeit keine nutzbare Partitionstabelle. Führen Sie die Wiederherstellung erneut aus, sobald die Identitätsprüfung erfolgreich ist, und schalten Sie das Gerät zwischenzeitlich nicht aus.</value></data>
+  <data name="DiskNotConnected" xml:space="preserve"><value>Datenträger {0} ist derzeit nicht verbunden.</value></data>
+  <data name="RestoreBlocked" xml:space="preserve"><value>Wiederherstellung blockiert:&#10;{0}</value></data>
+  <data name="SnapshotLoadFailed" xml:space="preserve"><value>Snapshots konnten nicht geladen werden:&#10;{0}</value></data>
+  <data name="SnapshotErrorTitle" xml:space="preserve"><value>Snapshot-Fehler</value></data>
+  <data name="SnapshotCompareFailed" xml:space="preserve"><value>Snapshot konnte nicht verglichen werden:&#10;{0}</value></data>
+  <data name="CompareSnapshotTitle" xml:space="preserve"><value>Snapshot vergleichen</value></data>
+  <data name="SnapshotExported" xml:space="preserve"><value>Snapshot exportiert nach:&#10;{0}</value></data>
+  <data name="SnapshotExportedTitle" xml:space="preserve"><value>Snapshot exportiert</value></data>
+  <data name="SnapshotExportFailed" xml:space="preserve"><value>Snapshot konnte nicht exportiert werden:&#10;{0}</value></data>
+  <data name="ExportSnapshotTitle" xml:space="preserve"><value>Snapshot exportieren</value></data>
+  <data name="RecoveryPlanExported" xml:space="preserve"><value>Wiederherstellungsplan exportiert nach:&#10;{0}</value></data>
+  <data name="RecoveryPlanExportedTitle" xml:space="preserve"><value>Wiederherstellungsplan exportiert</value></data>
+  <data name="RecoveryPlanExportFailed" xml:space="preserve"><value>Wiederherstellungsplan konnte nicht exportiert werden:&#10;{0}</value></data>
+  <data name="ExportErrorTitle" xml:space="preserve"><value>Exportfehler</value></data>
   <data name="ImageMounted" xml:space="preserve"><value>Abbild erfolgreich eingebunden.&#10;&#10;{0}</value></data>
   <data name="MountCompleteTitle" xml:space="preserve"><value>Einbinden abgeschlossen</value></data>
   <data name="ImageMountFailed" xml:space="preserve"><value>Abbild konnte nicht eingebunden werden:&#10;{0}</value></data>

@@ -41,14 +41,14 @@ public class SnapshotBrowserViewModel : ViewModelBase
         }
     }
 
-    private string _summaryText = "Refresh to load saved partition table snapshots.";
+    private string _summaryText = LocExtension.Get("SnapshotsRefreshPrompt");
     public string SummaryText
     {
         get => _summaryText;
         set => SetProperty(ref _summaryText, value);
     }
 
-    private string _diffText = "Select a snapshot and compare it with the current disk layout.";
+    private string _diffText = LocExtension.Get("SnapshotSelectPrompt");
     public string DiffText
     {
         get => _diffText;
@@ -118,26 +118,26 @@ public class SnapshotBrowserViewModel : ViewModelBase
         if (blocked.Count > 0)
         {
             _dialog.ShowError(
-                $"Restore cannot proceed:\n{string.Join("\n", blocked.Select(b => b.Description))}",
-                "Restore Snapshot");
+                LocExtension.Format("RestoreCannotProceed", string.Join("\n", blocked.Select(b => b.Description))),
+                LocExtension.Get("RestoreSnapshotTitle"));
             return;
         }
 
         var identity = disk.ToIdentitySnapshot();
         var notRecreated = plan.SkippedPartitions.Count == 0
             ? ""
-            : $"\n\nNot recreated by this plan:\n{string.Join("\n", plan.SkippedPartitions)}";
+            : LocExtension.Format("RestoreNotRecreatedHeading", string.Join("\n", plan.SkippedPartitions));
 
         var prompts = new[]
         {
             new WorkflowPrompt(
-                "Restore Snapshot",
-                $"WARNING: Restoring this snapshot clears Disk {disk.Number} and recreates its partition table.\n\n" +
-                $"Target:\n{identity.ConfirmationSummary}\n\n{plan.FormatPlan()}{notRecreated}\n\nContinue?",
+                LocExtension.Get("RestoreSnapshotTitle"),
+                LocExtension.Format("RestoreWarningPrompt",
+                    disk.Number, identity.ConfirmationSummary, plan.FormatPlan(), notRecreated),
                 true),
             new WorkflowPrompt(
-                "Restore Snapshot",
-                $"FINAL CONFIRMATION: All data on Disk {disk.Number} will be permanently destroyed and its partitions recreated from the snapshot.",
+                LocExtension.Get("RestoreSnapshotTitle"),
+                LocExtension.Format("RestoreFinalPrompt", disk.Number),
                 true)
         };
 
@@ -176,17 +176,15 @@ public class SnapshotBrowserViewModel : ViewModelBase
 
             _log.Log($"Snapshot {SelectedSnapshot!.FileName} restored onto Disk {disk.Number}.");
             _dialog.ShowInfo(
-                $"Partition table restored onto Disk {disk.Number}.{notRecreated}",
-                "Restore Snapshot");
+                LocExtension.Format("RestoreComplete", disk.Number, notRecreated),
+                LocExtension.Get("RestoreSnapshotTitle"));
         }
         catch (Exception ex)
         {
             _log.Log($"Snapshot restore failed: {ex.Message}");
             _dialog.ShowError(
-                $"Restore failed partway through:\n{ex.Message}\n\n" +
-                $"Disk {disk.Number} has already been cleared and its partition table is incomplete. " +
-                "Do not power off. Re-run the restore once the cause is resolved.",
-                "Restore Snapshot");
+                LocExtension.Format("RestoreFailedPartway", ex.Message, disk.Number),
+                LocExtension.Get("RestoreSnapshotTitle"));
         }
         finally
         {
@@ -206,11 +204,12 @@ public class SnapshotBrowserViewModel : ViewModelBase
             return;
         }
 
-        var message =
+        _log.Log(
             $"Restore stopped after Disk {diskNumber} was already cleared, so it currently has no usable " +
-            "partition table. Re-run the restore once the identity check passes; do not power off in between.";
-        _log.Log(message);
-        _dialog.ShowError(message, "Restore Snapshot");
+            "partition table. Re-run the restore once the identity check passes; do not power off in between.");
+        _dialog.ShowError(
+            LocExtension.Format("RestoreStoppedAfterClear", diskNumber),
+            LocExtension.Get("RestoreSnapshotTitle"));
     }
 
     private async Task<(SnapshotRestorePlan Plan, DiskInfo Disk)?> BuildRestorePlanAsync()
@@ -226,7 +225,8 @@ public class SnapshotBrowserViewModel : ViewModelBase
             if (disk is null)
             {
                 _dialog.ShowError(
-                    $"Disk {SelectedSnapshot.DiskNumber} is not currently connected.", "Restore Snapshot");
+                    LocExtension.Format("DiskNotConnected", SelectedSnapshot.DiskNumber),
+                    LocExtension.Get("RestoreSnapshotTitle"));
                 return null;
             }
 
@@ -236,7 +236,9 @@ public class SnapshotBrowserViewModel : ViewModelBase
         catch (Exception ex)
         {
             _log.Log($"Restore plan failed: {ex.Message}");
-            _dialog.ShowError($"Restore blocked:\n{ex.Message}", "Restore Snapshot");
+            _dialog.ShowError(
+                LocExtension.Format("RestoreBlocked", ex.Message),
+                LocExtension.Get("RestoreSnapshotTitle"));
             return null;
         }
         finally
@@ -261,15 +263,17 @@ public class SnapshotBrowserViewModel : ViewModelBase
                 SelectedSnapshot = Snapshots.FirstOrDefault();
             });
             SummaryText = snapshots.Count == 0
-                ? $"No snapshots found in {PartitionTableBackup.BackupDirectory}."
-                : $"{snapshots.Count} snapshot(s) loaded from {PartitionTableBackup.BackupDirectory}.";
+                ? LocExtension.Format("SnapshotsNoneFound", PartitionTableBackup.BackupDirectory)
+                : LocExtension.Format("SnapshotsLoaded", snapshots.Count, PartitionTableBackup.BackupDirectory);
 
             _log.Log($"Loaded {snapshots.Count} partition snapshot(s).");
         }
         catch (Exception ex)
         {
             _log.Log($"Snapshot refresh failed: {ex.Message}");
-            _dialog.ShowError($"Failed to load snapshots:\n{ex.Message}", "Snapshot Error");
+            _dialog.ShowError(
+                LocExtension.Format("SnapshotLoadFailed", ex.Message),
+                LocExtension.Get("SnapshotErrorTitle"));
         }
         finally
         {
@@ -290,7 +294,9 @@ public class SnapshotBrowserViewModel : ViewModelBase
         catch (Exception ex)
         {
             _log.Log($"Snapshot compare failed: {ex.Message}");
-            _dialog.ShowError($"Failed to compare snapshot:\n{ex.Message}", "Compare Snapshot");
+            _dialog.ShowError(
+                LocExtension.Format("SnapshotCompareFailed", ex.Message),
+                LocExtension.Get("CompareSnapshotTitle"));
         }
         finally
         {
@@ -304,7 +310,7 @@ public class SnapshotBrowserViewModel : ViewModelBase
 
         var dialog = new SaveFileDialog
         {
-            Title = "Export Partition Snapshot",
+            Title = LocExtension.Get("ExportPartitionSnapshotTitle"),
             Filter = "JSON Files (*.json)|*.json|All Files (*.*)|*.*",
             FileName = SelectedSnapshot.FileName,
             DefaultExt = ".json",
@@ -318,12 +324,16 @@ public class SnapshotBrowserViewModel : ViewModelBase
         {
             await _backup.ExportSnapshotAsync(SelectedSnapshot, dialog.FileName);
             _log.Log($"Snapshot exported to: {dialog.FileName}");
-            _dialog.ShowInfo($"Snapshot exported to:\n{dialog.FileName}", "Snapshot Exported");
+            _dialog.ShowInfo(
+                LocExtension.Format("SnapshotExported", dialog.FileName),
+                LocExtension.Get("SnapshotExportedTitle"));
         }
         catch (Exception ex)
         {
             _log.Log($"Snapshot export failed: {ex.Message}");
-            _dialog.ShowError($"Failed to export snapshot:\n{ex.Message}", "Export Snapshot");
+            _dialog.ShowError(
+                LocExtension.Format("SnapshotExportFailed", ex.Message),
+                LocExtension.Get("ExportSnapshotTitle"));
         }
     }
 
@@ -333,7 +343,7 @@ public class SnapshotBrowserViewModel : ViewModelBase
 
         var dialog = new SaveFileDialog
         {
-            Title = "Export Recovery Plan",
+            Title = LocExtension.Get("ExportRecoveryPlanTitle"),
             Filter = "Text Files (*.txt)|*.txt|All Files (*.*)|*.*",
             FileName = $"recovery-plan-disk{SelectedSnapshot.DiskNumber}_{DateTime.Now:yyyyMMdd}.txt",
             DefaultExt = ".txt"
@@ -346,12 +356,16 @@ public class SnapshotBrowserViewModel : ViewModelBase
             var plan = await _backup.BuildRecoveryPlanAsync(SelectedSnapshot);
             await System.IO.File.WriteAllTextAsync(dialog.FileName, plan);
             _log.Log($"Recovery plan exported to: {dialog.FileName}");
-            _dialog.ShowInfo($"Recovery plan exported to:\n{dialog.FileName}", "Recovery Plan Exported");
+            _dialog.ShowInfo(
+                LocExtension.Format("RecoveryPlanExported", dialog.FileName),
+                LocExtension.Get("RecoveryPlanExportedTitle"));
         }
         catch (Exception ex)
         {
             _log.Log($"Recovery plan export failed: {ex.Message}");
-            _dialog.ShowError($"Failed to export recovery plan:\n{ex.Message}", "Export Error");
+            _dialog.ShowError(
+                LocExtension.Format("RecoveryPlanExportFailed", ex.Message),
+                LocExtension.Get("ExportErrorTitle"));
         }
     }
 
@@ -361,7 +375,9 @@ public class SnapshotBrowserViewModel : ViewModelBase
 
         Clipboard.SetText(RecoveryCommands);
         _log.Log("Copied snapshot recovery guidance to clipboard.");
-        _dialog.ShowInfo("Recovery guidance copied to the clipboard.", "Recovery Guidance");
+        _dialog.ShowInfo(
+            LocExtension.Get("RecoveryGuidanceCopied"),
+            LocExtension.Get("RecoveryGuidanceTitle"));
     }
 
     private void LoadSelectedSnapshot()
@@ -370,7 +386,7 @@ public class SnapshotBrowserViewModel : ViewModelBase
 
         if (SelectedSnapshot is null)
         {
-            DiffText = "Select a snapshot and compare it with the current disk layout.";
+            DiffText = LocExtension.Get("SnapshotSelectPrompt");
             RecoveryCommands = "";
             return;
         }
@@ -378,7 +394,7 @@ public class SnapshotBrowserViewModel : ViewModelBase
         foreach (var partition in SelectedSnapshot.Partitions.OrderBy(p => p.PartitionNumber))
             SnapshotPartitions.Add(partition);
 
-        DiffText = $"Selected {SelectedSnapshot.FileName}. Click Compare Current Layout to inspect drift.";
+        DiffText = LocExtension.Format("SnapshotSelectedHint", SelectedSnapshot.FileName);
         RecoveryCommands = PartitionTableBackup.BuildRecoveryCommands(SelectedSnapshot);
     }
 }

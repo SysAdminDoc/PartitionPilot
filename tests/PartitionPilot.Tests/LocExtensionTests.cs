@@ -86,6 +86,70 @@ public class LocExtensionTests
         Assert.False(string.IsNullOrEmpty(result));
     }
 
+    /// <summary>
+    /// The snapshot browser's messages moved from source literals into resources. English has to come back
+    /// out byte for byte, newlines included, or the conversion quietly reworded the app.
+    /// </summary>
+    [Theory]
+    [InlineData("RestoreSnapshotTitle", "", "", "Restore Snapshot")]
+    [InlineData("RestoreCannotProceed", "no room", "", "Restore cannot proceed:\nno room")]
+    [InlineData("RestoreNotRecreatedHeading", "Recovery", "", "\n\nNot recreated by this plan:\nRecovery")]
+    [InlineData("RestoreFinalPrompt", "3", "", "FINAL CONFIRMATION: All data on Disk 3 will be permanently destroyed and its partitions recreated from the snapshot.")]
+    [InlineData("RestoreComplete", "3", " and more", "Partition table restored onto Disk 3. and more")]
+    [InlineData("RestoreStoppedAfterClear", "3", "", "Restore stopped after Disk 3 was already cleared, so it currently has no usable partition table. Re-run the restore once the identity check passes; do not power off in between.")]
+    [InlineData("DiskNotConnected", "3", "", "Disk 3 is not currently connected.")]
+    [InlineData("RestoreBlocked", "locked", "", "Restore blocked:\nlocked")]
+    [InlineData("SnapshotLoadFailed", "boom", "", "Failed to load snapshots:\nboom")]
+    [InlineData("SnapshotCompareFailed", "boom", "", "Failed to compare snapshot:\nboom")]
+    [InlineData("SnapshotExported", "C:\\out.json", "", "Snapshot exported to:\nC:\\out.json")]
+    [InlineData("SnapshotExportFailed", "boom", "", "Failed to export snapshot:\nboom")]
+    [InlineData("RecoveryPlanExported", "C:\\plan.txt", "", "Recovery plan exported to:\nC:\\plan.txt")]
+    [InlineData("RecoveryPlanExportFailed", "boom", "", "Failed to export recovery plan:\nboom")]
+    [InlineData("SnapshotsNoneFound", "C:\\backups", "", "No snapshots found in C:\\backups.")]
+    [InlineData("SnapshotsLoaded", "4", "C:\\backups", "4 snapshot(s) loaded from C:\\backups.")]
+    [InlineData("SnapshotSelectedHint", "disk0.json", "", "Selected disk0.json. Click Compare Current Layout to inspect drift.")]
+    [InlineData("SnapshotsRefreshPrompt", "", "", "Refresh to load saved partition table snapshots.")]
+    [InlineData("SnapshotSelectPrompt", "", "", "Select a snapshot and compare it with the current disk layout.")]
+    [InlineData("RecoveryGuidanceCopied", "", "", "Recovery guidance copied to the clipboard.")]
+    [InlineData("HexSelectDiskPrompt", "", "", "Select a disk and read a sector.")]
+    [InlineData("UsageScanCancelledSummary", "", "", "Disk usage scan cancelled.")]
+    [InlineData("UsageScanFailedSummary", "boom", "", "Scan failed: boom")]
+    public void Format_ReproducesTheEnglishTextItReplaced(string key, string first, string second, string expected)
+    {
+        Assert.Equal(expected, LocExtension.Format(key, first, second));
+    }
+
+    [Fact]
+    public void RestoreWarningPrompt_ReproducesTheEnglishTextItReplaced()
+    {
+        var actual = LocExtension.Format("RestoreWarningPrompt", 3, "summary", "plan", "extra");
+
+        Assert.Equal(
+            "WARNING: Restoring this snapshot clears Disk 3 and recreates its partition table.\n\n" +
+            "Target:\nsummary\n\nplanextra\n\nContinue?",
+            actual);
+    }
+
+    [Fact]
+    public void RestoreFailedPartway_ReproducesTheEnglishTextItReplaced()
+    {
+        var actual = LocExtension.Format("RestoreFailedPartway", "boom", 3);
+
+        Assert.Equal(
+            "Restore failed partway through:\nboom\n\n" +
+            "Disk 3 has already been cleared and its partition table is incomplete. " +
+            "Do not power off. Re-run the restore once the cause is resolved.",
+            actual);
+    }
+
+    [Fact]
+    public void UsageScanSummary_ReproducesTheEnglishTextItReplaced()
+    {
+        var actual = LocExtension.Format("UsageScanSummary", 12, "MFT", "4.0 GB", "1.5");
+
+        Assert.Equal("Scanned 12 top-level folders via MFT. Total: 4.0 GB in 1.5s", actual);
+    }
+
     [Fact]
     public void PseudoLocale_HasAllKeysFromDefaultResources()
     {

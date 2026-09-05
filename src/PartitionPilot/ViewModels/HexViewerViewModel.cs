@@ -83,7 +83,7 @@ public class HexViewerViewModel : ViewModelBase
         set => SetProperty(ref _hexText, value);
     }
 
-    private string _statusText = "Select a disk and read a sector.";
+    private string _statusText = LocExtension.Get("HexSelectDiskPrompt");
     public string StatusText
     {
         get => _statusText;

@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.IO;
 using System.Windows;
 using System.Windows.Input;
@@ -163,21 +164,25 @@ public class DiskUsageViewModel : ViewModelBase
                 .ToList();
 
             var method = usedMft ? "MFT" : "directory enumeration";
-            SummaryText = $"Scanned {results.Count} top-level folders via {method}. Total: {SizeUtil.Format(totalScanned)} in {scanSw.Elapsed.TotalSeconds:F1}s";
+            SummaryText = LocExtension.Format("UsageScanSummary",
+                results.Count,
+                LocExtension.Get(usedMft ? "UsageMethodMft" : "UsageMethodEnumeration"),
+                SizeUtil.Format(totalScanned),
+                scanSw.Elapsed.TotalSeconds.ToString("F1", CultureInfo.CurrentCulture));
             _log.Log($"Disk usage scan complete on {SelectedDrive}:\\ via {method}. {results.Count} folders, {SizeUtil.Format(totalScanned)} total in {scanSw.Elapsed.TotalSeconds:F1}s.");
         }
         catch (OperationCanceledException)
         {
             _log.Log("Disk usage scan cancelled.");
             StatusText = LocExtension.Get("UsageScanCancelled");
-            SummaryText = "Disk usage scan cancelled.";
+            SummaryText = LocExtension.Get("UsageScanCancelledSummary");
             clearStatusWhenDone = false;
         }
         catch (Exception ex)
         {
             _log.Log($"Disk usage scan failed: {ex.Message}");
             StatusText = LocExtension.Format("UsageScanFailed", ex.Message);
-            SummaryText = $"Scan failed: {ex.Message}";
+            SummaryText = LocExtension.Format("UsageScanFailedSummary", ex.Message);
             clearStatusWhenDone = false;
         }
         finally
