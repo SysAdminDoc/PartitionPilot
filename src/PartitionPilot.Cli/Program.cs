@@ -38,6 +38,8 @@ try
         "apply-layout" => await ApplyLayoutAsync(),
         "restore-snapshot" => await RestoreSnapshotAsync(),
         "shrink-blockers" => await ShrinkBlockersAsync(),
+        "clone" => await CloneAsync(),
+        "wipe" => await WipeAsync(),
         "release-manifest" => await ReleaseManifestAsync(),
         "rescue-profile" => await RescueProfileAsync(),
         "version" => ShowVersion(),
@@ -79,6 +81,10 @@ int PrintUsage()
     Console.WriteLine("  restore-snapshot --file F --disk N");
     Console.WriteLine("                            Rebuild a disk's partition table from a snapshot (add --apply)");
     Console.WriteLine("  shrink-blockers --drive C Explain what is limiting how far a volume can shrink");
+    Console.WriteLine("  clone --source N --dest N [--rescue] [--no-verify]");
+    Console.WriteLine("                            Sector-clone one disk onto another (add --apply)");
+    Console.WriteLine("  wipe --disk N [--passes 1-7]");
+    Console.WriteLine("                            Overwrite a whole disk (add --apply)");
     Console.WriteLine("  release-manifest --artifacts DIR [--cert-thumbprint THUMB]");
     Console.WriteLine("                            Create SHA256SUMS and signing status manifest");
     Console.WriteLine("  rescue-profile --output DIR [--source DIR]");
@@ -1145,6 +1151,157 @@ async Task<int> RestoreSnapshotAsync()
     foreach (var warning in plan.SkippedPartitions)
         Console.Error.WriteLine($"Note: {warning}");
     return 0;
+}
+
+async Task<int> CloneAsync()
+{
+    var source = ParseIntArg("--source");
+    var dest = ParseIntArg("--dest");
+    var apply = args.Contains("--apply", StringComparer.OrdinalIgnoreCase);
+    var rescue = args.Contains("--rescue", StringComparer.OrdinalIgnoreCase);
+    var skipVerify = args.Contains("--no-verify", StringComparer.OrdinalIgnoreCase);
+
+    if (!source.HasValue || !dest.HasValue)
+    {
+        Console.Error.WriteLine("--source N and --dest N required (physical disk numbers).");
+        return 1;
+    }
+
+    var disks = await wmi.GetDisksAsync();
+    var sourceDisk = disks.FirstOrDefault(d => d.Number == source.Value);
+    var destDisk = disks.FirstOrDefault(d => d.Number == dest.Value);
+    if (sourceDisk is null) { Console.Error.WriteLine($"Source disk {source.Value} not found."); return 1; }
+    if (destDisk is null) { Console.Error.WriteLine($"Destination disk {dest.Value} not found."); return 1; }
+
+    try
+    {
+        SectorCloneService.ValidateClone(sourceDisk, destDisk);
+    }
+    catch (Exception ex)
+    {
+        Console.Error.WriteLine($"Clone blocked: {ex.Message}");
+        return 1;
+    }
+
+    var identity = destDisk.ToIdentitySnapshot();
+
+    if (json)
+        Console.WriteLine(JsonSerializer.Serialize(new
+        {
+            Source = sourceDisk.ToIdentitySnapshot(),
+            Destination = identity,
+            BytesToCopy = sourceDisk.Size,
+            RescueMode = rescue,
+            Verify = !skipVerify,
+            WillApply = apply
+        }, new JsonSerializerOptions { WriteIndented = true }));
+    else
+    {
+        Console.WriteLine($"Sector clone Disk {sourceDisk.Number} -> Disk {destDisk.Number}");
+        Console.WriteLine($"Source:      {sourceDisk.ConfirmationSummary}");
+        Console.WriteLine($"Destination: {destDisk.ConfirmationSummary}");
+        Console.WriteLine($"Copies {SizeUtil.Format(sourceDisk.Size)}, rescue mode {(rescue ? "on" : "off")}, verification {(skipVerify ? "off" : "on")}.");
+    }
+
+    if (!apply)
+    {
+        Console.Error.WriteLine("\nDry run — add --apply to execute.");
+        return 0;
+    }
+
+    Console.Error.Write(
+        $"\nWARNING: every byte on Disk {destDisk.Number} will be overwritten. Type YES to confirm: ");
+    if (!string.Equals(Console.ReadLine()?.Trim(), "YES", StringComparison.Ordinal))
+    {
+        Console.Error.WriteLine("Cancelled.");
+        return 1;
+    }
+
+    var backup = new PartitionTableBackup(wmi, log);
+    try
+    {
+        SectorCloneResult? result = null;
+        await DestructiveOperationService.RunAsync(
+            new DestructiveOperationRequest(destDisk.Number, identity, $"sector clone from Disk {sourceDisk.Number}"),
+            wmi, backup, log,
+            async token => result = await SectorCloneService.CloneAsync(
+                sourceDisk.Number, destDisk.Number, sourceDisk.Size,
+                destDisk.Size, destDisk.LogicalSectorSize,
+                log, progress: null, ct: token, rescue: rescue, verify: !skipVerify));
+
+        Console.WriteLine(result!.FormatReport());
+        return result.HasBadSectors || (!skipVerify && !result.VerificationPassed) ? 2 : 0;
+    }
+    catch (Exception ex)
+    {
+        Console.Error.WriteLine($"Clone failed: {ex.Message}");
+        return 1;
+    }
+}
+
+async Task<int> WipeAsync()
+{
+    var diskNum = ParseDiskArg();
+    var apply = args.Contains("--apply", StringComparer.OrdinalIgnoreCase);
+    var passesText = ParseStringArg("--passes");
+
+    if (!diskNum.HasValue) { Console.Error.WriteLine("--disk N required."); return 1; }
+
+    var passes = 1;
+    if (!string.IsNullOrWhiteSpace(passesText) && (!int.TryParse(passesText, out passes) || passes is < 1 or > 7))
+    {
+        Console.Error.WriteLine("--passes must be between 1 and 7.");
+        return 1;
+    }
+
+    var disks = await wmi.GetDisksAsync();
+    var disk = disks.FirstOrDefault(d => d.Number == diskNum.Value);
+    if (disk is null) { Console.Error.WriteLine($"Disk {diskNum.Value} not found."); return 1; }
+
+    var identity = disk.ToIdentitySnapshot();
+
+    if (json)
+        Console.WriteLine(JsonSerializer.Serialize(new
+        {
+            Target = identity, Passes = passes, WillApply = apply
+        }, new JsonSerializerOptions { WriteIndented = true }));
+    else
+    {
+        Console.WriteLine($"Wipe Disk {disk.Number} with {passes} pass(es)");
+        Console.WriteLine(disk.ConfirmationSummary);
+        Console.WriteLine($"Overwrites {SizeUtil.Format(disk.Size)}. This cannot be undone.");
+    }
+
+    if (!apply)
+    {
+        Console.Error.WriteLine("\nDry run — add --apply to execute.");
+        return 0;
+    }
+
+    Console.Error.Write(
+        $"\nWARNING: every byte on Disk {disk.Number} will be destroyed. Type YES to confirm: ");
+    if (!string.Equals(Console.ReadLine()?.Trim(), "YES", StringComparison.Ordinal))
+    {
+        Console.Error.WriteLine("Cancelled.");
+        return 1;
+    }
+
+    var backup = new PartitionTableBackup(wmi, log);
+    try
+    {
+        await DestructiveOperationService.RunAsync(
+            new DestructiveOperationRequest(disk.Number, identity, $"{passes}-pass wipe"),
+            wmi, backup, log,
+            token => SecureEraseService.ExecuteMultiPassWipeAsync(disk.Number, passes, runner, log, token));
+
+        Console.WriteLine($"Wipe complete on Disk {disk.Number}.");
+        return 0;
+    }
+    catch (Exception ex)
+    {
+        Console.Error.WriteLine($"Wipe failed: {ex.Message}");
+        return 1;
+    }
 }
 
 async Task<int> ShrinkBlockersAsync()
