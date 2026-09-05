@@ -359,7 +359,9 @@ public class DiskCloningViewModel : ViewModelBase
                 var vhdLetter = (await _processRunner.RunPowerShellAsync(letterCmd, _log, ct)).Trim();
                 var mountedLetter = RequireDriveLetter(vhdLetter, "mounted VHDX target");
 
-                await _processRunner.RunExeAsync("robocopy", $"{captureSource} {mountedLetter}:\\ /MIR /R:0 /W:0 /NP /NDL /NFL", _log, ignoreStderrOnSuccess: true, ct: ct);
+                await _processRunner.RunExeAsync("robocopy",
+                    CloneWorkflowService.BuildVhdxCaptureArguments(captureSource, mountedLetter),
+                    _log, ignoreStderrOnSuccess: true, ct: ct);
 
                 await _processRunner.RunDiskpartAsync(detachScript, _log, ct);
                 detachCleanup.Complete();
