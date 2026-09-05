@@ -1,5 +1,11 @@
 # Changelog
 
+## PartitionPilot v0.9.23 - 2026-09-04
+
+### Safety & Reliability
+- Fixed VSS snapshot creation, which had never worked on Windows 10 or 11. Capture used `vssadmin create shadow`, a Windows Server-only verb, so on client Windows every image capture failed the snapshot step and fell back to an inconsistent live copy behind the degraded-mode prompt. Shadow copies are now created through the `Win32_ShadowCopy` WMI class, which works on client and server alike, and are deleted when capture finishes or fails.
+- Added a diagnostics check that proves a shadow copy can actually be created and removed, rather than only listing VSS providers and writers. Both of those pass on client Windows even when creation is impossible, which is how the broken capture path went unnoticed.
+
 ## PartitionPilot v0.9.22 - 2026-08-24
 
 ### Reliability
@@ -237,6 +243,7 @@
 - Added operation queue journaling for crash recovery: every Apply batch writes a redacted JSON journal to ProgramData. On startup, interrupted journals are detected and shown with per-operation status. Journals auto-purge after 30 days.
 - Fixed Storage Spaces membership: replaced imprecise pool assignment with proper MSFT_StoragePoolToPhysicalDisk association query. Pool health, operational status, and read-only state are now exposed.
 - Added VSS-backed live volume image capture: WIM/VHDX capture creates a VSS shadow copy for point-in-time consistency, with explicit user confirmation before fallback to live capture.
+  - **Correction, 2026-09-04:** this never worked on Windows 10 or 11. The snapshot was created with `vssadmin create shadow`, a verb that ships only on Windows Server, so on client Windows the call always failed and capture fell back to an inconsistent live copy behind the degraded-mode prompt. Fixed in v0.9.23, which creates shadow copies through `Win32_ShadowCopy.Create` instead.
 - Added operation impact preview before Apply: confirmation dialog now shows risk summary, affected targets, and per-operation type/risk breakdown.
 - Added versioned JSON schemas for persisted files: snapshot and SMART history files include schema version envelopes, v0 files load seamlessly, corrupt files are quarantined to .corrupt.
 - Fixed sector clone fail-open bug: read failures and zero-byte reads now throw with offset context. Partial writes handled correctly. Source pooled-disk guard added.
