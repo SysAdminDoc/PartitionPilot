@@ -172,6 +172,7 @@ public partial class MainViewModel : ViewModelBase
     public void OnClosing()
     {
         DiskHealth.Dispose();
+        SmartQueryService.Shutdown();
         Log.AutoSave();
     }
 
