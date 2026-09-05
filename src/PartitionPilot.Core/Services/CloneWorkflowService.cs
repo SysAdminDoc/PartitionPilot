@@ -9,12 +9,13 @@ public static class CloneWorkflowService
         return
         [
             new WorkflowPrompt(
-                "Confirm Sector Clone",
-                $"WARNING: This will overwrite ALL data on the destination disk with a sector-by-sector copy.\n\nSource:\n{sourceIdentity.ConfirmationSummary}\n\nDestination:\n{destinationIdentity.ConfirmationSummary}\n\nThis operation cannot be undone. Continue?",
+                CoreStrings.Get("SectorClone1Title"),
+                CoreStrings.Format("SectorClone1Body",
+                    sourceIdentity.ConfirmationSummary, destinationIdentity.ConfirmationSummary),
                 true),
             new WorkflowPrompt(
-                "Confirm Clone",
-                "FINAL CONFIRMATION: All data on the destination disk will be permanently overwritten with a raw sector copy.",
+                CoreStrings.Get("SectorCloneFinalTitle"),
+                CoreStrings.Get("SectorCloneFinalBody"),
                 true)
         ];
     }
@@ -82,6 +83,7 @@ public static class CloneWorkflowService
         string cloneReport,
         string bootAuditReport)
     {
-        return $"Sector clone complete.\n\nDisk {sourceDiskNumber} -> Disk {destinationDiskNumber}\n{cloneReport}\n\n{bootAuditReport}";
+        return CoreStrings.Format("SectorCloneCompleteBody",
+            sourceDiskNumber, destinationDiskNumber, cloneReport, bootAuditReport);
     }
 }

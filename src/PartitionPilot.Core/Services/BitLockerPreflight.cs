@@ -112,18 +112,18 @@ public static class BitLockerPreflight
     public static string BuildDestructiveConfirmation(string operation, IEnumerable<string> protectedTargets)
     {
         var targets = protectedTargets.Where(t => !string.IsNullOrWhiteSpace(t)).ToList();
-        var targetText = targets.Count == 0 ? "BitLocker-protected data" : string.Join("\n", targets.Select(t => $"  - {t}"));
+        var targetText = targets.Count == 0
+            ? CoreStrings.Get("BitLockerDestructiveFallbackTarget")
+            : string.Join("\n", targets.Select(t => CoreStrings.Format("BitLockerTargetLine", t)));
 
-        return $"{operation} will target BitLocker-protected data:\n{targetText}\n\n" +
-               "This can permanently destroy encrypted contents, recovery metadata, and any data protected by recovery keys. " +
-               "Continue only if backups and recovery keys are available.";
+        return CoreStrings.Format("BitLockerDestructiveBody", operation, targetText);
     }
 
     public static string DescribePartitionTarget(PartitionInfo partition)
     {
         var label = partition.DriveLetter.HasValue
             ? $"{partition.DriveLetter}:"
-            : $"Partition {partition.PartitionNumber}";
+            : CoreStrings.Format("BitLockerPartitionLabel", partition.PartitionNumber);
 
         return $"{label} {Describe(partition.EncryptionStatus)}";
     }
