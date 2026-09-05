@@ -31,6 +31,9 @@
 - The status-bar indicator now reflects the actual status. It was hardcoded green, so the shell showed a healthy dot while the text beside it reported a failure. It renders success, warning and error, and carries the severity in its automation name so a screen reader gets it without the colour.
 - Removed a dead event handler left over from when the activity log was a text box.
 
+### Testing
+- Added coverage for the safety gates that had none: image destination preflight, the BitLocker capture guard, and volume locking. Each new test was checked by breaking the guard it covers and confirming it goes red, so a removed same-volume check or a `RequireLock` that stopped throwing now fails the suite instead of shipping.
+
 ### Security
 - Release manifests can now be signed, and the client can verify one against a key compiled into the build. Velopack checks a package's hash and size against the feed, so whoever controls the feed controls both; a signature over the manifest itself is what survives a compromised host. Sign with `pp release-manifest --manifest-key <pem>`, and set a lifetime with `--manifest-valid-days`. Verification also refuses a manifest that offers an older version than the one installed, which blocks a rollback to a known-vulnerable build, and one past its expiry, which blocks freezing a client on a stale release list. No signing key ships yet, so the channel reports as unsigned rather than rejecting updates and stranding existing installs.
 
