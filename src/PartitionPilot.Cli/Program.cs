@@ -841,7 +841,7 @@ async Task<int> ShowSmartHistoryAsync()
     var diskNum = ParseDiskArg();
     if (!diskNum.HasValue) { Console.Error.WriteLine("--disk N required."); return 1; }
 
-    var history = new SmartHistoryService();
+    var history = new SmartHistoryService(log);
     var readings = await history.GetHistoryAsync(diskNum.Value.ToString());
 
     if (json)
@@ -881,7 +881,7 @@ async Task<int> ShowSmartTrendsAsync()
     var diskNum = ParseDiskArg();
     if (!diskNum.HasValue) { Console.Error.WriteLine("--disk N required."); return 1; }
 
-    var history = new SmartHistoryService();
+    var history = new SmartHistoryService(log);
     var readings = await history.GetHistoryAsync(diskNum.Value.ToString());
     var trends = SmartHistoryService.AnalyzeTrends(readings);
 

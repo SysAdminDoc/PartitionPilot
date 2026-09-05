@@ -7,6 +7,14 @@ namespace PartitionPilot;
 public class SmartHistoryService
 {
     private static readonly string HistoryDir = ResolveHistoryDir();
+
+    private readonly IActivityLog? _log;
+
+    /// <param name="log">
+    /// Optional, but strongly preferred. History that silently stops accumulating turns the trend alerts
+    /// into a monitoring feature that fails closed to "everything is fine", which is worse than absent.
+    /// </param>
+    public SmartHistoryService(IActivityLog? log = null) => _log = log;
     private static readonly JsonSerializerOptions JsonOpts = new()
     {
         PropertyNameCaseInsensitive = true,
@@ -162,7 +170,12 @@ public class SmartHistoryService
 
         string json;
         try { json = await File.ReadAllTextAsync(path); }
-        catch { return new List<SmartReading>(); }
+        catch (Exception ex)
+        {
+            _log?.Log($"SMART history for {deviceId} could not be read ({ex.Message}); " +
+                      "trend alerts for this device are running without history.");
+            return new List<SmartReading>();
+        }
 
         try
         {
@@ -170,28 +183,37 @@ public class SmartHistoryService
             if (envelope?.SchemaVersion >= 1 && envelope.Readings is not null)
                 return envelope.Readings;
         }
-        catch { }
+        catch (JsonException) { /* fall through to the pre-envelope format */ }
 
         try
         {
             var legacy = JsonSerializer.Deserialize<List<SmartReading>>(json, JsonOpts);
             if (legacy is not null) return legacy;
         }
-        catch { }
+        catch (JsonException ex)
+        {
+            _log?.Log($"SMART history for {deviceId} is not readable in either format ({ex.Message}); " +
+                      "quarantining it and starting a new history.");
+        }
 
         QuarantineCorruptFile(path);
         return new List<SmartReading>();
     }
 
-    private static void QuarantineCorruptFile(string path)
+    private void QuarantineCorruptFile(string path)
     {
         try
         {
             var corruptPath = path + ".corrupt";
             if (File.Exists(corruptPath)) File.Delete(corruptPath);
             File.Move(path, corruptPath);
+            _log?.Log($"Quarantined unreadable SMART history: {Path.GetFileName(corruptPath)}");
         }
-        catch { }
+        catch (Exception ex)
+        {
+            _log?.Log($"Unreadable SMART history could not be quarantined ({ex.Message}); " +
+                      "it will be re-read and rejected on every refresh until it is removed by hand.");
+        }
     }
 
     public async Task<string> ExportAsync(string deviceId, string destinationPath)
@@ -230,12 +252,15 @@ public class SmartHistoryService
             if (envelope?.Readings is not null)
                 imported = envelope.Readings;
         }
-        catch { }
+        catch (JsonException) { /* fall through to the pre-envelope format */ }
 
         if (imported is null)
         {
             try { imported = JsonSerializer.Deserialize<List<SmartReading>>(json, JsonOpts); }
-            catch { }
+            catch (JsonException ex)
+            {
+                _log?.Log($"SMART history import file is not valid in either format: {ex.Message}");
+            }
         }
 
         if (imported is null || imported.Count == 0)
