@@ -15,6 +15,22 @@ public static class UpdateService
     private const string RepoUrl = "https://github.com/SysAdminDoc/PartitionPilot";
     private static readonly string LatestReleaseApiUrl = BuildLatestReleaseApiUrl(RepoUrl);
 
+    /// <summary>
+    /// Public half of the release signing key, compiled into the client so it never travels with a
+    /// release. Empty until a signing key is adopted: an empty key reports the channel as unsigned rather
+    /// than rejecting every update, so turning signing on cannot strand existing installs.
+    /// </summary>
+    public const string ReleaseManifestPublicKeyPem = "";
+
+    /// <summary>
+    /// Decides whether a downloaded release manifest may be acted on, against the key compiled into this
+    /// build and the version it is running.
+    /// </summary>
+    public static ManifestTrustResult EvaluateManifestTrust(
+        ReleaseArtifactManifest manifest, DateTimeOffset? now = null) =>
+        ReleaseManifestSigning.Verify(
+            manifest, ReleaseManifestPublicKeyPem, GetCurrentVersion(), now ?? DateTimeOffset.UtcNow);
+
     public static string GetCurrentVersion()
     {
         var informational = typeof(UpdateService).Assembly
