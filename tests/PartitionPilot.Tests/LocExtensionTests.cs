@@ -142,6 +142,70 @@ public class LocExtensionTests
             actual);
     }
 
+    /// <summary>
+    /// The partition confirmations are the ones that stand between the operator and a wiped disk, so their
+    /// English wording is pinned exactly rather than merely checked for being non-empty.
+    /// </summary>
+    [Fact]
+    public void PartitionConfirmations_ReproduceTheEnglishTextTheyReplaced()
+    {
+        Assert.Equal(
+            "Delete partition 2 on Disk 1?\nTarget:\nsummary\n\nLetter: E:, Size: 100 GB\n\n" +
+            "ALL DATA ON THIS PARTITION WILL BE LOST.\n\n" +
+            "The deletion will be queued and applied when you click Apply.",
+            LocExtension.Format("ConfirmDeletePrompt", 2, 1, "summary", "E:", "100 GB", ""));
+
+        Assert.Equal(
+            "CRITICAL: Partition 2 is a Recovery partition (Boot).\n\n" +
+            "Deleting it may make the system unbootable.\n\nTarget:\nsummary\n\n" +
+            "Letter: E:, Size: 100 GB\n\nType YES to confirm this destructive action.",
+            LocExtension.Format("DeleteCriticalPrompt", 2, "Recovery",
+                LocExtension.Get("PartitionFlagBoot"), "summary", "E:", "100 GB", ""));
+
+        Assert.Equal(
+            "Set partition 2 on Disk 1 as ACTIVE?\n\n" +
+            "Warning: Setting the wrong partition as active can prevent Windows from booting.",
+            LocExtension.Format("SetActivePrompt", 2, 1));
+
+        Assert.Equal("Hide partition 2 (E:) on Disk 1?", LocExtension.Format("HidePartitionPrompt", 2, "E:", 1));
+        Assert.Equal("Unhide partition 2 (E:) on Disk 1?", LocExtension.Format("UnhidePartitionPrompt", 2, "E:", 1));
+
+        Assert.Equal(
+            "Extend partition 2 (E:) on Disk 1 to fill all adjacent unallocated space?",
+            LocExtension.Format("ExtendPrompt", 2, "E:", 1));
+
+        Assert.Equal(
+            "Initialize Disk 1 (Samsung, 1 TB) with a GPT partition table?\n\nidentity\n\n" +
+            "This will write an empty GPT partition table to the disk. " +
+            "Use MBR only if legacy BIOS boot compatibility is required.",
+            LocExtension.Format("InitializeDiskPrompt", 1, "Samsung", "1 TB", "identity"));
+    }
+
+    [Fact]
+    public void PartitionGuards_ReproduceTheEnglishTextTheyReplaced()
+    {
+        Assert.Equal(
+            "Delete partition 2 targets:\nsummary\n\nThis disk belongs to Storage Spaces pool \"Pool1\".\n\n" +
+            "Modifying pooled disks can break pool integrity and cause data loss across the entire pool. " +
+            "Use Windows Storage Spaces management to modify pooled disks.",
+            LocExtension.Format("StoragePoolGuardBody",
+                LocExtension.Format("OpDeletePartition", 2), "summary", "Pool1"));
+
+        Assert.Equal(
+            "Format E: targets a Linux partition that PartitionPilot cannot manage natively.\n\n" +
+            "Partition: Disk 1 Partition 2, Size: 100 GB\n\n" +
+            "Modifying this partition may destroy data that Windows cannot read or recover. " +
+            "Proceed only if you are certain this partition is no longer needed.",
+            LocExtension.Format("UnsupportedTypeBody",
+                LocExtension.Format("OpFormatDrive", 'E'), "Linux", "Disk 1 Partition 2", "100 GB"));
+
+        Assert.Equal(
+            "PartitionPilot will not delete a Recovery partition automatically because that can disable " +
+            "Windows RE or remove the recovery environment.\n\n" +
+            "Use a dedicated recovery relocation workflow before changing this partition.\n\nreagentc output",
+            LocExtension.Format("RecoveryGuardBody", LocExtension.Get("VerbDelete"), "reagentc output"));
+    }
+
     [Fact]
     public void UsageScanSummary_ReproducesTheEnglishTextItReplaced()
     {

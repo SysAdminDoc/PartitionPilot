@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Input;
 
@@ -83,27 +84,37 @@ public class PartitionsViewModel : ViewModelBase
     public bool HasSelectedPartition => SelectedPartition is not null;
 
     public string SelectedDiskSummary => SelectedDisk is null
-        ? "Select a physical disk to review capacity, layout, and available partition operations."
-        : $"{SizeUtil.Format(SelectedDisk.Size)} total | {SelectedDisk.PartitionStyle} | {SelectedDisk.NumberOfPartitions} partitions | {SizeUtil.Format(SelectedDisk.LargestFreeExtent)} largest free extent";
+        ? LocExtension.Get("SelectDiskPrompt")
+        : LocExtension.Format("DiskSummaryFormat",
+            SizeUtil.Format(SelectedDisk.Size), SelectedDisk.PartitionStyle, SelectedDisk.NumberOfPartitions,
+            SizeUtil.Format(SelectedDisk.LargestFreeExtent));
 
-    public string DiskCapacityText => SelectedDisk is null ? "No disk selected" : $"{SizeUtil.Format(SelectedDisk.Size)} total";
+    public string DiskCapacityText => SelectedDisk is null
+        ? LocExtension.Get("NoDiskSelected")
+        : LocExtension.Format("DiskTotalFormat", SizeUtil.Format(SelectedDisk.Size));
 
     public string DiskFreeExtentText => SelectedDisk is null
-        ? "Refresh disks to load free-space data"
-        : $"{SizeUtil.Format(SelectedDisk.LargestFreeExtent)} largest free extent";
+        ? LocExtension.Get("RefreshDisksHint")
+        : LocExtension.Format("LargestFreeExtentFormat", SizeUtil.Format(SelectedDisk.LargestFreeExtent));
 
-    public string DiskPartitionStyleText => SelectedDisk is null ? "Partition style unavailable" : $"{SelectedDisk.PartitionStyle} partition style";
+    public string DiskPartitionStyleText => SelectedDisk is null
+        ? LocExtension.Get("PartitionStyleUnavailable")
+        : LocExtension.Format("PartitionStyleFormat", SelectedDisk.PartitionStyle);
 
-    public string SelectedPartitionName => SelectedPartition is null ? "No partition selected" : SelectedPartition.PartitionDisplay;
+    public string SelectedPartitionName => SelectedPartition is null
+        ? LocExtension.Get("NoPartitionSelected")
+        : SelectedPartition.PartitionDisplay;
 
     public string SelectedPartitionSummary
     {
         get
         {
             if (SelectedPartition is null)
-                return "Select a table row or disk-map segment before applying partition actions.";
+                return LocExtension.Get("SelectPartitionPrompt");
 
-            var fileSystem = string.IsNullOrWhiteSpace(SelectedPartition.FileSystem) ? "No file system" : SelectedPartition.FileSystem;
+            var fileSystem = string.IsNullOrWhiteSpace(SelectedPartition.FileSystem)
+                ? LocExtension.Get("NoFileSystem")
+                : SelectedPartition.FileSystem;
             return $"{SelectedPartition.SizeText} | {fileSystem} | {SelectedPartition.Details}";
         }
     }
@@ -461,8 +472,9 @@ public class PartitionsViewModel : ViewModelBase
         Queue.Enqueue(new PendingOperation
         {
             Type = PendingOperationType.Create,
-            Description = $"Create {sizeGB:F1} GB {fs} partition ({letter}:) on Disk {diskNum}",
-            DiskTarget = DiskTargetText(diskIdentity, $"Disk {diskNum}"),
+            Description = LocExtension.Format("QueueDescCreate",
+                sizeGB.ToString("F1", CultureInfo.CurrentCulture), fs, letter, diskNum),
+            DiskTarget = DiskTargetText(diskIdentity, LocExtension.Format("DiskTargetFallback", diskNum)),
             DiskIdentity = diskIdentity,
             ValidateTarget = BuildTargetValidator(diskIdentity),
             Execute = async () =>
@@ -490,11 +502,11 @@ public class PartitionsViewModel : ViewModelBase
         fs = ProcessRunner.ValidateFileSystem(fs);
         allocationUnitSize = ProcessRunner.ValidateAllocationUnitSize(allocationUnitSize);
         var partition = FindPartitionByLetter(letter);
-        if (!GuardUnsupportedType(partition, $"Format {letter}:"))
+        if (!GuardUnsupportedType(partition, LocExtension.Format("OpFormatDrive", letter)))
             return Task.CompletedTask;
-        if (!ConfirmBitLockerDestructiveOperation(partition, $"Format {letter}:"))
+        if (!ConfirmBitLockerDestructiveOperation(partition, LocExtension.Format("OpFormatDrive", letter)))
             return Task.CompletedTask;
-        if (!GuardFilesystemCapability(FilesystemOperation.Format, fs, $"Format {letter}:"))
+        if (!GuardFilesystemCapability(FilesystemOperation.Format, fs, LocExtension.Format("OpFormatDrive", letter)))
             return Task.CompletedTask;
 
         var diskNum = SelectedDisk?.Number;
@@ -503,8 +515,10 @@ public class PartitionsViewModel : ViewModelBase
         Queue.Enqueue(new PendingOperation
         {
             Type = PendingOperationType.Format,
-            Description = $"Format {letter}: as {fs}",
-            DiskTarget = DiskTargetText(diskIdentity, diskNum.HasValue ? $"Disk {diskNum}" : $"Volume {letter}:"),
+            Description = LocExtension.Format("QueueDescFormat", letter, fs),
+            DiskTarget = DiskTargetText(diskIdentity, diskNum.HasValue
+                ? LocExtension.Format("DiskTargetFallback", diskNum)
+                : LocExtension.Format("VolumeTargetFallback", letter)),
             DiskIdentity = diskIdentity,
             ValidateTarget = BuildTargetValidator(diskIdentity),
             RiskLevel = "Destructive",
@@ -561,8 +575,8 @@ public class PartitionsViewModel : ViewModelBase
         Queue.Enqueue(new PendingOperation
         {
             Type = PendingOperationType.Resize,
-            Description = $"Resize {letter}: to {SizeUtil.Format(newSizeBytes)}",
-            DiskTarget = DiskTargetText(diskIdentity, $"Volume {letter}:"),
+            Description = LocExtension.Format("QueueDescResize", letter, SizeUtil.Format(newSizeBytes)),
+            DiskTarget = DiskTargetText(diskIdentity, LocExtension.Format("VolumeTargetFallback", letter)),
             DiskIdentity = diskIdentity,
             ValidateTarget = BuildTargetValidator(diskIdentity),
             Execute = async () =>
@@ -598,8 +612,11 @@ public class PartitionsViewModel : ViewModelBase
         Queue.Enqueue(new PendingOperation
         {
             Type = PendingOperationType.Split,
-            Description = $"Split {letter}: - shrink by {newPartGB:F1} GB, new {newLetter}: ({fs})",
-            DiskTarget = DiskTargetText(diskIdentity, diskNum.HasValue ? $"Disk {diskNum}" : $"Volume {letter}:"),
+            Description = LocExtension.Format("QueueDescSplit",
+                letter, newPartGB.ToString("F1", CultureInfo.CurrentCulture), newLetter, fs),
+            DiskTarget = DiskTargetText(diskIdentity, diskNum.HasValue
+                ? LocExtension.Format("DiskTargetFallback", diskNum)
+                : LocExtension.Format("VolumeTargetFallback", letter)),
             DiskIdentity = diskIdentity,
             ValidateTarget = BuildTargetValidator(diskIdentity),
             Execute = async () =>
@@ -641,8 +658,8 @@ public class PartitionsViewModel : ViewModelBase
         Queue.Enqueue(new PendingOperation
         {
             Type = PendingOperationType.ChangeLetter,
-            Description = $"Change letter: partition {partNum} on Disk {diskNum} to {newLetter}:",
-            DiskTarget = DiskTargetText(diskIdentity, $"Disk {diskNum}"),
+            Description = LocExtension.Format("QueueDescChangeLetter", partNum, diskNum, newLetter),
+            DiskTarget = DiskTargetText(diskIdentity, LocExtension.Format("DiskTargetFallback", diskNum)),
             DiskIdentity = diskIdentity,
             ValidateTarget = BuildTargetValidator(diskIdentity),
             Execute = async () =>
@@ -679,18 +696,18 @@ public class PartitionsViewModel : ViewModelBase
         if (!IsForwardAdjacentMergePair(Partitions, primary, secondary))
         {
             _dialog.ShowWarning(
-                "Merge is available only when the primary partition is immediately followed by the partition that will be removed.",
-                "Merge Not Available");
+                LocExtension.Get("MergeNotAvailableBody"),
+                LocExtension.Get("MergeNotAvailableTitle"));
             return;
         }
-        if (!await GuardRecoveryPartitionOperationAsync(primary, "merge")) return;
-        if (!await GuardRecoveryPartitionOperationAsync(secondary, "merge")) return;
-        if (!GuardUnsupportedType(primary, $"Merge into {primary.LetterDisplay}")) return;
-        if (!GuardUnsupportedType(secondary, $"Delete {secondary.LetterDisplay} to merge")) return;
-        if (!GuardStoragePool("Merge partitions")) return;
-        if (!GuardFilesystemCapability(FilesystemOperation.Extend, primary.FileSystem, $"Merge into {primary.LetterDisplay}")) return;
-        if (!GuardBitLockerMutation(primary, $"Merge into {primary.LetterDisplay}")) return;
-        if (!ConfirmBitLockerDestructiveOperation(secondary, $"Delete {secondary.LetterDisplay} to merge")) return;
+        if (!await GuardRecoveryPartitionOperationAsync(primary, "merge", "VerbMerge")) return;
+        if (!await GuardRecoveryPartitionOperationAsync(secondary, "merge", "VerbMerge")) return;
+        if (!GuardUnsupportedType(primary, LocExtension.Format("OpMergeInto", primary.LetterDisplay))) return;
+        if (!GuardUnsupportedType(secondary, LocExtension.Format("OpDeleteToMerge", secondary.LetterDisplay))) return;
+        if (!GuardStoragePool(LocExtension.Get("OpMergePartitions"))) return;
+        if (!GuardFilesystemCapability(FilesystemOperation.Extend, primary.FileSystem, LocExtension.Format("OpMergeInto", primary.LetterDisplay))) return;
+        if (!GuardBitLockerMutation(primary, LocExtension.Format("OpMergeInto", primary.LetterDisplay))) return;
+        if (!ConfirmBitLockerDestructiveOperation(secondary, LocExtension.Format("OpDeleteToMerge", secondary.LetterDisplay))) return;
 
         var diskNum = SelectedDisk.Number;
         var primaryLetter = primary.DriveLetter!.Value;
@@ -701,8 +718,9 @@ public class PartitionsViewModel : ViewModelBase
         Queue.Enqueue(new PendingOperation
         {
             Type = PendingOperationType.Delete,
-            Description = $"Merge: delete partition {secondaryPartNum} ({secondary.LetterDisplay}) then extend {primaryLetter}: on Disk {diskNum}",
-            DiskTarget = DiskTargetText(diskIdentity, $"Disk {diskNum}"),
+            Description = LocExtension.Format("QueueDescMerge",
+                secondaryPartNum, secondary.LetterDisplay, primaryLetter, diskNum),
+            DiskTarget = DiskTargetText(diskIdentity, LocExtension.Format("DiskTargetFallback", diskNum)),
             DiskIdentity = diskIdentity,
             ValidateTarget = BuildTargetValidator(diskIdentity),
             RiskLevel = "Destructive",
@@ -763,7 +781,7 @@ public class PartitionsViewModel : ViewModelBase
         if (!Queue.HasPending) return;
 
         var impactPreview = BuildImpactPreview();
-        if (!_dialog.ConfirmWarning(impactPreview, "Apply Pending Operations"))
+        if (!_dialog.ConfirmWarning(impactPreview, LocExtension.Get("ApplyPendingOperationsTitle")))
             return;
 
         await Queue.ApplyAllAsync(_log, _dialog,
@@ -778,7 +796,7 @@ public class PartitionsViewModel : ViewModelBase
         var ops = Queue.Pending.ToList();
         var sb = new System.Text.StringBuilder();
 
-        sb.AppendLine($"Apply {ops.Count} pending operation(s)?");
+        sb.AppendLine(LocExtension.Format("ImpactApplyHeading", ops.Count));
         sb.AppendLine();
 
         var highRisk = ops.Count(o => o.RiskLevel != "Normal");
@@ -787,17 +805,17 @@ public class PartitionsViewModel : ViewModelBase
 
         if (highRisk > 0 || destructive > 0)
         {
-            sb.AppendLine("--- Risk Summary ---");
+            sb.AppendLine(LocExtension.Get("ImpactRiskHeading"));
             if (destructive > 0)
-                sb.AppendLine($"  {destructive} destructive operation(s) (data will be permanently lost)");
+                sb.AppendLine(LocExtension.Format("ImpactDestructiveCount", destructive));
             if (highRisk > 0)
-                sb.AppendLine($"  {highRisk} elevated-risk operation(s)");
+                sb.AppendLine(LocExtension.Format("ImpactElevatedCount", highRisk));
             sb.AppendLine();
         }
 
         if (targets.Count > 0)
         {
-            sb.AppendLine("--- Affected Targets ---");
+            sb.AppendLine(LocExtension.Get("ImpactTargetsHeading"));
             foreach (var target in targets)
                 sb.AppendLine($"  {target}");
             foreach (var identity in ops.Select(o => o.DiskIdentity).Where(i => i is not null).Cast<DiskIdentitySnapshot>().DistinctBy(i => i.DiskNumber))
@@ -805,7 +823,7 @@ public class PartitionsViewModel : ViewModelBase
             sb.AppendLine();
         }
 
-        sb.AppendLine("--- Operations ---");
+        sb.AppendLine(LocExtension.Get("ImpactOperationsHeading"));
         for (int i = 0; i < ops.Count; i++)
         {
             var op = ops[i];
@@ -814,8 +832,8 @@ public class PartitionsViewModel : ViewModelBase
         }
 
         sb.AppendLine();
-        sb.AppendLine("Operations will execute in order. This cannot be undone.");
-        sb.AppendLine("Ensure you have a current backup before proceeding.");
+        sb.AppendLine(LocExtension.Get("ImpactFooterOrder"));
+        sb.AppendLine(LocExtension.Get("ImpactFooterBackup"));
 
         return sb.ToString();
     }
@@ -848,16 +866,16 @@ public class PartitionsViewModel : ViewModelBase
                 var failedCount = entries.Count(e => e.Status == JournalEntryStatus.Failed);
                 var skippedCount = entries.Count(e => e.Status == JournalEntryStatus.Skipped || e.Status == JournalEntryStatus.Queued);
 
-                var summary = $"An interrupted operation journal was found from {journal.CreatedAt:g}.\n\n" +
-                    $"Completed: {completedCount}, Failed: {failedCount}, Skipped: {skippedCount}\n\n" +
-                    string.Join("\n", entries.Select(e => $"  [{e.Status}] {e.Description}")) +
-                    "\n\nThis journal has been preserved for review. Check the activity log for details.";
+                var summary = LocExtension.Format("InterruptedJournalSummary",
+                    journal.CreatedAt.ToString("g", CultureInfo.CurrentCulture),
+                    completedCount, failedCount, skippedCount,
+                    string.Join("\n", entries.Select(e => $"  [{e.Status}] {e.Description}")));
 
                 _log.Log($"Interrupted journal detected: {journal.Id} ({completedCount} completed, {failedCount} failed, {skippedCount} skipped)");
                 foreach (var entry in entries)
                     _log.Log($"  Journal [{entry.Status}] {entry.Description}{(entry.ErrorMessage is not null ? $" — {entry.ErrorMessage}" : "")}");
 
-                _dialog.ShowWarning(summary, "Interrupted Operations Detected");
+                _dialog.ShowWarning(summary, LocExtension.Get("InterruptedJournalTitle"));
                 await OperationJournalService.DiscardJournalAsync(journal.Id);
             }
         }
@@ -892,11 +910,9 @@ public class PartitionsViewModel : ViewModelBase
         var diskSize = SizeUtil.Format(SelectedDisk.Size);
 
         if (!_dialog.Confirm(
-            $"Initialize Disk {diskNum} ({diskName}, {diskSize}) with a GPT partition table?\n\n" +
-            $"{SelectedDisk.IdentitySummary}\n\n" +
-            "This will write an empty GPT partition table to the disk. " +
-            "Use MBR only if legacy BIOS boot compatibility is required.",
-            "Initialize Disk")) return;
+            LocExtension.Format("InitializeDiskPrompt",
+                diskNum, diskName, diskSize, SelectedDisk.IdentitySummary),
+            LocExtension.Get("InitializeDiskTitle"))) return;
 
         IsBusy = true;
         try
@@ -905,13 +921,17 @@ public class PartitionsViewModel : ViewModelBase
             var cmd = $"Initialize-Disk -Number {diskNum} -PartitionStyle GPT -Confirm:$false";
             await _processRunner.RunPowerShellAsync(cmd, _log);
             _log.Log($"Disk {diskNum} initialized as GPT.");
-            _dialog.ShowInfo($"Disk {diskNum} initialized with a GPT partition table.", "Disk Initialized");
+            _dialog.ShowInfo(
+                LocExtension.Format("DiskInitializedBody", diskNum),
+                LocExtension.Get("DiskInitializedTitle"));
             await LoadDisksAsync();
         }
         catch (Exception ex)
         {
             _log.Log($"Initialize disk failed: {ex.Message}");
-            _dialog.ShowError($"Failed to initialize disk:\n{ex.Message}", "Initialize Error");
+            _dialog.ShowError(
+                LocExtension.Format("InitializeDiskFailed", ex.Message),
+                LocExtension.Get("InitializeErrorTitle"));
         }
         finally
         {
@@ -928,37 +948,37 @@ public class PartitionsViewModel : ViewModelBase
         var part = SelectedPartition;
         var diskNum = SelectedDisk.Number;
         var diskIdentity = SelectedDisk.ToIdentitySnapshot();
-        if (!GuardStoragePool($"Delete partition {part.PartitionNumber}"))
+        if (!GuardStoragePool(LocExtension.Format("OpDeletePartition", part.PartitionNumber)))
             return;
-        if (!await GuardRecoveryPartitionOperationAsync(part, "delete"))
+        if (!await GuardRecoveryPartitionOperationAsync(part, "delete", "VerbDelete"))
             return;
-        if (!GuardUnsupportedType(part, $"Delete partition {part.PartitionNumber}"))
+        if (!GuardUnsupportedType(part, LocExtension.Format("OpDeletePartition", part.PartitionNumber)))
             return;
 
         var encryptionLine = string.IsNullOrWhiteSpace(part.EncryptionStatus)
             ? ""
-            : $"\nEncryption: {part.EncryptionStatus}";
+            : LocExtension.Format("EncryptionLine", part.EncryptionStatus);
 
         if (part.IsCritical)
         {
+            var flags = (part.IsBoot ? LocExtension.Get("PartitionFlagBoot") : "") +
+                        (part.IsSystem ? LocExtension.Get("PartitionFlagSystem") : "");
+
             if (!_dialog.ConfirmDanger(
-                $"CRITICAL: Partition {part.PartitionNumber} is a {part.Type} partition" +
-                (part.IsBoot ? " (Boot)" : "") + (part.IsSystem ? " (System)" : "") +
-                $".\n\nDeleting it may make the system unbootable.\n\nTarget:\n{diskIdentity.ConfirmationSummary}\n\nLetter: {part.LetterDisplay}, Size: {part.SizeText}{encryptionLine}\n\n" +
-                "Type YES to confirm this destructive action.",
-                "Delete Critical Partition")) return;
+                LocExtension.Format("DeleteCriticalPrompt",
+                    part.PartitionNumber, part.Type, flags, diskIdentity.ConfirmationSummary,
+                    part.LetterDisplay, part.SizeText, encryptionLine),
+                LocExtension.Get("DeleteCriticalTitle"))) return;
         }
 
-        if (!ConfirmBitLockerDestructiveOperation(part, $"Delete partition {part.PartitionNumber}"))
+        if (!ConfirmBitLockerDestructiveOperation(part, LocExtension.Format("OpDeletePartition", part.PartitionNumber)))
             return;
 
         if (!_dialog.ConfirmWarning(
-            $"Delete partition {part.PartitionNumber} on Disk {diskNum}?\n" +
-            $"Target:\n{diskIdentity.ConfirmationSummary}\n\n" +
-            $"Letter: {part.LetterDisplay}, Size: {part.SizeText}{encryptionLine}\n\n" +
-            "ALL DATA ON THIS PARTITION WILL BE LOST.\n\n" +
-            "The deletion will be queued and applied when you click Apply.",
-            "Confirm Delete")) return;
+            LocExtension.Format("ConfirmDeletePrompt",
+                part.PartitionNumber, diskNum, diskIdentity.ConfirmationSummary,
+                part.LetterDisplay, part.SizeText, encryptionLine),
+            LocExtension.Get("ConfirmDeleteTitle"))) return;
 
         var partNum = part.PartitionNumber;
         var driveLetter = part.DriveLetter;
@@ -966,8 +986,8 @@ public class PartitionsViewModel : ViewModelBase
         Queue.Enqueue(new PendingOperation
         {
             Type = PendingOperationType.Delete,
-            Description = $"Delete partition {partNum} ({part.LetterDisplay}) on Disk {diskNum}",
-            DiskTarget = DiskTargetText(diskIdentity, $"Disk {diskNum}"),
+            Description = LocExtension.Format("QueueDescDelete", partNum, part.LetterDisplay, diskNum),
+            DiskTarget = DiskTargetText(diskIdentity, LocExtension.Format("DiskTargetFallback", diskNum)),
             DiskIdentity = diskIdentity,
             ValidateTarget = BuildTargetValidator(diskIdentity),
             RiskLevel = "Destructive",
@@ -994,29 +1014,30 @@ public class PartitionsViewModel : ViewModelBase
         if (SelectedPartition is null || SelectedDisk is null) return;
 
         var part = SelectedPartition;
-        if (!await GuardRecoveryPartitionOperationAsync(part, "extend"))
+        if (!await GuardRecoveryPartitionOperationAsync(part, "extend", "VerbExtend"))
             return;
 
-        if (!GuardBitLockerMutation(part, $"Extend partition {part.PartitionNumber}"))
+        if (!GuardBitLockerMutation(part, LocExtension.Format("OpExtendPartition", part.PartitionNumber)))
             return;
-        if (!GuardFilesystemCapability(FilesystemOperation.Extend, part.FileSystem, $"Extend partition {part.PartitionNumber}"))
+        if (!GuardFilesystemCapability(FilesystemOperation.Extend, part.FileSystem, LocExtension.Format("OpExtendPartition", part.PartitionNumber)))
             return;
 
         // Warn about recovery / pagefile / system partitions
         var warnings = new List<string>();
         if (part.Type.Equals("Recovery", StringComparison.OrdinalIgnoreCase))
-            warnings.Add("This is a Recovery partition. The recovery environment may need to be moved first.");
+            warnings.Add(LocExtension.Get("ExtendWarningRecovery"));
         if (part.HasPagefile)
-            warnings.Add("This partition contains the Windows pagefile. You may need to temporarily disable it.");
+            warnings.Add(LocExtension.Get("ExtendWarningPagefile"));
         if (part.IsSystem)
-            warnings.Add("This is a System partition.");
+            warnings.Add(LocExtension.Get("ExtendWarningSystem"));
 
-        string msg = $"Extend partition {part.PartitionNumber} ({part.LetterDisplay}) on Disk {SelectedDisk.Number} " +
-                     "to fill all adjacent unallocated space?";
+        var msg = LocExtension.Format("ExtendPrompt",
+            part.PartitionNumber, part.LetterDisplay, SelectedDisk.Number);
         if (warnings.Count > 0)
-            msg += "\n\nWarnings:\n" + string.Join("\n", warnings.Select(w => $"  - {w}"));
+            msg += LocExtension.Format("ExtendWarningsHeading",
+                string.Join("\n", warnings.Select(w => $"  - {w}")));
 
-        if (!_dialog.Confirm(msg, "Confirm Extend")) return;
+        if (!_dialog.Confirm(msg, LocExtension.Get("ConfirmExtendTitle"))) return;
 
         IsBusy = true;
         try
@@ -1098,7 +1119,9 @@ public class PartitionsViewModel : ViewModelBase
         catch (Exception ex)
         {
             _log.Log($"Extend failed: {ex.Message}");
-            _dialog.ShowError($"Failed to extend partition:\n{ex.Message}", "Extend Error");
+            _dialog.ShowError(
+                LocExtension.Format("ExtendFailed", ex.Message),
+                LocExtension.Get("ExtendErrorTitle"));
         }
         finally
         {
@@ -1109,7 +1132,12 @@ public class PartitionsViewModel : ViewModelBase
     public static bool IsRecoveryPartition(PartitionInfo partition) =>
         partition.Type.Equals("Recovery", StringComparison.OrdinalIgnoreCase);
 
-    private async Task<bool> GuardRecoveryPartitionOperationAsync(PartitionInfo partition, string operation)
+    /// <summary>
+    /// <paramref name="operation"/> is the English verb for the activity log, which stays English because it
+    /// travels in support bundles; <paramref name="operationKey"/> names the translated verb for the dialog.
+    /// </summary>
+    private async Task<bool> GuardRecoveryPartitionOperationAsync(
+        PartitionInfo partition, string operation, string operationKey)
     {
         if (!IsRecoveryPartition(partition))
             return true;
@@ -1122,15 +1150,13 @@ public class PartitionsViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            reagentInfo = $"Unable to read Windows RE status: {ex.Message}";
-            _log.Log(reagentInfo);
+            _log.Log($"Unable to read Windows RE status: {ex.Message}");
+            reagentInfo = LocExtension.Format("ReagentUnavailable", ex.Message);
         }
 
         _dialog.ShowError(
-            $"PartitionPilot will not {operation} a Recovery partition automatically because that can disable Windows RE or remove the recovery environment.\n\n" +
-            "Use a dedicated recovery relocation workflow before changing this partition.\n\n" +
-            reagentInfo,
-            "Recovery Environment Guard");
+            LocExtension.Format("RecoveryGuardBody", LocExtension.Get(operationKey), reagentInfo),
+            LocExtension.Get("RecoveryGuardTitle"));
         return false;
     }
 
@@ -1146,11 +1172,9 @@ public class PartitionsViewModel : ViewModelBase
             return true;
 
         return _dialog.ConfirmDanger(
-            $"{operation} targets:\n{SelectedDisk.ConfirmationSummary}\n\n" +
-            $"This disk belongs to Storage Spaces pool \"{SelectedDisk.StoragePoolName}\".\n\n" +
-            "Modifying pooled disks can break pool integrity and cause data loss across the entire pool. " +
-            "Use Windows Storage Spaces management to modify pooled disks.",
-            "Storage Spaces Pool Warning");
+            LocExtension.Format("StoragePoolGuardBody",
+                operation, SelectedDisk.ConfirmationSummary, SelectedDisk.StoragePoolName),
+            LocExtension.Get("StoragePoolGuardTitle"));
     }
 
     private bool GuardFilesystemCapability(FilesystemOperation operation, string? fileSystem, string target)
@@ -1160,7 +1184,7 @@ public class PartitionsViewModel : ViewModelBase
             return true;
 
         _log.Log($"{target} blocked by filesystem policy: {result.Reason}");
-        _dialog.ShowError(result.Reason, "Filesystem Operation Not Supported");
+        _dialog.ShowError(result.Reason, LocExtension.Get("FilesystemUnsupportedTitle"));
         return false;
     }
 
@@ -1170,11 +1194,9 @@ public class PartitionsViewModel : ViewModelBase
             return true;
 
         if (!_dialog.ConfirmDanger(
-            $"{operation} targets a {partition.Type} partition that PartitionPilot cannot manage natively.\n\n" +
-            $"Partition: {partition.PartitionDisplay}, Size: {partition.SizeText}\n\n" +
-            "Modifying this partition may destroy data that Windows cannot read or recover. " +
-            "Proceed only if you are certain this partition is no longer needed.",
-            $"Unsupported Partition Type: {partition.Type}"))
+            LocExtension.Format("UnsupportedTypeBody",
+                operation, partition.Type, partition.PartitionDisplay, partition.SizeText),
+            LocExtension.Format("UnsupportedTypeTitle", partition.Type)))
         {
             _log.Log($"{operation} cancelled - unsupported partition type: {partition.Type}");
             return false;
@@ -1191,7 +1213,7 @@ public class PartitionsViewModel : ViewModelBase
         _log.Log($"{operation} blocked by BitLocker state: {BitLockerPreflight.Describe(partition.EncryptionStatus)}");
         _dialog.ShowError(
             BitLockerPreflight.BuildMutationBlockedMessage(operation, partition.PartitionDisplay, partition.EncryptionStatus),
-            "BitLocker Protection Active");
+            LocExtension.Get("BitLockerActiveTitle"));
         return false;
     }
 
@@ -1204,7 +1226,7 @@ public class PartitionsViewModel : ViewModelBase
             BitLockerPreflight.BuildDestructiveConfirmation(
                 operation,
                 new[] { BitLockerPreflight.DescribePartitionTarget(partition) }),
-            "Confirm BitLocker-Protected Data Loss");
+            LocExtension.Get("BitLockerDataLossTitle"));
     }
 
     private async Task ExecuteSetActiveAsync()
@@ -1213,9 +1235,8 @@ public class PartitionsViewModel : ViewModelBase
 
         var part = SelectedPartition;
         if (!_dialog.ConfirmWarning(
-            $"Set partition {part.PartitionNumber} on Disk {SelectedDisk.Number} as ACTIVE?\n\n" +
-            "Warning: Setting the wrong partition as active can prevent Windows from booting.",
-            "Confirm Set Active")) return;
+            LocExtension.Format("SetActivePrompt", part.PartitionNumber, SelectedDisk.Number),
+            LocExtension.Get("ConfirmSetActiveTitle"))) return;
 
         IsBusy = true;
         try
@@ -1230,7 +1251,9 @@ public class PartitionsViewModel : ViewModelBase
         catch (Exception ex)
         {
             _log.Log($"Set active failed: {ex.Message}");
-            _dialog.ShowError($"Failed to set partition as active:\n{ex.Message}", "Set Active Error");
+            _dialog.ShowError(
+                LocExtension.Format("SetActiveFailed", ex.Message),
+                LocExtension.Get("SetActiveErrorTitle"));
         }
         finally
         {
@@ -1246,9 +1269,12 @@ public class PartitionsViewModel : ViewModelBase
         bool willHide = !part.IsHidden;
         string action = willHide ? "Hide" : "Unhide";
 
+        // Separate keys per branch rather than a translated verb dropped into one sentence: word order and
+        // capitalisation for "hide" and "unhide" do not line up across the shipped languages.
         if (!_dialog.Confirm(
-            $"{action} partition {part.PartitionNumber} ({part.LetterDisplay}) on Disk {SelectedDisk.Number}?",
-            $"Confirm {action}")) return;
+            LocExtension.Format(willHide ? "HidePartitionPrompt" : "UnhidePartitionPrompt",
+                part.PartitionNumber, part.LetterDisplay, SelectedDisk.Number),
+            LocExtension.Get(willHide ? "ConfirmHideTitle" : "ConfirmUnhideTitle"))) return;
 
         IsBusy = true;
         try
@@ -1263,7 +1289,9 @@ public class PartitionsViewModel : ViewModelBase
         catch (Exception ex)
         {
             _log.Log($"{action} failed: {ex.Message}");
-            _dialog.ShowError($"Failed to {action.ToLower()} partition:\n{ex.Message}", $"{action} Error");
+            _dialog.ShowError(
+                LocExtension.Format(willHide ? "HidePartitionFailed" : "UnhidePartitionFailed", ex.Message),
+                LocExtension.Get(willHide ? "HideErrorTitle" : "UnhideErrorTitle"));
         }
         finally
         {
