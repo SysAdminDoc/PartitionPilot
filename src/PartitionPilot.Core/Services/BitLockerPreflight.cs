@@ -91,22 +91,20 @@ public static class BitLockerPreflight
     public static string Describe(string? encryptionStatus)
     {
         return string.IsNullOrWhiteSpace(encryptionStatus)
-            ? "BitLocker: Not reported"
+            ? CoreStrings.Get("BitLockerNotReported")
             : encryptionStatus;
     }
 
     public static string BuildMutationBlockedMessage(string operation, string target, string? encryptionStatus)
     {
-        return $"{operation} is blocked for {target} because BitLocker protection is active or unknown.\n\n" +
-               $"Encryption state: {Describe(encryptionStatus)}\n\n" +
-               "Suspend BitLocker protection, unlock the volume if needed, refresh PartitionPilot, then retry.";
+        return CoreStrings.Format("BitLockerMutationBlockedBody",
+            operation, target, Describe(encryptionStatus));
     }
 
     public static string BuildUnlockRequiredMessage(string operation, string target, string? encryptionStatus)
     {
-        return $"{operation} requires {target} to be unlocked first.\n\n" +
-               $"Encryption state: {Describe(encryptionStatus)}\n\n" +
-               "Unlock the volume in Windows, refresh PartitionPilot, then retry.";
+        return CoreStrings.Format("BitLockerUnlockRequiredBody",
+            operation, target, Describe(encryptionStatus));
     }
 
     public static string BuildDestructiveConfirmation(string operation, IEnumerable<string> protectedTargets)

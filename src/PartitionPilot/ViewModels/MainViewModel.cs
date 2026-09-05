@@ -229,13 +229,13 @@ public partial class MainViewModel : ViewModelBase
     {
         try
         {
-            SetStatus("Refreshing current workspace...");
+            SetStatus(LocExtension.Get("StatusRefreshingWorkspace"));
             await RefreshTabAsync(SelectedTabIndex);
             SetStatus(LocExtension.Get("Ready"));
         }
         catch (Exception ex)
         {
-            SetStatus($"Error: {ex.Message}", StatusSeverity.Error);
+            SetStatus(LocExtension.Format("StatusErrorPrefix", ex.Message), StatusSeverity.Error);
             Log.Log($"Refresh error: {ex.Message}");
         }
     }
@@ -250,7 +250,7 @@ public partial class MainViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            SetStatus($"Error: {ex.Message}", StatusSeverity.Error);
+            SetStatus(LocExtension.Format("StatusErrorPrefix", ex.Message), StatusSeverity.Error);
             Log.Log($"Tab switch error: {ex.Message}");
         }
     }
@@ -305,8 +305,8 @@ public partial class MainViewModel : ViewModelBase
     {
         var dlg = new Microsoft.Win32.SaveFileDialog
         {
-            Title = "Export Support Bundle",
-            Filter = "ZIP Archive (*.zip)|*.zip",
+            Title = LocExtension.Get("ExportSupportBundleTitle"),
+            Filter = LocExtension.Get("ZipFilter"),
             FileName = $"PartitionPilot-support-{DateTime.Now:yyyyMMdd-HHmmss}.zip",
             DefaultExt = ".zip"
         };

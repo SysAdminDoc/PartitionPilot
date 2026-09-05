@@ -459,7 +459,7 @@ public class PartitionsViewModel : ViewModelBase
     public Task ExecuteCreateAsync(double sizeGB, char letter, string fs, string label, bool quick)
     {
         if (SelectedDisk is null) return Task.CompletedTask;
-        if (!GuardStoragePool("Create partition")) return Task.CompletedTask;
+        if (!GuardStoragePool(LocExtension.Get("OpCreatePartition"))) return Task.CompletedTask;
 
         int diskNum = SelectedDisk.Number;
         letter = ProcessRunner.ValidateDriveLetter(letter);
@@ -566,7 +566,7 @@ public class PartitionsViewModel : ViewModelBase
     {
         letter = ProcessRunner.ValidateDriveLetter(letter);
         var partition = FindPartitionByLetter(letter);
-        if (!GuardBitLockerMutation(partition, $"Resize {letter}:"))
+        if (!GuardBitLockerMutation(partition, LocExtension.Format("OpResizeDrive", letter)))
             return Task.CompletedTask;
         if (!GuardFilesystemCapability(FilesystemOperation.Resize, partition?.FileSystem, $"Resize {letter}:"))
             return Task.CompletedTask;
@@ -599,7 +599,7 @@ public class PartitionsViewModel : ViewModelBase
         label = ProcessRunner.SanitizeLabel(label);
         fs = ProcessRunner.ValidateFileSystem(fs);
         var partition = FindPartitionByLetter(letter);
-        if (!GuardBitLockerMutation(partition, $"Split {letter}:"))
+        if (!GuardBitLockerMutation(partition, LocExtension.Format("OpSplitDrive", letter)))
             return Task.CompletedTask;
         if (!GuardFilesystemCapability(FilesystemOperation.Resize, partition?.FileSystem, $"Split {letter}:"))
             return Task.CompletedTask;

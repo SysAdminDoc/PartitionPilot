@@ -17,17 +17,27 @@ public class ViewModelMessageLocalizationTests
     /// </summary>
     private static readonly string[] PendingConversion = [];
 
-    /// <summary>Dialog calls whose arguments are shown to the operator verbatim.</summary>
+    /// <summary>
+    /// Calls whose arguments are shown to the operator verbatim, including the helpers that write the shell
+    /// status line and the benchmark progress channel.
+    /// </summary>
     private static readonly Regex DialogCallPattern = new(
-        @"(?<!\w)(ShowError|ShowInfo|ShowWarning|ConfirmDanger|ConfirmWarning|WorkflowPrompt)\s*\(",
+        @"(?<!\w)(ShowError|ShowInfo|ShowWarning|Confirm|ConfirmDanger|ConfirmWarning|WorkflowPrompt|SetStatus)\s*\(",
         RegexOptions.Compiled);
 
     /// <summary>
-    /// Bound properties whose whole value is rendered in the window. Matched by suffix rather than by name so
-    /// that a new status or summary property is covered the day it is written.
+    /// Properties whose value is rendered in the window. Matched by suffix rather than by name so that a new
+    /// status or summary property is covered the day it is written, and including the object-initializer
+    /// members that end up inside a rendered report.
     /// </summary>
     private static readonly Regex BoundTextAssignmentPattern = new(
-        @"(?<![\w.])(_?[A-Za-z]\w*(?:Text|Summary))\s*=(?!=)",
+        @"(?<!\w)(?:this\.|_?[A-Za-z]\w*\.)?" +
+        @"(_?\w*(?:Text|Summary|Results|Status|Detail|Remediation|Title|Filter|Message))\s*=(?!=)",
+        RegexOptions.Compiled);
+
+    /// <summary>Text appended to a report or pushed through a progress channel before it reaches a binding.</summary>
+    private static readonly Regex ReportBuilderPattern = new(
+        @"(?<!\w)(AppendLine|AppendFormat|Report)\s*\(",
         RegexOptions.Compiled);
 
     private static readonly Regex InterpolationHole = new(@"\{[^{}]*\}", RegexOptions.Compiled);
@@ -88,6 +98,15 @@ public class ViewModelMessageLocalizationTests
     [InlineData("ImagePreflightSummary = \"Choose a destination path.\";")]
     [InlineData("public string DiskCapacityText => disk is null ? \"No disk selected\" : disk.Name;")]
     [InlineData("public string Summary\n{\n    get { return \"Select a disk first.\"; }\n}")]
+    [InlineData("if (!_dialog.Confirm(\"Are you sure about this?\", \"Confirm\")) return;")]
+    [InlineData("SetStatus(\"Refreshing the workspace...\");")]
+    [InlineData("sb.AppendLine($\"Read {rate} MB/s on disk {n}\");")]
+    [InlineData("progress.Report(\"Sequential Write in progress...\");")]
+    [InlineData("var dlg = new SaveFileDialog { Title = \"Export Support Bundle\" };")]
+    [InlineData("var dlg = new SaveFileDialog { Filter = \"ZIP Archive (*.zip)|*.zip\" };")]
+    [InlineData("new Capability { Detail = \"Checking smartctl support...\" };")]
+    [InlineData("new Audit { Remediation = \"Refresh disks and rerun the audit.\" };")]
+    [InlineData("this.StatusText = \"Loading disk health data...\";")]
     public void Scanner_FlagsAnEnglishLiteral(string source)
     {
         Assert.NotEmpty(FindLiterals(source, "Sample.cs"));
@@ -99,6 +118,10 @@ public class ViewModelMessageLocalizationTests
     [InlineData("_dialog.ShowError(string.Join(\"\\n\", errors), LocExtension.Get(\"ExportErrorTitle\"));")]
     [InlineData("_dialog.ShowInfo(string.Join(\", \", names), LocExtension.Get(\"ExportErrorTitle\"));")]
     [InlineData("public string Caption => $\"{Size} | {FileSystem} | {Details}\";")]
+    // Text that stays English on purpose.
+    [InlineData("StatusText = LocExtension.Get(\"Ready\");\n_log.Log(\"Disk usage scan cancelled.\");")]
+    [InlineData("var cmd = $\"Clear-Disk -Number {n} -RemoveData -Confirm:$false\";\nStatusText = LocExtension.Get(\"Ready\");")]
+    [InlineData("throw new InvalidOperationException(\"Could not locate the EFI System Partition.\");")]
     public void Scanner_AcceptsAResourceLookup(string source)
     {
         Assert.Empty(FindLiterals(source, "Sample.cs"));
@@ -117,17 +140,26 @@ public class ViewModelMessageLocalizationTests
     private static List<(string File, int Line, string Literal)> FindLiterals(string source, string fileName)
     {
         var findings = new List<(string, int, string)>();
+        var excluded = ExcludedSpans(source);
 
         foreach (Match match in DialogCallPattern.Matches(source))
         {
             var open = source.IndexOf('(', match.Index);
-            findings.AddRange(LiteralsIn(source, open + 1, EndOfCall(source, open), fileName));
+            findings.AddRange(LiteralsIn(source, open + 1, EndOfCall(source, open), fileName, excluded));
         }
 
         foreach (Match match in BoundTextAssignmentPattern.Matches(source))
         {
             var start = match.Index + match.Length;
-            findings.AddRange(LiteralsIn(source, start, EndOfStatement(source, start), fileName));
+            findings.AddRange(LiteralsIn(source, start, EndOfStatement(source, start), fileName, excluded));
+        }
+
+        // Reports assembled a piece at a time before being assigned. Scanning only the assignment would miss
+        // every line of a StringBuilder-built summary.
+        foreach (Match match in ReportBuilderPattern.Matches(source))
+        {
+            var open = source.IndexOf('(', match.Index);
+            findings.AddRange(LiteralsIn(source, open + 1, EndOfCall(source, open), fileName, excluded));
         }
 
         foreach (Match match in PublicTextMemberPattern.Matches(source))
@@ -137,7 +169,7 @@ public class ViewModelMessageLocalizationTests
                 ? EndOfStatement(source, start + 2)
                 : EndOfBlock(source, start);
 
-            findings.AddRange(LiteralsIn(source, start, end, fileName));
+            findings.AddRange(LiteralsIn(source, start, end, fileName, excluded));
         }
 
         return findings
@@ -151,12 +183,18 @@ public class ViewModelMessageLocalizationTests
     /// separators such as "\n" or ", " carry no letters, so neither is mistaken for prose.
     /// </summary>
     private static IEnumerable<(string File, int Line, string Literal)> LiteralsIn(
-        string source, int start, int end, string fileName)
+        string source, int start, int end, string fileName, List<(int Start, int End)> excluded)
     {
         for (var i = start; i < end; i++)
         {
             if (source[i] != '"')
                 continue;
+
+            if (excluded.Any(span => i >= span.Start && i < span.End))
+            {
+                i = SkipLiteral(source, i);
+                continue;
+            }
 
             var text = new StringBuilder();
             var cursor = i + 1;
@@ -214,13 +252,31 @@ public class ViewModelMessageLocalizationTests
                 continue;
             }
 
-            if (source[i] is '(' or '[') depth++;
-            else if (source[i] is ')' or ']') depth--;
-            else if (source[i] == ';' && depth <= 0) return i;
+            if (source[i] is '(' or '[' or '{') depth++;
+            else if (source[i] is ')' or ']' or '}') depth--;
+            // A comma ends an object-initializer member the same way a semicolon ends a statement, so one
+            // member's value cannot drag the next member's text into scope.
+            else if (source[i] is ';' or ',' && depth <= 0) return i;
         }
 
         return source.Length;
     }
+
+    /// <summary>
+    /// Text that stays English on purpose: activity log lines, which travel in support bundles; exception
+    /// messages, which are for developers; and the shell commands the app runs.
+    /// </summary>
+    private static readonly Regex EnglishOnPurpose = new(
+        @"(?<!\w)(Log|LogError|throw new \w+|RunPowerShellAsync|RunExeAsync|RunDiskpartAsync|" +
+        @"SaveSnapshotForDestructiveOperationAsync|Register|EscapePowerShellString)\s*\(",
+        RegexOptions.Compiled);
+
+    private static List<(int Start, int End)> ExcludedSpans(string source) =>
+        EnglishOnPurpose.Matches(source)
+            .Select(m => source.IndexOf('(', m.Index))
+            .Where(open => open >= 0)
+            .Select(open => (open, EndOfCall(source, open)))
+            .ToList();
 
     private static int EndOfBlock(string source, int openBrace)
     {

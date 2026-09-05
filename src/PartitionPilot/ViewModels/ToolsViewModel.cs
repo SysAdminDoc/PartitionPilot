@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Diagnostics;
 using System.IO;
 using System.Windows;
@@ -1326,7 +1327,7 @@ public class ToolsViewModel : ViewModelBase
         if (driveLetter == default) return;
 
         var ct = BeginOperation(LocExtension.Format("StatusBenchmarking", driveLetter));
-        BenchmarkResults = "Running benchmark...";
+        BenchmarkResults = LocExtension.Get("BenchmarkRunning");
         try
         {
             _log.Log($"Starting disk benchmark on {driveLetter}:...");
@@ -1351,7 +1352,7 @@ public class ToolsViewModel : ViewModelBase
             catch (Exception dsEx) when (dsEx is not OperationCanceledException)
             {
                 _log.Log($"DiskSpd unavailable ({dsEx.Message}), falling back to built-in benchmark.");
-                progress.Report("DiskSpd unavailable. Running built-in benchmark...");
+                progress.Report(LocExtension.Get("BenchDiskSpdUnavailable"));
                 result = await Task.Run(() => RunBenchmarkCore(driveLetter, progress, ct), ct);
             }
 
@@ -1396,12 +1397,12 @@ public class ToolsViewModel : ViewModelBase
         catch (OperationCanceledException)
         {
             _log.Log("Benchmark cancelled.");
-            BenchmarkResults = "Benchmark cancelled.";
+            BenchmarkResults = LocExtension.Get("BenchmarkCancelled");
         }
         catch (Exception ex)
         {
             _log.Log($"Benchmark failed: {ex.Message}");
-            BenchmarkResults = $"Benchmark failed: {ex.Message}";
+            BenchmarkResults = LocExtension.Format("BenchmarkFailed", ex.Message);
         }
         finally
         {
@@ -1431,7 +1432,7 @@ public class ToolsViewModel : ViewModelBase
             rng.NextBytes(buffer);
 
             // ---- Sequential Write ----
-            progress.Report("Sequential Write (1 MB blocks)...");
+            progress.Report(LocExtension.Get("BenchSeqWriteRunning"));
             sw.Restart();
             using (var fs = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None, blockSize, FileOptions.WriteThrough))
             {
@@ -1443,11 +1444,13 @@ public class ToolsViewModel : ViewModelBase
             }
             sw.Stop();
             double seqWriteMBs = fileSizeMB / sw.Elapsed.TotalSeconds;
-            results.AppendLine($"Sequential Write:  {seqWriteMBs:F1} MB/s  ({sw.Elapsed.TotalSeconds:F2}s)");
+            results.AppendLine(LocExtension.Format("BenchSeqWriteResult",
+                seqWriteMBs.ToString("F1", CultureInfo.CurrentCulture),
+                sw.Elapsed.TotalSeconds.ToString("F2", CultureInfo.CurrentCulture)));
             progress.Report(results.ToString());
 
             // ---- Sequential Read ----
-            progress.Report(results + "\nSequential Read (1 MB blocks)...");
+            progress.Report(results + "\n" + LocExtension.Get("BenchSeqReadRunning"));
             sw.Restart();
             using (var fs = new FileStream(tempPath, FileMode.Open, FileAccess.Read, FileShare.None, blockSize, FileOptions.SequentialScan))
             {
@@ -1456,7 +1459,9 @@ public class ToolsViewModel : ViewModelBase
             }
             sw.Stop();
             double seqReadMBs = fileSizeMB / sw.Elapsed.TotalSeconds;
-            results.AppendLine($"Sequential Read:   {seqReadMBs:F1} MB/s  ({sw.Elapsed.TotalSeconds:F2}s)");
+            results.AppendLine(LocExtension.Format("BenchSeqReadResult",
+                seqReadMBs.ToString("F1", CultureInfo.CurrentCulture),
+                sw.Elapsed.TotalSeconds.ToString("F2", CultureInfo.CurrentCulture)));
             progress.Report(results.ToString());
 
             // ---- Random 4K Write ----
@@ -1465,7 +1470,7 @@ public class ToolsViewModel : ViewModelBase
             long fileSizeBytes = (long)fileSizeMB * 1024 * 1024;
             long maxOffset = fileSizeBytes - random4KBlockSize;
 
-            progress.Report(results + "\nRandom 4K Write...");
+            progress.Report(results + "\n" + LocExtension.Get("BenchRandomWriteRunning"));
             sw.Restart();
             using (var fs = new FileStream(tempPath, FileMode.Open, FileAccess.Write, FileShare.None, random4KBlockSize, FileOptions.WriteThrough))
             {
@@ -1481,11 +1486,13 @@ public class ToolsViewModel : ViewModelBase
             sw.Stop();
             double rand4KWriteIOPS = random4KOps / sw.Elapsed.TotalSeconds;
             double rand4KWriteMBs = (random4KOps * random4KBlockSize / (1024.0 * 1024.0)) / sw.Elapsed.TotalSeconds;
-            results.AppendLine($"Random 4K Write:   {rand4KWriteIOPS:F0} IOPS  ({rand4KWriteMBs:F1} MB/s)");
+            results.AppendLine(LocExtension.Format("BenchRandomWriteResult",
+                rand4KWriteIOPS.ToString("F0", CultureInfo.CurrentCulture),
+                rand4KWriteMBs.ToString("F1", CultureInfo.CurrentCulture)));
             progress.Report(results.ToString());
 
             // ---- Random 4K Read ----
-            progress.Report(results + "\nRandom 4K Read...");
+            progress.Report(results + "\n" + LocExtension.Get("BenchRandomReadRunning"));
             sw.Restart();
             using (var fs = new FileStream(tempPath, FileMode.Open, FileAccess.Read, FileShare.None, random4KBlockSize, FileOptions.RandomAccess))
             {
@@ -1501,10 +1508,12 @@ public class ToolsViewModel : ViewModelBase
             sw.Stop();
             double rand4KReadIOPS = random4KOps / sw.Elapsed.TotalSeconds;
             double rand4KReadMBs = (random4KOps * random4KBlockSize / (1024.0 * 1024.0)) / sw.Elapsed.TotalSeconds;
-            results.AppendLine($"Random 4K Read:    {rand4KReadIOPS:F0} IOPS  ({rand4KReadMBs:F1} MB/s)");
+            results.AppendLine(LocExtension.Format("BenchRandomReadResult",
+                rand4KReadIOPS.ToString("F0", CultureInfo.CurrentCulture),
+                rand4KReadMBs.ToString("F1", CultureInfo.CurrentCulture)));
 
             results.AppendLine();
-            results.AppendLine("Benchmark complete.");
+            results.AppendLine(LocExtension.Get("BenchmarkComplete"));
             progress.Report(results.ToString());
 
             _log.Log($"Benchmark {driveLetter}: SeqW={seqWriteMBs:F0} MB/s, SeqR={seqReadMBs:F0} MB/s, " +
@@ -1532,8 +1541,8 @@ public class ToolsViewModel : ViewModelBase
 
         var dlg = new Microsoft.Win32.SaveFileDialog
         {
-            Title = "Export Benchmark Results",
-            Filter = "JSON (*.json)|*.json|Text (*.txt)|*.txt",
+            Title = LocExtension.Get("ExportBenchmarkTitle"),
+            Filter = LocExtension.Get("BenchmarkFilter"),
             DefaultExt = ".json",
             FileName = $"benchmark_{_lastBenchmarkResult.DriveLetter}_{_lastBenchmarkResult.Timestamp:yyyyMMdd_HHmmss}"
         };

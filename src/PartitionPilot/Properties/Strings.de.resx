@@ -162,6 +162,45 @@
   <data name="Export" xml:space="preserve"><value>Exportieren</value></data>
   <data name="Compare" xml:space="preserve"><value>Vergleichen</value></data>
   <data name="RecoveryPlan" xml:space="preserve"><value>Wiederherstellungsplan</value></data>
+  <data name="SelectDiskImageTitle" xml:space="preserve"><value>Datenträgerabbild auswählen</value></data>
+  <data name="DiskImageFilter" xml:space="preserve"><value>Datenträgerabbilder (*.iso;*.vhd;*.vhdx)|*.iso;*.vhd;*.vhdx|Alle Dateien (*.*)|*.*</value></data>
+  <data name="CreateVhdTitle" xml:space="preserve"><value>VHD-Datei erstellen</value></data>
+  <data name="VhdFilter" xml:space="preserve"><value>VHDX-Dateien (*.vhdx)|*.vhdx|VHD-Dateien (*.vhd)|*.vhd</value></data>
+  <data name="BenchmarkComplete" xml:space="preserve"><value>Benchmark abgeschlossen.</value></data>
+  <data name="PerfLine" xml:space="preserve"><value>Datenträger {0}: Lesen {1} MB/s ({2} IOPS)  Schreiben {3} MB/s ({4} IOPS)  Warteschlange {5}  Latenz L:{6} ms S:{7} ms</value></data>
+  <data name="LiveTempEntry" xml:space="preserve"><value>Datenträger {0}: {1} C</value></data>
+  <data name="SelfTestStarting" xml:space="preserve"><value>{0}-Selbsttest wird gestartet...</value></data>
+  <data name="SelfTestStarted" xml:space="preserve"><value>{0}-Test gestartet. {1}</value></data>
+  <data name="SelfTestFailedStatus" xml:space="preserve"><value>Selbsttest fehlgeschlagen: {0}</value></data>
+  <data name="SelfTestNoDisk" xml:space="preserve"><value>Wählen Sie einen physischen Datenträger, bevor Sie SMART-Selbsttests ausführen.</value></data>
+  <data name="SelfTestChecking" xml:space="preserve"><value>smartctl-Unterstützung wird geprüft...</value></data>
+  <data name="SelfTestCheckFailed" xml:space="preserve"><value>smartctl-Unterstützung konnte nicht geprüft werden: {0}</value></data>
+  <data name="SelfTestCheckRemediation" xml:space="preserve"><value>Führen Sie eine Diagnose aus und prüfen Sie, ob smartctl installiert ist.</value></data>
+  <data name="StatusRefreshingWorkspace" xml:space="preserve"><value>Aktueller Arbeitsbereich wird aktualisiert...</value></data>
+  <data name="StatusErrorPrefix" xml:space="preserve"><value>Fehler: {0}</value></data>
+  <data name="ExportSupportBundleTitle" xml:space="preserve"><value>Supportpaket exportieren</value></data>
+  <data name="ZipFilter" xml:space="preserve"><value>ZIP-Archiv (*.zip)|*.zip</value></data>
+  <data name="BenchmarkRunning" xml:space="preserve"><value>Benchmark wird ausgeführt...</value></data>
+  <data name="BenchmarkCancelled" xml:space="preserve"><value>Benchmark abgebrochen.</value></data>
+  <data name="BenchmarkFailed" xml:space="preserve"><value>Benchmark fehlgeschlagen: {0}</value></data>
+  <data name="ExportBenchmarkTitle" xml:space="preserve"><value>Benchmark-Ergebnisse exportieren</value></data>
+  <data name="BenchmarkFilter" xml:space="preserve"><value>JSON (*.json)|*.json|Text (*.txt)|*.txt</value></data>
+  <data name="BenchDiskSpdUnavailable" xml:space="preserve"><value>DiskSpd nicht verfügbar. Integrierter Benchmark wird ausgeführt...</value></data>
+  <data name="BenchSeqWriteRunning" xml:space="preserve"><value>Sequenzielles Schreiben (1-MB-Blöcke)...</value></data>
+  <data name="BenchSeqReadRunning" xml:space="preserve"><value>Sequenzielles Lesen (1-MB-Blöcke)...</value></data>
+  <data name="BenchRandomWriteRunning" xml:space="preserve"><value>Zufälliges 4K-Schreiben...</value></data>
+  <data name="BenchRandomReadRunning" xml:space="preserve"><value>Zufälliges 4K-Lesen...</value></data>
+  <data name="BenchSeqWriteResult" xml:space="preserve"><value>Sequenzielles Schreiben:  {0} MB/s  ({1} s)</value></data>
+  <data name="BenchSeqReadResult" xml:space="preserve"><value>Sequenzielles Lesen:   {0} MB/s  ({1} s)</value></data>
+  <data name="BenchRandomWriteResult" xml:space="preserve"><value>Zufälliges 4K-Schreiben:   {0} IOPS  ({1} MB/s)</value></data>
+  <data name="BenchRandomReadResult" xml:space="preserve"><value>Zufälliges 4K-Lesen:    {0} IOPS  ({1} MB/s)</value></data>
+  <data name="SnapshotJsonFilter" xml:space="preserve"><value>JSON-Dateien (*.json)|*.json|Alle Dateien (*.*)|*.*</value></data>
+  <data name="RecoveryPlanFilter" xml:space="preserve"><value>Textdateien (*.txt)|*.txt|Alle Dateien (*.*)|*.*</value></data>
+  <data name="BootAuditIncomplete" xml:space="preserve"><value>Startfähigkeitsprüfung konnte nicht abgeschlossen werden: {0}</value></data>
+  <data name="BootAuditRemediation" xml:space="preserve"><value>Aktualisieren Sie die Datenträger und führen Sie die Startprüfung über die CLI oder den Klon-Workflow erneut aus.</value></data>
+  <data name="OpCreatePartition" xml:space="preserve"><value>Partition erstellen</value></data>
+  <data name="OpResizeDrive" xml:space="preserve"><value>{0}: verkleinern oder vergrößern</value></data>
+  <data name="OpSplitDrive" xml:space="preserve"><value>{0}: teilen</value></data>
   <data name="StatusUpdateAvailable" xml:space="preserve"><value>Update verfügbar: v{0}</value></data>
   <data name="StatusUpdateReady" xml:space="preserve"><value>Update v{0} bereit — zum Anwenden neu starten</value></data>
   <data name="StatusUpdateDownloadFailed" xml:space="preserve"><value>Update v{0} verfügbar (Download fehlgeschlagen)</value></data>

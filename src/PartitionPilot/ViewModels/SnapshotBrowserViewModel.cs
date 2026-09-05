@@ -311,7 +311,7 @@ public class SnapshotBrowserViewModel : ViewModelBase
         var dialog = new SaveFileDialog
         {
             Title = LocExtension.Get("ExportPartitionSnapshotTitle"),
-            Filter = "JSON Files (*.json)|*.json|All Files (*.*)|*.*",
+            Filter = LocExtension.Get("SnapshotJsonFilter"),
             FileName = SelectedSnapshot.FileName,
             DefaultExt = ".json",
             OverwritePrompt = true
@@ -344,7 +344,7 @@ public class SnapshotBrowserViewModel : ViewModelBase
         var dialog = new SaveFileDialog
         {
             Title = LocExtension.Get("ExportRecoveryPlanTitle"),
-            Filter = "Text Files (*.txt)|*.txt|All Files (*.*)|*.*",
+            Filter = LocExtension.Get("RecoveryPlanFilter"),
             FileName = $"recovery-plan-disk{SelectedSnapshot.DiskNumber}_{DateTime.Now:yyyyMMdd}.txt",
             DefaultExt = ".txt"
         };

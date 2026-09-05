@@ -129,8 +129,8 @@ public class DiskImagesViewModel : ViewModelBase
     {
         var dlg = new OpenFileDialog
         {
-            Title = "Select Disk Image",
-            Filter = "Disk Images (*.iso;*.vhd;*.vhdx)|*.iso;*.vhd;*.vhdx|All Files (*.*)|*.*",
+            Title = LocExtension.Get("SelectDiskImageTitle"),
+            Filter = LocExtension.Get("DiskImageFilter"),
             CheckFileExists = true
         };
 
@@ -142,8 +142,8 @@ public class DiskImagesViewModel : ViewModelBase
     {
         var dlg = new SaveFileDialog
         {
-            Title = "Create VHD File",
-            Filter = "VHDX Files (*.vhdx)|*.vhdx|VHD Files (*.vhd)|*.vhd",
+            Title = LocExtension.Get("CreateVhdTitle"),
+            Filter = LocExtension.Get("VhdFilter"),
             DefaultExt = ".vhdx",
             OverwritePrompt = true
         };

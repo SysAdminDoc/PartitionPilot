@@ -850,8 +850,8 @@ public class DiskCloningViewModel : ViewModelBase
                     {
                         Severity = BootabilityAuditStatus.Warning,
                         Code = "BootAuditFailed",
-                        Message = $"Bootability audit could not complete: {ex.Message}",
-                        Remediation = "Refresh disks and rerun the boot audit from the CLI or Disk Cloning workflow."
+                        Message = LocExtension.Format("BootAuditIncomplete", ex.Message),
+                        Remediation = LocExtension.Get("BootAuditRemediation")
                     }
                 }
             };
