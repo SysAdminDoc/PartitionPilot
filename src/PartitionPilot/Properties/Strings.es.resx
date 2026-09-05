@@ -162,6 +162,43 @@
   <data name="Export" xml:space="preserve"><value>Exportar</value></data>
   <data name="Compare" xml:space="preserve"><value>Comparar</value></data>
   <data name="RecoveryPlan" xml:space="preserve"><value>Plan de recuperación</value></data>
+  <data name="UsageScanSummary" xml:space="preserve"><value>Se analizaron {0} carpetas de primer nivel mediante {1}. Total: {2} en {3} s</value></data>
+  <data name="UsageMethodMft" xml:space="preserve"><value>MFT</value></data>
+  <data name="UsageMethodEnumeration" xml:space="preserve"><value>enumeración de directorios</value></data>
+  <data name="UsageScanCancelledSummary" xml:space="preserve"><value>Análisis de uso de disco cancelado.</value></data>
+  <data name="UsageScanFailedSummary" xml:space="preserve"><value>Error en el análisis: {0}</value></data>
+  <data name="HexSelectDiskPrompt" xml:space="preserve"><value>Seleccione un disco y lea un sector.</value></data>
+  <data name="SnapshotsRefreshPrompt" xml:space="preserve"><value>Actualice para cargar las instantáneas de tabla de particiones guardadas.</value></data>
+  <data name="RecoveryGuidanceCopied" xml:space="preserve"><value>Guía de recuperación copiada al portapapeles.</value></data>
+  <data name="RecoveryGuidanceTitle" xml:space="preserve"><value>Guía de recuperación</value></data>
+  <data name="SnapshotSelectPrompt" xml:space="preserve"><value>Seleccione una instantánea y compárela con el diseño actual del disco.</value></data>
+  <data name="SnapshotSelectedHint" xml:space="preserve"><value>{0} seleccionada. Haga clic en «Comparar diseño actual» para ver las diferencias.</value></data>
+  <data name="SnapshotsNoneFound" xml:space="preserve"><value>No se encontraron instantáneas en {0}.</value></data>
+  <data name="SnapshotsLoaded" xml:space="preserve"><value>{0} instantánea(s) cargada(s) desde {1}.</value></data>
+  <data name="ExportPartitionSnapshotTitle" xml:space="preserve"><value>Exportar instantánea de particiones</value></data>
+  <data name="ExportRecoveryPlanTitle" xml:space="preserve"><value>Exportar plan de recuperación</value></data>
+  <data name="RestoreSnapshotTitle" xml:space="preserve"><value>Restaurar instantánea</value></data>
+  <data name="RestoreCannotProceed" xml:space="preserve"><value>No se puede continuar con la restauración:&#10;{0}</value></data>
+  <data name="RestoreNotRecreatedHeading" xml:space="preserve"><value>&#10;&#10;No recreado por este plan:&#10;{0}</value></data>
+  <data name="RestoreWarningPrompt" xml:space="preserve"><value>ADVERTENCIA: Restaurar esta instantánea borra el disco {0} y recrea su tabla de particiones.&#10;&#10;Destino:&#10;{1}&#10;&#10;{2}{3}&#10;&#10;¿Continuar?</value></data>
+  <data name="RestoreFinalPrompt" xml:space="preserve"><value>CONFIRMACIÓN FINAL: Todos los datos del disco {0} se destruirán de forma permanente y sus particiones se recrearán a partir de la instantánea.</value></data>
+  <data name="RestoreComplete" xml:space="preserve"><value>Tabla de particiones restaurada en el disco {0}.{1}</value></data>
+  <data name="RestoreFailedPartway" xml:space="preserve"><value>La restauración falló a mitad de camino:&#10;{0}&#10;&#10;El disco {1} ya se ha borrado y su tabla de particiones está incompleta. No apague el equipo. Vuelva a ejecutar la restauración cuando se resuelva la causa.</value></data>
+  <data name="RestoreStoppedAfterClear" xml:space="preserve"><value>La restauración se detuvo después de que el disco {0} ya se hubiera borrado, por lo que ahora no tiene una tabla de particiones utilizable. Vuelva a ejecutar la restauración cuando la comprobación de identidad se supere y no apague el equipo mientras tanto.</value></data>
+  <data name="DiskNotConnected" xml:space="preserve"><value>El disco {0} no está conectado actualmente.</value></data>
+  <data name="RestoreBlocked" xml:space="preserve"><value>Restauración bloqueada:&#10;{0}</value></data>
+  <data name="SnapshotLoadFailed" xml:space="preserve"><value>No se pudieron cargar las instantáneas:&#10;{0}</value></data>
+  <data name="SnapshotErrorTitle" xml:space="preserve"><value>Error de instantánea</value></data>
+  <data name="SnapshotCompareFailed" xml:space="preserve"><value>No se pudo comparar la instantánea:&#10;{0}</value></data>
+  <data name="CompareSnapshotTitle" xml:space="preserve"><value>Comparar instantánea</value></data>
+  <data name="SnapshotExported" xml:space="preserve"><value>Instantánea exportada a:&#10;{0}</value></data>
+  <data name="SnapshotExportedTitle" xml:space="preserve"><value>Instantánea exportada</value></data>
+  <data name="SnapshotExportFailed" xml:space="preserve"><value>No se pudo exportar la instantánea:&#10;{0}</value></data>
+  <data name="ExportSnapshotTitle" xml:space="preserve"><value>Exportar instantánea</value></data>
+  <data name="RecoveryPlanExported" xml:space="preserve"><value>Plan de recuperación exportado a:&#10;{0}</value></data>
+  <data name="RecoveryPlanExportedTitle" xml:space="preserve"><value>Plan de recuperación exportado</value></data>
+  <data name="RecoveryPlanExportFailed" xml:space="preserve"><value>No se pudo exportar el plan de recuperación:&#10;{0}</value></data>
+  <data name="ExportErrorTitle" xml:space="preserve"><value>Error de exportación</value></data>
   <data name="ImageMounted" xml:space="preserve"><value>Imagen montada correctamente.&#10;&#10;{0}</value></data>
   <data name="MountCompleteTitle" xml:space="preserve"><value>Montaje completado</value></data>
   <data name="ImageMountFailed" xml:space="preserve"><value>No se pudo montar la imagen:&#10;{0}</value></data>

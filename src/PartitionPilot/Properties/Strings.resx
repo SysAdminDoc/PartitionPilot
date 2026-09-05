@@ -162,6 +162,43 @@
   <data name="Export" xml:space="preserve"><value>Export</value></data>
   <data name="Compare" xml:space="preserve"><value>Compare</value></data>
   <data name="RecoveryPlan" xml:space="preserve"><value>Recovery Plan</value></data>
+  <data name="UsageScanSummary" xml:space="preserve"><value>Scanned {0} top-level folders via {1}. Total: {2} in {3}s</value></data>
+  <data name="UsageMethodMft" xml:space="preserve"><value>MFT</value></data>
+  <data name="UsageMethodEnumeration" xml:space="preserve"><value>directory enumeration</value></data>
+  <data name="UsageScanCancelledSummary" xml:space="preserve"><value>Disk usage scan cancelled.</value></data>
+  <data name="UsageScanFailedSummary" xml:space="preserve"><value>Scan failed: {0}</value></data>
+  <data name="HexSelectDiskPrompt" xml:space="preserve"><value>Select a disk and read a sector.</value></data>
+  <data name="SnapshotsRefreshPrompt" xml:space="preserve"><value>Refresh to load saved partition table snapshots.</value></data>
+  <data name="RecoveryGuidanceCopied" xml:space="preserve"><value>Recovery guidance copied to the clipboard.</value></data>
+  <data name="RecoveryGuidanceTitle" xml:space="preserve"><value>Recovery Guidance</value></data>
+  <data name="SnapshotSelectPrompt" xml:space="preserve"><value>Select a snapshot and compare it with the current disk layout.</value></data>
+  <data name="SnapshotSelectedHint" xml:space="preserve"><value>Selected {0}. Click Compare Current Layout to inspect drift.</value></data>
+  <data name="SnapshotsNoneFound" xml:space="preserve"><value>No snapshots found in {0}.</value></data>
+  <data name="SnapshotsLoaded" xml:space="preserve"><value>{0} snapshot(s) loaded from {1}.</value></data>
+  <data name="ExportPartitionSnapshotTitle" xml:space="preserve"><value>Export Partition Snapshot</value></data>
+  <data name="ExportRecoveryPlanTitle" xml:space="preserve"><value>Export Recovery Plan</value></data>
+  <data name="RestoreSnapshotTitle" xml:space="preserve"><value>Restore Snapshot</value></data>
+  <data name="RestoreCannotProceed" xml:space="preserve"><value>Restore cannot proceed:&#10;{0}</value></data>
+  <data name="RestoreNotRecreatedHeading" xml:space="preserve"><value>&#10;&#10;Not recreated by this plan:&#10;{0}</value></data>
+  <data name="RestoreWarningPrompt" xml:space="preserve"><value>WARNING: Restoring this snapshot clears Disk {0} and recreates its partition table.&#10;&#10;Target:&#10;{1}&#10;&#10;{2}{3}&#10;&#10;Continue?</value></data>
+  <data name="RestoreFinalPrompt" xml:space="preserve"><value>FINAL CONFIRMATION: All data on Disk {0} will be permanently destroyed and its partitions recreated from the snapshot.</value></data>
+  <data name="RestoreComplete" xml:space="preserve"><value>Partition table restored onto Disk {0}.{1}</value></data>
+  <data name="RestoreFailedPartway" xml:space="preserve"><value>Restore failed partway through:&#10;{0}&#10;&#10;Disk {1} has already been cleared and its partition table is incomplete. Do not power off. Re-run the restore once the cause is resolved.</value></data>
+  <data name="RestoreStoppedAfterClear" xml:space="preserve"><value>Restore stopped after Disk {0} was already cleared, so it currently has no usable partition table. Re-run the restore once the identity check passes; do not power off in between.</value></data>
+  <data name="DiskNotConnected" xml:space="preserve"><value>Disk {0} is not currently connected.</value></data>
+  <data name="RestoreBlocked" xml:space="preserve"><value>Restore blocked:&#10;{0}</value></data>
+  <data name="SnapshotLoadFailed" xml:space="preserve"><value>Failed to load snapshots:&#10;{0}</value></data>
+  <data name="SnapshotErrorTitle" xml:space="preserve"><value>Snapshot Error</value></data>
+  <data name="SnapshotCompareFailed" xml:space="preserve"><value>Failed to compare snapshot:&#10;{0}</value></data>
+  <data name="CompareSnapshotTitle" xml:space="preserve"><value>Compare Snapshot</value></data>
+  <data name="SnapshotExported" xml:space="preserve"><value>Snapshot exported to:&#10;{0}</value></data>
+  <data name="SnapshotExportedTitle" xml:space="preserve"><value>Snapshot Exported</value></data>
+  <data name="SnapshotExportFailed" xml:space="preserve"><value>Failed to export snapshot:&#10;{0}</value></data>
+  <data name="ExportSnapshotTitle" xml:space="preserve"><value>Export Snapshot</value></data>
+  <data name="RecoveryPlanExported" xml:space="preserve"><value>Recovery plan exported to:&#10;{0}</value></data>
+  <data name="RecoveryPlanExportedTitle" xml:space="preserve"><value>Recovery Plan Exported</value></data>
+  <data name="RecoveryPlanExportFailed" xml:space="preserve"><value>Failed to export recovery plan:&#10;{0}</value></data>
+  <data name="ExportErrorTitle" xml:space="preserve"><value>Export Error</value></data>
   <data name="ImageMounted" xml:space="preserve"><value>Image mounted successfully.&#10;&#10;{0}</value></data>
   <data name="MountCompleteTitle" xml:space="preserve"><value>Mount Complete</value></data>
   <data name="ImageMountFailed" xml:space="preserve"><value>Failed to mount image:&#10;{0}</value></data>
