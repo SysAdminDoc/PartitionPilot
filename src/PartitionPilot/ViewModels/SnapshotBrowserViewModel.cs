@@ -150,11 +150,16 @@ public class SnapshotBrowserViewModel : ViewModelBase
         IsBusy = true;
         try
         {
+            var destructiveStepsRun = false;
+
             foreach (var step in plan.Steps)
             {
                 if (!await DestructiveWorkflowGuard.VerifyDiskIdentityBeforeExecuteAsync(
                         identity, "Restore Snapshot", _wmiService, _log, _dialog))
+                {
+                    ReportInterruptedRestore(disk.Number, destructiveStepsRun);
                     return;
+                }
 
                 if (string.IsNullOrEmpty(step.DiskpartScript))
                 {
@@ -164,6 +169,9 @@ public class SnapshotBrowserViewModel : ViewModelBase
 
                 _log.Log($"Restore step: {step.Description}");
                 await _processRunner.RunDiskpartAsync(step.DiskpartScript, _log);
+
+                if (step.RiskLevel == "Destructive")
+                    destructiveStepsRun = true;
             }
 
             _log.Log($"Snapshot {SelectedSnapshot!.FileName} restored onto Disk {disk.Number}.");
@@ -174,12 +182,35 @@ public class SnapshotBrowserViewModel : ViewModelBase
         catch (Exception ex)
         {
             _log.Log($"Snapshot restore failed: {ex.Message}");
-            _dialog.ShowError($"Restore failed partway through:\n{ex.Message}", "Restore Snapshot");
+            _dialog.ShowError(
+                $"Restore failed partway through:\n{ex.Message}\n\n" +
+                $"Disk {disk.Number} has already been cleared and its partition table is incomplete. " +
+                "Do not power off. Re-run the restore once the cause is resolved.",
+                "Restore Snapshot");
         }
         finally
         {
             IsBusy = false;
         }
+    }
+
+    /// <summary>
+    /// A restore that stops after the disk has been cleared leaves it with no partition table. Saying so
+    /// plainly matters more than the generic guard message the operator would otherwise be left with.
+    /// </summary>
+    private void ReportInterruptedRestore(int diskNumber, bool destructiveStepsRun)
+    {
+        if (!destructiveStepsRun)
+        {
+            _log.Log($"Snapshot restore stopped before any change was made to Disk {diskNumber}.");
+            return;
+        }
+
+        var message =
+            $"Restore stopped after Disk {diskNumber} was already cleared, so it currently has no usable " +
+            "partition table. Re-run the restore once the identity check passes; do not power off in between.";
+        _log.Log(message);
+        _dialog.ShowError(message, "Restore Snapshot");
     }
 
     private async Task<(SnapshotRestorePlan Plan, DiskInfo Disk)?> BuildRestorePlanAsync()

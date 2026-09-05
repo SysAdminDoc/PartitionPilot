@@ -112,6 +112,8 @@ public static class SnapshotRestoreService
             "Partition leaves the disk unbootable. Recapture the snapshot from an elevated session and retry.");
     }
 
+    private const long BytesPerMebibyte = 1024L * 1024L;
+
     private static PartitionSpec ToPartitionSpec(PartitionSnapshotPartition partition)
     {
         if (partition.Size <= 0)
@@ -119,9 +121,21 @@ public static class SnapshotRestoreService
         if (partition.Offset <= 0)
             throw new ArgumentException($"Snapshot partition {partition.PartitionNumber} records a non-positive offset.");
 
+        // DiskPart takes whole megabytes. Rounding up rather than down keeps a partition from coming back
+        // smaller than the data it held; a partition under 1 MiB would otherwise floor to 0 and be
+        // rejected outright, taking the whole restore with it. The explicit offsets keep the layout
+        // aligned regardless, so rounding the size up cannot walk the partitions forward.
+        var sizeMb = (partition.Size + BytesPerMebibyte - 1) / BytesPerMebibyte;
+
+        if (partition.Offset % 1024 != 0)
+            throw new ArgumentException(
+                $"Snapshot partition {partition.PartitionNumber} starts at byte offset {partition.Offset}, " +
+                "which is not a whole number of kilobytes. DiskPart cannot reproduce that offset exactly, " +
+                "so the restore is blocked rather than silently moving the partition.");
+
         return new PartitionSpec
         {
-            SizeMB = (partition.Size / (1024L * 1024L)).ToString(System.Globalization.CultureInfo.InvariantCulture),
+            SizeMB = sizeMb.ToString(System.Globalization.CultureInfo.InvariantCulture),
             UseMaximumSize = false,
             FileSystem = partition.FileSystem.Trim(),
             Label = partition.Label ?? "",

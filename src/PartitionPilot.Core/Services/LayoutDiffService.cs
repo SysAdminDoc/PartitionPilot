@@ -29,7 +29,14 @@ public static class LayoutDiffService
         var needsInitialize = normalized.Partitions.Count > 0 &&
             (disk.PartitionStyle.Equals("RAW", StringComparison.OrdinalIgnoreCase) || (!styleMatches && !hasPartitions));
 
-        if (hasPartitions && !LayoutMatches(normalized, disk, currentPartitions, out var mismatchReason))
+        // When a destructive replace is requested, every partition is recreated from index 0 below, so
+        // the disk must be cleared first even if its current layout already looks like the spec.
+        // Otherwise the plan issues bare "create partition" steps against partitions that still exist.
+        var mismatchReason = "";
+        var layoutAlreadyMatches = hasPartitions &&
+            LayoutMatches(normalized, disk, currentPartitions, out mismatchReason);
+
+        if (hasPartitions && (!layoutAlreadyMatches || allowDestructiveReplace))
         {
             if (!allowDestructiveReplace)
             {

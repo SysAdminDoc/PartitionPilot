@@ -66,6 +66,69 @@ public class NvmeHealthServiceTests
             buffer.Pointer, DescriptorHeaderSize, ProtocolSpecificSize, out _, out _));
     }
 
+    [Fact]
+    public void ParseHealthLog_ReadsEveryFieldFromItsSpecifiedOffset()
+    {
+        // Offsets from NVME_HEALTH_INFO_LOG. Each field gets a distinct value so a swapped pair fails.
+        var log = new byte[512];
+        log[0] = 0x01;                                        // critical warning
+        BitConverter.TryWriteBytes(log.AsSpan(1), (ushort)310); // composite temperature, Kelvin
+        log[3] = 97;                                          // available spare %
+        log[5] = 4;                                           // percentage used
+        WriteCounter(log, 0x20, 1_000);                       // data units read
+        WriteCounter(log, 0x30, 2_000);                       // data units written
+        WriteCounter(log, 0x60, 11);                          // controller busy minutes
+        WriteCounter(log, 0x70, 361);                         // power cycles
+        WriteCounter(log, 0x80, 6_261);                       // power-on hours
+        WriteCounter(log, 0x90, 97);                          // unsafe shutdowns
+        WriteCounter(log, 0xA0, 3);                           // media errors
+        WriteCounter(log, 0xB0, 5);                           // error log entries
+
+        var data = new SmartData();
+        NvmeHealthService.ParseHealthLog(data, log);
+
+        Assert.Equal((byte)0x01, data.NvmeCriticalWarning);
+        Assert.Equal(310 - 273, data.Temperature);
+        Assert.Equal(97, data.NvmeAvailableSpare);
+        Assert.Equal(4, data.Wear);
+        Assert.Equal(1_000L * 512 * 1000, data.TotalBytesRead);
+        Assert.Equal(2_000L * 512 * 1000, data.TotalBytesWritten);
+        Assert.Equal(11, data.NvmeControllerBusyMinutes);
+        Assert.Equal(361, data.PowerCycleCount);
+        Assert.Equal(6_261, data.PowerOnHours);
+        Assert.Equal(97, data.NvmeUnsafeShutdowns);
+        Assert.Equal(3, data.NvmeMediaErrors);
+        Assert.Equal(5, data.NvmeErrorLogEntries);
+    }
+
+    [Fact]
+    public void ParseHealthLog_ReportsZeroPercentUsedOnAHealthyNewDrive()
+    {
+        // A brand-new drive legitimately reports 0% used. Skipping it would hide the field on exactly the
+        // drives in the best condition.
+        var log = new byte[512];
+        log[5] = 0;
+        WriteCounter(log, 0x80, 3);
+
+        var data = new SmartData();
+        NvmeHealthService.ParseHealthLog(data, log);
+
+        Assert.Equal(0, data.Wear);
+    }
+
+    [Fact]
+    public void IsEmptyLog_TreatsAnAllZeroPageAsNoAnswer()
+    {
+        Assert.True(NvmeHealthService.IsEmptyLog(new byte[512]));
+
+        var populated = new byte[512];
+        populated[5] = 1;
+        Assert.False(NvmeHealthService.IsEmptyLog(populated));
+    }
+
+    private static void WriteCounter(byte[] log, int offset, long value) =>
+        BitConverter.TryWriteBytes(log.AsSpan(offset), (ulong)value);
+
     private static UnmanagedBuffer DescriptorBuffer(int protocolDataOffset, int protocolDataLength)
     {
         // Sized for wherever the driver says the payload starts, so the bounds check is exercised by the

@@ -89,6 +89,67 @@ public class SnapshotRestoreServiceTests
     }
 
     [Fact]
+    public void BuildPlan_StillClearsWhenTheCurrentLayoutAlreadyMatchesTheSnapshot()
+    {
+        // Every partition is recreated from the first index, so skipping the clean would issue
+        // "create partition" against partitions that still exist.
+        var snapshot = Snapshot();
+        var matching = snapshot.Partitions
+            .OrderBy(p => p.Offset)
+            .Select(p => new PartitionInfo
+            {
+                PartitionNumber = p.PartitionNumber,
+                Size = p.Size,
+                Offset = p.Offset,
+                FileSystem = p.FileSystem,
+                Label = p.Label,
+                DriveLetter = string.IsNullOrEmpty(p.DriveLetter) ? null : p.DriveLetter[0]
+            })
+            .ToList();
+
+        var plan = SnapshotRestoreService.BuildPlan(snapshot, Disk(), matching);
+
+        Assert.Equal("Clear", plan.Steps[0].Action);
+        Assert.Equal(3, plan.Steps.Count(s => s.Action == "Create"));
+    }
+
+    [Fact]
+    public void ToLayoutSpec_RoundsPartitionSizesUpSoNothingComesBackSmallerThanRecorded()
+    {
+        // DiskPart takes whole megabytes. Flooring would return a partition smaller than the data it
+        // held, and anything under 1 MiB would floor to zero and be rejected, blocking the whole restore.
+        var snapshot = Snapshot();
+        snapshot.Partitions.Single(p => p.PartitionNumber == 2).Size = (16 * Mb) + 1;
+
+        var spec = SnapshotRestoreService.ToLayoutSpec(snapshot);
+
+        Assert.Equal("17", spec.Partitions[1].SizeMB);
+    }
+
+    [Fact]
+    public void ToLayoutSpec_KeepsASubMegabytePartitionInsteadOfFlooringItToZero()
+    {
+        var snapshot = Snapshot();
+        snapshot.Partitions.Single(p => p.PartitionNumber == 2).Size = 512 * 1024;
+
+        var spec = SnapshotRestoreService.ToLayoutSpec(snapshot);
+
+        Assert.Equal("1", spec.Partitions[1].SizeMB);
+        LayoutDiffService.Validate(spec); // would throw on "0"
+    }
+
+    [Fact]
+    public void ToLayoutSpec_BlocksAnOffsetItCannotReproduceExactly()
+    {
+        var snapshot = Snapshot();
+        snapshot.Partitions.Single(p => p.PartitionNumber == 1).Offset = (1 * Mb) + 1;
+
+        var ex = Assert.Throws<ArgumentException>(() => SnapshotRestoreService.ToLayoutSpec(snapshot));
+
+        Assert.Contains("not a whole number of kilobytes", ex.Message);
+    }
+
+    [Fact]
     public void BuildPlan_WarnsThatBootAndSystemPartitionsComeBackEmpty()
     {
         var plan = SnapshotRestoreService.BuildPlan(Snapshot(), Disk(), CurrentPartitions());
