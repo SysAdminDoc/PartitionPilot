@@ -12,12 +12,10 @@ namespace PartitionPilot.Tests;
 public class ViewModelMessageLocalizationTests
 {
     /// <summary>
-    /// View models whose messages are still English literals. Remove a name once its conversion lands.
+    /// View models whose messages are still English literals. Empty, and it stays that way: a name added
+    /// here has to come back off before the file it names can be called done.
     /// </summary>
-    private static readonly string[] PendingConversion =
-    [
-        "MainViewModel.cs"
-    ];
+    private static readonly string[] PendingConversion = [];
 
     /// <summary>Dialog calls whose arguments are shown to the operator verbatim.</summary>
     private static readonly Regex DialogCallPattern = new(

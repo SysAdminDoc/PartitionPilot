@@ -7,6 +7,11 @@
 - Switching language now takes effect immediately, without restarting. Localized text was resolved once when a window was built, so every label kept whatever language it started in. Those labels are now bound to a single notifying source, and changing language re-evaluates all of them at once.
 - Localized the shell labels that come from code rather than markup. The theme button and all three status tiles were English literals, which nobody noticed while there was no way to change language; with the selector shipped they would have sat untranslated right beside it. A test now fails if one of those labels is assigned as a literal again.
 - The chosen language is remembered between runs. With no choice stored, the app follows the operating system's language, matching a regional variant such as `de-AT` to German, and falls back to English for a language it has no translations for.
+- Every dialog, confirmation prompt and status line in the app is now translated. Tabs, buttons and tooltips were already localized, but each of the eight tabs answered in English the moment anything finished or went wrong, including the confirmations that gate deleting a partition, wiping a disk and restoring an image over one. Runtime values go through format placeholders, so word order follows each language rather than English. Activity log entries stay in English because they travel inside support bundles.
+- Numbers in translated text are formatted for the reader's language. Sizes, percentages, elapsed times and counts previously used whichever separators the invariant culture chose.
+
+### Fixes
+- Choosing English in the language selector now switches back to English. English mapped to no culture at all, which left resource lookups following whatever language was last selected, so a user who tried German could not get back, and anyone on a non-English machine never saw English in the first place.
 
 ## PartitionPilot v0.9.23 - 2026-09-04
 

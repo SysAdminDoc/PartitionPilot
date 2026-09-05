@@ -218,6 +218,20 @@ public class LocExtensionTests
     }
 
     [Fact]
+    public void ShellStatusText_ReproducesTheEnglishTextItReplaced()
+    {
+        Assert.Equal("Update available: v1.2.3", LocExtension.Format("StatusUpdateAvailable", "1.2.3"));
+        Assert.Equal("Update v1.2.3 ready — restart to apply", LocExtension.Format("StatusUpdateReady", "1.2.3"));
+        Assert.Equal("Dark theme applied",
+            LocExtension.Format("StatusThemeApplied", LocExtension.Get("ThemeNameDark")));
+
+        Assert.Equal(
+            "Support bundle exported to:\nC:\\bundle.zip\n\n" +
+            "Serial numbers and user paths have been redacted.",
+            LocExtension.Format("SupportBundleExportedBody", "C:\\bundle.zip"));
+    }
+
+    [Fact]
     public void WipeConfirmations_ReproduceTheEnglishTextTheyReplaced()
     {
         Assert.Equal("Wipe Disk 3", LocExtension.Format("OpWipeDisk", 3));

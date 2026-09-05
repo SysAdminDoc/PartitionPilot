@@ -162,6 +162,28 @@
   <data name="Export" xml:space="preserve"><value>Exportar</value></data>
   <data name="Compare" xml:space="preserve"><value>Comparar</value></data>
   <data name="RecoveryPlan" xml:space="preserve"><value>Plan de recuperación</value></data>
+  <data name="StatusUpdateAvailable" xml:space="preserve"><value>Actualización disponible: v{0}</value></data>
+  <data name="StatusUpdateReady" xml:space="preserve"><value>Actualización v{0} lista — reinicie para aplicarla</value></data>
+  <data name="StatusUpdateDownloadFailed" xml:space="preserve"><value>Actualización v{0} disponible (error de descarga)</value></data>
+  <data name="StatusUpdateAvailableVerified" xml:space="preserve"><value>Actualización disponible: v{0} ({1})</value></data>
+  <data name="ThemeNameDark" xml:space="preserve"><value>Oscuro</value></data>
+  <data name="ThemeNameLight" xml:space="preserve"><value>Claro</value></data>
+  <data name="ThemeNameSystem" xml:space="preserve"><value>Sistema</value></data>
+  <data name="StatusThemeApplied" xml:space="preserve"><value>Tema {0} aplicado</value></data>
+  <data name="LogExportedBody" xml:space="preserve"><value>Registro exportado a:&#10;{0}</value></data>
+  <data name="LogExportFailed" xml:space="preserve"><value>No se pudo exportar el registro:&#10;{0}</value></data>
+  <data name="StatusLoadingPartitions" xml:space="preserve"><value>Cargando el diseño de particiones...</value></data>
+  <data name="StatusLoadingSnapshots" xml:space="preserve"><value>Cargando las instantáneas de particiones...</value></data>
+  <data name="StatusLoadingHealth" xml:space="preserve"><value>Cargando los datos de estado del disco...</value></data>
+  <data name="StatusLoadingTools" xml:space="preserve"><value>Cargando las listas de unidades de herramientas...</value></data>
+  <data name="StatusLoadingImages" xml:space="preserve"><value>Cargando las imágenes de disco...</value></data>
+  <data name="StatusLoadingDrives" xml:space="preserve"><value>Cargando la lista de unidades...</value></data>
+  <data name="StatusLoadingCloning" xml:space="preserve"><value>Cargando los datos de clonación...</value></data>
+  <data name="StatusLoadingHex" xml:space="preserve"><value>Cargando el visor hexadecimal...</value></data>
+  <data name="StatusGeneratingBundle" xml:space="preserve"><value>Generando el paquete de soporte...</value></data>
+  <data name="SupportBundleExportedBody" xml:space="preserve"><value>Paquete de soporte exportado a:&#10;{0}&#10;&#10;Se han eliminado los números de serie y las rutas de usuario.</value></data>
+  <data name="SupportBundleExportedTitle" xml:space="preserve"><value>Paquete de soporte exportado</value></data>
+  <data name="SupportBundleExportFailed" xml:space="preserve"><value>No se pudo exportar el paquete de soporte:&#10;{0}</value></data>
   <data name="OpWipeFreeSpace" xml:space="preserve"><value>Borrar el espacio libre de {0}:</value></data>
   <data name="BitLockerVolumeLockedTitle" xml:space="preserve"><value>Volumen de BitLocker bloqueado</value></data>
   <data name="StatusWipingFreeSpace" xml:space="preserve"><value>Borrando el espacio libre de {0}:...</value></data>

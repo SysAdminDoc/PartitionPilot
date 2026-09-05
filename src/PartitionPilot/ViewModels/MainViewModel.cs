@@ -21,7 +21,7 @@ public partial class MainViewModel : ViewModelBase
     public DiskCloningViewModel DiskCloning { get; }
     public HexViewerViewModel HexViewer { get; }
 
-    private string _statusText = "Ready";
+    private string _statusText = LocExtension.Get("Ready");
     public string StatusText
     {
         get => _statusText;
@@ -51,9 +51,9 @@ public partial class MainViewModel : ViewModelBase
     /// <summary>Spoken by a screen reader, so the severity is not conveyed by colour alone.</summary>
     public string StatusSeverityText => StatusSeverity switch
     {
-        StatusSeverity.Error => "Error",
-        StatusSeverity.Warning => "Warning",
-        _ => "OK"
+        StatusSeverity.Error => LocExtension.Get("Error"),
+        StatusSeverity.Warning => LocExtension.Get("Warning"),
+        _ => LocExtension.Get("OK")
     };
 
     private void SetStatus(string text, StatusSeverity severity = StatusSeverity.Normal)
@@ -149,15 +149,17 @@ public partial class MainViewModel : ViewModelBase
             var veloUpdate = await UpdateService.CheckForVelopackUpdateAsync(Log);
             if (veloUpdate is not null)
             {
-                StatusText = $"Update available: v{veloUpdate.TargetFullRelease.Version}";
+                StatusText = LocExtension.Format("StatusUpdateAvailable", veloUpdate.TargetFullRelease.Version);
                 try
                 {
                     await UpdateService.DownloadAndApplyAsync(veloUpdate, Log);
-                    SetStatus($"Update v{veloUpdate.TargetFullRelease.Version} ready — restart to apply");
+                    SetStatus(LocExtension.Format("StatusUpdateReady", veloUpdate.TargetFullRelease.Version));
                 }
                 catch
                 {
-                    SetStatus($"Update v{veloUpdate.TargetFullRelease.Version} available (download failed)", StatusSeverity.Warning);
+                    SetStatus(
+                        LocExtension.Format("StatusUpdateDownloadFailed", veloUpdate.TargetFullRelease.Version),
+                        StatusSeverity.Warning);
                 }
                 return;
             }
@@ -166,7 +168,7 @@ public partial class MainViewModel : ViewModelBase
             if (result is { available: true } update)
             {
                 Log.Log($"Update available: v{update.version} - {update.url} ({update.verificationStatus}: {update.verificationDetail})");
-                StatusText = $"Update available: v{update.version} ({update.verificationStatus})";
+                StatusText = LocExtension.Format("StatusUpdateAvailableVerified", update.version, update.verificationStatus);
             }
         }
         catch (Exception ex)
@@ -181,7 +183,12 @@ public partial class MainViewModel : ViewModelBase
         ThemeLabel = ThemeService.GetLabel();
         var modeName = ThemeService.Preference.ToString().ToLowerInvariant();
         Log.Log($"Theme applied: {modeName} mode.");
-        StatusText = $"{ThemeService.Preference} theme applied";
+        StatusText = LocExtension.Format("StatusThemeApplied", LocExtension.Get(ThemeService.Preference switch
+        {
+            ThemePreference.Light => "ThemeNameLight",
+            ThemePreference.System => "ThemeNameSystem",
+            _ => "ThemeNameDark"
+        }));
     }
 
     private void ShowFilesystemSupport()
@@ -197,12 +204,16 @@ public partial class MainViewModel : ViewModelBase
         {
             var path = Log.Export();
             Log.Log($"Log exported to: {path}");
-            _dialog.ShowInfo($"Log exported to:\n{path}", "Export Complete");
+            _dialog.ShowInfo(
+                LocExtension.Format("LogExportedBody", path),
+                LocExtension.Get("ExportCompleteTitle"));
         }
         catch (Exception ex)
         {
             Log.Log($"Log export failed: {ex.Message}");
-            _dialog.ShowError($"Failed to export log:\n{ex.Message}", "Export Error");
+            _dialog.ShowError(
+                LocExtension.Format("LogExportFailed", ex.Message),
+                LocExtension.Get("ExportErrorTitle"));
         }
     }
 
@@ -220,7 +231,7 @@ public partial class MainViewModel : ViewModelBase
         {
             SetStatus("Refreshing current workspace...");
             await RefreshTabAsync(SelectedTabIndex);
-            SetStatus("Ready");
+            SetStatus(LocExtension.Get("Ready"));
         }
         catch (Exception ex)
         {
@@ -235,7 +246,7 @@ public partial class MainViewModel : ViewModelBase
         {
             var index = parameter is int i ? i : _selectedTabIndex;
             await RefreshTabAsync(index);
-            SetStatus("Ready");
+            SetStatus(LocExtension.Get("Ready"));
         }
         catch (Exception ex)
         {
@@ -249,35 +260,35 @@ public partial class MainViewModel : ViewModelBase
         switch (index)
         {
             case 0:
-                StatusText = "Loading partition layout...";
+                StatusText = LocExtension.Get("StatusLoadingPartitions");
                 await Partitions.LoadDisksAsync();
                 break;
             case 1:
-                StatusText = "Loading partition snapshots...";
+                StatusText = LocExtension.Get("StatusLoadingSnapshots");
                 await Snapshots.RefreshAsync();
                 break;
             case 2:
-                StatusText = "Loading disk health data...";
+                StatusText = LocExtension.Get("StatusLoadingHealth");
                 await DiskHealth.RefreshAsync();
                 break;
             case 3:
-                StatusText = "Loading tools drive lists...";
+                StatusText = LocExtension.Get("StatusLoadingTools");
                 await Tools.RefreshDriveListsAsync();
                 break;
             case 4:
-                StatusText = "Loading disk images...";
+                StatusText = LocExtension.Get("StatusLoadingImages");
                 await DiskImages.RefreshAsync();
                 break;
             case 5:
-                StatusText = "Loading drive list...";
+                StatusText = LocExtension.Get("StatusLoadingDrives");
                 await DiskUsage.RefreshDrivesAsync();
                 break;
             case 6:
-                StatusText = "Loading cloning data...";
+                StatusText = LocExtension.Get("StatusLoadingCloning");
                 await DiskCloning.RefreshAsync();
                 break;
             case 7:
-                StatusText = "Loading hex viewer...";
+                StatusText = LocExtension.Get("StatusLoadingHex");
                 await HexViewer.RefreshAsync();
                 break;
         }
@@ -304,7 +315,7 @@ public partial class MainViewModel : ViewModelBase
 
         try
         {
-            StatusText = "Generating support bundle...";
+            StatusText = LocExtension.Get("StatusGeneratingBundle");
             Log.Log("Generating support bundle...");
 
             await SupportBundleService.CreateAsync(
@@ -319,16 +330,19 @@ public partial class MainViewModel : ViewModelBase
                 _wmiService);
 
             Log.Log($"Support bundle exported to: {dlg.FileName}");
-            _dialog.ShowInfo($"Support bundle exported to:\n{dlg.FileName}\n\nSerial numbers and user paths have been redacted.",
-                "Support Bundle Exported");
+            _dialog.ShowInfo(
+                LocExtension.Format("SupportBundleExportedBody", dlg.FileName),
+                LocExtension.Get("SupportBundleExportedTitle"));
 
-            SetStatus("Ready");
+            SetStatus(LocExtension.Get("Ready"));
         }
         catch (Exception ex)
         {
             Log.Log($"Support bundle export failed: {ex.Message}");
-            _dialog.ShowError($"Failed to export support bundle:\n{ex.Message}", "Export Error");
-            SetStatus("Ready");
+            _dialog.ShowError(
+                LocExtension.Format("SupportBundleExportFailed", ex.Message),
+                LocExtension.Get("ExportErrorTitle"));
+            SetStatus(LocExtension.Get("Ready"));
         }
     }
 
