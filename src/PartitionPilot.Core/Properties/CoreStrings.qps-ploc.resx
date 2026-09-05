@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" msdata:Ordinal="0" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter</value></resheader>
+
+  <data name="WipeFreeSpaceTitle" xml:space="preserve"><value>[Confirm Free-Space Wipe!!!]</value></data>
+  <data name="WipeFreeSpaceBody" xml:space="preserve"><value>[Wipe free space on {0}:?&#10;{1}&#10;Existing files remain in place. Previously deleted data in free space will be overwritten.!!!]</value></data>
+  <data name="WipeEncryptionLine" xml:space="preserve"><value>[&#10;Encryption: {0}&#10;!!!]</value></data>
+  <data name="WipeDisk1Title" xml:space="preserve"><value>[Wipe Disk -- Confirmation 1 of 3!!!]</value></data>
+  <data name="WipeDisk1Body" xml:space="preserve"><value>[WARNING: You are about to wipe:&#10;{0}&#10;&#10;ALL DATA ON THIS DISK WILL BE PERMANENTLY DESTROYED.&#10;&#10;Continue?!!!]</value></data>
+  <data name="WipeDisk2Title" xml:space="preserve"><value>[Wipe Disk -- Confirmation 2 of 3!!!]</value></data>
+  <data name="WipeDisk2Body" xml:space="preserve"><value>[Are you absolutely sure you want to wipe Disk {0}?&#10;&#10;Target:&#10;{1}&#10;Size: {2}&#10;Mode: {3}&#10;&#10;This CANNOT be undone.!!!]</value></data>
+  <data name="WipeDiskFinalTitle" xml:space="preserve"><value>[Wipe Disk -- FINAL Confirmation!!!]</value></data>
+  <data name="WipeDiskFinalBody" xml:space="preserve"><value>[FINAL WARNING: Click Yes to begin disk wipe immediately.!!!]</value></data>
+  <data name="DodWipe1Title" xml:space="preserve"><value>[DoD {0}-Pass Wipe -- Confirmation 1 of 2!!!]</value></data>
+  <data name="DodWipe1Body" xml:space="preserve"><value>[DoD 5220.22-M {0}-PASS WIPE target:&#10;{1}&#10;&#10;Size: {2}&#10;&#10;ALL DATA WILL BE PERMANENTLY DESTROYED with multiple overwrite passes.&#10;&#10;Continue?!!!]</value></data>
+  <data name="DodWipeFinalTitle" xml:space="preserve"><value>[DoD {0}-Pass Wipe -- FINAL Confirmation!!!]</value></data>
+  <data name="DodWipeFinalBody" xml:space="preserve"><value>[FINAL WARNING: {0}-pass wipe will write the entire disk {0} times. This may take hours on large drives. Click Yes to begin.!!!]</value></data>
+  <data name="NvmeSanitize1Title" xml:space="preserve"><value>[NVMe Sanitize -- Confirmation 1 of 2!!!]</value></data>
+  <data name="NvmeSanitize1Body" xml:space="preserve"><value>[NVMe FIRMWARE ERASE target:&#10;{0}&#10;&#10;Method: {1}&#10;&#10;This sends a firmware-level sanitize command directly to the drive controller. ALL DATA WILL BE PERMANENTLY AND IRREVERSIBLY DESTROYED.&#10;&#10;This operation cannot be cancelled once started.!!!]</value></data>
+  <data name="NvmeSanitizeFinalTitle" xml:space="preserve"><value>[NVMe Sanitize -- FINAL Confirmation!!!]</value></data>
+  <data name="NvmeSanitizeFinalBody" xml:space="preserve"><value>[FINAL WARNING: NVMe sanitize is a hardware-level operation that erases ALL data including data in over-provisioned and remapped sectors.&#10;&#10;Proceed?!!!]</value></data>
+  <data name="SectorClone1Title" xml:space="preserve"><value>[Confirm Sector Clone!!!]</value></data>
+  <data name="SectorClone1Body" xml:space="preserve"><value>[WARNING: This will overwrite ALL data on the destination disk with a sector-by-sector copy.&#10;&#10;Source:&#10;{0}&#10;&#10;Destination:&#10;{1}&#10;&#10;This operation cannot be undone. Continue?!!!]</value></data>
+  <data name="SectorCloneFinalTitle" xml:space="preserve"><value>[Confirm Clone!!!]</value></data>
+  <data name="SectorCloneFinalBody" xml:space="preserve"><value>[FINAL CONFIRMATION: All data on the destination disk will be permanently overwritten with a raw sector copy.!!!]</value></data>
+  <data name="BitLockerDestructiveBody" xml:space="preserve"><value>[{0} will target BitLocker-protected data:&#10;{1}&#10;&#10;This can permanently destroy encrypted contents, recovery metadata, and any data protected by recovery keys. Continue only if backups and recovery keys are available.!!!]</value></data>
+  <data name="BitLockerDestructiveFallbackTarget" xml:space="preserve"><value>[BitLocker-protected data!!!]</value></data>
+  <data name="BitLockerTargetLine" xml:space="preserve"><value>[  - {0}!!!]</value></data>
+  <data name="BitLockerPartitionLabel" xml:space="preserve"><value>[Partition {0}!!!]</value></data>
+  <data name="SectorCloneCompleteBody" xml:space="preserve"><value>[Sector clone complete.&#10;&#10;Disk {0} -&gt; Disk {1}&#10;{2}&#10;&#10;{3}!!!]</value></data>
+</root>

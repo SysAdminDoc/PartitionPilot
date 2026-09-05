@@ -10,6 +10,8 @@
 - Every dialog, confirmation prompt and status line in the app is now translated. Tabs, buttons and tooltips were already localized, but each of the eight tabs answered in English the moment anything finished or went wrong, including the confirmations that gate deleting a partition, wiping a disk and restoring an image over one. Runtime values go through format placeholders, so word order follows each language rather than English. Activity log entries stay in English because they travel inside support bundles.
 - Numbers in translated text are formatted for the reader's language. Sizes, percentages, elapsed times and counts previously used whichever separators the invariant culture chose.
 
+- The confirmations that gate wiping, cloning and overwriting a disk can now be translated. They are built in the shared Core library, which `pp.exe` uses too, so they could not reach the app's markup extension and stayed English no matter what language was selected. Core now resolves them through its own resource set, following the language the app sets or, for the CLI, the one Windows reports. German, Spanish and French wording for those specific warnings is deliberately not shipped yet: a softened or mangled warning in front of an irreversible operation is worse than an English one, so it waits on review by someone who reads the language.
+
 ### Fixes
 - Choosing English in the language selector now switches back to English. English mapped to no culture at all, which left resource lookups following whatever language was last selected, so a user who tried German could not get back, and anyone on a non-English machine never saw English in the first place.
 
