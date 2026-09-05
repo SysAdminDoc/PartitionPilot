@@ -44,6 +44,14 @@ try {
         throw "PartitionPilot build failed with exit code $LASTEXITCODE."
     }
 
+    # The UI test project sits outside the normal build and test flow, so nothing else restores it.
+    # Running it with --no-restore on a fresh checkout produced no TRX at all, and the gate then failed
+    # with "result was not created", hiding the real cause.
+    & dotnet restore $testProject
+    if ($LASTEXITCODE -ne 0) {
+        throw "PartitionPilot.UiTests restore failed with exit code $LASTEXITCODE."
+    }
+
     $testOutput = & dotnet test $testProject -c $Configuration --no-restore --logger "trx;LogFileName=ui-smoke.trx" --results-directory $artifactPath 2>&1
     $testExitCode = $LASTEXITCODE
     $testOutput | Tee-Object -FilePath $logPath
