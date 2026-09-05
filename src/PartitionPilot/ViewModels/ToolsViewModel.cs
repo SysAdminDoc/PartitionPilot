@@ -333,21 +333,21 @@ public class ToolsViewModel : ViewModelBase
 
         if (!IsDevDriveSupported)
         {
-            _dialog.ShowError("Dev Drive requires Windows 11 build 22621 or later.", "Dev Drive Not Supported");
+            _dialog.ShowError(
+                LocExtension.Get("DevDriveNotSupportedBody"),
+                LocExtension.Get("DevDriveNotSupportedTitle"));
             return;
         }
 
         if (!_dialog.ConfirmWarning(
-            $"Format {SelectedDevDriveLetter}: as a Dev Drive (ReFS)?\n\n" +
-            "ALL DATA ON THIS VOLUME WILL BE ERASED.\n\n" +
-            "Dev Drive uses ReFS with optimized I/O performance and allows configuring antivirus filter exclusions. " +
-            "Minimum 50 GB is recommended.",
-            "Create Dev Drive")) return;
+            LocExtension.Format("DevDriveConfirmBody", SelectedDevDriveLetter),
+            LocExtension.Get("DevDriveConfirmTitle"))) return;
 
-        if (!ConfirmBitLockerDestructiveVolume($"Create Dev Drive on {SelectedDevDriveLetter}:", SelectedDevDriveLetter))
+        if (!ConfirmBitLockerDestructiveVolume(
+                LocExtension.Format("OpCreateDevDrive", SelectedDevDriveLetter), SelectedDevDriveLetter))
             return;
 
-        var ct = BeginOperation($"Creating Dev Drive on {SelectedDevDriveLetter}:...");
+        var ct = BeginOperation(LocExtension.Format("StatusCreatingDevDrive", SelectedDevDriveLetter));
         try
         {
             _log.Log($"Formatting {SelectedDevDriveLetter}: as Dev Drive (ReFS)...");
@@ -355,11 +355,13 @@ public class ToolsViewModel : ViewModelBase
             var result = await _processRunner.RunPowerShellAsync(cmd, _log, ct);
             _log.Log($"Dev Drive result: {result.Trim()}");
 
-            StatusText = "Designating as trusted Dev Drive...";
+            StatusText = LocExtension.Get("StatusDesignatingDevDrive");
             await _processRunner.RunExeAsync("fsutil", $"devdrv trust {SelectedDevDriveLetter}:", _log, ct: ct);
             _log.Log($"Dev Drive {SelectedDevDriveLetter}: designated as trusted.");
 
-            _dialog.ShowInfo($"Dev Drive created on {SelectedDevDriveLetter}: (ReFS).\n\nThe volume is designated as trusted.", "Dev Drive Created");
+            _dialog.ShowInfo(
+                LocExtension.Format("DevDriveCreatedBody", SelectedDevDriveLetter),
+                LocExtension.Get("DevDriveCreatedTitle"));
             await RefreshDriveListsAsync();
         }
         catch (OperationCanceledException)
@@ -369,7 +371,9 @@ public class ToolsViewModel : ViewModelBase
         catch (Exception ex)
         {
             _log.Log($"Dev Drive creation failed: {ex.Message}");
-            _dialog.ShowError($"Dev Drive creation failed:\n{ex.Message}", "Dev Drive Error");
+            _dialog.ShowError(
+                LocExtension.Format("DevDriveFailed", ex.Message),
+                LocExtension.Get("DevDriveErrorTitle"));
         }
         finally
         {
@@ -516,7 +520,7 @@ public class ToolsViewModel : ViewModelBase
     {
         _cts?.Cancel();
         _log.Log("Operation cancelled by user.");
-        StatusText = "Cancelling...";
+        StatusText = LocExtension.Get("StatusCancelling");
     }
 
     // ──────────────────────── Refresh ────────────────────────
@@ -668,12 +672,14 @@ public class ToolsViewModel : ViewModelBase
             var result = await _processRunner.RunExeAsync("mbr2gpt", $"/validate /disk:{SelectedMbrDisk.Number} /allowFullOS", _log);
             _log.Log($"Validation result:\n{result.Trim()}");
 
-            _dialog.ShowInfo(result.Trim(), "MBR2GPT Validation");
+            _dialog.ShowInfo(result.Trim(), LocExtension.Get("Mbr2GptValidationTitle"));
         }
         catch (Exception ex)
         {
             _log.Log($"MBR2GPT validation failed: {ex.Message}");
-            _dialog.ShowError($"Validation failed:\n{ex.Message}", "MBR2GPT Error");
+            _dialog.ShowError(
+                LocExtension.Format("Mbr2GptValidationFailed", ex.Message),
+                LocExtension.Get("Mbr2GptErrorTitle"));
         }
         finally
         {
@@ -686,9 +692,8 @@ public class ToolsViewModel : ViewModelBase
         if (SelectedMbrDisk is null) return;
 
         if (!_dialog.ConfirmWarning(
-            $"Convert Disk {SelectedMbrDisk.Number} ({SelectedMbrDisk.FriendlyName}) from MBR to GPT?\n\n" +
-            "This operation is irreversible. Ensure you have validated first.",
-            "Confirm MBR to GPT Conversion")) return;
+            LocExtension.Format("Mbr2GptConfirmBody", SelectedMbrDisk.Number, SelectedMbrDisk.FriendlyName),
+            LocExtension.Get("Mbr2GptConfirmTitle"))) return;
 
         IsBusy = true;
         try
@@ -697,14 +702,18 @@ public class ToolsViewModel : ViewModelBase
             var result = await _processRunner.RunExeAsync("mbr2gpt", $"/convert /disk:{SelectedMbrDisk.Number} /allowFullOS", _log);
             _log.Log($"Conversion result:\n{result.Trim()}");
 
-            _dialog.ShowInfo("MBR to GPT conversion completed successfully.", "Conversion Complete");
+            _dialog.ShowInfo(
+                LocExtension.Get("Mbr2GptCompleteBody"),
+                LocExtension.Get("ConversionCompleteTitle"));
 
             await RefreshDriveListsAsync();
         }
         catch (Exception ex)
         {
             _log.Log($"MBR to GPT conversion failed: {ex.Message}");
-            _dialog.ShowError($"Conversion failed:\n{ex.Message}", "MBR2GPT Error");
+            _dialog.ShowError(
+                LocExtension.Format("Mbr2GptConversionFailed", ex.Message),
+                LocExtension.Get("Mbr2GptErrorTitle"));
         }
         finally
         {
@@ -719,8 +728,8 @@ public class ToolsViewModel : ViewModelBase
         if (SelectedFat32Volume == default) return;
 
         if (!_dialog.ConfirmWarning(
-            $"Convert {SelectedFat32Volume}: from FAT32 to NTFS?\n\nThis is a one-way conversion.",
-            "Confirm FAT32 to NTFS")) return;
+            LocExtension.Format("Fat32ConfirmBody", SelectedFat32Volume),
+            LocExtension.Get("Fat32ConfirmTitle"))) return;
 
         IsBusy = true;
         try
@@ -729,12 +738,16 @@ public class ToolsViewModel : ViewModelBase
             var result = await _processRunner.RunExeAsync("convert.exe", $"{SelectedFat32Volume}: /FS:NTFS /NoSecurity /X", _log);
             _log.Log($"Convert result:\n{result.Trim()}");
 
-            _dialog.ShowInfo($"Conversion complete for {SelectedFat32Volume}:.", "Conversion Complete");
+            _dialog.ShowInfo(
+                LocExtension.Format("Fat32CompleteBody", SelectedFat32Volume),
+                LocExtension.Get("ConversionCompleteTitle"));
         }
         catch (Exception ex)
         {
             _log.Log($"FAT32 conversion failed: {ex.Message}");
-            _dialog.ShowError($"Conversion failed:\n{ex.Message}", "Convert Error");
+            _dialog.ShowError(
+                LocExtension.Format("Mbr2GptConversionFailed", ex.Message),
+                LocExtension.Get("ConvertErrorTitle"));
         }
         finally
         {
@@ -754,7 +767,7 @@ public class ToolsViewModel : ViewModelBase
                 $"Check {SelectedCheckDrive}:"))
             return;
 
-        var ct = BeginOperation($"Checking {SelectedCheckDrive}: ({CheckMode})...");
+        var ct = BeginOperation(LocExtension.Format("StatusChecking", SelectedCheckDrive, CheckMode));
         try
         {
             string mode = CheckMode switch
@@ -769,8 +782,9 @@ public class ToolsViewModel : ViewModelBase
             var result = await _processRunner.RunPowerShellAsync(cmd, _log, ct);
             _log.Log($"Check result: {result.Trim()}");
 
-            _dialog.ShowInfo($"File system check ({CheckMode}) on {SelectedCheckDrive}: completed.\n\n{result.Trim()}",
-                "Check Complete");
+            _dialog.ShowInfo(
+                LocExtension.Format("CheckCompleteBody", CheckMode, SelectedCheckDrive, result.Trim()),
+                LocExtension.Get("CheckCompleteTitle"));
         }
         catch (OperationCanceledException)
         {
@@ -779,7 +793,9 @@ public class ToolsViewModel : ViewModelBase
         catch (Exception ex)
         {
             _log.Log($"File system check failed: {ex.Message}");
-            _dialog.ShowError($"Check failed:\n{ex.Message}", "Check Error");
+            _dialog.ShowError(
+                LocExtension.Format("CheckFailed", ex.Message),
+                LocExtension.Get("CheckErrorTitle"));
         }
         finally
         {
@@ -793,7 +809,7 @@ public class ToolsViewModel : ViewModelBase
     {
         if (SelectedOptDrive == default) return;
 
-        var ct = BeginOperation($"Optimizing {SelectedOptDrive}: ({OptimizeMode})...");
+        var ct = BeginOperation(LocExtension.Format("StatusOptimizing", SelectedOptDrive, OptimizeMode));
         try
         {
             string mode = OptimizeMode switch
@@ -809,8 +825,9 @@ public class ToolsViewModel : ViewModelBase
             var result = await _processRunner.RunPowerShellAsync(cmd, _log, ct);
             _log.Log($"Optimize result: {result.Trim()}");
 
-            _dialog.ShowInfo($"Optimization ({OptimizeMode}) on {SelectedOptDrive}: completed.\n\n{result.Trim()}",
-                "Optimize Complete");
+            _dialog.ShowInfo(
+                LocExtension.Format("OptimizeCompleteBody", OptimizeMode, SelectedOptDrive, result.Trim()),
+                LocExtension.Get("OptimizeCompleteTitle"));
         }
         catch (OperationCanceledException)
         {
@@ -819,7 +836,9 @@ public class ToolsViewModel : ViewModelBase
         catch (Exception ex)
         {
             _log.Log($"Optimization failed: {ex.Message}");
-            _dialog.ShowError($"Optimization failed:\n{ex.Message}", "Optimize Error");
+            _dialog.ShowError(
+                LocExtension.Format("OptimizeFailed", ex.Message),
+                LocExtension.Get("OptimizeErrorTitle"));
         }
         finally
         {
@@ -837,18 +856,19 @@ public class ToolsViewModel : ViewModelBase
         if (BitLockerPreflight.RequiresUnlockForRead(encryptionStatus))
         {
             _dialog.ShowError(
-                BitLockerPreflight.BuildUnlockRequiredMessage($"Wipe free space on {letter}:", $"{letter}:", encryptionStatus),
-                "BitLocker Volume Locked");
+                BitLockerPreflight.BuildUnlockRequiredMessage(
+                    LocExtension.Format("OpWipeFreeSpace", letter), $"{letter}:", encryptionStatus),
+                LocExtension.Get("BitLockerVolumeLockedTitle"));
             return;
         }
 
-        if (!ConfirmBitLockerDestructiveVolume($"Wipe free space on {letter}:", letter, encryptionStatus))
+        if (!ConfirmBitLockerDestructiveVolume(LocExtension.Format("OpWipeFreeSpace", letter), letter, encryptionStatus))
             return;
 
         var freeSpacePrompt = WipeWorkflowService.BuildFreeSpacePrompt(letter, encryptionStatus);
         if (!_dialog.Confirm(freeSpacePrompt.Message, freeSpacePrompt.Title)) return;
 
-        var ct = BeginOperation($"Wiping free space on {letter}:...");
+        var ct = BeginOperation(LocExtension.Format("StatusWipingFreeSpace", letter));
         try
         {
             _log.Log($"Wiping free space on {letter}: with cipher /w...");
@@ -856,7 +876,9 @@ public class ToolsViewModel : ViewModelBase
             await _processRunner.RunExeAsync("cipher", $"/w:{letter}:\\", _log, ct: ct);
 
             _log.Log($"Free-space wipe complete on {letter}:.");
-            _dialog.ShowInfo($"Free-space wipe complete on {letter}:.", "Wipe Complete");
+            _dialog.ShowInfo(
+                LocExtension.Format("FreeSpaceWipeCompleteBody", letter),
+                LocExtension.Get("WipeCompleteTitle"));
 
             await RefreshDriveListsAsync();
         }
@@ -867,7 +889,9 @@ public class ToolsViewModel : ViewModelBase
         catch (Exception ex)
         {
             _log.Log($"Free-space wipe failed: {ex.Message}");
-            _dialog.ShowError($"Free-space wipe failed:\n{ex.Message}", "Wipe Error");
+            _dialog.ShowError(
+                LocExtension.Format("FreeSpaceWipeFailed", ex.Message),
+                LocExtension.Get("WipeErrorTitle"));
         }
         finally
         {
@@ -882,7 +906,7 @@ public class ToolsViewModel : ViewModelBase
 
         if (!SecureEraseService.CanSanitizeDisk(SelectedWipeDrive, _physicalDisks, out var availability))
         {
-            _dialog.ShowError(availability, "NVMe Sanitize Not Available");
+            _dialog.ShowError(availability, LocExtension.Get("NvmeSanitizeUnavailableTitle"));
             return;
         }
 
@@ -894,9 +918,9 @@ public class ToolsViewModel : ViewModelBase
         if (protectedTargets.Count > 0 &&
             !_dialog.ConfirmDanger(
                 BitLockerPreflight.BuildDestructiveConfirmation(
-                    $"NVMe sanitize Disk {SelectedWipeDrive.Number}",
+                    LocExtension.Format("OpNvmeSanitizeDisk", SelectedWipeDrive.Number),
                     protectedTargets),
-                "Confirm BitLocker-Protected Sanitize"))
+                LocExtension.Get("BitLockerSanitizeTitle")))
         {
             return;
         }
@@ -909,11 +933,11 @@ public class ToolsViewModel : ViewModelBase
                 diskIdentity, "NVMe Sanitize Target Changed", _wmiService, _log, _dialog))
             return;
 
-        var ct = BeginOperation($"NVMe sanitize ({method}) on Disk {SelectedWipeDrive.Number}...");
+        var ct = BeginOperation(LocExtension.Format("StatusNvmeSanitize", method, SelectedWipeDrive.Number));
         try
         {
             int diskNum = SelectedWipeDrive.Number;
-            StatusText = "Saving target partition snapshot...";
+            StatusText = LocExtension.Get("StatusSavingTargetSnapshot");
             await _backup.SaveSnapshotForDestructiveOperationAsync(diskNum, "NVMe sanitize", ct);
 
             _log.Log($"Starting NVMe sanitize ({method}) on Disk {diskNum}...");
@@ -921,7 +945,9 @@ public class ToolsViewModel : ViewModelBase
             await Task.Run(() => SecureEraseService.ExecuteNvmeSanitize(diskNum, method, _log), ct);
 
             _log.Log($"NVMe sanitize ({method}) completed on Disk {diskNum}.");
-            _dialog.ShowInfo($"NVMe sanitize ({method}) completed on Disk {diskNum}.", "Sanitize Complete");
+            _dialog.ShowInfo(
+                LocExtension.Format("SanitizeCompleteBody", method, diskNum),
+                LocExtension.Get("SanitizeCompleteTitle"));
             await RefreshDriveListsAsync();
         }
         catch (OperationCanceledException)
@@ -931,7 +957,9 @@ public class ToolsViewModel : ViewModelBase
         catch (Exception ex)
         {
             _log.Log($"NVMe sanitize failed: {ex.Message}");
-            _dialog.ShowError($"NVMe sanitize failed:\n{ex.Message}\n\nThe drive may not support this sanitize method.", "Sanitize Error");
+            _dialog.ShowError(
+                LocExtension.Format("SanitizeFailed", ex.Message),
+                LocExtension.Get("SanitizeErrorTitle"));
         }
         finally
         {
@@ -948,9 +976,9 @@ public class ToolsViewModel : ViewModelBase
         if (protectedTargets.Count > 0 &&
             !_dialog.ConfirmDanger(
                 BitLockerPreflight.BuildDestructiveConfirmation(
-                    $"DoD {passCount}-pass wipe Disk {SelectedWipeDrive.Number}",
+                    LocExtension.Format("OpDodWipeDisk", passCount, SelectedWipeDrive.Number),
                     protectedTargets),
-                "Confirm BitLocker-Protected Wipe"))
+                LocExtension.Get("BitLockerWipeTitle")))
         {
             return;
         }
@@ -963,12 +991,12 @@ public class ToolsViewModel : ViewModelBase
                 diskIdentity, "DoD Wipe Target Changed", _wmiService, _log, _dialog))
             return;
 
-        var ct = BeginOperation($"DoD {passCount}-pass wipe on Disk {SelectedWipeDrive.Number}...");
+        var ct = BeginOperation(LocExtension.Format("StatusDodWipe", passCount, SelectedWipeDrive.Number));
         var locks = new List<VolumeLock>();
         try
         {
             int diskNum = SelectedWipeDrive.Number;
-            StatusText = "Saving target partition snapshot...";
+            StatusText = LocExtension.Get("StatusSavingTargetSnapshot");
             await _backup.SaveSnapshotForDestructiveOperationAsync(diskNum, $"DoD {passCount}-pass wipe", ct);
 
             var partitions = await _wmiService.GetPartitionsAsync(diskNum);
@@ -979,7 +1007,9 @@ public class ToolsViewModel : ViewModelBase
 
             await SecureEraseService.ExecuteMultiPassWipeAsync(diskNum, passCount, _processRunner, _log, ct);
 
-            _dialog.ShowInfo($"DoD {passCount}-pass wipe complete on Disk {diskNum}.", "Wipe Complete");
+            _dialog.ShowInfo(
+                LocExtension.Format("DodWipeCompleteBody", passCount, diskNum),
+                LocExtension.Get("WipeCompleteTitle"));
             await RefreshDriveListsAsync();
         }
         catch (OperationCanceledException)
@@ -989,7 +1019,9 @@ public class ToolsViewModel : ViewModelBase
         catch (Exception ex)
         {
             _log.Log($"DoD wipe failed: {ex.Message}");
-            _dialog.ShowError($"DoD wipe failed:\n{ex.Message}", "Wipe Error");
+            _dialog.ShowError(
+                LocExtension.Format("DodWipeFailed", ex.Message),
+                LocExtension.Get("WipeErrorTitle"));
         }
         finally
         {
@@ -1025,9 +1057,9 @@ public class ToolsViewModel : ViewModelBase
         if (protectedTargets.Count > 0 &&
             !_dialog.ConfirmDanger(
                 BitLockerPreflight.BuildDestructiveConfirmation(
-                    $"Wipe Disk {SelectedWipeDrive.Number}",
+                    LocExtension.Format("OpWipeDisk", SelectedWipeDrive.Number),
                     protectedTargets),
-                "Confirm BitLocker-Protected Wipe"))
+                LocExtension.Get("BitLockerWipeTitle")))
         {
             return;
         }
@@ -1040,12 +1072,12 @@ public class ToolsViewModel : ViewModelBase
                 diskIdentity, "Wipe Target Changed", _wmiService, _log, _dialog))
             return;
 
-        var ct = BeginOperation($"Wiping Disk {SelectedWipeDrive.Number}...");
+        var ct = BeginOperation(LocExtension.Format("StatusWipingDisk", SelectedWipeDrive.Number));
         var locks = new List<VolumeLock>();
         try
         {
             int diskNum = SelectedWipeDrive.Number;
-            StatusText = "Saving target partition snapshot...";
+            StatusText = LocExtension.Get("StatusSavingTargetSnapshot");
             await _backup.SaveSnapshotForDestructiveOperationAsync(diskNum, "disk wipe", ct);
 
             _log.Log($"Wiping Disk {diskNum} ({WipeMode})...");
@@ -1061,14 +1093,14 @@ public class ToolsViewModel : ViewModelBase
                 .Select(l => VolumeLockService.RequireLock(l, _log))
                 .ToList();
 
-            StatusText = $"Clearing Disk {diskNum}...";
+            StatusText = LocExtension.Format("StatusClearingDisk", diskNum);
             var clearCmd = $"Clear-Disk -Number {diskNum} -RemoveData -RemoveOEM -Confirm:$false";
             await _processRunner.RunPowerShellAsync(clearCmd, _log, ct);
             _log.Log($"Disk {diskNum} cleared.");
 
             if (WipeMode != "SinglePass")
             {
-                StatusText = "Running multi-pass wipe with cipher /w...";
+                StatusText = LocExtension.Get("StatusMultiPassCipher");
                 _log.Log("Running multi-pass wipe with cipher /w...");
 
                 var initCmd = $"Initialize-Disk -Number {diskNum} -PartitionStyle GPT -Confirm:$false";
@@ -1083,17 +1115,19 @@ public class ToolsViewModel : ViewModelBase
 
                 if (!string.IsNullOrEmpty(letter))
                 {
-                    StatusText = $"Cipher wiping {letter}:\\...";
+                    StatusText = LocExtension.Format("StatusCipherWiping", letter);
                     await _processRunner.RunExeAsync("cipher", $"/w:{letter}:\\", _log, ct: ct);
                     _log.Log($"Cipher wipe complete on {letter}:\\.");
                 }
 
-                StatusText = "Final disk clear...";
+                StatusText = LocExtension.Get("StatusFinalClear");
                 await _processRunner.RunPowerShellAsync(clearCmd, _log, ct);
             }
 
             _log.Log($"Disk {diskNum} wipe complete.");
-            _dialog.ShowInfo($"Disk {diskNum} has been wiped.", "Wipe Complete");
+            _dialog.ShowInfo(
+                LocExtension.Format("DiskWipedBody", diskNum),
+                LocExtension.Get("WipeCompleteTitle"));
 
             await RefreshDriveListsAsync();
         }
@@ -1104,7 +1138,9 @@ public class ToolsViewModel : ViewModelBase
         catch (Exception ex)
         {
             _log.Log($"Wipe failed: {ex.Message}");
-            _dialog.ShowError($"Wipe failed:\n{ex.Message}", "Wipe Error");
+            _dialog.ShowError(
+                LocExtension.Format("WipeFailed", ex.Message),
+                LocExtension.Get("WipeErrorTitle"));
         }
         finally
         {
@@ -1127,7 +1163,7 @@ public class ToolsViewModel : ViewModelBase
             BitLockerPreflight.BuildDestructiveConfirmation(
                 operation,
                 new[] { $"{char.ToUpperInvariant(letter)}: {BitLockerPreflight.Describe(encryptionStatus)}" }),
-            "Confirm BitLocker-Protected Data Loss");
+            LocExtension.Get("BitLockerDataLossTitle"));
     }
 
     private string? GetVolumeEncryptionStatus(char letter)
@@ -1153,7 +1189,7 @@ public class ToolsViewModel : ViewModelBase
             return true;
 
         _log.Log($"{target} blocked by filesystem policy: {result.Reason}");
-        _dialog.ShowError(result.Reason, "Filesystem Operation Not Supported");
+        _dialog.ShowError(result.Reason, LocExtension.Get("FilesystemUnsupportedTitle"));
         return false;
     }
 
@@ -1222,12 +1258,16 @@ public class ToolsViewModel : ViewModelBase
             var result = await _processRunner.RunExeAsync("bcdboot", bcdbootArgs, _log);
             _log.Log($"Boot repair result: {result.Trim()}");
 
-            _dialog.ShowInfo($"Boot repair completed.\n\n{result.Trim()}", "Boot Repair Complete");
+            _dialog.ShowInfo(
+                LocExtension.Format("BootRepairCompleteBody", result.Trim()),
+                LocExtension.Get("BootRepairCompleteTitle"));
         }
         catch (Exception ex)
         {
             _log.Log($"Boot repair failed: {ex.Message}");
-            _dialog.ShowError($"Boot repair failed:\n{ex.Message}", "Boot Repair Error");
+            _dialog.ShowError(
+                LocExtension.Format("BootRepairFailed", ex.Message),
+                LocExtension.Get("BootRepairErrorTitle"));
         }
         finally
         {
@@ -1247,8 +1287,8 @@ public class ToolsViewModel : ViewModelBase
                 $"Surface test {SelectedSurfaceTestVolume}:"))
             return;
 
-        var ct = BeginOperation($"Running surface test on {SelectedSurfaceTestVolume}:...");
-        SurfaceTestResults = "Running surface test (this may take a while)...";
+        var ct = BeginOperation(LocExtension.Format("StatusSurfaceTest", SelectedSurfaceTestVolume));
+        SurfaceTestResults = LocExtension.Get("SurfaceTestRunning");
         try
         {
             _log.Log($"Starting surface test (chkdsk /R) on {SelectedSurfaceTestVolume}:...");
@@ -1256,18 +1296,22 @@ public class ToolsViewModel : ViewModelBase
             var result = await _processRunner.RunPowerShellAsync(cmd, _log, ct);
             SurfaceTestResults = result.Trim();
             _log.Log($"Surface test complete: {result.Trim()}");
-            _dialog.ShowInfo($"Surface test on {SelectedSurfaceTestVolume}: completed.\n\n{result.Trim()}", "Surface Test Complete");
+            _dialog.ShowInfo(
+                LocExtension.Format("SurfaceTestCompleteBody", SelectedSurfaceTestVolume, result.Trim()),
+                LocExtension.Get("SurfaceTestCompleteTitle"));
         }
         catch (OperationCanceledException)
         {
             _log.Log("Surface test cancelled.");
-            SurfaceTestResults = "Surface test cancelled.";
+            SurfaceTestResults = LocExtension.Get("SurfaceTestCancelled");
         }
         catch (Exception ex)
         {
             _log.Log($"Surface test failed: {ex.Message}");
-            SurfaceTestResults = $"Failed: {ex.Message}";
-            _dialog.ShowError($"Surface test failed:\n{ex.Message}", "Surface Test Error");
+            SurfaceTestResults = LocExtension.Format("CloneFailedShort", ex.Message);
+            _dialog.ShowError(
+                LocExtension.Format("SurfaceTestFailed", ex.Message),
+                LocExtension.Get("SurfaceTestErrorTitle"));
         }
         finally
         {
@@ -1281,7 +1325,7 @@ public class ToolsViewModel : ViewModelBase
     {
         if (driveLetter == default) return;
 
-        var ct = BeginOperation($"Benchmarking {driveLetter}:...");
+        var ct = BeginOperation(LocExtension.Format("StatusBenchmarking", driveLetter));
         BenchmarkResults = "Running benchmark...";
         try
         {
@@ -1512,12 +1556,16 @@ public class ToolsViewModel : ViewModelBase
 
             System.IO.File.WriteAllText(dlg.FileName, content);
             _log.Log($"Benchmark exported to: {dlg.FileName}");
-            _dialog.ShowInfo($"Benchmark results exported to:\n{dlg.FileName}", "Export Complete");
+            _dialog.ShowInfo(
+                LocExtension.Format("BenchmarkExportedBody", dlg.FileName),
+                LocExtension.Get("ExportCompleteTitle"));
         }
         catch (Exception ex)
         {
             _log.Log($"Benchmark export failed: {ex.Message}");
-            _dialog.ShowError($"Failed to export benchmark results:\n{ex.Message}", "Export Error");
+            _dialog.ShowError(
+                LocExtension.Format("BenchmarkExportFailed", ex.Message),
+                LocExtension.Get("ExportErrorTitle"));
         }
     }
 }

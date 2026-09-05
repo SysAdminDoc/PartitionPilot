@@ -162,6 +162,83 @@
   <data name="Export" xml:space="preserve"><value>[Export!!]</value></data>
   <data name="Compare" xml:space="preserve"><value>[Compare!!]</value></data>
   <data name="RecoveryPlan" xml:space="preserve"><value>[Recovery Plan!!]</value></data>
+  <data name="OpWipeFreeSpace" xml:space="preserve"><value>[Wipe free space on {0}:!!]</value></data>
+  <data name="BitLockerVolumeLockedTitle" xml:space="preserve"><value>[BitLocker Volume Locked!!]</value></data>
+  <data name="StatusWipingFreeSpace" xml:space="preserve"><value>[Wiping free space on {0}:...!!]</value></data>
+  <data name="FreeSpaceWipeCompleteBody" xml:space="preserve"><value>[Free-space wipe complete on {0}:.!!]</value></data>
+  <data name="WipeCompleteTitle" xml:space="preserve"><value>[Wipe Complete!!]</value></data>
+  <data name="FreeSpaceWipeFailed" xml:space="preserve"><value>[Free-space wipe failed:&#10;{0}!!]</value></data>
+  <data name="WipeErrorTitle" xml:space="preserve"><value>[Wipe Error!!]</value></data>
+  <data name="NvmeSanitizeUnavailableTitle" xml:space="preserve"><value>[NVMe Sanitize Not Available!!]</value></data>
+  <data name="OpNvmeSanitizeDisk" xml:space="preserve"><value>[NVMe sanitize Disk {0}!!]</value></data>
+  <data name="BitLockerSanitizeTitle" xml:space="preserve"><value>[Confirm BitLocker-Protected Sanitize!!]</value></data>
+  <data name="StatusNvmeSanitize" xml:space="preserve"><value>[NVMe sanitize ({0}) on Disk {1}...!!]</value></data>
+  <data name="SanitizeCompleteBody" xml:space="preserve"><value>[NVMe sanitize ({0}) completed on Disk {1}.!!]</value></data>
+  <data name="SanitizeCompleteTitle" xml:space="preserve"><value>[Sanitize Complete!!]</value></data>
+  <data name="SanitizeFailed" xml:space="preserve"><value>[NVMe sanitize failed:&#10;{0}&#10;&#10;The drive may not support this sanitize method.!!!]</value></data>
+  <data name="SanitizeErrorTitle" xml:space="preserve"><value>[Sanitize Error!!]</value></data>
+  <data name="OpDodWipeDisk" xml:space="preserve"><value>[DoD {0}-pass wipe Disk {1}!!]</value></data>
+  <data name="BitLockerWipeTitle" xml:space="preserve"><value>[Confirm BitLocker-Protected Wipe!!]</value></data>
+  <data name="StatusDodWipe" xml:space="preserve"><value>[DoD {0}-pass wipe on Disk {1}...!!]</value></data>
+  <data name="DodWipeCompleteBody" xml:space="preserve"><value>[DoD {0}-pass wipe complete on Disk {1}.!!]</value></data>
+  <data name="DodWipeFailed" xml:space="preserve"><value>[DoD wipe failed:&#10;{0}!!]</value></data>
+  <data name="OpWipeDisk" xml:space="preserve"><value>[Wipe Disk {0}!!]</value></data>
+  <data name="StatusWipingDisk" xml:space="preserve"><value>[Wiping Disk {0}...!!]</value></data>
+  <data name="StatusClearingDisk" xml:space="preserve"><value>[Clearing Disk {0}...!!]</value></data>
+  <data name="StatusMultiPassCipher" xml:space="preserve"><value>[Running multi-pass wipe with cipher /w...!!!]</value></data>
+  <data name="StatusCipherWiping" xml:space="preserve"><value>[Cipher wiping {0}:\...!!]</value></data>
+  <data name="StatusFinalClear" xml:space="preserve"><value>[Final disk clear...!!]</value></data>
+  <data name="DiskWipedBody" xml:space="preserve"><value>[Disk {0} has been wiped.!!]</value></data>
+  <data name="WipeFailed" xml:space="preserve"><value>[Wipe failed:&#10;{0}!!]</value></data>
+  <data name="StatusChecking" xml:space="preserve"><value>[Checking {0}: ({1})...!!]</value></data>
+  <data name="CheckCompleteBody" xml:space="preserve"><value>[File system check ({0}) on {1}: completed.&#10;&#10;{2}!!]</value></data>
+  <data name="CheckCompleteTitle" xml:space="preserve"><value>[Check Complete!!]</value></data>
+  <data name="CheckFailed" xml:space="preserve"><value>[Check failed:&#10;{0}!!]</value></data>
+  <data name="CheckErrorTitle" xml:space="preserve"><value>[Check Error!!]</value></data>
+  <data name="StatusOptimizing" xml:space="preserve"><value>[Optimizing {0}: ({1})...!!]</value></data>
+  <data name="OptimizeCompleteBody" xml:space="preserve"><value>[Optimization ({0}) on {1}: completed.&#10;&#10;{2}!!]</value></data>
+  <data name="OptimizeCompleteTitle" xml:space="preserve"><value>[Optimize Complete!!]</value></data>
+  <data name="OptimizeFailed" xml:space="preserve"><value>[Optimization failed:&#10;{0}!!]</value></data>
+  <data name="OptimizeErrorTitle" xml:space="preserve"><value>[Optimize Error!!]</value></data>
+  <data name="BootRepairCompleteBody" xml:space="preserve"><value>[Boot repair completed.&#10;&#10;{0}!!]</value></data>
+  <data name="BootRepairCompleteTitle" xml:space="preserve"><value>[Boot Repair Complete!!]</value></data>
+  <data name="BootRepairFailed" xml:space="preserve"><value>[Boot repair failed:&#10;{0}!!]</value></data>
+  <data name="BootRepairErrorTitle" xml:space="preserve"><value>[Boot Repair Error!!]</value></data>
+  <data name="StatusSurfaceTest" xml:space="preserve"><value>[Running surface test on {0}:...!!]</value></data>
+  <data name="SurfaceTestRunning" xml:space="preserve"><value>[Running surface test (this may take a while)...!!!]</value></data>
+  <data name="SurfaceTestCompleteBody" xml:space="preserve"><value>[Surface test on {0}: completed.&#10;&#10;{1}!!]</value></data>
+  <data name="SurfaceTestCompleteTitle" xml:space="preserve"><value>[Surface Test Complete!!]</value></data>
+  <data name="SurfaceTestCancelled" xml:space="preserve"><value>[Surface test cancelled.!!]</value></data>
+  <data name="SurfaceTestFailed" xml:space="preserve"><value>[Surface test failed:&#10;{0}!!]</value></data>
+  <data name="SurfaceTestErrorTitle" xml:space="preserve"><value>[Surface Test Error!!]</value></data>
+  <data name="StatusBenchmarking" xml:space="preserve"><value>[Benchmarking {0}:...!!]</value></data>
+  <data name="BenchmarkExportedBody" xml:space="preserve"><value>[Benchmark results exported to:&#10;{0}!!]</value></data>
+  <data name="ExportCompleteTitle" xml:space="preserve"><value>[Export Complete!!]</value></data>
+  <data name="BenchmarkExportFailed" xml:space="preserve"><value>[Failed to export benchmark results:&#10;{0}!!]</value></data>
+  <data name="DevDriveNotSupportedBody" xml:space="preserve"><value>[Dev Drive requires Windows 11 build 22621 or later.!!!]</value></data>
+  <data name="DevDriveNotSupportedTitle" xml:space="preserve"><value>[Dev Drive Not Supported!!]</value></data>
+  <data name="DevDriveConfirmBody" xml:space="preserve"><value>[Format {0}: as a Dev Drive (ReFS)?&#10;&#10;ALL DATA ON THIS VOLUME WILL BE ERASED.&#10;&#10;Dev Drive uses ReFS with optimized I/O performance and allows configuring antivirus filter exclusions. Minimum 50 GB is recommended.!!!]</value></data>
+  <data name="DevDriveConfirmTitle" xml:space="preserve"><value>[Create Dev Drive!!]</value></data>
+  <data name="OpCreateDevDrive" xml:space="preserve"><value>[Create Dev Drive on {0}:!!]</value></data>
+  <data name="StatusCreatingDevDrive" xml:space="preserve"><value>[Creating Dev Drive on {0}:...!!]</value></data>
+  <data name="StatusDesignatingDevDrive" xml:space="preserve"><value>[Designating as trusted Dev Drive...!!]</value></data>
+  <data name="DevDriveCreatedBody" xml:space="preserve"><value>[Dev Drive created on {0}: (ReFS).&#10;&#10;The volume is designated as trusted.!!!]</value></data>
+  <data name="DevDriveCreatedTitle" xml:space="preserve"><value>[Dev Drive Created!!]</value></data>
+  <data name="DevDriveFailed" xml:space="preserve"><value>[Dev Drive creation failed:&#10;{0}!!]</value></data>
+  <data name="DevDriveErrorTitle" xml:space="preserve"><value>[Dev Drive Error!!]</value></data>
+  <data name="Mbr2GptValidationTitle" xml:space="preserve"><value>[MBR2GPT Validation!!]</value></data>
+  <data name="Mbr2GptValidationFailed" xml:space="preserve"><value>[Validation failed:&#10;{0}!!]</value></data>
+  <data name="Mbr2GptErrorTitle" xml:space="preserve"><value>[MBR2GPT Error!!]</value></data>
+  <data name="Mbr2GptConfirmBody" xml:space="preserve"><value>[Convert Disk {0} ({1}) from MBR to GPT?&#10;&#10;This operation is irreversible. Ensure you have validated first.!!!]</value></data>
+  <data name="Mbr2GptConfirmTitle" xml:space="preserve"><value>[Confirm MBR to GPT Conversion!!]</value></data>
+  <data name="Mbr2GptCompleteBody" xml:space="preserve"><value>[MBR to GPT conversion completed successfully.!!!]</value></data>
+  <data name="ConversionCompleteTitle" xml:space="preserve"><value>[Conversion Complete!!]</value></data>
+  <data name="Mbr2GptConversionFailed" xml:space="preserve"><value>[Conversion failed:&#10;{0}!!]</value></data>
+  <data name="Fat32ConfirmBody" xml:space="preserve"><value>[Convert {0}: from FAT32 to NTFS?&#10;&#10;This is a one-way conversion.!!!]</value></data>
+  <data name="Fat32ConfirmTitle" xml:space="preserve"><value>[Confirm FAT32 to NTFS!!]</value></data>
+  <data name="Fat32CompleteBody" xml:space="preserve"><value>[Conversion complete for {0}:.!!]</value></data>
+  <data name="ConvertErrorTitle" xml:space="preserve"><value>[Convert Error!!]</value></data>
+  <data name="StatusCancelling" xml:space="preserve"><value>[Cancelling...!!]</value></data>
   <data name="PreflightChooseSource" xml:space="preserve"><value>[Choose a source volume to estimate image size.!!!]</value></data>
   <data name="PreflightChooseDestination" xml:space="preserve"><value>[Choose a destination path to check available free space.!!!]</value></data>
   <data name="PreflightEstimate" xml:space="preserve"><value>[Estimated required: {0}. Destination free: {1}.!!!]</value></data>
