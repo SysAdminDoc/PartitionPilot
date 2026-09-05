@@ -162,6 +162,12 @@
   <data name="Export" xml:space="preserve"><value>Export</value></data>
   <data name="Compare" xml:space="preserve"><value>Compare</value></data>
   <data name="RecoveryPlan" xml:space="preserve"><value>Recovery Plan</value></data>
+  <data name="PreviewRestore" xml:space="preserve"><value>Preview Restore</value></data>
+  <data name="PreviewRestoreTooltip" xml:space="preserve"><value>Build the restore plan for this snapshot without changing the disk</value></data>
+  <data name="PreviewRestoreAutomationName" xml:space="preserve"><value>Preview snapshot restore plan</value></data>
+  <data name="RestoreSnapshot" xml:space="preserve"><value>Restore Table</value></data>
+  <data name="RestoreSnapshotTooltip" xml:space="preserve"><value>Clear the disk and recreate its partition table from this snapshot</value></data>
+  <data name="RestoreSnapshotAutomationName" xml:space="preserve"><value>Restore partition table from snapshot</value></data>
 
   <!-- Disk Usage view -->
   <data name="DiskUsageTitle" xml:space="preserve"><value>Disk Usage</value></data>

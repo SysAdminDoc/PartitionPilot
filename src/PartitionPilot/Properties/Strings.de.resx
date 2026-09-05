@@ -162,6 +162,12 @@
   <data name="Export" xml:space="preserve"><value>Exportieren</value></data>
   <data name="Compare" xml:space="preserve"><value>Vergleichen</value></data>
   <data name="RecoveryPlan" xml:space="preserve"><value>Wiederherstellungsplan</value></data>
+  <data name="PreviewRestore" xml:space="preserve"><value>Wiederherstellung anzeigen</value></data>
+  <data name="PreviewRestoreTooltip" xml:space="preserve"><value>Wiederherstellungsplan für diesen Snapshot erstellen, ohne den Datenträger zu ändern</value></data>
+  <data name="PreviewRestoreAutomationName" xml:space="preserve"><value>Wiederherstellungsplan des Snapshots anzeigen</value></data>
+  <data name="RestoreSnapshot" xml:space="preserve"><value>Tabelle wiederherstellen</value></data>
+  <data name="RestoreSnapshotTooltip" xml:space="preserve"><value>Datenträger leeren und die Partitionstabelle aus diesem Snapshot neu erstellen</value></data>
+  <data name="RestoreSnapshotAutomationName" xml:space="preserve"><value>Partitionstabelle aus Snapshot wiederherstellen</value></data>
 
   <!-- Disk Usage view -->
   <data name="DiskUsageTitle" xml:space="preserve"><value>Speichernutzung</value></data>
