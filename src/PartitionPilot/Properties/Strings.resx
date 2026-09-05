@@ -162,6 +162,18 @@
   <data name="Export" xml:space="preserve"><value>Export</value></data>
   <data name="Compare" xml:space="preserve"><value>Compare</value></data>
   <data name="RecoveryPlan" xml:space="preserve"><value>Recovery Plan</value></data>
+  <data name="ImageMounted" xml:space="preserve"><value>Image mounted successfully.&#10;&#10;{0}</value></data>
+  <data name="MountCompleteTitle" xml:space="preserve"><value>Mount Complete</value></data>
+  <data name="ImageMountFailed" xml:space="preserve"><value>Failed to mount image:&#10;{0}</value></data>
+  <data name="MountErrorTitle" xml:space="preserve"><value>Mount Error</value></data>
+  <data name="ImageDismounted" xml:space="preserve"><value>Image dismounted successfully.</value></data>
+  <data name="DismountCompleteTitle" xml:space="preserve"><value>Dismount Complete</value></data>
+  <data name="ImageDismountFailed" xml:space="preserve"><value>Failed to dismount image:&#10;{0}</value></data>
+  <data name="DismountErrorTitle" xml:space="preserve"><value>Dismount Error</value></data>
+  <data name="VhdCreated" xml:space="preserve"><value>VHD created and mounted successfully.&#10;&#10;Path: {0}&#10;Size: {1:F1} GB</value></data>
+  <data name="VhdCreatedTitle" xml:space="preserve"><value>VHD Created</value></data>
+  <data name="VhdCreateFailed" xml:space="preserve"><value>Failed to create VHD:&#10;{0}</value></data>
+  <data name="CreateVhdErrorTitle" xml:space="preserve"><value>Create VHD Error</value></data>
   <data name="HexReadingSector" xml:space="preserve"><value>Reading sector {0}...</value></data>
   <data name="HexSectorRead" xml:space="preserve"><value>Sector {0} read ({1} bytes)</value></data>
   <data name="HexReadFailed" xml:space="preserve"><value>Read failed: {0}</value></data>

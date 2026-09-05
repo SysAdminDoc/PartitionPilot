@@ -169,12 +169,12 @@ public class DiskImagesViewModel : ViewModelBase
 
             await RefreshAsync();
 
-            _dialog.ShowInfo($"Image mounted successfully.\n\n{result.Trim()}", "Mount Complete");
+            _dialog.ShowInfo(LocExtension.Format("ImageMounted", result.Trim()), LocExtension.Get("MountCompleteTitle"));
         }
         catch (Exception ex)
         {
             _log.Log($"Mount failed: {ex.Message}");
-            _dialog.ShowError($"Failed to mount image:\n{ex.Message}", "Mount Error");
+            _dialog.ShowError(LocExtension.Format("ImageMountFailed", ex.Message), LocExtension.Get("MountErrorTitle"));
         }
         finally
         {
@@ -199,12 +199,12 @@ public class DiskImagesViewModel : ViewModelBase
             SelectedMountedImage = null;
             await RefreshAsync();
 
-            _dialog.ShowInfo("Image dismounted successfully.", "Dismount Complete");
+            _dialog.ShowInfo(LocExtension.Get("ImageDismounted"), LocExtension.Get("DismountCompleteTitle"));
         }
         catch (Exception ex)
         {
             _log.Log($"Dismount failed: {ex.Message}");
-            _dialog.ShowError($"Failed to dismount image:\n{ex.Message}", "Dismount Error");
+            _dialog.ShowError(LocExtension.Format("ImageDismountFailed", ex.Message), LocExtension.Get("DismountErrorTitle"));
         }
         finally
         {
@@ -265,13 +265,12 @@ public class DiskImagesViewModel : ViewModelBase
 
             await RefreshAsync();
 
-            _dialog.ShowInfo($"VHD created and mounted successfully.\n\nPath: {VhdPath}\nSize: {VhdSizeGB:F1} GB",
-                "VHD Created");
+            _dialog.ShowInfo(LocExtension.Format("VhdCreated", VhdPath, VhdSizeGB), LocExtension.Get("VhdCreatedTitle"));
         }
         catch (Exception ex)
         {
             _log.Log($"Create VHD failed: {ex.Message}");
-            _dialog.ShowError($"Failed to create VHD:\n{ex.Message}", "Create VHD Error");
+            _dialog.ShowError(LocExtension.Format("VhdCreateFailed", ex.Message), LocExtension.Get("CreateVhdErrorTitle"));
         }
         finally
         {
