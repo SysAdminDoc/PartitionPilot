@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.IO;
 using System.Windows;
 using System.Windows.Input;
@@ -49,7 +50,7 @@ public class DiskCloningViewModel : ViewModelBase
         }
     }
 
-    private string _imagePreflightSummary = "Choose a source volume and destination path to check free space before capture.";
+    private string _imagePreflightSummary = LocExtension.Get("ImagePreflightPrompt");
     public string ImagePreflightSummary
     {
         get => _imagePreflightSummary;
@@ -147,11 +148,13 @@ public class DiskCloningViewModel : ViewModelBase
     {
         get
         {
-            if (CloneSourceDisk is null) return "Select a source disk.";
-            if (CloneDestDisk is null) return $"Source: {SizeUtil.Format(CloneSourceDisk.Size)}. Select a destination disk.";
-            if (CloneDestDisk.Size < CloneSourceDisk.Size)
-                return $"Source: {SizeUtil.Format(CloneSourceDisk.Size)}, Destination: {SizeUtil.Format(CloneDestDisk.Size)} — destination too small.";
-            return $"Source: {SizeUtil.Format(CloneSourceDisk.Size)}, Destination: {SizeUtil.Format(CloneDestDisk.Size)} — ready.";
+            if (CloneSourceDisk is null) return LocExtension.Get("CloneSelectSource");
+            if (CloneDestDisk is null)
+                return LocExtension.Format("CloneSelectDest", SizeUtil.Format(CloneSourceDisk.Size));
+
+            return LocExtension.Format(
+                CloneDestDisk.Size < CloneSourceDisk.Size ? "CloneDestTooSmall" : "CloneReady",
+                SizeUtil.Format(CloneSourceDisk.Size), SizeUtil.Format(CloneDestDisk.Size));
         }
     }
 
@@ -241,8 +244,8 @@ public class DiskCloningViewModel : ViewModelBase
     {
         var dlg = new SaveFileDialog
         {
-            Title = "Save Disk Image",
-            Filter = "VHDX Files (*.vhdx)|*.vhdx|WIM Files (*.wim)|*.wim",
+            Title = LocExtension.Get("SaveDiskImageTitle"),
+            Filter = LocExtension.Get("SaveDiskImageFilter"),
             DefaultExt = ".vhdx"
         };
         if (dlg.ShowDialog() == true) ImagePath = dlg.FileName;
@@ -252,8 +255,8 @@ public class DiskCloningViewModel : ViewModelBase
     {
         var dlg = new OpenFileDialog
         {
-            Title = "Select Image to Restore",
-            Filter = "Disk Images (*.vhdx;*.wim)|*.vhdx;*.wim|All Files (*.*)|*.*",
+            Title = LocExtension.Get("SelectImageTitle"),
+            Filter = LocExtension.Get("SelectImageFilter"),
             CheckFileExists = true
         };
         if (dlg.ShowDialog() == true) RestoreImagePath = dlg.FileName;
@@ -272,7 +275,9 @@ public class DiskCloningViewModel : ViewModelBase
         catch (Exception ex)
         {
             _log.Log($"Image creation preflight failed: {ex.Message}");
-            _dialog.ShowError($"Image creation cannot start:\n{ex.Message}", "Create Image Preflight");
+            _dialog.ShowError(
+                LocExtension.Format("ImageCreationCannotStart", ex.Message),
+                LocExtension.Get("CreateImagePreflightTitle"));
             return;
         }
 
@@ -281,7 +286,7 @@ public class DiskCloningViewModel : ViewModelBase
         _cts = new CancellationTokenSource();
         var ct = _cts.Token;
         IsBusy = true;
-        StatusText = $"Creating image of {SelectedSourceDrive}:\\...";
+        StatusText = LocExtension.Format("StatusCreatingImage", SelectedSourceDrive);
 
         try
         {
@@ -295,10 +300,10 @@ public class DiskCloningViewModel : ViewModelBase
             OperationCleanupScope.CleanupRegistration? vssCleanup = null;
             try
             {
-                StatusText = "Checking VSS writer health...";
+                StatusText = LocExtension.Get("StatusCheckingVss");
                 await VssSnapshotService.EnsureWritersHealthyAsync(_processRunner, _log, ct);
 
-                StatusText = "Creating VSS snapshot for consistent capture...";
+                StatusText = LocExtension.Get("StatusCreatingVss");
                 vssSnapshot = await VssSnapshotService.CreateSnapshotAsync(
                     SelectedSourceDrive, _shadowCopyProvider, _log, ct);
                 captureSource = vssSnapshot.ShadowCopyPath;
@@ -312,9 +317,8 @@ public class DiskCloningViewModel : ViewModelBase
             {
                 _log.Log($"VSS snapshot unavailable: {vssEx.Message}");
                 if (!_dialog.ConfirmWarning(
-                    $"VSS snapshot could not be created:\n{vssEx.Message}\n\n" +
-                    "Continue with live volume capture? Files in use may be inconsistent.",
-                    "VSS Unavailable"))
+                    LocExtension.Format("VssUnavailableBody", vssEx.Message),
+                    LocExtension.Get("VssUnavailableTitle")))
                 {
                     _log.Log("Image creation cancelled — user declined live capture without VSS.");
                     return;
@@ -354,7 +358,7 @@ public class DiskCloningViewModel : ViewModelBase
                     () => _processRunner.RunDiskpartAsync(detachScript, _log),
                     $"Run diskpart, select vdisk file=\"{sanitizedImagePath}\", then detach vdisk.");
 
-                StatusText = "VHDX created, capturing with robocopy...";
+                StatusText = LocExtension.Get("StatusVhdxCapturing");
                 var safeFileName = ProcessRunner.EscapePowerShellString(Path.GetFileName(ImagePath));
                 var letterCmd = $"(Get-Disk | Where-Object {{ $_.Location -like ('*' + {safeFileName} + '*') }} | Get-Partition | Where-Object {{ $_.DriveLetter }} | Select-Object -First 1).DriveLetter";
                 var vhdLetter = (await _processRunner.RunPowerShellAsync(letterCmd, _log, ct)).Trim();
@@ -380,7 +384,7 @@ public class DiskCloningViewModel : ViewModelBase
                 detachCleanup.Complete();
             }
 
-            StatusText = "Writing image manifest...";
+            StatusText = LocExtension.Get("StatusWritingManifest");
             var sourceVolume = _volumeByLetter.GetValueOrDefault(char.ToUpperInvariant(SelectedSourceDrive));
             var imageManifest = await DiskImageManifestService.CreateManifestAsync(
                 ImagePath,
@@ -400,8 +404,8 @@ public class DiskCloningViewModel : ViewModelBase
 
             if (EncryptImage)
             {
-                StatusText = "Encrypting image...";
-                var password = PromptForInput("Enter encryption password for the disk image:", "Encrypt Image");
+                StatusText = LocExtension.Get("StatusEncryptingImage");
+                var password = PromptForInput(LocExtension.Get("EncryptPasswordPrompt"), LocExtension.Get("EncryptImageTitle"));
                 if (string.IsNullOrEmpty(password))
                 {
                     _log.Log("Image encryption skipped — no password provided.");
@@ -418,7 +422,9 @@ public class DiskCloningViewModel : ViewModelBase
             }
 
             _log.Log($"Image created: {ImagePath}");
-            _dialog.ShowInfo($"Disk image created successfully.\n\nPath: {ImagePath}", "Image Created");
+            _dialog.ShowInfo(
+                LocExtension.Format("ImageCreatedBody", ImagePath),
+                LocExtension.Get("ImageCreatedTitle"));
         }
         catch (OperationCanceledException)
         {
@@ -427,7 +433,9 @@ public class DiskCloningViewModel : ViewModelBase
         catch (Exception ex)
         {
             _log.Log($"Image creation failed: {ex.Message}");
-            _dialog.ShowError($"Image creation failed:\n{ex.Message}", "Create Image Error");
+            _dialog.ShowError(
+                LocExtension.Format("ImageCreationFailed", ex.Message),
+                LocExtension.Get("CreateImageErrorTitle"));
         }
         finally
         {
@@ -447,20 +455,20 @@ public class DiskCloningViewModel : ViewModelBase
         if (protectedTargets.Count > 0 &&
             !_dialog.ConfirmDanger(
                 BitLockerPreflight.BuildDestructiveConfirmation(
-                    $"Restore image to Disk {SelectedTargetDisk.Number}",
+                    LocExtension.Format("OpRestoreImageToDisk", SelectedTargetDisk.Number),
                     protectedTargets),
-                "Confirm BitLocker-Protected Restore"))
+                LocExtension.Get("BitLockerRestoreTitle")))
         {
             return;
         }
 
         if (!_dialog.ConfirmDanger(
-            $"WARNING: Restoring will DESTROY ALL DATA on the target disk.\n\nTarget:\n{targetIdentity.ConfirmationSummary}\n\nContinue?",
-            "Confirm Image Restore")) return;
+            LocExtension.Format("RestoreDestroyWarning", targetIdentity.ConfirmationSummary),
+            LocExtension.Get("ConfirmImageRestoreTitle"))) return;
 
         if (!_dialog.ConfirmDanger(
-            "FINAL CONFIRMATION: All data on the target disk will be permanently overwritten.",
-            "Confirm Restore")) return;
+            LocExtension.Get("RestoreFinalConfirmation"),
+            LocExtension.Get("ConfirmRestoreTitle"))) return;
 
         string restorePath = RestoreImagePath;
         string? tempDecrypted = null;
@@ -470,10 +478,12 @@ public class DiskCloningViewModel : ViewModelBase
 
         if (ImageEncryptionService.IsEncryptedImage(restorePath))
         {
-            var password = PromptForInput("This is an encrypted image. Enter the decryption password:", "Decrypt Image");
+            var password = PromptForInput(LocExtension.Get("DecryptPasswordPrompt"), LocExtension.Get("DecryptImageTitle"));
             if (string.IsNullOrEmpty(password))
             {
-                _dialog.ShowWarning("Restore cancelled — decryption password required.", "Encrypted Image");
+                _dialog.ShowWarning(
+                    LocExtension.Get("RestoreCancelledNoPassword"),
+                    LocExtension.Get("EncryptedImageTitle"));
                 return;
             }
             tempDecrypted = Path.Combine(Path.GetTempPath(), "PartitionPilot",
@@ -489,7 +499,9 @@ public class DiskCloningViewModel : ViewModelBase
             }
             catch (Exception ex)
             {
-                _dialog.ShowError($"Decryption failed: {ex.Message}", "Decrypt Error");
+                _dialog.ShowError(
+                    LocExtension.Format("DecryptionFailed", ex.Message),
+                    LocExtension.Get("DecryptErrorTitle"));
                 return;
             }
         }
@@ -503,7 +515,7 @@ public class DiskCloningViewModel : ViewModelBase
         _cts = new CancellationTokenSource();
         var ct = _cts.Token;
         IsBusy = true;
-        StatusText = $"Restoring image to Disk {SelectedTargetDisk.Number}...";
+        StatusText = LocExtension.Format("StatusRestoringImage", SelectedTargetDisk.Number);
 
         var targetLocks = new List<VolumeLock>();
         try
@@ -519,7 +531,7 @@ public class DiskCloningViewModel : ViewModelBase
             var diskNum = SelectedTargetDisk.Number;
             char? restoredWindowsDrive = null;
 
-            StatusText = "Saving target partition snapshot...";
+            StatusText = LocExtension.Get("StatusSavingTargetSnapshot");
             await _backup.SaveSnapshotForDestructiveOperationAsync(diskNum, "image restore", ct);
 
             // Best-effort lock volumes on target disk before clearing
@@ -529,7 +541,7 @@ public class DiskCloningViewModel : ViewModelBase
                 .Select(p => VolumeLockService.RequireLock(p.DriveLetter!.Value, _log))
                 .ToList();
 
-            StatusText = "Clearing target disk...";
+            StatusText = LocExtension.Get("StatusClearingTarget");
             var clearCmd = $"Clear-Disk -Number {diskNum} -RemoveData -RemoveOEM -Confirm:$false";
             await _processRunner.RunPowerShellAsync(clearCmd, _log, ct);
 
@@ -538,7 +550,7 @@ public class DiskCloningViewModel : ViewModelBase
 
             if (ext == ".wim")
             {
-                StatusText = "Creating partition and applying WIM...";
+                StatusText = LocExtension.Get("StatusApplyingWim");
                 var partCmd = $"New-Partition -DiskNumber {diskNum} -UseMaximumSize -AssignDriveLetter | Format-Volume -FileSystem NTFS -Confirm:$false";
                 await _processRunner.RunPowerShellAsync(partCmd, _log, ct);
 
@@ -553,7 +565,7 @@ public class DiskCloningViewModel : ViewModelBase
             }
             else
             {
-                StatusText = "Mounting VHDX and copying...";
+                StatusText = LocExtension.Get("StatusMountingVhdx");
                 var mountCmd = $"Mount-DiskImage -ImagePath {ProcessRunner.EscapePowerShellString(restorePath)}";
                 await _processRunner.RunPowerShellAsync(mountCmd, _log, ct);
 
@@ -582,17 +594,17 @@ public class DiskCloningViewModel : ViewModelBase
                 mountCleanup.Complete();
             }
 
-            StatusText = "Auditing restored bootability...";
+            StatusText = LocExtension.Get("StatusAuditingRestore");
             var bootAudit = await RunBootabilityAuditAsync(diskNum, restoredWindowsDrive, ct);
             var bootAuditReport = bootAudit.FormatReport();
             _log.Log($"Image restored to Disk {diskNum}.");
             _log.Log(bootAuditReport);
 
-            var restoreSummary = $"Image restored successfully to Disk {diskNum}.\n\n{bootAuditReport}";
+            var restoreSummary = LocExtension.Format("RestoreCompleteBody", diskNum, bootAuditReport);
             if (bootAudit.Status == BootabilityAuditStatus.Pass)
-                _dialog.ShowInfo(restoreSummary, "Restore Complete");
+                _dialog.ShowInfo(restoreSummary, LocExtension.Get("RestoreCompleteTitle"));
             else
-                _dialog.ShowWarning(restoreSummary, "Restore Complete (Boot Audit Warnings)");
+                _dialog.ShowWarning(restoreSummary, LocExtension.Get("RestoreCompleteWarningsTitle"));
         }
         catch (OperationCanceledException)
         {
@@ -601,7 +613,9 @@ public class DiskCloningViewModel : ViewModelBase
         catch (Exception ex)
         {
             _log.Log($"Image restore failed: {ex.Message}");
-            _dialog.ShowError($"Image restore failed:\n{ex.Message}", "Restore Error");
+            _dialog.ShowError(
+                LocExtension.Format("ImageRestoreFailed", ex.Message),
+                LocExtension.Get("RestoreErrorTitle"));
         }
         finally
         {
@@ -625,7 +639,7 @@ public class DiskCloningViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            _dialog.ShowError(ex.Message, "Clone Validation Failed");
+            _dialog.ShowError(ex.Message, LocExtension.Get("CloneValidationFailedTitle"));
             return;
         }
 
@@ -633,8 +647,8 @@ public class DiskCloningViewModel : ViewModelBase
         if (protectedTargets.Count > 0 &&
             !_dialog.ConfirmDanger(
                 BitLockerPreflight.BuildDestructiveConfirmation(
-                    $"Sector clone to Disk {CloneDestDisk.Number}", protectedTargets),
-                "Confirm BitLocker-Protected Clone"))
+                    LocExtension.Format("OpSectorCloneToDisk", CloneDestDisk.Number), protectedTargets),
+                LocExtension.Get("BitLockerCloneTitle")))
             return;
 
         if (!DestructiveWorkflowGuard.ConfirmPrompts(
@@ -653,8 +667,8 @@ public class DiskCloningViewModel : ViewModelBase
         _cts = new CancellationTokenSource();
         var ct = _cts.Token;
         IsBusy = true;
-        StatusText = $"Cloning Disk {CloneSourceDisk.Number} -> Disk {CloneDestDisk.Number}...";
-        CloneProgressText = "Starting sector clone...";
+        StatusText = LocExtension.Format("StatusCloning", CloneSourceDisk.Number, CloneDestDisk.Number);
+        CloneProgressText = LocExtension.Get("CloneStarting");
         CloneProgressPercent = 0;
 
         var targetLocks = new List<VolumeLock>();
@@ -663,7 +677,7 @@ public class DiskCloningViewModel : ViewModelBase
             await sourceIdentity.VerifyCurrentAsync(_wmiService);
             await destIdentity.VerifyCurrentAsync(_wmiService);
 
-            StatusText = "Saving destination partition snapshot...";
+            StatusText = LocExtension.Get("StatusSavingDestSnapshot");
             await _backup.SaveSnapshotForDestructiveOperationAsync(CloneDestDisk.Number, "sector clone", ct);
 
             var targetPartitions = await _wmiService.GetPartitionsAsync(CloneDestDisk.Number);
@@ -674,9 +688,11 @@ public class DiskCloningViewModel : ViewModelBase
 
             var progress = new Progress<SectorCloneProgress>(p =>
             {
-                CloneProgressText = $"{p.ProgressText}  {p.RateText}  ETA: {p.EstimatedRemaining:hh\\:mm\\:ss}";
+                CloneProgressText = LocExtension.Format("CloneProgressLine",
+                    p.ProgressText, p.RateText, p.EstimatedRemaining.ToString(@"hh\:mm\:ss", CultureInfo.CurrentCulture));
                 CloneProgressPercent = p.PercentComplete;
-                StatusText = $"Cloning... {p.PercentComplete:F1}%";
+                StatusText = LocExtension.Format("StatusCloningPercent",
+                p.PercentComplete.ToString("F1", CultureInfo.CurrentCulture));
             });
 
             var cloneResult = await SectorCloneService.CloneAsync(
@@ -685,7 +701,7 @@ public class DiskCloningViewModel : ViewModelBase
                 _log, progress, ct, rescue: CloneRescueMode, verify: CloneVerify);
 
             CloneProgressPercent = 100;
-            StatusText = "Auditing cloned bootability...";
+            StatusText = LocExtension.Get("StatusAuditingClone");
             var bootAudit = await RunBootabilityAuditAsync(CloneDestDisk.Number, null, ct);
             var bootAuditReport = bootAudit.FormatReport();
             _log.Log(bootAuditReport);
@@ -697,20 +713,22 @@ public class DiskCloningViewModel : ViewModelBase
                 cloneResult.FormatReport(),
                 bootAuditReport);
             if (cloneResult.HasBadSectors || !cloneResult.VerificationPassed || bootAudit.Status != BootabilityAuditStatus.Pass)
-                _dialog.ShowWarning(summary, "Clone Complete (With Warnings)");
+                _dialog.ShowWarning(summary, LocExtension.Get("CloneCompleteWarningsTitle"));
             else
-                _dialog.ShowInfo(summary, "Clone Complete");
+                _dialog.ShowInfo(summary, LocExtension.Get("CloneCompleteTitle"));
         }
         catch (OperationCanceledException)
         {
             _log.Log("Sector clone cancelled.");
-            CloneProgressText = "Clone cancelled.";
+            CloneProgressText = LocExtension.Get("CloneCancelled");
         }
         catch (Exception ex)
         {
             _log.Log($"Sector clone failed: {ex.Message}");
-            _dialog.ShowError($"Sector clone failed:\n{ex.Message}", "Clone Error");
-            CloneProgressText = $"Failed: {ex.Message}";
+            _dialog.ShowError(
+                LocExtension.Format("SectorCloneFailed", ex.Message),
+                LocExtension.Get("CloneErrorTitle"));
+            CloneProgressText = LocExtension.Format("CloneFailedShort", ex.Message);
         }
         finally
         {
@@ -735,25 +753,26 @@ public class DiskCloningViewModel : ViewModelBase
     {
         if (SelectedSourceDrive == default)
         {
-            ImagePreflightSummary = "Choose a source volume to estimate image size.";
+            ImagePreflightSummary = LocExtension.Get("PreflightChooseSource");
             return;
         }
 
         if (string.IsNullOrWhiteSpace(ImagePath))
         {
-            ImagePreflightSummary = "Choose a destination path to check available free space.";
+            ImagePreflightSummary = LocExtension.Get("PreflightChooseDestination");
             return;
         }
 
         try
         {
             var preflight = PreflightSelectedImageDestination();
-            ImagePreflightSummary =
-                $"Estimated required: {SizeUtil.Format(preflight.EstimatedRequiredBytes)}. Destination free: {SizeUtil.Format(preflight.DestinationFreeBytes)}.";
+            ImagePreflightSummary = LocExtension.Format("PreflightEstimate",
+                SizeUtil.Format(preflight.EstimatedRequiredBytes),
+                SizeUtil.Format(preflight.DestinationFreeBytes));
         }
         catch (Exception ex)
         {
-            ImagePreflightSummary = $"Destination check: {ex.Message}";
+            ImagePreflightSummary = LocExtension.Format("PreflightDestinationCheck", ex.Message);
         }
     }
 
@@ -795,8 +814,8 @@ public class DiskCloningViewModel : ViewModelBase
 
         _log.Log($"Image manifest validation failed/degraded: {validation.Status} - {validation.Detail}");
         return _dialog.ConfirmWarning(
-            $"{validation.Detail}\n\nContinue restore in degraded mode? The target disk will still be cleared if you proceed.",
-            "Image Manifest Verification")
+            LocExtension.Format("ManifestDegradedBody", validation.Detail),
+            LocExtension.Get("ManifestVerificationTitle"))
             ? validation
             : null;
     }
@@ -853,8 +872,8 @@ public class DiskCloningViewModel : ViewModelBase
 
         _log.Log($"Decrypted image hash mismatch. Expected {manifest.PlainImageSha256}, got {actual}.");
         return _dialog.ConfirmWarning(
-            $"The decrypted image hash does not match the manifest.\n\nExpected: {manifest.PlainImageSha256}\nActual: {actual}\n\nContinue restore in degraded mode?",
-            "Decrypted Image Verification");
+            LocExtension.Format("DecryptedHashMismatchBody", manifest.PlainImageSha256, actual),
+            LocExtension.Get("DecryptedImageVerificationTitle"));
     }
 
     private static string? PromptForInput(string message, string title)

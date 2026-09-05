@@ -162,6 +162,77 @@
   <data name="Export" xml:space="preserve"><value>Exporter</value></data>
   <data name="Compare" xml:space="preserve"><value>Comparer</value></data>
   <data name="RecoveryPlan" xml:space="preserve"><value>Plan de récupération</value></data>
+  <data name="PreflightChooseSource" xml:space="preserve"><value>Choisissez un volume source pour estimer la taille de l'image.</value></data>
+  <data name="PreflightChooseDestination" xml:space="preserve"><value>Choisissez un chemin de destination pour vérifier l'espace libre disponible.</value></data>
+  <data name="PreflightEstimate" xml:space="preserve"><value>Espace requis estimé : {0}. Espace libre sur la destination : {1}.</value></data>
+  <data name="PreflightDestinationCheck" xml:space="preserve"><value>Vérification de la destination : {0}</value></data>
+  <data name="CloneStarting" xml:space="preserve"><value>Démarrage du clonage secteur par secteur...</value></data>
+  <data name="CloneProgressLine" xml:space="preserve"><value>{0}  {1}  Temps restant : {2}</value></data>
+  <data name="CloneCancelled" xml:space="preserve"><value>Clonage annulé.</value></data>
+  <data name="CloneFailedShort" xml:space="preserve"><value>Échec : {0}</value></data>
+  <data name="OpSectorCloneToDisk" xml:space="preserve"><value>Clonage secteur par secteur vers le disque {0}</value></data>
+  <data name="BitLockerCloneTitle" xml:space="preserve"><value>Confirmer le clonage protégé par BitLocker</value></data>
+  <data name="OpRestoreImageToDisk" xml:space="preserve"><value>Restaurer l'image sur le disque {0}</value></data>
+  <data name="BitLockerRestoreTitle" xml:space="preserve"><value>Confirmer la restauration protégée par BitLocker</value></data>
+  <data name="RestoreDestroyWarning" xml:space="preserve"><value>AVERTISSEMENT : la restauration DÉTRUIRA TOUTES LES DONNÉES du disque cible.&#10;&#10;Cible :&#10;{0}&#10;&#10;Continuer ?</value></data>
+  <data name="ConfirmImageRestoreTitle" xml:space="preserve"><value>Confirmer la restauration de l'image</value></data>
+  <data name="RestoreFinalConfirmation" xml:space="preserve"><value>CONFIRMATION FINALE : toutes les données du disque cible seront définitivement écrasées.</value></data>
+  <data name="ConfirmRestoreTitle" xml:space="preserve"><value>Confirmer la restauration</value></data>
+  <data name="DecryptPasswordPrompt" xml:space="preserve"><value>Il s'agit d'une image chiffrée. Saisissez le mot de passe de déchiffrement :</value></data>
+  <data name="DecryptImageTitle" xml:space="preserve"><value>Déchiffrer l'image</value></data>
+  <data name="RestoreCancelledNoPassword" xml:space="preserve"><value>Restauration annulée — mot de passe de déchiffrement requis.</value></data>
+  <data name="EncryptedImageTitle" xml:space="preserve"><value>Image chiffrée</value></data>
+  <data name="DecryptionFailed" xml:space="preserve"><value>Échec du déchiffrement : {0}</value></data>
+  <data name="DecryptErrorTitle" xml:space="preserve"><value>Erreur de déchiffrement</value></data>
+  <data name="StatusRestoringImage" xml:space="preserve"><value>Restauration de l'image sur le disque {0}...</value></data>
+  <data name="StatusSavingTargetSnapshot" xml:space="preserve"><value>Enregistrement de l'instantané de partitions cible...</value></data>
+  <data name="StatusClearingTarget" xml:space="preserve"><value>Effacement du disque cible...</value></data>
+  <data name="StatusApplyingWim" xml:space="preserve"><value>Création de la partition et application du WIM...</value></data>
+  <data name="StatusMountingVhdx" xml:space="preserve"><value>Montage du VHDX et copie...</value></data>
+  <data name="StatusAuditingRestore" xml:space="preserve"><value>Audit du démarrage après restauration...</value></data>
+  <data name="RestoreCompleteBody" xml:space="preserve"><value>L'image a été restaurée avec succès sur le disque {0}.&#10;&#10;{1}</value></data>
+  <data name="RestoreCompleteTitle" xml:space="preserve"><value>Restauration terminée</value></data>
+  <data name="RestoreCompleteWarningsTitle" xml:space="preserve"><value>Restauration terminée (avertissements de l'audit de démarrage)</value></data>
+  <data name="ImageRestoreFailed" xml:space="preserve"><value>Échec de la restauration de l'image :&#10;{0}</value></data>
+  <data name="RestoreErrorTitle" xml:space="preserve"><value>Erreur de restauration</value></data>
+  <data name="CloneValidationFailedTitle" xml:space="preserve"><value>Échec de la validation du clonage</value></data>
+  <data name="StatusCloning" xml:space="preserve"><value>Clonage du disque {0} vers le disque {1}...</value></data>
+  <data name="StatusSavingDestSnapshot" xml:space="preserve"><value>Enregistrement de l'instantané de partitions de destination...</value></data>
+  <data name="StatusCloningPercent" xml:space="preserve"><value>Clonage... {0} %</value></data>
+  <data name="StatusAuditingClone" xml:space="preserve"><value>Audit du démarrage après clonage...</value></data>
+  <data name="CloneCompleteWarningsTitle" xml:space="preserve"><value>Clonage terminé (avec avertissements)</value></data>
+  <data name="CloneCompleteTitle" xml:space="preserve"><value>Clonage terminé</value></data>
+  <data name="SectorCloneFailed" xml:space="preserve"><value>Échec du clonage secteur par secteur :&#10;{0}</value></data>
+  <data name="CloneErrorTitle" xml:space="preserve"><value>Erreur de clonage</value></data>
+  <data name="ManifestDegradedBody" xml:space="preserve"><value>{0}&#10;&#10;Poursuivre la restauration en mode dégradé ? Le disque cible sera tout de même effacé si vous continuez.</value></data>
+  <data name="ManifestVerificationTitle" xml:space="preserve"><value>Vérification du manifeste de l'image</value></data>
+  <data name="DecryptedHashMismatchBody" xml:space="preserve"><value>Le hachage de l'image déchiffrée ne correspond pas au manifeste.&#10;&#10;Attendu : {0}&#10;Réel : {1}&#10;&#10;Poursuivre la restauration en mode dégradé ?</value></data>
+  <data name="DecryptedImageVerificationTitle" xml:space="preserve"><value>Vérification de l'image déchiffrée</value></data>
+  <data name="ImagePreflightPrompt" xml:space="preserve"><value>Choisissez un volume source et un chemin de destination pour vérifier l'espace libre avant la capture.</value></data>
+  <data name="CloneSelectSource" xml:space="preserve"><value>Sélectionnez un disque source.</value></data>
+  <data name="CloneSelectDest" xml:space="preserve"><value>Source : {0}. Sélectionnez un disque de destination.</value></data>
+  <data name="CloneDestTooSmall" xml:space="preserve"><value>Source : {0}, Destination : {1} — destination trop petite.</value></data>
+  <data name="CloneReady" xml:space="preserve"><value>Source : {0}, Destination : {1} — prêt.</value></data>
+  <data name="SaveDiskImageTitle" xml:space="preserve"><value>Enregistrer l'image disque</value></data>
+  <data name="SaveDiskImageFilter" xml:space="preserve"><value>Fichiers VHDX (*.vhdx)|*.vhdx|Fichiers WIM (*.wim)|*.wim</value></data>
+  <data name="SelectImageTitle" xml:space="preserve"><value>Sélectionner l'image à restaurer</value></data>
+  <data name="SelectImageFilter" xml:space="preserve"><value>Images disque (*.vhdx;*.wim)|*.vhdx;*.wim|Tous les fichiers (*.*)|*.*</value></data>
+  <data name="ImageCreationCannotStart" xml:space="preserve"><value>Impossible de démarrer la création de l'image :&#10;{0}</value></data>
+  <data name="CreateImagePreflightTitle" xml:space="preserve"><value>Vérification avant création de l'image</value></data>
+  <data name="StatusCreatingImage" xml:space="preserve"><value>Création de l'image de {0}:\...</value></data>
+  <data name="StatusCheckingVss" xml:space="preserve"><value>Vérification de l'état des enregistreurs VSS...</value></data>
+  <data name="StatusCreatingVss" xml:space="preserve"><value>Création d'un instantané VSS pour une capture cohérente...</value></data>
+  <data name="VssUnavailableBody" xml:space="preserve"><value>Impossible de créer l'instantané VSS :&#10;{0}&#10;&#10;Continuer avec la capture du volume actif ? Les fichiers en cours d'utilisation peuvent être incohérents.</value></data>
+  <data name="VssUnavailableTitle" xml:space="preserve"><value>VSS indisponible</value></data>
+  <data name="StatusVhdxCapturing" xml:space="preserve"><value>VHDX créé, capture avec robocopy...</value></data>
+  <data name="StatusWritingManifest" xml:space="preserve"><value>Écriture du manifeste de l'image...</value></data>
+  <data name="StatusEncryptingImage" xml:space="preserve"><value>Chiffrement de l'image...</value></data>
+  <data name="EncryptPasswordPrompt" xml:space="preserve"><value>Saisissez le mot de passe de chiffrement de l'image disque :</value></data>
+  <data name="EncryptImageTitle" xml:space="preserve"><value>Chiffrer l'image</value></data>
+  <data name="ImageCreatedBody" xml:space="preserve"><value>L'image disque a été créée avec succès.&#10;&#10;Chemin : {0}</value></data>
+  <data name="ImageCreatedTitle" xml:space="preserve"><value>Image créée</value></data>
+  <data name="ImageCreationFailed" xml:space="preserve"><value>Échec de la création de l'image :&#10;{0}</value></data>
+  <data name="CreateImageErrorTitle" xml:space="preserve"><value>Erreur de création d'image</value></data>
   <data name="HealthSectorSizes" xml:space="preserve"><value>Logique : {0} / Physique : {1}</value></data>
   <data name="HealthTemperatureC" xml:space="preserve"><value>{0} C</value></data>
   <data name="HealthWearUsed" xml:space="preserve"><value>{0} % utilisés</value></data>
