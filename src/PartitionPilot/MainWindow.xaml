@@ -48,6 +48,41 @@
                            Orientation="Horizontal"
                            HorizontalAlignment="Right"
                            VerticalAlignment="Center">
+                    <Grid Margin="0,0,10,0" VerticalAlignment="Center">
+                        <TextBox x:Name="txtOperationSearch"
+                                 Width="190"
+                                 Height="28"
+                                 VerticalContentAlignment="Center"
+                                 Padding="6,0"
+                                 TextChanged="OnOperationSearchChanged"
+                                 AutomationProperties.Name="{local:Loc FindOperationAutomationName}"/>
+                        <TextBlock Text="{local:Loc FindOperation}"
+                                   IsHitTestVisible="False"
+                                   Margin="9,0,0,0"
+                                   VerticalAlignment="Center"
+                                   Foreground="{DynamicResource SubtextBrush}"
+                                   Visibility="{Binding Text.IsEmpty, ElementName=txtOperationSearch, Converter={StaticResource BoolVis}}"/>
+                        <Popup x:Name="popOperationSearch"
+                               PlacementTarget="{Binding ElementName=txtOperationSearch}"
+                               Placement="Bottom"
+                               StaysOpen="False"
+                               AllowsTransparency="True"
+                               MaxHeight="320">
+                            <Border Background="{DynamicResource PanelBgBrush}"
+                                    BorderBrush="{DynamicResource BorderBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="4"
+                                    Padding="2">
+                                <ListBox x:Name="lstOperationSearch"
+                                         Width="260"
+                                         BorderThickness="0"
+                                         Background="Transparent"
+                                         DisplayMemberPath="Display"
+                                         SelectionChanged="OnOperationSearchSelected"
+                                         AutomationProperties.Name="{local:Loc FindOperationResultsAutomationName}"/>
+                            </Border>
+                        </Popup>
+                    </Grid>
                     <Button Content="{local:Loc Refresh}"
                             Command="{Binding RefreshCurrentCommand}"
                             Style="{StaticResource CommandBarButton}"

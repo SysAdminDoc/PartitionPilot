@@ -54,6 +54,33 @@ public partial class MainWindow : Window
             vm.SelectedTabIndex = settings.SelectedTabIndex;
     }
 
+    private void OnOperationSearchChanged(object sender, TextChangedEventArgs e)
+    {
+        var query = txtOperationSearch.Text;
+        if (string.IsNullOrWhiteSpace(query))
+        {
+            popOperationSearch.IsOpen = false;
+            return;
+        }
+
+        var matches = OperationCatalog.Search(query);
+        lstOperationSearch.ItemsSource = matches;
+        popOperationSearch.IsOpen = matches.Count > 0;
+    }
+
+    private void OnOperationSearchSelected(object sender, SelectionChangedEventArgs e)
+    {
+        if (lstOperationSearch.SelectedItem is not OperationEntry entry)
+            return;
+
+        if (DataContext is MainViewModel vm)
+            vm.SelectedTabIndex = entry.TabIndex;
+
+        popOperationSearch.IsOpen = false;
+        lstOperationSearch.SelectedItem = null;
+        txtOperationSearch.Clear();
+    }
+
     private void OnToggleActivityLog(object sender, RoutedEventArgs e) =>
         SetActivityLogCollapsed(rowActivityLog.Height.Value > 0);
 

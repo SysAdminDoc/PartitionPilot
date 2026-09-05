@@ -162,6 +162,9 @@
   <data name="Export" xml:space="preserve"><value>[Export!!]</value></data>
   <data name="Compare" xml:space="preserve"><value>[Compare!!]</value></data>
   <data name="RecoveryPlan" xml:space="preserve"><value>[Recovery Plan!!]</value></data>
+  <data name="FindOperation" xml:space="preserve"><value>[Find an operation!!]</value></data>
+  <data name="FindOperationAutomationName" xml:space="preserve"><value>[Find an operation by name!!!]</value></data>
+  <data name="FindOperationResultsAutomationName" xml:space="preserve"><value>[Matching operations!!]</value></data>
   <data name="CollapseActivityLog" xml:space="preserve"><value>[Hide Log!!]</value></data>
   <data name="ExpandActivityLog" xml:space="preserve"><value>[Show Log!!]</value></data>
   <data name="CollapseActivityLogAutomationName" xml:space="preserve"><value>[Collapse the activity log!!!]</value></data>
