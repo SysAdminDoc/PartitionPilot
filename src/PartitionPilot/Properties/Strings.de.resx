@@ -162,6 +162,77 @@
   <data name="Export" xml:space="preserve"><value>Exportieren</value></data>
   <data name="Compare" xml:space="preserve"><value>Vergleichen</value></data>
   <data name="RecoveryPlan" xml:space="preserve"><value>Wiederherstellungsplan</value></data>
+  <data name="PreflightChooseSource" xml:space="preserve"><value>Wählen Sie ein Quellvolume, um die Abbildgröße zu schätzen.</value></data>
+  <data name="PreflightChooseDestination" xml:space="preserve"><value>Wählen Sie einen Zielpfad, um den verfügbaren freien Speicherplatz zu prüfen.</value></data>
+  <data name="PreflightEstimate" xml:space="preserve"><value>Geschätzter Bedarf: {0}. Freier Speicher am Ziel: {1}.</value></data>
+  <data name="PreflightDestinationCheck" xml:space="preserve"><value>Zielprüfung: {0}</value></data>
+  <data name="CloneStarting" xml:space="preserve"><value>Sektorklonen wird gestartet...</value></data>
+  <data name="CloneProgressLine" xml:space="preserve"><value>{0}  {1}  Verbleibend: {2}</value></data>
+  <data name="CloneCancelled" xml:space="preserve"><value>Klonen abgebrochen.</value></data>
+  <data name="CloneFailedShort" xml:space="preserve"><value>Fehlgeschlagen: {0}</value></data>
+  <data name="OpSectorCloneToDisk" xml:space="preserve"><value>Sektorklonen auf Datenträger {0}</value></data>
+  <data name="BitLockerCloneTitle" xml:space="preserve"><value>BitLocker-geschütztes Klonen bestätigen</value></data>
+  <data name="OpRestoreImageToDisk" xml:space="preserve"><value>Abbild auf Datenträger {0} wiederherstellen</value></data>
+  <data name="BitLockerRestoreTitle" xml:space="preserve"><value>BitLocker-geschützte Wiederherstellung bestätigen</value></data>
+  <data name="RestoreDestroyWarning" xml:space="preserve"><value>WARNUNG: Durch die Wiederherstellung werden ALLE DATEN auf dem Zieldatenträger ZERSTÖRT.&#10;&#10;Ziel:&#10;{0}&#10;&#10;Fortfahren?</value></data>
+  <data name="ConfirmImageRestoreTitle" xml:space="preserve"><value>Abbildwiederherstellung bestätigen</value></data>
+  <data name="RestoreFinalConfirmation" xml:space="preserve"><value>LETZTE BESTÄTIGUNG: Alle Daten auf dem Zieldatenträger werden unwiderruflich überschrieben.</value></data>
+  <data name="ConfirmRestoreTitle" xml:space="preserve"><value>Wiederherstellung bestätigen</value></data>
+  <data name="DecryptPasswordPrompt" xml:space="preserve"><value>Dies ist ein verschlüsseltes Abbild. Geben Sie das Entschlüsselungskennwort ein:</value></data>
+  <data name="DecryptImageTitle" xml:space="preserve"><value>Abbild entschlüsseln</value></data>
+  <data name="RestoreCancelledNoPassword" xml:space="preserve"><value>Wiederherstellung abgebrochen — Entschlüsselungskennwort erforderlich.</value></data>
+  <data name="EncryptedImageTitle" xml:space="preserve"><value>Verschlüsseltes Abbild</value></data>
+  <data name="DecryptionFailed" xml:space="preserve"><value>Entschlüsselung fehlgeschlagen: {0}</value></data>
+  <data name="DecryptErrorTitle" xml:space="preserve"><value>Entschlüsselungsfehler</value></data>
+  <data name="StatusRestoringImage" xml:space="preserve"><value>Abbild wird auf Datenträger {0} wiederhergestellt...</value></data>
+  <data name="StatusSavingTargetSnapshot" xml:space="preserve"><value>Ziel-Partitionssnapshot wird gespeichert...</value></data>
+  <data name="StatusClearingTarget" xml:space="preserve"><value>Zieldatenträger wird geleert...</value></data>
+  <data name="StatusApplyingWim" xml:space="preserve"><value>Partition wird erstellt und WIM angewendet...</value></data>
+  <data name="StatusMountingVhdx" xml:space="preserve"><value>VHDX wird eingebunden und kopiert...</value></data>
+  <data name="StatusAuditingRestore" xml:space="preserve"><value>Startfähigkeit nach der Wiederherstellung wird geprüft...</value></data>
+  <data name="RestoreCompleteBody" xml:space="preserve"><value>Abbild wurde erfolgreich auf Datenträger {0} wiederhergestellt.&#10;&#10;{1}</value></data>
+  <data name="RestoreCompleteTitle" xml:space="preserve"><value>Wiederherstellung abgeschlossen</value></data>
+  <data name="RestoreCompleteWarningsTitle" xml:space="preserve"><value>Wiederherstellung abgeschlossen (Warnungen bei der Startprüfung)</value></data>
+  <data name="ImageRestoreFailed" xml:space="preserve"><value>Abbildwiederherstellung fehlgeschlagen:&#10;{0}</value></data>
+  <data name="RestoreErrorTitle" xml:space="preserve"><value>Wiederherstellungsfehler</value></data>
+  <data name="CloneValidationFailedTitle" xml:space="preserve"><value>Klonprüfung fehlgeschlagen</value></data>
+  <data name="StatusCloning" xml:space="preserve"><value>Datenträger {0} wird auf Datenträger {1} geklont...</value></data>
+  <data name="StatusSavingDestSnapshot" xml:space="preserve"><value>Ziel-Partitionssnapshot wird gespeichert...</value></data>
+  <data name="StatusCloningPercent" xml:space="preserve"><value>Klonen... {0} %</value></data>
+  <data name="StatusAuditingClone" xml:space="preserve"><value>Startfähigkeit nach dem Klonen wird geprüft...</value></data>
+  <data name="CloneCompleteWarningsTitle" xml:space="preserve"><value>Klonen abgeschlossen (mit Warnungen)</value></data>
+  <data name="CloneCompleteTitle" xml:space="preserve"><value>Klonen abgeschlossen</value></data>
+  <data name="SectorCloneFailed" xml:space="preserve"><value>Sektorklonen fehlgeschlagen:&#10;{0}</value></data>
+  <data name="CloneErrorTitle" xml:space="preserve"><value>Klonfehler</value></data>
+  <data name="ManifestDegradedBody" xml:space="preserve"><value>{0}&#10;&#10;Wiederherstellung im eingeschränkten Modus fortsetzen? Der Zieldatenträger wird trotzdem geleert, wenn Sie fortfahren.</value></data>
+  <data name="ManifestVerificationTitle" xml:space="preserve"><value>Überprüfung des Abbildmanifests</value></data>
+  <data name="DecryptedHashMismatchBody" xml:space="preserve"><value>Der Hash des entschlüsselten Abbilds stimmt nicht mit dem Manifest überein.&#10;&#10;Erwartet: {0}&#10;Tatsächlich: {1}&#10;&#10;Wiederherstellung im eingeschränkten Modus fortsetzen?</value></data>
+  <data name="DecryptedImageVerificationTitle" xml:space="preserve"><value>Überprüfung des entschlüsselten Abbilds</value></data>
+  <data name="ImagePreflightPrompt" xml:space="preserve"><value>Wählen Sie ein Quellvolume und einen Zielpfad, um vor der Sicherung den freien Speicherplatz zu prüfen.</value></data>
+  <data name="CloneSelectSource" xml:space="preserve"><value>Wählen Sie einen Quelldatenträger.</value></data>
+  <data name="CloneSelectDest" xml:space="preserve"><value>Quelle: {0}. Wählen Sie einen Zieldatenträger.</value></data>
+  <data name="CloneDestTooSmall" xml:space="preserve"><value>Quelle: {0}, Ziel: {1} — Ziel zu klein.</value></data>
+  <data name="CloneReady" xml:space="preserve"><value>Quelle: {0}, Ziel: {1} — bereit.</value></data>
+  <data name="SaveDiskImageTitle" xml:space="preserve"><value>Datenträgerabbild speichern</value></data>
+  <data name="SaveDiskImageFilter" xml:space="preserve"><value>VHDX-Dateien (*.vhdx)|*.vhdx|WIM-Dateien (*.wim)|*.wim</value></data>
+  <data name="SelectImageTitle" xml:space="preserve"><value>Wiederherzustellendes Abbild auswählen</value></data>
+  <data name="SelectImageFilter" xml:space="preserve"><value>Datenträgerabbilder (*.vhdx;*.wim)|*.vhdx;*.wim|Alle Dateien (*.*)|*.*</value></data>
+  <data name="ImageCreationCannotStart" xml:space="preserve"><value>Abbilderstellung kann nicht gestartet werden:&#10;{0}</value></data>
+  <data name="CreateImagePreflightTitle" xml:space="preserve"><value>Prüfung vor Abbilderstellung</value></data>
+  <data name="StatusCreatingImage" xml:space="preserve"><value>Abbild von {0}:\ wird erstellt...</value></data>
+  <data name="StatusCheckingVss" xml:space="preserve"><value>VSS-Writer-Zustand wird geprüft...</value></data>
+  <data name="StatusCreatingVss" xml:space="preserve"><value>VSS-Snapshot für konsistente Sicherung wird erstellt...</value></data>
+  <data name="VssUnavailableBody" xml:space="preserve"><value>VSS-Snapshot konnte nicht erstellt werden:&#10;{0}&#10;&#10;Mit der Sicherung des aktiven Volumes fortfahren? Dateien, die in Verwendung sind, können inkonsistent sein.</value></data>
+  <data name="VssUnavailableTitle" xml:space="preserve"><value>VSS nicht verfügbar</value></data>
+  <data name="StatusVhdxCapturing" xml:space="preserve"><value>VHDX erstellt, Sicherung mit robocopy läuft...</value></data>
+  <data name="StatusWritingManifest" xml:space="preserve"><value>Abbildmanifest wird geschrieben...</value></data>
+  <data name="StatusEncryptingImage" xml:space="preserve"><value>Abbild wird verschlüsselt...</value></data>
+  <data name="EncryptPasswordPrompt" xml:space="preserve"><value>Geben Sie das Verschlüsselungskennwort für das Datenträgerabbild ein:</value></data>
+  <data name="EncryptImageTitle" xml:space="preserve"><value>Abbild verschlüsseln</value></data>
+  <data name="ImageCreatedBody" xml:space="preserve"><value>Datenträgerabbild wurde erfolgreich erstellt.&#10;&#10;Pfad: {0}</value></data>
+  <data name="ImageCreatedTitle" xml:space="preserve"><value>Abbild erstellt</value></data>
+  <data name="ImageCreationFailed" xml:space="preserve"><value>Abbilderstellung fehlgeschlagen:&#10;{0}</value></data>
+  <data name="CreateImageErrorTitle" xml:space="preserve"><value>Fehler bei der Abbilderstellung</value></data>
   <data name="HealthSectorSizes" xml:space="preserve"><value>Logisch: {0} / Physisch: {1}</value></data>
   <data name="HealthTemperatureC" xml:space="preserve"><value>{0} C</value></data>
   <data name="HealthWearUsed" xml:space="preserve"><value>{0} % verbraucht</value></data>

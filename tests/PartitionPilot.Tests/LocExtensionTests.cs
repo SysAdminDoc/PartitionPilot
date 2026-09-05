@@ -218,6 +218,36 @@ public class LocExtensionTests
     }
 
     [Fact]
+    public void CloneAndRestoreConfirmations_ReproduceTheEnglishTextTheyReplaced()
+    {
+        Assert.Equal(
+            "WARNING: Restoring will DESTROY ALL DATA on the target disk.\n\nTarget:\nidentity\n\nContinue?",
+            LocExtension.Format("RestoreDestroyWarning", "identity"));
+
+        Assert.Equal(
+            "FINAL CONFIRMATION: All data on the target disk will be permanently overwritten.",
+            LocExtension.Get("RestoreFinalConfirmation"));
+
+        Assert.Equal(
+            "VSS snapshot could not be created:\nboom\n\n" +
+            "Continue with live volume capture? Files in use may be inconsistent.",
+            LocExtension.Format("VssUnavailableBody", "boom"));
+
+        Assert.Equal(
+            "The decrypted image hash does not match the manifest.\n\n" +
+            "Expected: aaa\nActual: bbb\n\nContinue restore in degraded mode?",
+            LocExtension.Format("DecryptedHashMismatchBody", "aaa", "bbb"));
+
+        Assert.Equal(
+            "detail\n\nContinue restore in degraded mode? " +
+            "The target disk will still be cleared if you proceed.",
+            LocExtension.Format("ManifestDegradedBody", "detail"));
+
+        Assert.Equal("Sector clone to Disk 2", LocExtension.Format("OpSectorCloneToDisk", 2));
+        Assert.Equal("Restore image to Disk 2", LocExtension.Format("OpRestoreImageToDisk", 2));
+    }
+
+    [Fact]
     public void EnduranceRated_ReproducesTheEnglishTextItReplaced()
     {
         Assert.Equal(

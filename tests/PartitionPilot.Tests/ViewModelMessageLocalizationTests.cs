@@ -16,7 +16,6 @@ public class ViewModelMessageLocalizationTests
     /// </summary>
     private static readonly string[] PendingConversion =
     [
-        "DiskCloningViewModel.cs",
         "MainViewModel.cs",
         "ToolsViewModel.cs"
     ];
@@ -26,9 +25,12 @@ public class ViewModelMessageLocalizationTests
         @"(?<!\w)(ShowError|ShowInfo|ShowWarning|ConfirmDanger|ConfirmWarning|WorkflowPrompt)\s*\(",
         RegexOptions.Compiled);
 
-    /// <summary>Bound properties whose whole value is rendered in the window.</summary>
+    /// <summary>
+    /// Bound properties whose whole value is rendered in the window. Matched by suffix rather than by name so
+    /// that a new status or summary property is covered the day it is written.
+    /// </summary>
     private static readonly Regex BoundTextAssignmentPattern = new(
-        @"(?<![\w.])(StatusText|SummaryText|DiffText|_statusText|_summaryText|_diffText)\s*=(?!=)",
+        @"(?<![\w.])(_?[A-Za-z]\w*(?:Text|Summary))\s*=(?!=)",
         RegexOptions.Compiled);
 
     private static readonly Regex InterpolationHole = new(@"\{[^{}]*\}", RegexOptions.Compiled);
@@ -85,6 +87,8 @@ public class ViewModelMessageLocalizationTests
     [InlineData("_dialog.ShowInfo(\n    \"Snapshot exported to disk.\",\n    \"Exported\");")]
     [InlineData("StatusText = ready ? \"All good here.\" : \"Something went wrong.\";")]
     [InlineData("SummaryText = \"Disk usage scan cancelled.\";")]
+    [InlineData("CloneProgressText = \"Starting sector clone...\";")]
+    [InlineData("ImagePreflightSummary = \"Choose a destination path.\";")]
     [InlineData("public string DiskCapacityText => disk is null ? \"No disk selected\" : disk.Name;")]
     [InlineData("public string Summary\n{\n    get { return \"Select a disk first.\"; }\n}")]
     public void Scanner_FlagsAnEnglishLiteral(string source)
