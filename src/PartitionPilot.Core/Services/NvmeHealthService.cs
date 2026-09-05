@@ -6,7 +6,12 @@ namespace PartitionPilot;
 
 public static class NvmeHealthService
 {
-    private const uint GENERIC_READ = 0x80000000;
+    /// <summary>
+    /// No access rights at all. <c>IOCTL_STORAGE_QUERY_PROPERTY</c> is defined with <c>FILE_ANY_ACCESS</c>,
+    /// so a handle opened this way succeeds without Administrator. Asking for GENERIC_READ would make the
+    /// whole Disk Health tab unavailable in the app's unelevated read-only mode for no benefit.
+    /// </summary>
+    private const uint NO_ACCESS = 0;
     private const uint FILE_SHARE_READ = 0x01;
     private const uint FILE_SHARE_WRITE = 0x02;
     private const uint OPEN_EXISTING = 3;
@@ -15,6 +20,11 @@ public static class NvmeHealthService
     private const int ProtocolTypeNvme = 3;
     private const int NVMeDataTypeLogPage = 2;
     private const int NVME_LOG_PAGE_HEALTH_INFO = 2;
+
+    /// <summary>Largest NVMe log page, per Microsoft's own sample. The request buffer is sized for it.</summary>
+    private const int NVME_MAX_LOG_SIZE = 4096;
+
+    private const int HealthLogLength = 512;
 
     [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
     private static extern SafeFileHandle CreateFileW(
@@ -52,19 +62,25 @@ public static class NvmeHealthService
         public int ProtocolDataRequestSubValue4;
     }
 
-    public static void EnrichSmartData(SmartData data, int diskNumber, IActivityLog? log = null)
+    /// <summary>
+    /// Reads NVMe SMART / health log page 02h into <paramref name="data"/>.
+    /// Returns true when the log was read and parsed, so callers can use this as a standalone source
+    /// rather than only as a top-up for data another provider already produced.
+    /// </summary>
+    public static bool EnrichSmartData(SmartData data, int diskNumber, IActivityLog? log = null)
     {
         var path = $"\\\\.\\PhysicalDrive{diskNumber}";
-        using var handle = CreateFileW(path, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
+        using var handle = CreateFileW(path, NO_ACCESS, FILE_SHARE_READ | FILE_SHARE_WRITE,
             IntPtr.Zero, OPEN_EXISTING, 0, IntPtr.Zero);
         if (handle.IsInvalid)
         {
             log?.Log($"NVMe health query: cannot open PhysicalDrive{diskNumber}");
-            return;
+            return false;
         }
 
         var querySize = Marshal.SizeOf<STORAGE_PROPERTY_QUERY>();
-        int bufferSize = querySize + 512;
+        var protocolDataSize = Marshal.SizeOf<STORAGE_PROTOCOL_SPECIFIC_DATA>();
+        var bufferSize = querySize + NVME_MAX_LOG_SIZE;
         var buffer = Marshal.AllocHGlobal(bufferSize);
 
         try
@@ -81,8 +97,10 @@ public static class NvmeHealthService
                     ProtocolType = ProtocolTypeNvme,
                     DataType = NVMeDataTypeLogPage,
                     ProtocolDataRequestValue = NVME_LOG_PAGE_HEALTH_INFO,
-                    ProtocolDataOffset = querySize,
-                    ProtocolDataLength = 512
+                    // Offset is measured from the start of STORAGE_PROTOCOL_SPECIFIC_DATA, not from the
+                    // start of the query. The two happen to be equal here, but the contract is the former.
+                    ProtocolDataOffset = protocolDataSize,
+                    ProtocolDataLength = HealthLogLength
                 }
             };
 
@@ -91,25 +109,59 @@ public static class NvmeHealthService
             if (!DeviceIoControl(handle, IOCTL_STORAGE_QUERY_PROPERTY,
                 buffer, bufferSize, buffer, bufferSize, out int bytesReturned, IntPtr.Zero))
             {
-                log?.Log($"NVMe health IOCTL failed for drive {diskNumber} (not NVMe or access denied)");
-                return;
+                log?.Log($"NVMe health IOCTL failed for drive {diskNumber} (not an NVMe device or the driver rejected the request)");
+                return false;
             }
 
-            if (bytesReturned < querySize + 512)
+            // The reply is a STORAGE_PROTOCOL_DATA_DESCRIPTOR whose own Size field reports the header
+            // length, not the payload length. Locate the log through the descriptor's offset and length
+            // rather than assuming it starts where the request happened to put it.
+            if (!TryLocateHealthLog(buffer, bytesReturned, protocolDataSize, out var payloadOffset, out var payloadLength))
             {
-                log?.Log($"NVMe health IOCTL returned insufficient data ({bytesReturned} bytes) for drive {diskNumber}");
-                return;
+                log?.Log($"NVMe health IOCTL returned {bytesReturned} byte(s) for drive {diskNumber} " +
+                         "without a usable health log descriptor");
+                return false;
             }
 
-            var healthData = new byte[512];
-            Marshal.Copy(buffer + querySize, healthData, 0, 512);
+            var healthData = new byte[HealthLogLength];
+            Marshal.Copy(buffer + payloadOffset, healthData, 0, Math.Min(payloadLength, HealthLogLength));
             ParseHealthLog(data, healthData);
             log?.Log($"NVMe health log parsed for drive {diskNumber}");
+            return true;
         }
         finally
         {
             Marshal.FreeHGlobal(buffer);
         }
+    }
+
+    /// <summary>
+    /// Reads the returned <c>STORAGE_PROTOCOL_DATA_DESCRIPTOR</c> to find where the health log actually
+    /// landed. Its <c>ProtocolDataOffset</c> is relative to the start of the embedded
+    /// <c>STORAGE_PROTOCOL_SPECIFIC_DATA</c>, which sits after the descriptor's 8-byte Version/Size pair.
+    /// </summary>
+    internal static bool TryLocateHealthLog(
+        IntPtr buffer, int bytesReturned, int protocolDataSize, out int payloadOffset, out int payloadLength)
+    {
+        payloadOffset = 0;
+        payloadLength = 0;
+
+        const int descriptorHeaderSize = 8; // Version (4) + Size (4)
+        if (bytesReturned < descriptorHeaderSize + protocolDataSize)
+            return false;
+
+        var specific = Marshal.PtrToStructure<STORAGE_PROTOCOL_SPECIFIC_DATA>(buffer + descriptorHeaderSize);
+        var offset = descriptorHeaderSize + specific.ProtocolDataOffset;
+        var length = specific.ProtocolDataLength;
+
+        if (specific.ProtocolDataOffset < protocolDataSize || length <= 0)
+            return false;
+        if (offset < 0 || length > bytesReturned - offset)
+            return false;
+
+        payloadOffset = offset;
+        payloadLength = length;
+        return true;
     }
 
     private static void ParseHealthLog(SmartData data, byte[] log)

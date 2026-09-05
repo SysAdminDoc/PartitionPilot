@@ -351,7 +351,18 @@ public class WmiDiskService : IWmiDiskService
             return result;
         }
 
-        // Attempt 3: PowerShell fallback
+        // Attempt 3: the NVMe health log page on its own. IOCTL_STORAGE_QUERY_PROPERTY carries
+        // FILE_ANY_ACCESS, so this is the only source here that works without elevation — which makes it
+        // the one that matters when the two above have just failed with access denied.
+        try
+        {
+            var nvmeOnly = new SmartData();
+            if (await Task.Run(() => NvmeHealthService.EnrichSmartData(nvmeOnly, diskNum, _log)))
+                return nvmeOnly;
+        }
+        catch (Exception ex) { _log.Log($"NVMe health query failed: {ex.Message}"); }
+
+        // Attempt 4: PowerShell fallback
         try
         {
             var json = await _runner.RunPowerShellAsync(
