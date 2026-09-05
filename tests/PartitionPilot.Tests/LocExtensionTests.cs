@@ -218,6 +218,31 @@ public class LocExtensionTests
     }
 
     [Fact]
+    public void WipeConfirmations_ReproduceTheEnglishTextTheyReplaced()
+    {
+        Assert.Equal("Wipe Disk 3", LocExtension.Format("OpWipeDisk", 3));
+        Assert.Equal("NVMe sanitize Disk 3", LocExtension.Format("OpNvmeSanitizeDisk", 3));
+        Assert.Equal("DoD 7-pass wipe Disk 3", LocExtension.Format("OpDodWipeDisk", 7, 3));
+        Assert.Equal("Wipe free space on E:", LocExtension.Format("OpWipeFreeSpace", 'E'));
+        Assert.Equal("Disk 3 has been wiped.", LocExtension.Format("DiskWipedBody", 3));
+
+        Assert.Equal(
+            "NVMe sanitize failed:\nboom\n\nThe drive may not support this sanitize method.",
+            LocExtension.Format("SanitizeFailed", "boom"));
+
+        Assert.Equal(
+            "Format E: as a Dev Drive (ReFS)?\n\nALL DATA ON THIS VOLUME WILL BE ERASED.\n\n" +
+            "Dev Drive uses ReFS with optimized I/O performance and allows configuring antivirus " +
+            "filter exclusions. Minimum 50 GB is recommended.",
+            LocExtension.Format("DevDriveConfirmBody", 'E'));
+
+        Assert.Equal(
+            "Convert Disk 1 (Samsung) from MBR to GPT?\n\n" +
+            "This operation is irreversible. Ensure you have validated first.",
+            LocExtension.Format("Mbr2GptConfirmBody", 1, "Samsung"));
+    }
+
+    [Fact]
     public void CloneAndRestoreConfirmations_ReproduceTheEnglishTextTheyReplaced()
     {
         Assert.Equal(

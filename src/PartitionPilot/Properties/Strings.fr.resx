@@ -162,6 +162,83 @@
   <data name="Export" xml:space="preserve"><value>Exporter</value></data>
   <data name="Compare" xml:space="preserve"><value>Comparer</value></data>
   <data name="RecoveryPlan" xml:space="preserve"><value>Plan de récupération</value></data>
+  <data name="OpWipeFreeSpace" xml:space="preserve"><value>Effacer l'espace libre de {0}:</value></data>
+  <data name="BitLockerVolumeLockedTitle" xml:space="preserve"><value>Volume BitLocker verrouillé</value></data>
+  <data name="StatusWipingFreeSpace" xml:space="preserve"><value>Effacement de l'espace libre de {0}:...</value></data>
+  <data name="FreeSpaceWipeCompleteBody" xml:space="preserve"><value>Effacement de l'espace libre terminé sur {0}:.</value></data>
+  <data name="WipeCompleteTitle" xml:space="preserve"><value>Effacement terminé</value></data>
+  <data name="FreeSpaceWipeFailed" xml:space="preserve"><value>Échec de l'effacement de l'espace libre :&#10;{0}</value></data>
+  <data name="WipeErrorTitle" xml:space="preserve"><value>Erreur d'effacement</value></data>
+  <data name="NvmeSanitizeUnavailableTitle" xml:space="preserve"><value>Sanitize NVMe non disponible</value></data>
+  <data name="OpNvmeSanitizeDisk" xml:space="preserve"><value>Sanitize NVMe du disque {0}</value></data>
+  <data name="BitLockerSanitizeTitle" xml:space="preserve"><value>Confirmer le sanitize protégé par BitLocker</value></data>
+  <data name="StatusNvmeSanitize" xml:space="preserve"><value>Sanitize NVMe ({0}) sur le disque {1}...</value></data>
+  <data name="SanitizeCompleteBody" xml:space="preserve"><value>Sanitize NVMe ({0}) terminé sur le disque {1}.</value></data>
+  <data name="SanitizeCompleteTitle" xml:space="preserve"><value>Sanitize terminé</value></data>
+  <data name="SanitizeFailed" xml:space="preserve"><value>Échec du sanitize NVMe :&#10;{0}&#10;&#10;Le lecteur ne prend peut-être pas en charge cette méthode de sanitize.</value></data>
+  <data name="SanitizeErrorTitle" xml:space="preserve"><value>Erreur de sanitize</value></data>
+  <data name="OpDodWipeDisk" xml:space="preserve"><value>Effacement DoD en {0} passes du disque {1}</value></data>
+  <data name="BitLockerWipeTitle" xml:space="preserve"><value>Confirmer l'effacement protégé par BitLocker</value></data>
+  <data name="StatusDodWipe" xml:space="preserve"><value>Effacement DoD en {0} passes sur le disque {1}...</value></data>
+  <data name="DodWipeCompleteBody" xml:space="preserve"><value>Effacement DoD en {0} passes terminé sur le disque {1}.</value></data>
+  <data name="DodWipeFailed" xml:space="preserve"><value>Échec de l'effacement DoD :&#10;{0}</value></data>
+  <data name="OpWipeDisk" xml:space="preserve"><value>Effacer le disque {0}</value></data>
+  <data name="StatusWipingDisk" xml:space="preserve"><value>Effacement du disque {0}...</value></data>
+  <data name="StatusClearingDisk" xml:space="preserve"><value>Vidage du disque {0}...</value></data>
+  <data name="StatusMultiPassCipher" xml:space="preserve"><value>Effacement multipasse avec cipher /w en cours...</value></data>
+  <data name="StatusCipherWiping" xml:space="preserve"><value>Effacement de {0}:\ avec cipher...</value></data>
+  <data name="StatusFinalClear" xml:space="preserve"><value>Vidage final du disque...</value></data>
+  <data name="DiskWipedBody" xml:space="preserve"><value>Le disque {0} a été effacé.</value></data>
+  <data name="WipeFailed" xml:space="preserve"><value>Échec de l'effacement :&#10;{0}</value></data>
+  <data name="StatusChecking" xml:space="preserve"><value>Vérification de {0}: ({1})...</value></data>
+  <data name="CheckCompleteBody" xml:space="preserve"><value>Vérification du système de fichiers ({0}) sur {1}: terminée.&#10;&#10;{2}</value></data>
+  <data name="CheckCompleteTitle" xml:space="preserve"><value>Vérification terminée</value></data>
+  <data name="CheckFailed" xml:space="preserve"><value>Échec de la vérification :&#10;{0}</value></data>
+  <data name="CheckErrorTitle" xml:space="preserve"><value>Erreur de vérification</value></data>
+  <data name="StatusOptimizing" xml:space="preserve"><value>Optimisation de {0}: ({1})...</value></data>
+  <data name="OptimizeCompleteBody" xml:space="preserve"><value>Optimisation ({0}) sur {1}: terminée.&#10;&#10;{2}</value></data>
+  <data name="OptimizeCompleteTitle" xml:space="preserve"><value>Optimisation terminée</value></data>
+  <data name="OptimizeFailed" xml:space="preserve"><value>Échec de l'optimisation :&#10;{0}</value></data>
+  <data name="OptimizeErrorTitle" xml:space="preserve"><value>Erreur d'optimisation</value></data>
+  <data name="BootRepairCompleteBody" xml:space="preserve"><value>Réparation du démarrage terminée.&#10;&#10;{0}</value></data>
+  <data name="BootRepairCompleteTitle" xml:space="preserve"><value>Réparation du démarrage terminée</value></data>
+  <data name="BootRepairFailed" xml:space="preserve"><value>Échec de la réparation du démarrage :&#10;{0}</value></data>
+  <data name="BootRepairErrorTitle" xml:space="preserve"><value>Erreur de réparation du démarrage</value></data>
+  <data name="StatusSurfaceTest" xml:space="preserve"><value>Test de surface en cours sur {0}:...</value></data>
+  <data name="SurfaceTestRunning" xml:space="preserve"><value>Test de surface en cours (cela peut prendre un moment)...</value></data>
+  <data name="SurfaceTestCompleteBody" xml:space="preserve"><value>Test de surface sur {0}: terminé.&#10;&#10;{1}</value></data>
+  <data name="SurfaceTestCompleteTitle" xml:space="preserve"><value>Test de surface terminé</value></data>
+  <data name="SurfaceTestCancelled" xml:space="preserve"><value>Test de surface annulé.</value></data>
+  <data name="SurfaceTestFailed" xml:space="preserve"><value>Échec du test de surface :&#10;{0}</value></data>
+  <data name="SurfaceTestErrorTitle" xml:space="preserve"><value>Erreur de test de surface</value></data>
+  <data name="StatusBenchmarking" xml:space="preserve"><value>Analyse des performances de {0}:...</value></data>
+  <data name="BenchmarkExportedBody" xml:space="preserve"><value>Résultats du banc d'essai exportés vers :&#10;{0}</value></data>
+  <data name="ExportCompleteTitle" xml:space="preserve"><value>Exportation terminée</value></data>
+  <data name="BenchmarkExportFailed" xml:space="preserve"><value>Impossible d'exporter les résultats du banc d'essai :&#10;{0}</value></data>
+  <data name="DevDriveNotSupportedBody" xml:space="preserve"><value>Dev Drive nécessite Windows 11 build 22621 ou version ultérieure.</value></data>
+  <data name="DevDriveNotSupportedTitle" xml:space="preserve"><value>Dev Drive non pris en charge</value></data>
+  <data name="DevDriveConfirmBody" xml:space="preserve"><value>Formater {0}: en Dev Drive (ReFS) ?&#10;&#10;TOUTES LES DONNÉES DE CE VOLUME SERONT EFFACÉES.&#10;&#10;Dev Drive utilise ReFS avec des performances d'E/S optimisées et permet de configurer les exclusions du filtre antivirus. 50 Go minimum sont recommandés.</value></data>
+  <data name="DevDriveConfirmTitle" xml:space="preserve"><value>Créer un Dev Drive</value></data>
+  <data name="OpCreateDevDrive" xml:space="preserve"><value>Créer un Dev Drive sur {0}:</value></data>
+  <data name="StatusCreatingDevDrive" xml:space="preserve"><value>Création du Dev Drive sur {0}:...</value></data>
+  <data name="StatusDesignatingDevDrive" xml:space="preserve"><value>Désignation comme Dev Drive approuvé...</value></data>
+  <data name="DevDriveCreatedBody" xml:space="preserve"><value>Dev Drive créé sur {0}: (ReFS).&#10;&#10;Le volume est désigné comme approuvé.</value></data>
+  <data name="DevDriveCreatedTitle" xml:space="preserve"><value>Dev Drive créé</value></data>
+  <data name="DevDriveFailed" xml:space="preserve"><value>Échec de la création du Dev Drive :&#10;{0}</value></data>
+  <data name="DevDriveErrorTitle" xml:space="preserve"><value>Erreur Dev Drive</value></data>
+  <data name="Mbr2GptValidationTitle" xml:space="preserve"><value>Validation MBR2GPT</value></data>
+  <data name="Mbr2GptValidationFailed" xml:space="preserve"><value>Échec de la validation :&#10;{0}</value></data>
+  <data name="Mbr2GptErrorTitle" xml:space="preserve"><value>Erreur MBR2GPT</value></data>
+  <data name="Mbr2GptConfirmBody" xml:space="preserve"><value>Convertir le disque {0} ({1}) de MBR en GPT ?&#10;&#10;Cette opération est irréversible. Effectuez d'abord la validation.</value></data>
+  <data name="Mbr2GptConfirmTitle" xml:space="preserve"><value>Confirmer la conversion de MBR en GPT</value></data>
+  <data name="Mbr2GptCompleteBody" xml:space="preserve"><value>La conversion de MBR en GPT s'est terminée avec succès.</value></data>
+  <data name="ConversionCompleteTitle" xml:space="preserve"><value>Conversion terminée</value></data>
+  <data name="Mbr2GptConversionFailed" xml:space="preserve"><value>Échec de la conversion :&#10;{0}</value></data>
+  <data name="Fat32ConfirmBody" xml:space="preserve"><value>Convertir {0}: de FAT32 en NTFS ?&#10;&#10;Il s'agit d'une conversion à sens unique.</value></data>
+  <data name="Fat32ConfirmTitle" xml:space="preserve"><value>Confirmer la conversion de FAT32 en NTFS</value></data>
+  <data name="Fat32CompleteBody" xml:space="preserve"><value>Conversion terminée pour {0}:.</value></data>
+  <data name="ConvertErrorTitle" xml:space="preserve"><value>Erreur de conversion</value></data>
+  <data name="StatusCancelling" xml:space="preserve"><value>Annulation...</value></data>
   <data name="PreflightChooseSource" xml:space="preserve"><value>Choisissez un volume source pour estimer la taille de l'image.</value></data>
   <data name="PreflightChooseDestination" xml:space="preserve"><value>Choisissez un chemin de destination pour vérifier l'espace libre disponible.</value></data>
   <data name="PreflightEstimate" xml:space="preserve"><value>Espace requis estimé : {0}. Espace libre sur la destination : {1}.</value></data>

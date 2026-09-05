@@ -16,8 +16,7 @@ public class ViewModelMessageLocalizationTests
     /// </summary>
     private static readonly string[] PendingConversion =
     [
-        "MainViewModel.cs",
-        "ToolsViewModel.cs"
+        "MainViewModel.cs"
     ];
 
     /// <summary>Dialog calls whose arguments are shown to the operator verbatim.</summary>
