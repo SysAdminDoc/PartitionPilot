@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Globalization;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -67,11 +68,13 @@ public class HexViewerViewModel : ViewModelBase
         {
             try
             {
-                return $"LBA {SectorOffset} (offset {DiskGeometry.GetByteOffset(SectorOffset, LogicalSectorSize):N0})";
+                return LocExtension.Format("HexSectorOffsetText",
+                    SectorOffset,
+                    DiskGeometry.GetByteOffset(SectorOffset, LogicalSectorSize).ToString("N0", CultureInfo.CurrentCulture));
             }
             catch (OverflowException)
             {
-                return $"LBA {SectorOffset} (offset exceeds supported range)";
+                return LocExtension.Format("HexSectorOffsetOverflow", SectorOffset);
             }
         }
     }
@@ -91,7 +94,8 @@ public class HexViewerViewModel : ViewModelBase
     }
 
     public string DiskSummary => SelectedDisk is not null
-        ? $"Disk {SelectedDisk.Number}: {SelectedDisk.FriendlyName} ({SizeUtil.Format(SelectedDisk.Size)})"
+        ? LocExtension.Format("HexDiskSummary",
+            SelectedDisk.Number, SelectedDisk.FriendlyName, SizeUtil.Format(SelectedDisk.Size))
         : "";
 
     private int LogicalSectorSize => DiskGeometry.NormalizeLogicalSectorSize(SelectedDisk?.LogicalSectorSize ?? 0);

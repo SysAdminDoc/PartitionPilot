@@ -17,8 +17,8 @@ public class ViewModelMessageLocalizationTests
     private static readonly string[] PendingConversion =
     [
         "DiskCloningViewModel.cs",
+        "DiskHealthViewModel.cs",
         "MainViewModel.cs",
-        "PartitionsViewModel.cs",
         "ToolsViewModel.cs"
     ];
 
@@ -30,6 +30,16 @@ public class ViewModelMessageLocalizationTests
     /// <summary>Bound properties whose whole value is rendered in the window.</summary>
     private static readonly Regex BoundTextAssignmentPattern = new(
         @"(?<![\w.])(StatusText|SummaryText|DiffText|_statusText|_summaryText|_diffText)\s*=(?!=)",
+        RegexOptions.Compiled);
+
+    /// <summary>
+    /// Public string members. Every one of these is a candidate binding source, and several render straight
+    /// into the window without ever passing through a status property.
+    /// </summary>
+    private static readonly Regex InterpolationHole = new(@"\{[^{}]*\}", RegexOptions.Compiled);
+
+    private static readonly Regex PublicTextMemberPattern = new(
+        @"public\s+string\??\s+(?<name>[A-Z]\w*)\s*(?<body>=>|\{)",
         RegexOptions.Compiled);
 
     [Fact]
@@ -76,6 +86,8 @@ public class ViewModelMessageLocalizationTests
     [InlineData("_dialog.ShowInfo(\n    \"Snapshot exported to disk.\",\n    \"Exported\");")]
     [InlineData("StatusText = ready ? \"All good here.\" : \"Something went wrong.\";")]
     [InlineData("SummaryText = \"Disk usage scan cancelled.\";")]
+    [InlineData("public string DiskCapacityText => disk is null ? \"No disk selected\" : disk.Name;")]
+    [InlineData("public string Summary\n{\n    get { return \"Select a disk first.\"; }\n}")]
     public void Scanner_FlagsAnEnglishLiteral(string source)
     {
         Assert.NotEmpty(FindLiterals(source, "Sample.cs"));
@@ -86,6 +98,7 @@ public class ViewModelMessageLocalizationTests
     [InlineData("StatusText = LocExtension.Get(\"UsageScanCancelled\");")]
     [InlineData("_dialog.ShowError(string.Join(\"\\n\", errors), LocExtension.Get(\"ExportErrorTitle\"));")]
     [InlineData("_dialog.ShowInfo(string.Join(\", \", names), LocExtension.Get(\"ExportErrorTitle\"));")]
+    [InlineData("public string Caption => $\"{Size} | {FileSystem} | {Details}\";")]
     public void Scanner_AcceptsAResourceLookup(string source)
     {
         Assert.Empty(FindLiterals(source, "Sample.cs"));
@@ -115,6 +128,16 @@ public class ViewModelMessageLocalizationTests
         {
             var start = match.Index + match.Length;
             findings.AddRange(LiteralsIn(source, start, EndOfStatement(source, start), fileName));
+        }
+
+        foreach (Match match in PublicTextMemberPattern.Matches(source))
+        {
+            var start = match.Groups["body"].Index;
+            var end = match.Groups["body"].Value == "=>"
+                ? EndOfStatement(source, start + 2)
+                : EndOfBlock(source, start);
+
+            findings.AddRange(LiteralsIn(source, start, end, fileName));
         }
 
         return findings
@@ -151,7 +174,11 @@ public class ViewModelMessageLocalizationTests
             }
 
             var value = text.ToString();
-            if (value.Any(char.IsLetter) && value.Contains(' '))
+
+            // Placeholders carry expression names, not prose, so "{Name} | {Tab}" is a separator rather
+            // than a message. Strip them before deciding whether any English is left.
+            var prose = InterpolationHole.Replace(value, "");
+            if (prose.Any(char.IsLetter) && prose.Contains(' '))
                 yield return (fileName, LineOf(source, i), Truncate(value));
 
             i = cursor;
@@ -190,6 +217,24 @@ public class ViewModelMessageLocalizationTests
             if (source[i] is '(' or '[') depth++;
             else if (source[i] is ')' or ']') depth--;
             else if (source[i] == ';' && depth <= 0) return i;
+        }
+
+        return source.Length;
+    }
+
+    private static int EndOfBlock(string source, int openBrace)
+    {
+        var depth = 0;
+        for (var i = openBrace; i < source.Length; i++)
+        {
+            if (source[i] == '"')
+            {
+                i = SkipLiteral(source, i);
+                continue;
+            }
+
+            if (source[i] == '{') depth++;
+            else if (source[i] == '}' && --depth == 0) return i;
         }
 
         return source.Length;

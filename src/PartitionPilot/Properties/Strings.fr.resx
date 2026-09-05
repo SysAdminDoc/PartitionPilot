@@ -162,6 +162,94 @@
   <data name="Export" xml:space="preserve"><value>Exporter</value></data>
   <data name="Compare" xml:space="preserve"><value>Comparer</value></data>
   <data name="RecoveryPlan" xml:space="preserve"><value>Plan de récupération</value></data>
+  <data name="HexSectorOffsetText" xml:space="preserve"><value>LBA {0} (décalage {1})</value></data>
+  <data name="HexSectorOffsetOverflow" xml:space="preserve"><value>LBA {0} (le décalage dépasse la plage prise en charge)</value></data>
+  <data name="HexDiskSummary" xml:space="preserve"><value>Disque {0} : {1} ({2})</value></data>
+  <data name="QueueDescCreate" xml:space="preserve"><value>Créer une partition {1} de {0} Go ({2}:) sur le disque {3}</value></data>
+  <data name="QueueDescFormat" xml:space="preserve"><value>Formater {0}: en {1}</value></data>
+  <data name="QueueDescResize" xml:space="preserve"><value>Redimensionner {0}: à {1}</value></data>
+  <data name="QueueDescSplit" xml:space="preserve"><value>Fractionner {0}: réduire de {1} Go, nouvelle {2}: ({3})</value></data>
+  <data name="QueueDescChangeLetter" xml:space="preserve"><value>Changer de lettre : partition {0} du disque {1} en {2}:</value></data>
+  <data name="QueueDescMerge" xml:space="preserve"><value>Fusionner : supprimer la partition {0} ({1}) puis étendre {2}: sur le disque {3}</value></data>
+  <data name="QueueDescDelete" xml:space="preserve"><value>Supprimer la partition {0} ({1}) du disque {2}</value></data>
+  <data name="DiskTargetFallback" xml:space="preserve"><value>Disque {0}</value></data>
+  <data name="VolumeTargetFallback" xml:space="preserve"><value>Volume {0}:</value></data>
+  <data name="ImpactApplyHeading" xml:space="preserve"><value>Appliquer {0} opération(s) en attente ?</value></data>
+  <data name="ImpactRiskHeading" xml:space="preserve"><value>--- Résumé des risques ---</value></data>
+  <data name="ImpactDestructiveCount" xml:space="preserve"><value>  {0} opération(s) destructrice(s) (les données seront définitivement perdues)</value></data>
+  <data name="ImpactElevatedCount" xml:space="preserve"><value>  {0} opération(s) à risque élevé</value></data>
+  <data name="ImpactTargetsHeading" xml:space="preserve"><value>--- Cibles concernées ---</value></data>
+  <data name="ImpactOperationsHeading" xml:space="preserve"><value>--- Opérations ---</value></data>
+  <data name="ImpactFooterOrder" xml:space="preserve"><value>Les opérations s'exécuteront dans l'ordre. Cette action est irréversible.</value></data>
+  <data name="ImpactFooterBackup" xml:space="preserve"><value>Assurez-vous de disposer d'une sauvegarde à jour avant de continuer.</value></data>
+  <data name="SelectDiskPrompt" xml:space="preserve"><value>Sélectionnez un disque physique pour examiner la capacité, la disposition et les opérations de partition disponibles.</value></data>
+  <data name="DiskSummaryFormat" xml:space="preserve"><value>{0} au total | {1} | {2} partitions | {3} de plus grand espace libre</value></data>
+  <data name="NoDiskSelected" xml:space="preserve"><value>Aucun disque sélectionné</value></data>
+  <data name="DiskTotalFormat" xml:space="preserve"><value>{0} au total</value></data>
+  <data name="RefreshDisksHint" xml:space="preserve"><value>Actualisez les disques pour charger les données d'espace libre</value></data>
+  <data name="LargestFreeExtentFormat" xml:space="preserve"><value>{0} de plus grand espace libre</value></data>
+  <data name="PartitionStyleUnavailable" xml:space="preserve"><value>Style de partition indisponible</value></data>
+  <data name="PartitionStyleFormat" xml:space="preserve"><value>Style de partition {0}</value></data>
+  <data name="NoPartitionSelected" xml:space="preserve"><value>Aucune partition sélectionnée</value></data>
+  <data name="SelectPartitionPrompt" xml:space="preserve"><value>Sélectionnez une ligne du tableau ou un segment de la carte du disque avant d'appliquer des actions de partition.</value></data>
+  <data name="NoFileSystem" xml:space="preserve"><value>Aucun système de fichiers</value></data>
+  <data name="VerbExtend" xml:space="preserve"><value>étendre</value></data>
+  <data name="ExtendWarningSystem" xml:space="preserve"><value>Il s'agit d'une partition système.</value></data>
+  <data name="ExtendPrompt" xml:space="preserve"><value>Étendre la partition {0} ({1}) du disque {2} pour occuper tout l'espace non alloué adjacent ?</value></data>
+  <data name="ExtendWarningsHeading" xml:space="preserve"><value>&#10;&#10;Avertissements :&#10;{0}</value></data>
+  <data name="ConfirmExtendTitle" xml:space="preserve"><value>Confirmer l'extension</value></data>
+  <data name="ExtendFailed" xml:space="preserve"><value>Impossible d'étendre la partition :&#10;{0}</value></data>
+  <data name="ExtendErrorTitle" xml:space="preserve"><value>Erreur d'extension</value></data>
+  <data name="SetActivePrompt" xml:space="preserve"><value>Définir la partition {0} du disque {1} comme ACTIVE ?&#10;&#10;Avertissement : définir la mauvaise partition comme active peut empêcher Windows de démarrer.</value></data>
+  <data name="ConfirmSetActiveTitle" xml:space="preserve"><value>Confirmer la définition comme active</value></data>
+  <data name="SetActiveFailed" xml:space="preserve"><value>Impossible de définir la partition comme active :&#10;{0}</value></data>
+  <data name="SetActiveErrorTitle" xml:space="preserve"><value>Erreur de définition comme active</value></data>
+  <data name="HidePartitionPrompt" xml:space="preserve"><value>Masquer la partition {0} ({1}) du disque {2} ?</value></data>
+  <data name="UnhidePartitionPrompt" xml:space="preserve"><value>Afficher la partition {0} ({1}) du disque {2} ?</value></data>
+  <data name="ConfirmHideTitle" xml:space="preserve"><value>Confirmer le masquage</value></data>
+  <data name="ConfirmUnhideTitle" xml:space="preserve"><value>Confirmer l'affichage</value></data>
+  <data name="HidePartitionFailed" xml:space="preserve"><value>Impossible de masquer la partition :&#10;{0}</value></data>
+  <data name="UnhidePartitionFailed" xml:space="preserve"><value>Impossible d'afficher la partition :&#10;{0}</value></data>
+  <data name="HideErrorTitle" xml:space="preserve"><value>Erreur de masquage</value></data>
+  <data name="UnhideErrorTitle" xml:space="preserve"><value>Erreur d'affichage</value></data>
+  <data name="InterruptedJournalSummary" xml:space="preserve"><value>Un journal d'opération interrompue du {0} a été trouvé.&#10;&#10;Terminées : {1}, En échec : {2}, Ignorées : {3}&#10;&#10;{4}&#10;&#10;Ce journal a été conservé pour examen. Consultez le journal d'activité pour les détails.</value></data>
+  <data name="InterruptedJournalTitle" xml:space="preserve"><value>Opérations interrompues détectées</value></data>
+  <data name="ApplyPendingOperationsTitle" xml:space="preserve"><value>Appliquer les opérations en attente</value></data>
+  <data name="InitializeDiskPrompt" xml:space="preserve"><value>Initialiser le disque {0} ({1}, {2}) avec une table de partitions GPT ?&#10;&#10;{3}&#10;&#10;Une table de partitions GPT vide sera écrite sur le disque. N'utilisez MBR que si la compatibilité avec le démarrage BIOS hérité est nécessaire.</value></data>
+  <data name="InitializeDiskTitle" xml:space="preserve"><value>Initialiser le disque</value></data>
+  <data name="DiskInitializedBody" xml:space="preserve"><value>Le disque {0} a été initialisé avec une table de partitions GPT.</value></data>
+  <data name="DiskInitializedTitle" xml:space="preserve"><value>Disque initialisé</value></data>
+  <data name="InitializeDiskFailed" xml:space="preserve"><value>Impossible d'initialiser le disque :&#10;{0}</value></data>
+  <data name="InitializeErrorTitle" xml:space="preserve"><value>Erreur d'initialisation</value></data>
+  <data name="DeleteCriticalPrompt" xml:space="preserve"><value>CRITIQUE : la partition {0} est une partition {1}{2}.&#10;&#10;La supprimer peut empêcher le système de démarrer.&#10;&#10;Cible :&#10;{3}&#10;&#10;Lettre : {4}, Taille : {5}{6}&#10;&#10;Tapez YES pour confirmer cette action destructrice.</value></data>
+  <data name="DeleteCriticalTitle" xml:space="preserve"><value>Supprimer une partition critique</value></data>
+  <data name="PartitionFlagBoot" xml:space="preserve"><value> (Démarrage)</value></data>
+  <data name="PartitionFlagSystem" xml:space="preserve"><value> (Système)</value></data>
+  <data name="EncryptionLine" xml:space="preserve"><value>&#10;Chiffrement : {0}</value></data>
+  <data name="ConfirmDeletePrompt" xml:space="preserve"><value>Supprimer la partition {0} du disque {1} ?&#10;Cible :&#10;{2}&#10;&#10;Lettre : {3}, Taille : {4}{5}&#10;&#10;TOUTES LES DONNÉES DE CETTE PARTITION SERONT PERDUES.&#10;&#10;La suppression sera mise en file d'attente et appliquée lorsque vous cliquerez sur « Appliquer ».</value></data>
+  <data name="ConfirmDeleteTitle" xml:space="preserve"><value>Confirmer la suppression</value></data>
+  <data name="ExtendWarningRecovery" xml:space="preserve"><value>Il s'agit d'une partition de récupération. L'environnement de récupération devra peut-être être déplacé au préalable.</value></data>
+  <data name="ExtendWarningPagefile" xml:space="preserve"><value>Cette partition contient le fichier d'échange de Windows. Vous devrez peut-être le désactiver temporairement.</value></data>
+  <data name="MergeNotAvailableBody" xml:space="preserve"><value>La fusion n'est possible que si la partition principale est immédiatement suivie de la partition qui sera supprimée.</value></data>
+  <data name="MergeNotAvailableTitle" xml:space="preserve"><value>Fusion indisponible</value></data>
+  <data name="OpMergeInto" xml:space="preserve"><value>Fusionner dans {0}</value></data>
+  <data name="OpDeleteToMerge" xml:space="preserve"><value>Supprimer {0} pour fusionner</value></data>
+  <data name="OpMergePartitions" xml:space="preserve"><value>Fusionner les partitions</value></data>
+  <data name="OpDeletePartition" xml:space="preserve"><value>Supprimer la partition {0}</value></data>
+  <data name="OpExtendPartition" xml:space="preserve"><value>Étendre la partition {0}</value></data>
+  <data name="OpFormatDrive" xml:space="preserve"><value>Formater {0} :</value></data>
+  <data name="VerbMerge" xml:space="preserve"><value>fusionner</value></data>
+  <data name="VerbDelete" xml:space="preserve"><value>supprimer</value></data>
+  <data name="RecoveryGuardBody" xml:space="preserve"><value>PartitionPilot ne va pas {0} automatiquement une partition de récupération, car cela peut désactiver Windows RE ou supprimer l'environnement de récupération.&#10;&#10;Utilisez un flux de travail dédié au déplacement de la récupération avant de modifier cette partition.&#10;&#10;{1}</value></data>
+  <data name="RecoveryGuardTitle" xml:space="preserve"><value>Protection de l'environnement de récupération</value></data>
+  <data name="ReagentUnavailable" xml:space="preserve"><value>Impossible de lire l'état de Windows RE : {0}</value></data>
+  <data name="StoragePoolGuardBody" xml:space="preserve"><value>{0} concerne :&#10;{1}&#10;&#10;Ce disque appartient au pool d'espaces de stockage &quot;{2}&quot;.&#10;&#10;Modifier des disques d'un pool peut rompre l'intégrité du pool et entraîner une perte de données sur l'ensemble du pool. Utilisez la gestion des espaces de stockage de Windows pour modifier les disques d'un pool.</value></data>
+  <data name="StoragePoolGuardTitle" xml:space="preserve"><value>Avertissement sur le pool d'espaces de stockage</value></data>
+  <data name="FilesystemUnsupportedTitle" xml:space="preserve"><value>Opération de système de fichiers non prise en charge</value></data>
+  <data name="UnsupportedTypeBody" xml:space="preserve"><value>{0} concerne une partition {1} que PartitionPilot ne peut pas gérer nativement.&#10;&#10;Partition : {2}, Taille : {3}&#10;&#10;Modifier cette partition peut détruire des données que Windows ne peut ni lire ni récupérer. Ne continuez que si vous êtes certain que cette partition n'est plus nécessaire.</value></data>
+  <data name="UnsupportedTypeTitle" xml:space="preserve"><value>Type de partition non pris en charge : {0}</value></data>
+  <data name="BitLockerActiveTitle" xml:space="preserve"><value>Protection BitLocker active</value></data>
+  <data name="BitLockerDataLossTitle" xml:space="preserve"><value>Confirmer la perte de données protégées par BitLocker</value></data>
   <data name="UsageScanSummary" xml:space="preserve"><value>{0} dossiers de premier niveau analysés via {1}. Total : {2} en {3} s</value></data>
   <data name="UsageMethodMft" xml:space="preserve"><value>MFT</value></data>
   <data name="UsageMethodEnumeration" xml:space="preserve"><value>énumération de répertoires</value></data>

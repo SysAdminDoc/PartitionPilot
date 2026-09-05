@@ -162,6 +162,94 @@
   <data name="Export" xml:space="preserve"><value>Export</value></data>
   <data name="Compare" xml:space="preserve"><value>Compare</value></data>
   <data name="RecoveryPlan" xml:space="preserve"><value>Recovery Plan</value></data>
+  <data name="HexSectorOffsetText" xml:space="preserve"><value>LBA {0} (offset {1})</value></data>
+  <data name="HexSectorOffsetOverflow" xml:space="preserve"><value>LBA {0} (offset exceeds supported range)</value></data>
+  <data name="HexDiskSummary" xml:space="preserve"><value>Disk {0}: {1} ({2})</value></data>
+  <data name="QueueDescCreate" xml:space="preserve"><value>Create {0} GB {1} partition ({2}:) on Disk {3}</value></data>
+  <data name="QueueDescFormat" xml:space="preserve"><value>Format {0}: as {1}</value></data>
+  <data name="QueueDescResize" xml:space="preserve"><value>Resize {0}: to {1}</value></data>
+  <data name="QueueDescSplit" xml:space="preserve"><value>Split {0}: - shrink by {1} GB, new {2}: ({3})</value></data>
+  <data name="QueueDescChangeLetter" xml:space="preserve"><value>Change letter: partition {0} on Disk {1} to {2}:</value></data>
+  <data name="QueueDescMerge" xml:space="preserve"><value>Merge: delete partition {0} ({1}) then extend {2}: on Disk {3}</value></data>
+  <data name="QueueDescDelete" xml:space="preserve"><value>Delete partition {0} ({1}) on Disk {2}</value></data>
+  <data name="DiskTargetFallback" xml:space="preserve"><value>Disk {0}</value></data>
+  <data name="VolumeTargetFallback" xml:space="preserve"><value>Volume {0}:</value></data>
+  <data name="ImpactApplyHeading" xml:space="preserve"><value>Apply {0} pending operation(s)?</value></data>
+  <data name="ImpactRiskHeading" xml:space="preserve"><value>--- Risk Summary ---</value></data>
+  <data name="ImpactDestructiveCount" xml:space="preserve"><value>  {0} destructive operation(s) (data will be permanently lost)</value></data>
+  <data name="ImpactElevatedCount" xml:space="preserve"><value>  {0} elevated-risk operation(s)</value></data>
+  <data name="ImpactTargetsHeading" xml:space="preserve"><value>--- Affected Targets ---</value></data>
+  <data name="ImpactOperationsHeading" xml:space="preserve"><value>--- Operations ---</value></data>
+  <data name="ImpactFooterOrder" xml:space="preserve"><value>Operations will execute in order. This cannot be undone.</value></data>
+  <data name="ImpactFooterBackup" xml:space="preserve"><value>Ensure you have a current backup before proceeding.</value></data>
+  <data name="SelectDiskPrompt" xml:space="preserve"><value>Select a physical disk to review capacity, layout, and available partition operations.</value></data>
+  <data name="DiskSummaryFormat" xml:space="preserve"><value>{0} total | {1} | {2} partitions | {3} largest free extent</value></data>
+  <data name="NoDiskSelected" xml:space="preserve"><value>No disk selected</value></data>
+  <data name="DiskTotalFormat" xml:space="preserve"><value>{0} total</value></data>
+  <data name="RefreshDisksHint" xml:space="preserve"><value>Refresh disks to load free-space data</value></data>
+  <data name="LargestFreeExtentFormat" xml:space="preserve"><value>{0} largest free extent</value></data>
+  <data name="PartitionStyleUnavailable" xml:space="preserve"><value>Partition style unavailable</value></data>
+  <data name="PartitionStyleFormat" xml:space="preserve"><value>{0} partition style</value></data>
+  <data name="NoPartitionSelected" xml:space="preserve"><value>No partition selected</value></data>
+  <data name="SelectPartitionPrompt" xml:space="preserve"><value>Select a table row or disk-map segment before applying partition actions.</value></data>
+  <data name="NoFileSystem" xml:space="preserve"><value>No file system</value></data>
+  <data name="VerbExtend" xml:space="preserve"><value>extend</value></data>
+  <data name="ExtendWarningSystem" xml:space="preserve"><value>This is a System partition.</value></data>
+  <data name="ExtendPrompt" xml:space="preserve"><value>Extend partition {0} ({1}) on Disk {2} to fill all adjacent unallocated space?</value></data>
+  <data name="ExtendWarningsHeading" xml:space="preserve"><value>&#10;&#10;Warnings:&#10;{0}</value></data>
+  <data name="ConfirmExtendTitle" xml:space="preserve"><value>Confirm Extend</value></data>
+  <data name="ExtendFailed" xml:space="preserve"><value>Failed to extend partition:&#10;{0}</value></data>
+  <data name="ExtendErrorTitle" xml:space="preserve"><value>Extend Error</value></data>
+  <data name="SetActivePrompt" xml:space="preserve"><value>Set partition {0} on Disk {1} as ACTIVE?&#10;&#10;Warning: Setting the wrong partition as active can prevent Windows from booting.</value></data>
+  <data name="ConfirmSetActiveTitle" xml:space="preserve"><value>Confirm Set Active</value></data>
+  <data name="SetActiveFailed" xml:space="preserve"><value>Failed to set partition as active:&#10;{0}</value></data>
+  <data name="SetActiveErrorTitle" xml:space="preserve"><value>Set Active Error</value></data>
+  <data name="HidePartitionPrompt" xml:space="preserve"><value>Hide partition {0} ({1}) on Disk {2}?</value></data>
+  <data name="UnhidePartitionPrompt" xml:space="preserve"><value>Unhide partition {0} ({1}) on Disk {2}?</value></data>
+  <data name="ConfirmHideTitle" xml:space="preserve"><value>Confirm Hide</value></data>
+  <data name="ConfirmUnhideTitle" xml:space="preserve"><value>Confirm Unhide</value></data>
+  <data name="HidePartitionFailed" xml:space="preserve"><value>Failed to hide partition:&#10;{0}</value></data>
+  <data name="UnhidePartitionFailed" xml:space="preserve"><value>Failed to unhide partition:&#10;{0}</value></data>
+  <data name="HideErrorTitle" xml:space="preserve"><value>Hide Error</value></data>
+  <data name="UnhideErrorTitle" xml:space="preserve"><value>Unhide Error</value></data>
+  <data name="InterruptedJournalSummary" xml:space="preserve"><value>An interrupted operation journal was found from {0}.&#10;&#10;Completed: {1}, Failed: {2}, Skipped: {3}&#10;&#10;{4}&#10;&#10;This journal has been preserved for review. Check the activity log for details.</value></data>
+  <data name="InterruptedJournalTitle" xml:space="preserve"><value>Interrupted Operations Detected</value></data>
+  <data name="ApplyPendingOperationsTitle" xml:space="preserve"><value>Apply Pending Operations</value></data>
+  <data name="InitializeDiskPrompt" xml:space="preserve"><value>Initialize Disk {0} ({1}, {2}) with a GPT partition table?&#10;&#10;{3}&#10;&#10;This will write an empty GPT partition table to the disk. Use MBR only if legacy BIOS boot compatibility is required.</value></data>
+  <data name="InitializeDiskTitle" xml:space="preserve"><value>Initialize Disk</value></data>
+  <data name="DiskInitializedBody" xml:space="preserve"><value>Disk {0} initialized with a GPT partition table.</value></data>
+  <data name="DiskInitializedTitle" xml:space="preserve"><value>Disk Initialized</value></data>
+  <data name="InitializeDiskFailed" xml:space="preserve"><value>Failed to initialize disk:&#10;{0}</value></data>
+  <data name="InitializeErrorTitle" xml:space="preserve"><value>Initialize Error</value></data>
+  <data name="DeleteCriticalPrompt" xml:space="preserve"><value>CRITICAL: Partition {0} is a {1} partition{2}.&#10;&#10;Deleting it may make the system unbootable.&#10;&#10;Target:&#10;{3}&#10;&#10;Letter: {4}, Size: {5}{6}&#10;&#10;Type YES to confirm this destructive action.</value></data>
+  <data name="DeleteCriticalTitle" xml:space="preserve"><value>Delete Critical Partition</value></data>
+  <data name="PartitionFlagBoot" xml:space="preserve"><value> (Boot)</value></data>
+  <data name="PartitionFlagSystem" xml:space="preserve"><value> (System)</value></data>
+  <data name="EncryptionLine" xml:space="preserve"><value>&#10;Encryption: {0}</value></data>
+  <data name="ConfirmDeletePrompt" xml:space="preserve"><value>Delete partition {0} on Disk {1}?&#10;Target:&#10;{2}&#10;&#10;Letter: {3}, Size: {4}{5}&#10;&#10;ALL DATA ON THIS PARTITION WILL BE LOST.&#10;&#10;The deletion will be queued and applied when you click Apply.</value></data>
+  <data name="ConfirmDeleteTitle" xml:space="preserve"><value>Confirm Delete</value></data>
+  <data name="ExtendWarningRecovery" xml:space="preserve"><value>This is a Recovery partition. The recovery environment may need to be moved first.</value></data>
+  <data name="ExtendWarningPagefile" xml:space="preserve"><value>This partition contains the Windows pagefile. You may need to temporarily disable it.</value></data>
+  <data name="MergeNotAvailableBody" xml:space="preserve"><value>Merge is available only when the primary partition is immediately followed by the partition that will be removed.</value></data>
+  <data name="MergeNotAvailableTitle" xml:space="preserve"><value>Merge Not Available</value></data>
+  <data name="OpMergeInto" xml:space="preserve"><value>Merge into {0}</value></data>
+  <data name="OpDeleteToMerge" xml:space="preserve"><value>Delete {0} to merge</value></data>
+  <data name="OpMergePartitions" xml:space="preserve"><value>Merge partitions</value></data>
+  <data name="OpDeletePartition" xml:space="preserve"><value>Delete partition {0}</value></data>
+  <data name="OpExtendPartition" xml:space="preserve"><value>Extend partition {0}</value></data>
+  <data name="OpFormatDrive" xml:space="preserve"><value>Format {0}:</value></data>
+  <data name="VerbMerge" xml:space="preserve"><value>merge</value></data>
+  <data name="VerbDelete" xml:space="preserve"><value>delete</value></data>
+  <data name="RecoveryGuardBody" xml:space="preserve"><value>PartitionPilot will not {0} a Recovery partition automatically because that can disable Windows RE or remove the recovery environment.&#10;&#10;Use a dedicated recovery relocation workflow before changing this partition.&#10;&#10;{1}</value></data>
+  <data name="RecoveryGuardTitle" xml:space="preserve"><value>Recovery Environment Guard</value></data>
+  <data name="ReagentUnavailable" xml:space="preserve"><value>Unable to read Windows RE status: {0}</value></data>
+  <data name="StoragePoolGuardBody" xml:space="preserve"><value>{0} targets:&#10;{1}&#10;&#10;This disk belongs to Storage Spaces pool &quot;{2}&quot;.&#10;&#10;Modifying pooled disks can break pool integrity and cause data loss across the entire pool. Use Windows Storage Spaces management to modify pooled disks.</value></data>
+  <data name="StoragePoolGuardTitle" xml:space="preserve"><value>Storage Spaces Pool Warning</value></data>
+  <data name="FilesystemUnsupportedTitle" xml:space="preserve"><value>Filesystem Operation Not Supported</value></data>
+  <data name="UnsupportedTypeBody" xml:space="preserve"><value>{0} targets a {1} partition that PartitionPilot cannot manage natively.&#10;&#10;Partition: {2}, Size: {3}&#10;&#10;Modifying this partition may destroy data that Windows cannot read or recover. Proceed only if you are certain this partition is no longer needed.</value></data>
+  <data name="UnsupportedTypeTitle" xml:space="preserve"><value>Unsupported Partition Type: {0}</value></data>
+  <data name="BitLockerActiveTitle" xml:space="preserve"><value>BitLocker Protection Active</value></data>
+  <data name="BitLockerDataLossTitle" xml:space="preserve"><value>Confirm BitLocker-Protected Data Loss</value></data>
   <data name="UsageScanSummary" xml:space="preserve"><value>Scanned {0} top-level folders via {1}. Total: {2} in {3}s</value></data>
   <data name="UsageMethodMft" xml:space="preserve"><value>MFT</value></data>
   <data name="UsageMethodEnumeration" xml:space="preserve"><value>directory enumeration</value></data>
