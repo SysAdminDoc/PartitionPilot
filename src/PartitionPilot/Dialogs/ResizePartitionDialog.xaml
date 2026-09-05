@@ -15,6 +15,25 @@
             <TextBlock Text="{local:Loc Xaml_CurrentSize}" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
             <TextBlock x:Name="txtInfo" Foreground="{DynamicResource PrimaryBrush}" FontSize="13" FontWeight="SemiBold" Margin="0,0,0,12"/>
 
+            <Border x:Name="pnlShrinkBlocker"
+                    Visibility="Collapsed"
+                    Background="{DynamicResource PanelBgBrush}"
+                    BorderBrush="{DynamicResource BorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="4"
+                    Padding="10"
+                    Margin="0,0,0,12">
+                <StackPanel>
+                    <TextBlock Text="{local:Loc ShrinkBlockedTitle}"
+                               Style="{StaticResource FieldLabelText}"
+                               Margin="0,0,0,4"/>
+                    <TextBlock x:Name="txtShrinkBlocker"
+                               Style="{StaticResource CaptionText}"
+                               TextWrapping="Wrap"
+                               AutomationProperties.Name="{local:Loc ShrinkBlockedAutomationName}"/>
+                </StackPanel>
+            </Border>
+
             <TextBlock Text="{local:Loc Xaml_NewSizeGB}" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
             <TextBox x:Name="txtSize" Height="34" FontSize="13" Margin="0,0,0,16"
                      AutomationProperties.Name="{local:Loc Xaml_NewSizeInGB}"/>

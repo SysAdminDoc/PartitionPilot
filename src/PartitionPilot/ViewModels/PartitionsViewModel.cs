@@ -176,6 +176,45 @@ public class PartitionsViewModel : ViewModelBase
 
     public Task<(long Min, long Max)> GetSupportedSizeAsync(char letter) => _wmiService.GetPartitionSupportedSizeAsync(letter);
 
+    /// <summary>
+    /// Finds what is holding the shrink floor up, if Windows has recorded a shrink analysis for this
+    /// volume. Returns null when nothing is blocking, nothing was recorded, or the log cannot be read.
+    /// </summary>
+    public async Task<(ShrinkBlocker Blocker, int BytesPerCluster)?> FindShrinkBlockerAsync(char letter, long minimumSize)
+    {
+        if (minimumSize <= 0)
+            return null;
+
+        try
+        {
+            var blocker = await ShrinkBlockerService.FindLatestBlockerAsync(letter, _processRunner, _log);
+            if (blocker is null)
+                return null;
+
+            var bytesPerCluster = await ReadBytesPerClusterAsync(letter);
+            return (blocker, bytesPerCluster);
+        }
+        catch (Exception ex)
+        {
+            _log.Log($"Shrink blocker lookup failed for {letter}: {ex.Message}");
+            return null;
+        }
+    }
+
+    private async Task<int> ReadBytesPerClusterAsync(char letter)
+    {
+        try
+        {
+            var text = await _processRunner.RunPowerShellAsync(
+                $"(Get-Volume -DriveLetter '{letter}').AllocationUnitSize", _log);
+            return int.TryParse(text.Trim(), out var size) && size > 0 ? size : 4096;
+        }
+        catch
+        {
+            return 4096;
+        }
+    }
+
     // ──────────────────────── Load Methods ────────────────────────
 
     public async Task LoadDisksAsync()

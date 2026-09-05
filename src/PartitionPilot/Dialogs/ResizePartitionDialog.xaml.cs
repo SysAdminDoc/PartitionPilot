@@ -27,6 +27,18 @@ public partial class ResizePartitionDialog : Window
         txtSize.Text = curGB.ToString("F2");
     }
 
+    /// <summary>
+    /// Shows why Windows will not shrink further. Without this the operator sees only a minimum size with
+    /// no explanation, which is the single most common complaint about shrinking a Windows volume.
+    /// </summary>
+    public void ShowShrinkBlocker(ShrinkBlocker blocker, int bytesPerCluster)
+    {
+        ArgumentNullException.ThrowIfNull(blocker);
+
+        txtShrinkBlocker.Text = ShrinkBlockerService.FormatReport(blocker, bytesPerCluster);
+        pnlShrinkBlocker.Visibility = Visibility.Visible;
+    }
+
     private void OnOk(object sender, RoutedEventArgs e)
     {
         if (!double.TryParse(txtSize.Text, out var sizeGB) || sizeGB <= 0)

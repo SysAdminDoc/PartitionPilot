@@ -71,6 +71,13 @@ public partial class PartitionsView : UserControl
         if (VM is not { SelectedPartition: { DriveLetter: not null } part } vm) { _dialog.ShowInfo("Select a partition with a drive letter before resizing.", "Resize Partition"); return; }
         var (min, max) = await vm.GetSupportedSizeAsync(part.DriveLetter.Value);
         var dlg = new ResizePartitionDialog(part.DriveLetter.Value, part.Size, min, max) { Owner = Window.GetWindow(this) };
+
+        // Only worth explaining when the floor is meaningfully above what the volume actually holds;
+        // otherwise there is no unmovable file standing in the way.
+        var blocker = await vm.FindShrinkBlockerAsync(part.DriveLetter.Value, min);
+        if (blocker is not null)
+            dlg.ShowShrinkBlocker(blocker.Value.Blocker, blocker.Value.BytesPerCluster);
+
         if (dlg.ShowDialog() == true)
             await vm.ExecuteResizeAsync(part.DriveLetter.Value, dlg.NewSizeBytes);
     }

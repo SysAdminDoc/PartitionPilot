@@ -37,6 +37,7 @@ try
         "temperature" or "temp" => await ShowTemperatureAsync(),
         "apply-layout" => await ApplyLayoutAsync(),
         "restore-snapshot" => await RestoreSnapshotAsync(),
+        "shrink-blockers" => await ShrinkBlockersAsync(),
         "release-manifest" => await ReleaseManifestAsync(),
         "rescue-profile" => await RescueProfileAsync(),
         "version" => ShowVersion(),
@@ -77,6 +78,7 @@ int PrintUsage()
     Console.WriteLine("  apply-layout --file F --disk N  Apply a partition layout spec (add --apply, --replace to recreate)");
     Console.WriteLine("  restore-snapshot --file F --disk N");
     Console.WriteLine("                            Rebuild a disk's partition table from a snapshot (add --apply)");
+    Console.WriteLine("  shrink-blockers --drive C Explain what is limiting how far a volume can shrink");
     Console.WriteLine("  release-manifest --artifacts DIR [--cert-thumbprint THUMB]");
     Console.WriteLine("                            Create SHA256SUMS and signing status manifest");
     Console.WriteLine("  rescue-profile --output DIR [--source DIR]");
@@ -1143,6 +1145,107 @@ async Task<int> RestoreSnapshotAsync()
     foreach (var warning in plan.SkippedPartitions)
         Console.Error.WriteLine($"Note: {warning}");
     return 0;
+}
+
+async Task<int> ShrinkBlockersAsync()
+{
+    var drive = ParseStringArg("--drive");
+    if (string.IsNullOrWhiteSpace(drive) || drive.TrimEnd(':').Length != 1)
+    {
+        Console.Error.WriteLine("--drive X required (a single drive letter).");
+        return 1;
+    }
+
+    var letter = char.ToUpperInvariant(drive.TrimEnd(':')[0]);
+    if (letter is < 'A' or > 'Z')
+    {
+        Console.Error.WriteLine("--drive must be a single letter A-Z.");
+        return 1;
+    }
+
+    // Supplementary context only. Get-PartitionSupportedSize needs elevation, and the blocker report is
+    // still worth printing without it rather than failing the whole command.
+    long min = 0, max = 0;
+    try
+    {
+        (min, max) = await wmi.GetPartitionSupportedSizeAsync(letter);
+    }
+    catch (Exception ex)
+    {
+        log.Log($"Shrink range unavailable for {letter}: {ex.Message}");
+    }
+
+    var bytesPerCluster = await ReadBytesPerClusterAsync(letter);
+    var blocker = await ShrinkBlockerService.FindLatestBlockerAsync(letter, runner, log);
+
+    if (blocker is null)
+    {
+        if (json)
+            Console.WriteLine(JsonSerializer.Serialize(new
+            {
+                Drive = $"{letter}:",
+                MinimumSize = min,
+                MaximumSize = max,
+                BytesPerCluster = bytesPerCluster,
+                Blocker = (object?)null,
+                Detail = "Windows has not recorded a shrink analysis for this volume yet. " +
+                         "Attempt a shrink from Disk Management or PartitionPilot, then run this again."
+            }, new JsonSerializerOptions { WriteIndented = true }));
+        else
+        {
+            Console.WriteLine(max > 0
+                ? $"Drive {letter}: shrink floor {SizeUtil.Format(min)} of {SizeUtil.Format(max)}."
+                : $"Drive {letter}: shrink range unavailable (run elevated to read it).");
+            Console.WriteLine("No shrink analysis has been recorded for this volume yet.");
+            Console.WriteLine("Attempt a shrink first; Windows logs what blocked it, and this command reads that record.");
+        }
+        return 0;
+    }
+
+    if (json)
+        Console.WriteLine(JsonSerializer.Serialize(new
+        {
+            Drive = $"{letter}:",
+            MinimumSize = min,
+            MaximumSize = max,
+            BytesPerCluster = bytesPerCluster,
+            Blocker = new
+            {
+                blocker.FilePath,
+                Kind = blocker.Kind.ToString(),
+                blocker.LastClusterOfFile,
+                blocker.ShrinkTargetLcn,
+                blocker.BlockedClusters,
+                BlockedBytes = blocker.BlockedBytes(bytesPerCluster),
+                blocker.NtfsFileFlags,
+                blocker.Remedy,
+                blocker.QueryClusterCommand
+            }
+        }, new JsonSerializerOptions { WriteIndented = true }));
+    else
+    {
+        Console.WriteLine(max > 0
+            ? $"Drive {letter}: shrink floor {SizeUtil.Format(min)} of {SizeUtil.Format(max)}."
+            : $"Drive {letter}: shrink range unavailable (run elevated to read it).");
+        Console.WriteLine();
+        Console.WriteLine(ShrinkBlockerService.FormatReport(blocker, bytesPerCluster, min));
+    }
+
+    return 0;
+}
+
+async Task<int> ReadBytesPerClusterAsync(char letter)
+{
+    try
+    {
+        var text = await runner.RunPowerShellAsync(
+            $"(Get-Volume -DriveLetter '{letter}').AllocationUnitSize");
+        return int.TryParse(text.Trim(), out var size) && size > 0 ? size : 4096;
+    }
+    catch
+    {
+        return 4096;
+    }
 }
 
 static string Trunc(string s, int max) => s.Length <= max ? s : s[..(max - 1)] + "…";
