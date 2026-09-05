@@ -52,6 +52,14 @@ PartitionPilot is a Windows disk partition management tool for power users and I
 - Administrator Protection compatible (ProgramData-based data paths).
 - Local release packaging for self-contained Windows builds and installer artifacts.
 
+## No Kernel Driver
+
+PartitionPilot installs no kernel driver. Drive health comes from documented Windows storage IOCTLs: NVMe SMART log page 02h and the ATA Device Statistics log, both read through `IOCTL_STORAGE_QUERY_PROPERTY`, which is defined with `FILE_ANY_ACCESS` and so needs no elevation for health data.
+
+It does reference LibreHardwareMonitorLib for extended vendor attributes, and that library can load a kernel driver. It does not here: the driver is used by its CPU, GPU and motherboard sensor code, and PartitionPilot enables only the storage category, which is built on ordinary Windows APIs. Verified by decompiling the shipped 0.9.6 assembly rather than assumed.
+
+This matters because the hardware-monitoring driver most such tools load, WinRing0, carries an unpatched vulnerability (CVE-2020-14979) and has been flagged by Microsoft Defender since March 2025.
+
 ## Requirements
 
 - Windows 10 or Windows 11.
