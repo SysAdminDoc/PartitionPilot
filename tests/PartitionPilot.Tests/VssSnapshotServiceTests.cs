@@ -95,6 +95,23 @@ public class VssSnapshotServiceTests
     }
 
     [Fact]
+    public async Task ProbeCreationAsync_FailsWhenTheShadowCopyCannotBeDeleted()
+    {
+        // Snapshot disposal swallows cleanup failures by design. The probe must not inherit that:
+        // reporting success while leaving an orphaned shadow copy behind lets them accumulate silently.
+        var provider = new UndeletableShadowCopyProvider(
+            "{18BDD207-FB1B-4860-B918-B94C9EBF1F1F}",
+            @"\\?\GLOBALROOT\Device\HarddiskVolumeShadowCopy7");
+
+        var probe = await VssSnapshotService.ProbeCreationAsync(
+            'c', provider, new TestLog(), TestContext.Current.CancellationToken);
+
+        Assert.False(probe.CanCreate);
+        Assert.Contains("could not delete it", probe.Detail);
+        Assert.Contains("{18BDD207-FB1B-4860-B918-B94C9EBF1F1F}", probe.Remediation);
+    }
+
+    [Fact]
     public async Task ProbeCreationAsync_FailsWithRemediationWhenCreationThrows()
     {
         var provider = new ThrowingShadowCopyProvider(
@@ -134,6 +151,15 @@ public class VssSnapshotServiceTests
             DeletedShadowCopyId = shadowCopyId;
             return Task.CompletedTask;
         }
+    }
+
+    private sealed class UndeletableShadowCopyProvider(string shadowId, string deviceObject) : IShadowCopyProvider
+    {
+        public Task<ShadowCopyCreateResult> CreateAsync(char volumeLetter, CancellationToken ct = default) =>
+            Task.FromResult(new ShadowCopyCreateResult(shadowId, deviceObject));
+
+        public Task DeleteAsync(string shadowCopyId, CancellationToken ct = default) =>
+            throw new InvalidOperationException("Access denied deleting the shadow copy.");
     }
 
     private sealed class ThrowingShadowCopyProvider(string message) : IShadowCopyProvider

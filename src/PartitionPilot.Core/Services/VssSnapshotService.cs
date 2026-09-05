@@ -81,7 +81,8 @@ public sealed class WmiShadowCopyProvider : IShadowCopyProvider
             new ManagementScope(CimScope),
             new ObjectQuery($"SELECT DeviceObject FROM Win32_ShadowCopy WHERE ID = {WqlStringLiteral(shadowId)}"));
 
-        foreach (ManagementObject obj in searcher.Get())
+        using var results = searcher.Get();
+        foreach (ManagementObject obj in results)
         {
             using (obj)
             {
@@ -101,7 +102,8 @@ public sealed class WmiShadowCopyProvider : IShadowCopyProvider
             new ManagementScope(CimScope),
             new ObjectQuery($"SELECT * FROM Win32_ShadowCopy WHERE ID = {WqlStringLiteral(shadowCopyId)}"));
 
-        foreach (ManagementObject obj in searcher.Get())
+        using var results = searcher.Get();
+        foreach (ManagementObject obj in results)
         {
             using (obj)
                 obj.Delete();
@@ -202,11 +204,10 @@ public static class VssSnapshotService
     public static async Task<VssCreationProbeResult> ProbeCreationAsync(
         char volumeLetter, IShadowCopyProvider provider, IActivityLog log, CancellationToken ct = default)
     {
+        VssSnapshot snapshot;
         try
         {
-            await using var snapshot = await CreateSnapshotAsync(volumeLetter, provider, log, ct);
-            return new VssCreationProbeResult(true,
-                $"Created and removed a test shadow copy on {char.ToUpperInvariant(volumeLetter)}:.", "");
+            snapshot = await CreateSnapshotAsync(volumeLetter, provider, log, ct);
         }
         catch (Exception ex)
         {
@@ -214,6 +215,24 @@ public static class VssSnapshotService
                 "Run elevated, confirm the Volume Shadow Copy service is running, and ensure the volume is local NTFS " +
                 "with shadow copy storage available ('vssadmin list shadowstorage').");
         }
+
+        // Deleted through the provider rather than DisposeAsync: disposal swallows cleanup failures by
+        // design, and a probe that reports success while leaving an orphaned shadow copy behind is worse
+        // than one that reports nothing.
+        try
+        {
+            await provider.DeleteAsync(snapshot.ShadowCopyId, ct);
+        }
+        catch (Exception ex)
+        {
+            return new VssCreationProbeResult(false,
+                $"Created shadow copy {snapshot.ShadowCopyId} but could not delete it: {ex.Message}",
+                $"Remove it manually with 'vssadmin delete shadows /Shadow={snapshot.ShadowCopyId}' before " +
+                "running diagnostics again, or shadow copies will accumulate on the volume.");
+        }
+
+        return new VssCreationProbeResult(true,
+            $"Created and removed a test shadow copy on {char.ToUpperInvariant(volumeLetter)}:.", "");
     }
 
     public static async Task<VssWriterHealthReport> CheckWriterHealthAsync(

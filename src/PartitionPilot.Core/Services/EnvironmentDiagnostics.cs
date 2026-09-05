@@ -279,7 +279,7 @@ public static class EnvironmentDiagnostics
             Name = "VSS Shadow Copy Creation",
             Status = probe.CanCreate ? "OK" : "Error",
             Detail = probe.CanCreate
-                ? probe.Detail
+                ? $"{probe.Detail} This check creates and removes a real shadow copy on {volumeLetter}: to prove capture would work."
                 : $"Cannot create a shadow copy on {volumeLetter}: — image capture would fall back to an inconsistent live copy. {probe.Detail}",
             Remediation = probe.Remediation
         };
