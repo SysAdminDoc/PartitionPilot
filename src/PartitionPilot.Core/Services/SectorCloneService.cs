@@ -28,6 +28,7 @@ public class SectorCloneResult
     public bool VerificationPassed { get; set; }
     public int VerificationMismatches { get; set; }
     public TimeSpan VerifyDuration { get; set; }
+    public GptRepairResult? GptRepair { get; set; }
 
     public bool HasBadSectors => BadSectorOffsets.Count > 0;
 
@@ -50,6 +51,9 @@ public class SectorCloneResult
                 ? $"Verification: PASSED in {VerifyDuration:hh\\:mm\\:ss}"
                 : $"Verification: FAILED — {VerificationMismatches} mismatched block(s) in {VerifyDuration:hh\\:mm\\:ss}");
         }
+
+        if (GptRepair is not null)
+            lines.Add($"GPT: {GptRepair.Detail}");
 
         return string.Join("\n", lines);
     }
@@ -108,6 +112,7 @@ public static class SectorCloneService
     }
 
     public static async Task<SectorCloneResult> CloneAsync(int sourceDiskNumber, int destDiskNumber, long sourceSize,
+        long destinationSize, int logicalSectorSize,
         IActivityLog log, IProgress<SectorCloneProgress>? progress = null, CancellationToken ct = default,
         bool rescue = false, bool verify = true)
     {
@@ -156,7 +161,52 @@ public static class SectorCloneService
                 log.Log($"Verification FAILED: {verifyResult.Mismatches} mismatched block(s) detected");
         }
 
+        // After verification, never before: the repair rewrites LBA 1, which a byte-for-byte
+        // comparison against the smaller source would then report as a mismatch.
+        result.GptRepair = await RepairDestinationGptAsync(
+            destDiskNumber, sourceSize, destinationSize, logicalSectorSize, log, ct);
+
         return result;
+    }
+
+    /// <summary>
+    /// Moves the cloned backup GPT to the end of the destination. A raw clone leaves it where the
+    /// source disk ended, so on a larger destination Windows reports the disk as needing repair and
+    /// the trailing space is unusable.
+    /// </summary>
+    private static async Task<GptRepairResult?> RepairDestinationGptAsync(
+        int destDiskNumber, long sourceSize, long destinationSize, int logicalSectorSize,
+        IActivityLog log, CancellationToken ct)
+    {
+        if (destinationSize <= 0)
+            return null;
+
+        var sectorSize = DiskGeometry.NormalizeLogicalSectorSize(logicalSectorSize);
+
+        try
+        {
+            return await Task.Run(() =>
+            {
+                var destPath = $"\\\\.\\PhysicalDrive{destDiskNumber}";
+                using var handle = CreateFileW(destPath, GENERIC_READ | GENERIC_WRITE,
+                    FILE_SHARE_READ | FILE_SHARE_WRITE, IntPtr.Zero, OPEN_EXISTING,
+                    FILE_FLAG_WRITE_THROUGH, IntPtr.Zero);
+                if (handle.IsInvalid)
+                    throw new Win32Exception(Marshal.GetLastWin32Error(),
+                        $"Cannot reopen destination disk {destDiskNumber} to repair its GPT");
+
+                using var stream = new FileStream(handle, FileAccess.ReadWrite, sectorSize);
+                return GptRepairService.RelocateBackupHeader(
+                    stream, sectorSize, destinationSize / sectorSize, sourceSize / sectorSize, log);
+            }, ct);
+        }
+        catch (Exception ex)
+        {
+            log.Log($"GPT repair failed on disk {destDiskNumber}: {ex.Message}. " +
+                    "Run 'diskpart' and inspect the destination before relying on its partition table.");
+            return new GptRepairResult(GptRepairOutcome.PrimaryHeaderInvalid,
+                $"Backup GPT could not be relocated: {ex.Message}");
+        }
     }
 
     public static async Task<VerifyResult> VerifyAsync(int sourceDiskNumber, int destDiskNumber, long totalBytes,

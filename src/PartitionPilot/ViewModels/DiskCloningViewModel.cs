@@ -665,6 +665,7 @@ public class DiskCloningViewModel : ViewModelBase
 
             var cloneResult = await SectorCloneService.CloneAsync(
                 CloneSourceDisk.Number, CloneDestDisk.Number, CloneSourceDisk.Size,
+                CloneDestDisk.Size, CloneDestDisk.LogicalSectorSize,
                 _log, progress, ct, rescue: CloneRescueMode, verify: CloneVerify);
 
             CloneProgressPercent = 100;
