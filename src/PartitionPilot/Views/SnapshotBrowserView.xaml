@@ -33,8 +33,18 @@
                         <Button Content="{local:Loc Xaml_CopyGuidance}"
                                 Command="{Binding CopyRecoveryCommandsCommand}"
                                 Style="{StaticResource ToolbarButton}"
-                                Margin="0"
                                 AutomationProperties.Name="{local:Loc Xaml_CopySnapshotRecoveryGuidance}"/>
+                        <Button Content="{local:Loc PreviewRestore}"
+                                Command="{Binding PreviewRestoreCommand}"
+                                Style="{StaticResource ToolbarButton}"
+                                ToolTip="{local:Loc PreviewRestoreTooltip}"
+                                AutomationProperties.Name="{local:Loc PreviewRestoreAutomationName}"/>
+                        <Button Content="{local:Loc RestoreSnapshot}"
+                                Command="{Binding RestoreCommand}"
+                                Style="{StaticResource ToolbarButton}"
+                                Margin="0"
+                                ToolTip="{local:Loc RestoreSnapshotTooltip}"
+                                AutomationProperties.Name="{local:Loc RestoreSnapshotAutomationName}"/>
                     </StackPanel>
                 </Grid>
             </Border>

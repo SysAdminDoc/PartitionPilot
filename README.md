@@ -12,7 +12,7 @@ PartitionPilot is a Windows disk partition management tool for power users and I
 
 - Partition overview with disk map, partition table, and contextual actions.
 - Pending operations queue: partition changes are queued and previewed before applying.
-- Partition snapshot history with JSON export, mismatch-checked recovery plans, and guided recovery notes.
+- Partition snapshot history with JSON export, mismatch-checked recovery plans, and one-step restore of a captured partition table (dry-run by default, blocked on any disk-identity mismatch).
 - Required pre-destruction partition snapshots before image restore, sector clone, whole-disk wipe, DoD wipe, and NVMe sanitize workflows.
 - Lost-partition recovery scanning with fast boundary probes, resumable deep mode, duplicate candidate coalescing, and coverage reporting.
 - Create, delete, format, resize, extend, split, hide, and drive-letter operations.
@@ -99,7 +99,18 @@ dotnet run --project .\src\PartitionPilot.Cli\PartitionPilot.Cli.csproj -- parti
 dotnet run --project .\src\PartitionPilot.Cli\PartitionPilot.Cli.csproj -- health --json
 ```
 
-Commands: `disks`, `partitions`, `volumes`, `smart`, `smart-history`, `smart-trends`, `health`, `alignment`, `temperature`, `benchmark`, `snapshot`, `diagnostics`, `boot-audit`, `plan`, `apply-layout`, `recovery-scan`, `release-manifest`, `rescue-profile`, `version`. All support `--json` for scripted automation.
+Commands: `disks`, `partitions`, `volumes`, `smart`, `smart-history`, `smart-trends`, `health`, `alignment`, `temperature`, `benchmark`, `snapshot`, `restore-snapshot`, `diagnostics`, `boot-audit`, `plan`, `apply-layout`, `recovery-scan`, `release-manifest`, `rescue-profile`, `version`. All support `--json` for scripted automation.
+
+## Restoring a Partition Table
+
+`pp restore-snapshot --file snapshot.json --disk N` rebuilds a disk's partition table from a snapshot captured earlier. It prints a dry-run plan by default; add `--apply` to execute, which then requires typing `YES`.
+
+The restore clears the target disk and recreates every partition at its recorded offset, size, filesystem, label and drive letter. Guards that run before any DiskPart command:
+
+- The snapshot's disk identity must still match the target. A changed serial, unique ID, path or size blocks the restore and names the field that differs.
+- Every partition must record a filesystem. An unelevated capture often leaves this blank, and recreating an EFI System Partition as NTFS leaves the machine unbootable, so the restore refuses rather than guessing. Recapture the snapshot from an elevated session.
+
+Restoring a layout does not restore file contents. Boot, system and recovery partitions come back empty and are listed explicitly in the plan; repair boot files afterwards or restore from a disk image.
 
 Recovery scans default to fast mode:
 

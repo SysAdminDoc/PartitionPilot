@@ -2,6 +2,11 @@
 
 ## PartitionPilot v0.9.23 - 2026-09-04
 
+### Features
+- Partition snapshots can now be restored instead of only printed. The Snapshots tab gained Preview Restore and Restore Table, and the CLI gained `pp restore-snapshot --file F --disk N`, both dry-run by default. A restore rebuilds every partition at its recorded offset, size, filesystem, label and letter. Previously a snapshot only produced a list of commands to retype by hand.
+- A restore refuses before touching the disk when the target's identity no longer matches the snapshot, or when the snapshot does not record a filesystem for every partition. An unelevated capture often leaves the filesystem blank, and recreating an EFI System Partition as NTFS would leave the machine unbootable, so the restore asks for a fresh elevated capture rather than guessing.
+- Layout specs accept an optional `OffsetKB` per partition, so a recreated table lands on the offsets the original disk had rather than repacking from the front.
+
 ### Safety & Reliability
 - Fixed VSS snapshot creation, which had never worked on Windows 10 or 11. Capture used `vssadmin create shadow`, a Windows Server-only verb, so on client Windows every image capture failed the snapshot step and fell back to an inconsistent live copy behind the degraded-mode prompt. Shadow copies are now created through the `Win32_ShadowCopy` WMI class, which works on client and server alike, and are deleted when capture finishes or fails.
 - Added a diagnostics check that proves a shadow copy can actually be created and removed, rather than only listing VSS providers and writers. Both of those pass on client Windows even when creation is impossible, which is how the broken capture path went unnoticed.

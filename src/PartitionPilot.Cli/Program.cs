@@ -36,6 +36,7 @@ try
         "benchmark" => await RunBenchmarkAsync(),
         "temperature" or "temp" => await ShowTemperatureAsync(),
         "apply-layout" => await ApplyLayoutAsync(),
+        "restore-snapshot" => await RestoreSnapshotAsync(),
         "release-manifest" => await ReleaseManifestAsync(),
         "rescue-profile" => await RescueProfileAsync(),
         "version" => ShowVersion(),
@@ -74,6 +75,8 @@ int PrintUsage()
     Console.WriteLine("  recovery-scan --disk N [--mode fast|deep] [--state path]");
     Console.WriteLine("                            Scan for lost partition signatures (read-only)");
     Console.WriteLine("  apply-layout --file F --disk N  Apply a partition layout spec (add --apply, --replace to recreate)");
+    Console.WriteLine("  restore-snapshot --file F --disk N");
+    Console.WriteLine("                            Rebuild a disk's partition table from a snapshot (add --apply)");
     Console.WriteLine("  release-manifest --artifacts DIR [--cert-thumbprint THUMB]");
     Console.WriteLine("                            Create SHA256SUMS and signing status manifest");
     Console.WriteLine("  rescue-profile --output DIR [--source DIR]");
@@ -1003,6 +1006,116 @@ async Task<int> ApplyLayoutAsync()
     }
 
     Console.Error.WriteLine("Layout applied successfully.");
+    return 0;
+}
+
+async Task<int> RestoreSnapshotAsync()
+{
+    var filePath = ParseStringArg("--file");
+    var diskNum = ParseDiskArg();
+    var apply = args.Contains("--apply", StringComparer.OrdinalIgnoreCase);
+
+    if (string.IsNullOrEmpty(filePath)) { Console.Error.WriteLine("--file <path> required."); return 1; }
+    if (!diskNum.HasValue) { Console.Error.WriteLine("--disk N required."); return 1; }
+    if (!File.Exists(filePath)) { Console.Error.WriteLine($"Snapshot file not found: {filePath}"); return 1; }
+
+    PartitionSnapshot? snapshot;
+    try
+    {
+        snapshot = JsonSerializer.Deserialize<PartitionSnapshot>(File.ReadAllText(filePath),
+            new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+    }
+    catch (JsonException ex)
+    {
+        Console.Error.WriteLine($"Snapshot file is not valid JSON: {ex.Message}");
+        return 1;
+    }
+
+    if (snapshot is null || snapshot.Partitions.Count == 0)
+    {
+        Console.Error.WriteLine("Snapshot records no partitions, so there is no layout to restore.");
+        return 1;
+    }
+
+    var disks = await wmi.GetDisksAsync();
+    var disk = disks.FirstOrDefault(d => d.Number == diskNum.Value);
+    if (disk is null) { Console.Error.WriteLine($"Disk {diskNum.Value} not found."); return 1; }
+
+    var currentPartitions = await wmi.GetPartitionsAsync(diskNum.Value);
+
+    SnapshotRestorePlan plan;
+    try
+    {
+        plan = SnapshotRestoreService.BuildPlan(snapshot, disk, currentPartitions);
+    }
+    catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
+    {
+        Console.Error.WriteLine($"Restore blocked: {ex.Message}");
+        return 1;
+    }
+
+    var targetIdentity = disk.ToIdentitySnapshot();
+
+    if (json)
+        Console.WriteLine(JsonSerializer.Serialize(new
+        {
+            SnapshotFile = filePath,
+            snapshot.Timestamp,
+            TargetDisk = targetIdentity,
+            WillApply = apply,
+            Steps = plan.Steps.Select(s => new { s.Action, s.Description, s.RiskLevel, s.DiskpartScript }),
+            NotRecreated = plan.SkippedPartitions
+        }, new JsonSerializerOptions { WriteIndented = true }));
+    else
+    {
+        PrintTargetIdentity(disk);
+        Console.WriteLine();
+        Console.WriteLine($"Snapshot captured {snapshot.CapturedAtText} from {snapshot.DiskSummary}");
+        Console.WriteLine();
+        Console.Write(plan.FormatPlan());
+    }
+
+    if (!apply)
+    {
+        Console.Error.WriteLine("\nDry run — add --apply to execute.");
+        return 0;
+    }
+
+    Console.Error.WriteLine($"\nTarget identity:\n{targetIdentity.ConfirmationSummary}");
+    Console.Error.Write(
+        "\nWARNING: Restoring this snapshot clears the disk and recreates its partitions. " +
+        "All current data is destroyed. Type YES to confirm: ");
+    if (!string.Equals(Console.ReadLine()?.Trim(), "YES", StringComparison.Ordinal))
+    {
+        Console.Error.WriteLine("Cancelled.");
+        return 1;
+    }
+
+    foreach (var step in plan.Steps)
+    {
+        await targetIdentity.VerifyCurrentAsync(wmi);
+        if (string.IsNullOrEmpty(step.DiskpartScript))
+        {
+            Console.Error.WriteLine($"Skipping: {step.Description} (no automated script)");
+            continue;
+        }
+
+        Console.Error.WriteLine($"Executing: {step.Description}...");
+        try
+        {
+            await runner.RunDiskpartAsync(step.DiskpartScript, log);
+            Console.Error.WriteLine("  Done.");
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"  Failed: {ex.Message}");
+            return 1;
+        }
+    }
+
+    Console.Error.WriteLine("Snapshot layout restored.");
+    foreach (var warning in plan.SkippedPartitions)
+        Console.Error.WriteLine($"Note: {warning}");
     return 0;
 }
 

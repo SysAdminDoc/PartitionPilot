@@ -75,6 +75,7 @@ public static class LayoutDiffService
         {
             var part = normalized.Partitions[i];
             var sizeClause = part.UseMaximumSize ? "" : $" size={part.SizeMB!.Value.ToString(CultureInfo.InvariantCulture)}";
+            var offsetClause = part.OffsetKB.HasValue ? $" offset={part.OffsetKB.Value.ToString(CultureInfo.InvariantCulture)}" : "";
             var letterClause = part.DriveLetter.HasValue ? $"\nassign letter={part.DriveLetter.Value}" : "\nassign";
 
             diff.Add(new LayoutDiffEntry
@@ -83,7 +84,7 @@ public static class LayoutDiffService
                 Description = $"Create{(part.UseMaximumSize ? " max-size" : $" {part.SizeMB} MB")} {part.FileSystem} partition" +
                     (part.Label.Length > 0 ? $" \"{part.Label}\"" : "") +
                     (part.DriveLetter.HasValue ? $" ({part.DriveLetter}:)" : ""),
-                DiskpartScript = $"select disk {disk.Number}\ncreate partition primary{sizeClause}\nformat fs={part.FileSystem}{(part.Label.Length > 0 ? $" label=\"{part.Label}\"" : "")} quick{letterClause}"
+                DiskpartScript = $"select disk {disk.Number}\ncreate partition primary{sizeClause}{offsetClause}\nformat fs={part.FileSystem}{(part.Label.Length > 0 ? $" label=\"{part.Label}\"" : "")} quick{letterClause}"
             });
         }
 
@@ -149,8 +150,9 @@ public static class LayoutDiffService
         var label = ProcessRunner.SanitizeLabel(partition.Label ?? "");
         var sizeMb = ValidateSizeMb(partition.SizeMB, partition.UseMaximumSize, index);
         var driveLetter = ValidateDriveLetter(partition.DriveLetter, index);
+        var offsetKb = ValidateOffsetKb(partition.OffsetKB, index);
 
-        return new NormalizedPartitionSpec(sizeMb, partition.UseMaximumSize, fileSystem, label, driveLetter);
+        return new NormalizedPartitionSpec(sizeMb, partition.UseMaximumSize, fileSystem, label, driveLetter, offsetKb);
     }
 
     private static long? ValidateSizeMb(string? sizeMb, bool useMaximumSize, int index)
@@ -173,6 +175,17 @@ public static class LayoutDiffService
             throw new ArgumentException($"Partition {index + 1} SizeMB must be a positive whole number of megabytes.");
 
         return value;
+    }
+
+    private static long? ValidateOffsetKb(long? offsetKb, int index)
+    {
+        if (offsetKb is null)
+            return null;
+
+        if (offsetKb.Value <= 0)
+            throw new ArgumentException($"Partition {index + 1} OffsetKB must be a positive whole number of kilobytes.");
+
+        return offsetKb.Value;
     }
 
     private static char? ValidateDriveLetter(string? driveLetter, int index)
@@ -270,5 +283,6 @@ public static class LayoutDiffService
         bool UseMaximumSize,
         string FileSystem,
         string Label,
-        char? DriveLetter);
+        char? DriveLetter,
+        long? OffsetKB);
 }

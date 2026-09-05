@@ -162,6 +162,12 @@
   <data name="Export" xml:space="preserve"><value>Exporter</value></data>
   <data name="Compare" xml:space="preserve"><value>Comparer</value></data>
   <data name="RecoveryPlan" xml:space="preserve"><value>Plan de récupération</value></data>
+  <data name="PreviewRestore" xml:space="preserve"><value>Aperçu de la restauration</value></data>
+  <data name="PreviewRestoreTooltip" xml:space="preserve"><value>Créer le plan de restauration de cet instantané sans modifier le disque</value></data>
+  <data name="PreviewRestoreAutomationName" xml:space="preserve"><value>Afficher le plan de restauration de l'instantané</value></data>
+  <data name="RestoreSnapshot" xml:space="preserve"><value>Restaurer la table</value></data>
+  <data name="RestoreSnapshotTooltip" xml:space="preserve"><value>Effacer le disque et recréer sa table de partitions à partir de cet instantané</value></data>
+  <data name="RestoreSnapshotAutomationName" xml:space="preserve"><value>Restaurer la table de partitions depuis l'instantané</value></data>
 
   <!-- Disk Usage view -->
   <data name="DiskUsageTitle" xml:space="preserve"><value>Utilisation du disque</value></data>

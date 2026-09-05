@@ -10,6 +10,8 @@ public class SnapshotBrowserViewModel : ViewModelBase
     private readonly PartitionTableBackup _backup;
     private readonly ActivityLog _log;
     private readonly IDialogService _dialog;
+    private readonly IWmiDiskService _wmiService;
+    private readonly IProcessRunner _processRunner;
 
     public ObservableCollection<PartitionSnapshot> Snapshots { get; } = new();
     public ObservableCollection<PartitionSnapshotPartition> SnapshotPartitions { get; } = new();
@@ -65,18 +67,151 @@ public class SnapshotBrowserViewModel : ViewModelBase
     public ICommand ExportCommand { get; }
     public ICommand ExportRecoveryPlanCommand { get; }
     public ICommand CopyRecoveryCommandsCommand { get; }
+    public ICommand PreviewRestoreCommand { get; }
+    public ICommand RestoreCommand { get; }
 
-    public SnapshotBrowserViewModel(PartitionTableBackup backup, ActivityLog log, IDialogService dialog)
+    public SnapshotBrowserViewModel(
+        PartitionTableBackup backup,
+        ActivityLog log,
+        IDialogService dialog,
+        IWmiDiskService wmiService,
+        IProcessRunner processRunner)
     {
         _backup = backup;
         _log = log;
         _dialog = dialog;
+        _wmiService = wmiService;
+        _processRunner = processRunner;
 
         RefreshCommand = new AsyncRelayCommand(_ => RefreshAsync());
         CompareCommand = new AsyncRelayCommand(_ => CompareAsync(), _ => SelectedSnapshot is not null);
         ExportCommand = new AsyncRelayCommand(_ => ExportSelectedAsync(), _ => SelectedSnapshot is not null);
         ExportRecoveryPlanCommand = new AsyncRelayCommand(_ => ExportRecoveryPlanAsync(), _ => SelectedSnapshot is not null);
         CopyRecoveryCommandsCommand = new WpfRelayCommand(_ => CopyRecoveryCommands(), _ => !string.IsNullOrWhiteSpace(RecoveryCommands));
+        PreviewRestoreCommand = new AsyncRelayCommand(_ => PreviewRestoreAsync(), _ => SelectedSnapshot is not null && !IsBusy);
+        RestoreCommand = new AsyncRelayCommand(_ => RestoreAsync(), _ => SelectedSnapshot is not null && !IsBusy);
+    }
+
+    /// <summary>
+    /// Builds the restore plan for the selected snapshot and shows it without touching the disk.
+    /// </summary>
+    private async Task PreviewRestoreAsync()
+    {
+        var plan = await BuildRestorePlanAsync();
+        if (plan is null)
+            return;
+
+        DiffText = plan.Value.Plan.FormatPlan();
+        _log.Log($"Previewed restore of snapshot {SelectedSnapshot!.FileName} onto Disk {plan.Value.Disk.Number}.");
+    }
+
+    private async Task RestoreAsync()
+    {
+        var built = await BuildRestorePlanAsync();
+        if (built is null)
+            return;
+
+        var (plan, disk) = built.Value;
+        DiffText = plan.FormatPlan();
+
+        var blocked = plan.Steps.Where(s => s.RiskLevel == "Blocked").ToList();
+        if (blocked.Count > 0)
+        {
+            _dialog.ShowError(
+                $"Restore cannot proceed:\n{string.Join("\n", blocked.Select(b => b.Description))}",
+                "Restore Snapshot");
+            return;
+        }
+
+        var identity = disk.ToIdentitySnapshot();
+        var notRecreated = plan.SkippedPartitions.Count == 0
+            ? ""
+            : $"\n\nNot recreated by this plan:\n{string.Join("\n", plan.SkippedPartitions)}";
+
+        var prompts = new[]
+        {
+            new WorkflowPrompt(
+                "Restore Snapshot",
+                $"WARNING: Restoring this snapshot clears Disk {disk.Number} and recreates its partition table.\n\n" +
+                $"Target:\n{identity.ConfirmationSummary}\n\n{plan.FormatPlan()}{notRecreated}\n\nContinue?",
+                true),
+            new WorkflowPrompt(
+                "Restore Snapshot",
+                $"FINAL CONFIRMATION: All data on Disk {disk.Number} will be permanently destroyed and its partitions recreated from the snapshot.",
+                true)
+        };
+
+        if (!DestructiveWorkflowGuard.ConfirmPrompts(prompts, _dialog))
+        {
+            _log.Log("Snapshot restore cancelled by user.");
+            return;
+        }
+
+        IsBusy = true;
+        try
+        {
+            foreach (var step in plan.Steps)
+            {
+                if (!await DestructiveWorkflowGuard.VerifyDiskIdentityBeforeExecuteAsync(
+                        identity, "Restore Snapshot", _wmiService, _log, _dialog))
+                    return;
+
+                if (string.IsNullOrEmpty(step.DiskpartScript))
+                {
+                    _log.Log($"Skipping (no automated script): {step.Description}");
+                    continue;
+                }
+
+                _log.Log($"Restore step: {step.Description}");
+                await _processRunner.RunDiskpartAsync(step.DiskpartScript, _log);
+            }
+
+            _log.Log($"Snapshot {SelectedSnapshot!.FileName} restored onto Disk {disk.Number}.");
+            _dialog.ShowInfo(
+                $"Partition table restored onto Disk {disk.Number}.{notRecreated}",
+                "Restore Snapshot");
+        }
+        catch (Exception ex)
+        {
+            _log.Log($"Snapshot restore failed: {ex.Message}");
+            _dialog.ShowError($"Restore failed partway through:\n{ex.Message}", "Restore Snapshot");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private async Task<(SnapshotRestorePlan Plan, DiskInfo Disk)?> BuildRestorePlanAsync()
+    {
+        if (SelectedSnapshot is null)
+            return null;
+
+        IsBusy = true;
+        try
+        {
+            var disks = await _wmiService.GetDisksAsync();
+            var disk = disks.FirstOrDefault(d => d.Number == SelectedSnapshot.DiskNumber);
+            if (disk is null)
+            {
+                _dialog.ShowError(
+                    $"Disk {SelectedSnapshot.DiskNumber} is not currently connected.", "Restore Snapshot");
+                return null;
+            }
+
+            var currentPartitions = await _wmiService.GetPartitionsAsync(disk.Number);
+            return (SnapshotRestoreService.BuildPlan(SelectedSnapshot, disk, currentPartitions), disk);
+        }
+        catch (Exception ex)
+        {
+            _log.Log($"Restore plan failed: {ex.Message}");
+            _dialog.ShowError($"Restore blocked:\n{ex.Message}", "Restore Snapshot");
+            return null;
+        }
+        finally
+        {
+            IsBusy = false;
+        }
     }
 
     public async Task RefreshAsync()
