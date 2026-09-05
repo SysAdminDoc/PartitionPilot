@@ -28,7 +28,7 @@ PartitionPilot is a Windows disk partition management tool for power users and I
 - Disk image workflows for mounting, dismounting, and creating VHD/VHDX images.
 - Disk usage analysis with squarified treemap visualization and top-folder size breakdown.
 - Disk cloning: create and restore WIM/VHDX images.
-- VSS writer-health preflight before live volume image capture, with explicit degraded-mode confirmation on failed writers.
+- Point-in-time volume image capture from a VSS shadow copy, created through the `Win32_ShadowCopy` WMI class so it works on Windows 10 and 11 client editions, with a writer-health preflight and explicit degraded-mode confirmation if a snapshot cannot be taken.
 - Disk image sidecar manifests with image SHA256, source-volume evidence, sampled source file hashes, encrypted-image rebinding, and restore-time validation before target clearing.
 - Post-restore and post-clone bootability audit for Windows targets, with BCD/WinRE checks and a non-destructive repair plan.
 - Privacy-preserving support bundle export (redacted serial numbers and user paths).

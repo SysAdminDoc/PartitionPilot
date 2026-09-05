@@ -23,7 +23,8 @@ public static class EnvironmentDiagnostics
     public static async Task<List<DiagnosticCheck>> RunAllAsync(
         IProcessRunner runner,
         IActivityLog log,
-        bool includeRescueChecks = false)
+        bool includeRescueChecks = false,
+        IShadowCopyProvider? shadowCopyProvider = null)
     {
         var checks = new List<DiagnosticCheck>();
 
@@ -31,7 +32,7 @@ public static class EnvironmentDiagnostics
         checks.Add(CheckDotNetVersion());
         checks.Add(CheckWindowsVersion());
         checks.AddRange(CheckWmiNamespaces());
-        checks.AddRange(await CheckNativeToolsAsync(runner, log));
+        checks.AddRange(await CheckNativeToolsAsync(runner, log, shadowCopyProvider ?? new WmiShadowCopyProvider()));
         checks.Add(CheckDiskSpdCache());
         checks.Add(CheckDataDirectory());
         if (includeRescueChecks)
@@ -229,7 +230,8 @@ public static class EnvironmentDiagnostics
         }
     }
 
-    private static async Task<List<DiagnosticCheck>> CheckNativeToolsAsync(IProcessRunner runner, IActivityLog log)
+    private static async Task<List<DiagnosticCheck>> CheckNativeToolsAsync(
+        IProcessRunner runner, IActivityLog log, IShadowCopyProvider shadowCopyProvider)
     {
         var checks = new List<DiagnosticCheck>();
 
@@ -238,6 +240,7 @@ public static class EnvironmentDiagnostics
         checks.Add(await CheckToolAsync(runner, log, "dism.exe", "/?", "DISM", "Image capture/apply"));
         checks.Add(await CheckToolAsync(runner, log, "vssadmin", "list providers", "VSS", "Volume Shadow Copy"));
         checks.Add(await CheckVssWriterHealthAsync(runner, log));
+        checks.Add(await CheckVssShadowCopyCreationAsync(shadowCopyProvider, log));
         checks.Add(await CheckToolAsync(runner, log, "chkdsk.exe", "/?", "chkdsk", "Filesystem repair"));
         checks.Add(await CheckSmartctlAsync(runner, log));
 
@@ -257,6 +260,37 @@ public static class EnvironmentDiagnostics
                 : info.Detail,
             Remediation = info.IsAvailable ? "" : info.Remediation
         };
+    }
+
+    /// <summary>
+    /// Proves a shadow copy can be created, not merely that a provider is registered. Listing providers or
+    /// writers passes on client Windows even when creation is impossible, which is how a dead VSS capture
+    /// path went unnoticed through several releases.
+    /// </summary>
+    private static async Task<DiagnosticCheck> CheckVssShadowCopyCreationAsync(
+        IShadowCopyProvider provider, IActivityLog log)
+    {
+        var volumeLetter = GetSystemVolumeLetter();
+        var probe = await VssSnapshotService.ProbeCreationAsync(volumeLetter, provider, log);
+
+        return new DiagnosticCheck
+        {
+            Category = "Native Tools",
+            Name = "VSS Shadow Copy Creation",
+            Status = probe.CanCreate ? "OK" : "Error",
+            Detail = probe.CanCreate
+                ? probe.Detail
+                : $"Cannot create a shadow copy on {volumeLetter}: — image capture would fall back to an inconsistent live copy. {probe.Detail}",
+            Remediation = probe.Remediation
+        };
+    }
+
+    private static char GetSystemVolumeLetter()
+    {
+        var root = Path.GetPathRoot(Environment.SystemDirectory);
+        return !string.IsNullOrEmpty(root) && char.IsLetter(root[0])
+            ? char.ToUpperInvariant(root[0])
+            : 'C';
     }
 
     private static async Task<DiagnosticCheck> CheckVssWriterHealthAsync(IProcessRunner runner, IActivityLog log)

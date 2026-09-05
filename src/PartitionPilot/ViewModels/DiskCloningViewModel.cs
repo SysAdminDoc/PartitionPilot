@@ -13,6 +13,7 @@ public class DiskCloningViewModel : ViewModelBase
     private readonly ActivityLog _log;
     private readonly IDialogService _dialog;
     private readonly PartitionTableBackup _backup;
+    private readonly IShadowCopyProvider _shadowCopyProvider = new WmiShadowCopyProvider();
     private readonly Dictionary<char, VolumeInfo> _volumeByLetter = new();
     private readonly Dictionary<char, string> _sourceBitLockerByLetter = new();
 
@@ -298,7 +299,7 @@ public class DiskCloningViewModel : ViewModelBase
 
                 StatusText = "Creating VSS snapshot for consistent capture...";
                 vssSnapshot = await VssSnapshotService.CreateSnapshotAsync(
-                    SelectedSourceDrive, _processRunner, _log, ct);
+                    SelectedSourceDrive, _shadowCopyProvider, _log, ct);
                 captureSource = vssSnapshot.ShadowCopyPath;
                 cleanup.Register(
                     $"Delete VSS shadow copy {vssSnapshot.ShadowCopyId}",

@@ -51,6 +51,99 @@ public class VssSnapshotServiceTests
             message.Contains("SqlServerWriter", StringComparison.OrdinalIgnoreCase));
     }
 
+    [Fact]
+    public async Task CreateSnapshotAsync_UsesTheShadowDeviceObjectAsTheCapturePath()
+    {
+        var log = new TestLog();
+        var provider = new FakeShadowCopyProvider(
+            "{18BDD207-FB1B-4860-B918-B94C9EBF1F1F}",
+            @"\\?\GLOBALROOT\Device\HarddiskVolumeShadowCopy7");
+
+        var snapshot = await VssSnapshotService.CreateSnapshotAsync(
+            'c', provider, log, TestContext.Current.CancellationToken);
+
+        Assert.Equal('c', provider.CreatedVolume);
+        Assert.Equal("{18BDD207-FB1B-4860-B918-B94C9EBF1F1F}", snapshot.ShadowCopyId);
+        Assert.Equal(@"\\?\GLOBALROOT\Device\HarddiskVolumeShadowCopy7\", snapshot.ShadowCopyPath);
+        Assert.Contains(log.Messages, m => m.Contains("VSS shadow copy created", StringComparison.OrdinalIgnoreCase));
+
+        await snapshot.DisposeAsync();
+        Assert.Equal("{18BDD207-FB1B-4860-B918-B94C9EBF1F1F}", provider.DeletedShadowCopyId);
+    }
+
+    [Fact]
+    public async Task CreateSnapshotAsync_RejectsAnEmptyDevicePath()
+    {
+        var provider = new FakeShadowCopyProvider("{GUID}", "   ");
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            VssSnapshotService.CreateSnapshotAsync('c', provider, new TestLog(), TestContext.Current.CancellationToken));
+    }
+
+    [Fact]
+    public async Task ProbeCreationAsync_PassesAndCleansUpWhenCreationSucceeds()
+    {
+        var provider = new FakeShadowCopyProvider(
+            "{18BDD207-FB1B-4860-B918-B94C9EBF1F1F}",
+            @"\\?\GLOBALROOT\Device\HarddiskVolumeShadowCopy7");
+
+        var probe = await VssSnapshotService.ProbeCreationAsync(
+            'c', provider, new TestLog(), TestContext.Current.CancellationToken);
+
+        Assert.True(probe.CanCreate);
+        Assert.Equal("{18BDD207-FB1B-4860-B918-B94C9EBF1F1F}", provider.DeletedShadowCopyId);
+    }
+
+    [Fact]
+    public async Task ProbeCreationAsync_FailsWithRemediationWhenCreationThrows()
+    {
+        var provider = new ThrowingShadowCopyProvider(
+            "Win32_ShadowCopy.Create returned 1: Access denied — shadow copy creation requires an elevated session.");
+
+        var probe = await VssSnapshotService.ProbeCreationAsync(
+            'c', provider, new TestLog(), TestContext.Current.CancellationToken);
+
+        Assert.False(probe.CanCreate);
+        Assert.Contains("Access denied", probe.Detail);
+        Assert.NotEmpty(probe.Remediation);
+    }
+
+    [Theory]
+    [InlineData(1u, "Access denied")]
+    [InlineData(4u, "local NTFS volume")]
+    [InlineData(6u, "shadowstorage")]
+    [InlineData(99u, "Undocumented return code 99")]
+    public void DescribeCreateReturnCode_ExplainsDocumentedFailures(uint code, string expectedFragment)
+    {
+        Assert.Contains(expectedFragment, WmiShadowCopyProvider.DescribeCreateReturnCode(code));
+    }
+
+    private sealed class FakeShadowCopyProvider(string shadowId, string deviceObject) : IShadowCopyProvider
+    {
+        public char CreatedVolume { get; private set; }
+        public string? DeletedShadowCopyId { get; private set; }
+
+        public Task<ShadowCopyCreateResult> CreateAsync(char volumeLetter, CancellationToken ct = default)
+        {
+            CreatedVolume = volumeLetter;
+            return Task.FromResult(new ShadowCopyCreateResult(shadowId, deviceObject));
+        }
+
+        public Task DeleteAsync(string shadowCopyId, CancellationToken ct = default)
+        {
+            DeletedShadowCopyId = shadowCopyId;
+            return Task.CompletedTask;
+        }
+    }
+
+    private sealed class ThrowingShadowCopyProvider(string message) : IShadowCopyProvider
+    {
+        public Task<ShadowCopyCreateResult> CreateAsync(char volumeLetter, CancellationToken ct = default) =>
+            throw new InvalidOperationException(message);
+
+        public Task DeleteAsync(string shadowCopyId, CancellationToken ct = default) => Task.CompletedTask;
+    }
+
     private const string HealthyWriterOutput = """
         Writer name: 'System Writer'
            Writer Id: {e8132975-6f93-4464-a53e-1050253ae220}
