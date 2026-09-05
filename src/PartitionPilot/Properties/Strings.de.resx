@@ -162,6 +162,11 @@
   <data name="Export" xml:space="preserve"><value>Exportieren</value></data>
   <data name="Compare" xml:space="preserve"><value>Vergleichen</value></data>
   <data name="RecoveryPlan" xml:space="preserve"><value>Wiederherstellungsplan</value></data>
+  <data name="CollapseActivityLog" xml:space="preserve"><value>Protokoll ausblenden</value></data>
+  <data name="ExpandActivityLog" xml:space="preserve"><value>Protokoll anzeigen</value></data>
+  <data name="CollapseActivityLogAutomationName" xml:space="preserve"><value>Aktivitätsprotokoll einklappen</value></data>
+  <data name="ExpandActivityLogAutomationName" xml:space="preserve"><value>Aktivitätsprotokoll ausklappen</value></data>
+  <data name="ResizeActivityLog" xml:space="preserve"><value>Größe des Aktivitätsprotokolls ändern</value></data>
   <data name="ShrinkBlockedTitle" xml:space="preserve"><value>Warum dieses Volume nicht weiter verkleinert werden kann</value></data>
   <data name="ShrinkBlockedAutomationName" xml:space="preserve"><value>Details zur Verkleinerungssperre</value></data>
   <data name="PreviewRestore" xml:space="preserve"><value>Wiederherstellung anzeigen</value></data>
