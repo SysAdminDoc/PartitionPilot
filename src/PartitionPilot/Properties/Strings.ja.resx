@@ -1,0 +1,675 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" msdata:Ordinal="0" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter</value></resheader>
+
+  <!-- App shell -->
+  <data name="AppTitle" xml:space="preserve"><value>PartitionPilot</value></data>
+  <data name="Refresh" xml:space="preserve"><value>更新</value></data>
+  <data name="ExportLog" xml:space="preserve"><value>ログをエクスポート</value></data>
+  <data name="SupportBundle" xml:space="preserve"><value>サポートバンドル</value></data>
+  <data name="Elevate" xml:space="preserve"><value>昇格</value></data>
+  <data name="ElevateTooltip" xml:space="preserve"><value>ディスク書き込み操作のため管理者として再起動します</value></data>
+  <data name="Ready" xml:space="preserve"><value>準備完了</value></data>
+  <data name="ActivityLog" xml:space="preserve"><value>アクティビティログ</value></data>
+  <data name="ActivityLogDescription" xml:space="preserve"><value>操作のフィードバック、警告、エクスポートしたセッション証跡</value></data>
+
+  <!-- Tab headers -->
+  <data name="TabPartitions" xml:space="preserve"><value>パーティション</value></data>
+  <data name="TabPartitionsSubtitle" xml:space="preserve"><value>ストレージ構成の管理</value></data>
+  <data name="TabSnapshots" xml:space="preserve"><value>スナップショット</value></data>
+  <data name="TabSnapshotsSubtitle" xml:space="preserve"><value>復旧用の証跡</value></data>
+  <data name="TabDiskHealth" xml:space="preserve"><value>ディスクの正常性</value></data>
+  <data name="TabDiskHealthSubtitle" xml:space="preserve"><value>SMARTとアライメント</value></data>
+  <data name="TabTools" xml:space="preserve"><value>ツール</value></data>
+  <data name="TabToolsSubtitle" xml:space="preserve"><value>修復とメンテナンス</value></data>
+  <data name="TabDiskImages" xml:space="preserve"><value>ディスクイメージ</value></data>
+  <data name="TabDiskImagesSubtitle" xml:space="preserve"><value>VHDのマウントと作成</value></data>
+  <data name="TabDiskUsage" xml:space="preserve"><value>ディスク使用量</value></data>
+  <data name="TabDiskUsageSubtitle" xml:space="preserve"><value>容量の大きいフォルダーを検索</value></data>
+  <data name="TabDiskCloning" xml:space="preserve"><value>ディスクのクローン</value></data>
+  <data name="TabDiskCloningSubtitle" xml:space="preserve"><value>イメージのコピーと復元</value></data>
+  <data name="TabHexViewer" xml:space="preserve"><value>ヘックスビューア</value></data>
+  <data name="TabHexViewerSubtitle" xml:space="preserve"><value>生セクターの検査</value></data>
+
+  <!-- Status tiles -->
+  <data name="AdminSession" xml:space="preserve"><value>管理者セッション</value></data>
+  <data name="ReadOnlySession" xml:space="preserve"><value>読み取り専用セッション</value></data>
+  <data name="DiskChangesAvailable" xml:space="preserve"><value>ディスク変更が可能です</value></data>
+  <data name="RunAsAdminForWrite" xml:space="preserve"><value>書き込み操作には管理者として実行してください</value></data>
+  <data name="SessionState" xml:space="preserve"><value>セッション状態</value></data>
+  <data name="StorageConsole" xml:space="preserve"><value>ストレージコンソール</value></data>
+  <data name="StorageConsoleEngines" xml:space="preserve"><value>WMI、diskpart、PowerShell</value></data>
+
+  <!-- Log filters -->
+  <data name="All" xml:space="preserve"><value>すべて</value></data>
+  <data name="Info" xml:space="preserve"><value>情報</value></data>
+  <data name="Warning" xml:space="preserve"><value>警告</value></data>
+  <data name="Error" xml:space="preserve"><value>エラー</value></data>
+  <data name="Clear" xml:space="preserve"><value>クリア</value></data>
+
+  <!-- Common actions -->
+  <data name="Apply" xml:space="preserve"><value>適用</value></data>
+  <data name="Cancel" xml:space="preserve"><value>キャンセル</value></data>
+  <data name="Create" xml:space="preserve"><value>作成</value></data>
+  <data name="Delete" xml:space="preserve"><value>削除</value></data>
+  <data name="Format" xml:space="preserve"><value>フォーマット</value></data>
+  <data name="Resize" xml:space="preserve"><value>サイズ変更</value></data>
+  <data name="Password" xml:space="preserve"><value>パスワード</value></data>
+  <data name="OK" xml:space="preserve"><value>OK</value></data>
+  <data name="Yes" xml:space="preserve"><value>はい</value></data>
+  <data name="No" xml:space="preserve"><value>いいえ</value></data>
+
+  <!-- Disk health -->
+  <data name="DiskHealthTitle" xml:space="preserve"><value>ディスクの状態</value></data>
+  <data name="DiskHealthDescription" xml:space="preserve"><value>物理ディスクのステータス、信頼性テレメトリ、アライメントを確認します。</value></data>
+  <data name="PhysicalDisk" xml:space="preserve"><value>物理ディスク</value></data>
+  <data name="StartMonitoring" xml:space="preserve"><value>監視を開始</value></data>
+  <data name="StopMonitoring" xml:space="preserve"><value>監視を停止</value></data>
+  <data name="DiskInformation" xml:space="preserve"><value>ディスク情報</value></data>
+  <data name="SmartReliabilityData" xml:space="preserve"><value>SMART/信頼性データ</value></data>
+  <data name="SmartTrendAlerts" xml:space="preserve"><value>SMARTトレンドアラート</value></data>
+  <data name="AllSmartAttributes" xml:space="preserve"><value>すべてのSMART属性</value></data>
+  <data name="AlignmentAudit" xml:space="preserve"><value>4Kアライメント監査</value></data>
+  <data name="TemperatureAlerts" xml:space="preserve"><value>温度アラート</value></data>
+  <data name="Good" xml:space="preserve"><value>良好</value></data>
+  <data name="Critical" xml:space="preserve"><value>重大</value></data>
+  <data name="Unknown" xml:space="preserve"><value>不明</value></data>
+
+  <!-- Dialog titles -->
+  <data name="ExportComplete" xml:space="preserve"><value>エクスポート完了</value></data>
+  <data name="ExportError" xml:space="preserve"><value>エクスポートエラー</value></data>
+  <data name="OperationFailed" xml:space="preserve"><value>操作に失敗しました</value></data>
+  <data name="OperationsComplete" xml:space="preserve"><value>操作完了</value></data>
+  <data name="SupportBundleExported" xml:space="preserve"><value>サポートバンドルがエクスポートされました</value></data>
+  <data name="Confirm" xml:space="preserve"><value>確認</value></data>
+  <data name="ConfirmDelete" xml:space="preserve"><value>削除の確認</value></data>
+  <data name="ConfirmFormat" xml:space="preserve"><value>フォーマットの確認</value></data>
+  <data name="DialogSizeRequired" xml:space="preserve"><value>サイズが必要です</value></data>
+  <data name="DialogDriveLetterRequired" xml:space="preserve"><value>ドライブレターが必要です</value></data>
+  <data name="DialogPartitionSizeRequired" xml:space="preserve"><value>0 GBを超えるパーティションサイズを入力します。</value></data>
+  <data name="DialogTargetSizeRequired" xml:space="preserve"><value>0 GBを超えるターゲットサイズを入力します。</value></data>
+  <data name="DialogNewPartitionSizeRequired" xml:space="preserve"><value>0 GBを超える新しいパーティションサイズを入力します。</value></data>
+  <data name="DialogSelectDriveLetterRequired" xml:space="preserve"><value>続行する前に、利用可能なドライブ文字を選択してください。</value></data>
+  <data name="DialogNoCurrentDriveLetter" xml:space="preserve"><value>(なし)</value></data>
+  <data name="DialogMergeDeleteExtends" xml:space="preserve"><value>削除するパーティションが削除されます。キューされた操作が適用されると、プライマリパーティションは解放されたスペースに拡張されます。</value></data>
+  <data name="DialogMergeChoosePrimaryDataPartition" xml:space="preserve"><value>直後に別のマージ可能なデータパーティションが続くプライマリデータパーティションを選択します。</value></data>
+  <data name="DialogMergePrimaryAdjacentRequired" xml:space="preserve"><value>直後に別のマージ可能なパーティションが続くプライマリパーティションを選択します。</value></data>
+  <data name="DialogMergeTwoAdjacentRequired" xml:space="preserve"><value>隣接する2つのパーティションを選択します。</value></data>
+
+  <!-- SMART labels -->
+  <data name="Temperature" xml:space="preserve"><value>温度</value></data>
+  <data name="WearUsed" xml:space="preserve"><value>使用摩耗</value></data>
+  <data name="PowerOnTime" xml:space="preserve"><value>通電時間</value></data>
+  <data name="ReadErrors" xml:space="preserve"><value>読み取りエラー</value></data>
+  <data name="WriteErrors" xml:space="preserve"><value>書き込みエラー</value></data>
+  <data name="ReallocatedSectors" xml:space="preserve"><value>再割り当てセクタ</value></data>
+  <data name="PendingSectors" xml:space="preserve"><value>保留セクタ</value></data>
+  <data name="PowerCycles" xml:space="preserve"><value>電源投入回数</value></data>
+  <data name="TotalWritten" xml:space="preserve"><value>総書き込み量</value></data>
+  <data name="TotalRead" xml:space="preserve"><value>総読み取り量</value></data>
+  <data name="NvmeAvailableSpare" xml:space="preserve"><value>NVMe 利用可能スペア</value></data>
+  <data name="NvmeMediaErrors" xml:space="preserve"><value>NVMe メディアエラー</value></data>
+  <data name="NotAvailable" xml:space="preserve"><value>N/A</value></data>
+
+  <!-- Partitions view -->
+  <data name="PartitionsTitle" xml:space="preserve"><value>パーティション</value></data>
+  <data name="PartitionsDescription" xml:space="preserve"><value>パーティションレイアウトを表示および管理するディスクを選択します。</value></data>
+  <data name="SelectDisk" xml:space="preserve"><value>ディスクを選択</value></data>
+  <data name="PendingOperations" xml:space="preserve"><value>保留中の操作</value></data>
+  <data name="NoPendingOperations" xml:space="preserve"><value>保留中の操作はありません</value></data>
+  <data name="ApplyPendingOperations" xml:space="preserve"><value>保留中の操作を適用</value></data>
+  <data name="ClearAll" xml:space="preserve"><value>すべてクリア</value></data>
+  <data name="Remove" xml:space="preserve"><value>削除</value></data>
+  <data name="Extend" xml:space="preserve"><value>拡張</value></data>
+  <data name="Split" xml:space="preserve"><value>分割</value></data>
+  <data name="Merge" xml:space="preserve"><value>結合</value></data>
+  <data name="ChangeLetter" xml:space="preserve"><value>ドライブレターの変更</value></data>
+  <data name="SetActive" xml:space="preserve"><value>アクティブに設定</value></data>
+  <data name="HideUnhide" xml:space="preserve"><value>非表示/再表示</value></data>
+  <data name="InitializeDisk" xml:space="preserve"><value>ディスクの初期化</value></data>
+
+  <!-- Snapshot view -->
+  <data name="SnapshotsTitle" xml:space="preserve"><value>パーティションのスナップショット</value></data>
+  <data name="SnapshotsDescription" xml:space="preserve"><value>保存されたパーティションレイアウトを確認し、現在の状態と比較して、復旧用記録をエクスポートします。</value></data>
+  <data name="Export" xml:space="preserve"><value>エクスポート</value></data>
+  <data name="Compare" xml:space="preserve"><value>比較</value></data>
+  <data name="RecoveryPlan" xml:space="preserve"><value>復旧計画</value></data>
+  <data name="UsageScanSummary" xml:space="preserve"><value>{1}経由でトップレベルフォルダーを{0}件スキャンしました。合計: {2}（{3}秒）</value></data>
+  <data name="UsageMethodMft" xml:space="preserve"><value>MFT</value></data>
+  <data name="UsageMethodEnumeration" xml:space="preserve"><value>ディレクトリ列挙</value></data>
+  <data name="UsageScanCancelledSummary" xml:space="preserve"><value>ディスク使用量スキャンがキャンセルされました。</value></data>
+  <data name="UsageScanFailedSummary" xml:space="preserve"><value>スキャンに失敗しました: {0}</value></data>
+  <data name="HexSelectDiskPrompt" xml:space="preserve"><value>ディスクを選択してセクターを読み取ります。</value></data>
+  <data name="SnapshotsRefreshPrompt" xml:space="preserve"><value>更新して保存されたパーティションテーブルのスナップショットを読み込みます。</value></data>
+  <data name="RecoveryGuidanceCopied" xml:space="preserve"><value>復元ガイダンスをクリップボードにコピーしました。</value></data>
+  <data name="RecoveryGuidanceTitle" xml:space="preserve"><value>回復ガイダンス</value></data>
+  <data name="SnapshotSelectPrompt" xml:space="preserve"><value>スナップショットを選択し、現在のディスクレイアウトと比較します。</value></data>
+  <data name="SnapshotSelectedHint" xml:space="preserve"><value>{0}を選択しました。[現在のレイアウトを比較]をクリックしてドリフトを検査します。</value></data>
+  <data name="SnapshotsNoneFound" xml:space="preserve"><value>{0}にスナップショットが見つかりませんでした。</value></data>
+  <data name="SnapshotsLoaded" xml:space="preserve"><value>{1}からスナップショットを{0}件読み込みました。</value></data>
+  <data name="ExportPartitionSnapshotTitle" xml:space="preserve"><value>パーティションのスナップショットをエクスポート</value></data>
+  <data name="ExportRecoveryPlanTitle" xml:space="preserve"><value>復旧計画をエクスポート</value></data>
+  <data name="RestoreSnapshotTitle" xml:space="preserve"><value>スナップショットを復元</value></data>
+  <data name="RestoreCannotProceed" xml:space="preserve"><value>復元を続行できません:
+{0}</value></data>
+  <data name="RestoreNotRecreatedHeading" xml:space="preserve"><value>
+
+このプランでは再作成されていません:
+{0}</value></data>
+  <data name="RestoreWarningPrompt" xml:space="preserve"><value>警告:このスナップショットを復元すると、ディスク{0}がクリアされ、パーティションテーブルが再作成されます。
+
+ターゲット:
+{1}
+
+{2}{3}
+
+続行しますか？</value></data>
+  <data name="RestoreFinalPrompt" xml:space="preserve"><value>最終確認:ディスク{0}上のすべてのデータは完全に破棄され、スナップショットからそのパーティションが再作成されます。</value></data>
+  <data name="RestoreComplete" xml:space="preserve"><value>ディスク{0}にパーティションテーブルを復元しました。{1}</value></data>
+  <data name="RestoreFailedPartway" xml:space="preserve"><value>復元が途中で失敗しました:
+{0}
+
+ディスク{1}は既にクリアされており、パーティションテーブルが不完全です。電源を切らないでください。原因が解決したら復元を再実行してください。</value></data>
+  <data name="RestoreStoppedAfterClear" xml:space="preserve"><value>ディスク{0}がすでにクリアされた後、復元が停止したため、現在使用可能なパーティションテーブルがありません。IDチェックに合格したら、復元を再実行します。その間は電源を切らないでください。</value></data>
+  <data name="DiskNotConnected" xml:space="preserve"><value>ディスク{0}は現在接続されていません。</value></data>
+  <data name="RestoreBlocked" xml:space="preserve"><value>復元がブロックされました:
+{0}</value></data>
+  <data name="SnapshotLoadFailed" xml:space="preserve"><value>スナップショットの読み込みに失敗しました:
+{0}</value></data>
+  <data name="SnapshotErrorTitle" xml:space="preserve"><value>スナップショットエラー</value></data>
+  <data name="SnapshotCompareFailed" xml:space="preserve"><value>スナップショットの比較に失敗しました:
+{0}</value></data>
+  <data name="CompareSnapshotTitle" xml:space="preserve"><value>スナップショットの比較</value></data>
+  <data name="SnapshotExported" xml:space="preserve"><value>スナップショットのエクスポート先:
+{0}</value></data>
+  <data name="SnapshotExportedTitle" xml:space="preserve"><value>スナップショットをエクスポートしました</value></data>
+  <data name="SnapshotExportFailed" xml:space="preserve"><value>スナップショットのエクスポートに失敗しました:
+{0}</value></data>
+  <data name="ExportSnapshotTitle" xml:space="preserve"><value>スナップショットをエクスポート</value></data>
+  <data name="RecoveryPlanExported" xml:space="preserve"><value>復旧計画のエクスポート先:
+{0}</value></data>
+  <data name="RecoveryPlanExportedTitle" xml:space="preserve"><value>リカバリプランがエクスポートされました</value></data>
+  <data name="RecoveryPlanExportFailed" xml:space="preserve"><value>復旧計画のエクスポートに失敗しました:
+{0}</value></data>
+  <data name="ExportErrorTitle" xml:space="preserve"><value>エクスポートエラー</value></data>
+  <data name="ImageMounted" xml:space="preserve"><value>イメージが正常にマウントされました。
+
+{0}</value></data>
+  <data name="MountCompleteTitle" xml:space="preserve"><value>マウント完了</value></data>
+  <data name="ImageMountFailed" xml:space="preserve"><value>イメージのマウントに失敗しました:
+{0}</value></data>
+  <data name="MountErrorTitle" xml:space="preserve"><value>マウントエラー</value></data>
+  <data name="ImageDismounted" xml:space="preserve"><value>イメージが正常にマウント解除されました。</value></data>
+  <data name="DismountCompleteTitle" xml:space="preserve"><value>マウント解除完了</value></data>
+  <data name="ImageDismountFailed" xml:space="preserve"><value>イメージのマウント解除に失敗しました:
+{0}</value></data>
+  <data name="DismountErrorTitle" xml:space="preserve"><value>マウント解除エラー</value></data>
+  <data name="VhdCreated" xml:space="preserve"><value>VHDが正常に作成され、マウントされました。
+
+パス: {0}
+サイズ: {1:F1} GB</value></data>
+  <data name="VhdCreatedTitle" xml:space="preserve"><value>VHDが作成されました</value></data>
+  <data name="VhdCreateFailed" xml:space="preserve"><value>VHDの作成に失敗しました:
+{0}</value></data>
+  <data name="CreateVhdErrorTitle" xml:space="preserve"><value>VHD作成エラー</value></data>
+  <data name="HexReadingSector" xml:space="preserve"><value>セクター{0}を読み取っています...</value></data>
+  <data name="HexSectorRead" xml:space="preserve"><value>セクター{0}を読み取りました（{1}バイト）</value></data>
+  <data name="HexReadFailed" xml:space="preserve"><value>読み取りに失敗しました: {0}</value></data>
+  <data name="UsageScanning" xml:space="preserve"><value>{0}:\ をスキャンしています...</value></data>
+  <data name="UsageScanningMft" xml:space="preserve"><value>MFTで{0}:\ をスキャンしています（高速NTFSモード）...</value></data>
+  <data name="UsageScanningEnumeration" xml:space="preserve"><value>{0}:\ をスキャンしています（ディレクトリ列挙）...</value></data>
+  <data name="UsageScanCancelled" xml:space="preserve"><value>スキャンがキャンセルされました。</value></data>
+  <data name="UsageScanFailed" xml:space="preserve"><value>スキャンに失敗しました: {0}</value></data>
+  <data name="ThemeLightMode" xml:space="preserve"><value>ライトモード</value></data>
+  <data name="ThemeSystemTheme" xml:space="preserve"><value>システムテーマ</value></data>
+  <data name="ThemeDarkMode" xml:space="preserve"><value>ダークモード</value></data>
+  <data name="SessionStateLabel" xml:space="preserve"><value>セッションの状態:</value></data>
+  <data name="AdminSessionDetail" xml:space="preserve"><value>ディスクの変更があります</value></data>
+  <data name="ReadOnlySessionDetail" xml:space="preserve"><value>書き込み操作の管理者として実行</value></data>
+  <data name="ElevationStandard" xml:space="preserve"><value>標準（昇格なし）</value></data>
+  <data name="ElevationAdminProtection" xml:space="preserve"><value>管理者保護（ SMAAプロファイル）</value></data>
+  <data name="ElevationLegacyUac" xml:space="preserve"><value>従来の UAC（昇格済み）</value></data>
+  <data name="SelectLanguageTooltip" xml:space="preserve"><value>インターフェースの言語を変更</value></data>
+  <data name="SelectLanguageAutomationName" xml:space="preserve"><value>インターフェース言語</value></data>
+  <data name="FindOperation" xml:space="preserve"><value>操作を検索</value></data>
+  <data name="FindOperationAutomationName" xml:space="preserve"><value>名前で操作を検索する</value></data>
+  <data name="FindOperationResultsAutomationName" xml:space="preserve"><value>一致する操作</value></data>
+  <data name="CollapseActivityLog" xml:space="preserve"><value>ログを隠す</value></data>
+  <data name="ExpandActivityLog" xml:space="preserve"><value>ログを表示</value></data>
+  <data name="CollapseActivityLogAutomationName" xml:space="preserve"><value>アクティビティログを折りたたむ</value></data>
+  <data name="ExpandActivityLogAutomationName" xml:space="preserve"><value>アクティビティログを展開する</value></data>
+  <data name="ResizeActivityLog" xml:space="preserve"><value>アクティビティログのサイズを変更する</value></data>
+  <data name="ShrinkBlockedTitle" xml:space="preserve"><value>このボリュームがそれ以上縮小しない理由</value></data>
+  <data name="ShrinkBlockedAutomationName" xml:space="preserve"><value>収縮ブロッカーの詳細</value></data>
+  <data name="PreviewRestore" xml:space="preserve"><value>復元プレビュー</value></data>
+  <data name="PreviewRestoreTooltip" xml:space="preserve"><value>ディスクを変更せずにこのスナップショットの復元計画を作成する</value></data>
+  <data name="PreviewRestoreAutomationName" xml:space="preserve"><value>スナップショット復元プランのプレビュー</value></data>
+  <data name="RestoreSnapshot" xml:space="preserve"><value>テーブルを復元</value></data>
+  <data name="RestoreSnapshotTooltip" xml:space="preserve"><value>ディスクをクリアし、このスナップショットからパーティションテーブルを再作成します</value></data>
+  <data name="RestoreSnapshotAutomationName" xml:space="preserve"><value>スナップショットからパーティションテーブルを復元する</value></data>
+
+  <!-- Disk Usage view -->
+  <data name="DiskUsageTitle" xml:space="preserve"><value>ディスク使用量</value></data>
+  <data name="DiskUsageDescription" xml:space="preserve"><value>ドライブをスキャンして、どのフォルダが最もスペースを使用しているかを確認します。</value></data>
+  <data name="Scan" xml:space="preserve"><value>スキャン</value></data>
+  <data name="SelectDrive" xml:space="preserve"><value>ドライブを選択し、[スキャン]をクリックします</value></data>
+
+  <!-- Disk Cloning view -->
+  <data name="DiskCloningTitle" xml:space="preserve"><value>ディスクのクローン</value></data>
+  <data name="DiskCloningDescription" xml:space="preserve"><value>ディスクイメージ（ WIM/VHDX ）を作成し、ターゲットディスクに復元します。</value></data>
+  <data name="CreateImage" xml:space="preserve"><value>イメージを作成</value></data>
+  <data name="RestoreImage" xml:space="preserve"><value>イメージを復元</value></data>
+  <data name="SectorClone" xml:space="preserve"><value>セクタクローン</value></data>
+  <data name="Browse" xml:space="preserve"><value>参照</value></data>
+  <data name="SourceVolume" xml:space="preserve"><value>ソースボリューム</value></data>
+  <data name="ImagePath" xml:space="preserve"><value>イメージのパス</value></data>
+  <data name="TargetDisk" xml:space="preserve"><value>ターゲットディスク</value></data>
+  <data name="SourceDisk" xml:space="preserve"><value>ソースディスク</value></data>
+  <data name="DestinationDisk" xml:space="preserve"><value>コピー先ディスク</value></data>
+  <data name="StartClone" xml:space="preserve"><value>クローン開始</value></data>
+
+  <!-- Disk Images view -->
+  <data name="DiskImagesTitle" xml:space="preserve"><value>ディスクイメージ</value></data>
+  <data name="DiskImagesDescription" xml:space="preserve"><value>仮想ハードディスクイメージをマウント、マウント解除、作成します。</value></data>
+  <data name="Mount" xml:space="preserve"><value>マウント</value></data>
+  <data name="Dismount" xml:space="preserve"><value>マウント解除</value></data>
+
+  <!-- Tools view -->
+  <data name="ToolsTitle" xml:space="preserve"><value>ツール</value></data>
+  <data name="ToolsDescription" xml:space="preserve"><value>ディスク修復、メンテナンス、および診断ユーティリティ。</value></data>
+  <data name="FilesystemCheck" xml:space="preserve"><value>ファイルシステムのチェック</value></data>
+  <data name="Optimize" xml:space="preserve"><value>最適化</value></data>
+  <data name="SecureWipe" xml:space="preserve"><value>安全な消去</value></data>
+  <data name="BootRepair" xml:space="preserve"><value>ブート修復</value></data>
+  <data name="SurfaceTest" xml:space="preserve"><value>サーフェステスト</value></data>
+  <data name="Benchmark" xml:space="preserve"><value>ベンチマーク</value></data>
+  <data name="DevDrive" xml:space="preserve"><value>Dev Drive</value></data>
+  <data name="MbrToGpt" xml:space="preserve"><value>MBR ～ GPT</value></data>
+
+  <!-- Common labels -->
+  <data name="Model" xml:space="preserve"><value>モデル</value></data>
+  <data name="SerialNumber" xml:space="preserve"><value>シリアル番号</value></data>
+  <data name="Firmware" xml:space="preserve"><value>ファームウェア</value></data>
+  <data name="MediaType" xml:space="preserve"><value>メディアの種類</value></data>
+  <data name="BusType" xml:space="preserve"><value>バスの種類</value></data>
+  <data name="Capacity" xml:space="preserve"><value>容量</value></data>
+  <data name="Health" xml:space="preserve"><value>状態</value></data>
+  <data name="SectorSizes" xml:space="preserve"><value>セクターサイズ</value></data>
+  <data name="MaxReadLatency" xml:space="preserve"><value>最大読み取りレイテンシ</value></data>
+  <data name="MaxWriteLatency" xml:space="preserve"><value>最大書き込みレイテンシ</value></data>
+  <!-- XAML localized literals -->
+  <data name="Xaml_4KAlignmentAuditTable" xml:space="preserve"><value>4Kアライメント監査テーブル</value></data>
+  <data name="Xaml_ActionsAreEnabledOnlyWhenTheRequiredDiskOrPartitionIsSelected" xml:space="preserve"><value>アクションは、必要なディスクまたはパーティションが選択されている場合にのみ有効になります。</value></data>
+  <data name="Xaml_ActivityLogEntries" xml:space="preserve"><value>アクティビティログエントリ</value></data>
+  <data name="Xaml_Aligned" xml:space="preserve"><value>アライメント済み</value></data>
+  <data name="Xaml_AlignmentDetailsWillAppearAfterHealthDataLoads" xml:space="preserve"><value>アライメントの詳細は、ヘルスデータの読み込み後に表示されます。</value></data>
+  <data name="Xaml_Analyze" xml:space="preserve"><value>分析</value></data>
+  <data name="Xaml_AnalyzeOrOptimizeHDDsAndSendRetrimToSSDBackedVolumes" xml:space="preserve"><value>HDD を分析または最適化し、SSD ベースのボリュームに retrim を送信します。</value></data>
+  <data name="Xaml_ApplyAll" xml:space="preserve"><value>すべて適用</value></data>
+  <data name="Xaml_ApplyAllPendingOperations" xml:space="preserve"><value>保留中のすべての操作を適用</value></data>
+  <data name="Xaml_ApplyAWIMOrVHDXImageToATargetDiskAllDataOnTheTargetWillBeDestroyed" xml:space="preserve"><value>WIM または VHDX イメージをターゲットディスクに適用します。ターゲット上のすべてのデータが消去されます。</value></data>
+  <data name="Xaml_AssignANewLetterToTheSelectedPartition" xml:space="preserve"><value>選択したパーティションに新しい文字を割り当てます。</value></data>
+  <data name="Xaml_AssignOrChangeTheSelectedPartitionDriveLetter" xml:space="preserve"><value>選択したパーティションドライブ文字の割り当てまたは変更</value></data>
+  <data name="Xaml_Attribute" xml:space="preserve"><value>属性</value></data>
+  <data name="Xaml_AvailableSpace" xml:space="preserve"><value>使用可能領域</value></data>
+  <data name="Xaml_BenchmarkDriveSelector" xml:space="preserve"><value>ベンチマークドライブセレクター</value></data>
+  <data name="Xaml_BenchmarkResults" xml:space="preserve"><value>ベンチマーク結果</value></data>
+  <data name="Xaml_BootloaderRepair" xml:space="preserve"><value>ブートローダー修復</value></data>
+  <data name="Xaml_BrowseForImageToMount" xml:space="preserve"><value>マウントするイメージを参照する</value></data>
+  <data name="Xaml_BrowseForVHDSaveLocation" xml:space="preserve"><value>VHD保存場所を参照</value></data>
+  <data name="Xaml_BrowseImageSavePath" xml:space="preserve"><value>イメージの保存先を参照</value></data>
+  <data name="Xaml_BrowseRestoreImage" xml:space="preserve"><value>復元するイメージを参照</value></data>
+  <data name="Xaml_CameraFAT3232KBClusters" xml:space="preserve"><value>カメラ（ FAT32、32 KBクラスター）</value></data>
+  <data name="Xaml_CancelCloningOperation" xml:space="preserve"><value>クローン作成操作をキャンセル</value></data>
+  <data name="Xaml_CancelDiskUsageScan" xml:space="preserve"><value>ディスク使用量スキャンをキャンセルする</value></data>
+  <data name="Xaml_CancelMerge" xml:space="preserve"><value>マージをキャンセル</value></data>
+  <data name="Xaml_CancelToolOperation" xml:space="preserve"><value>ツール操作をキャンセル</value></data>
+  <data name="Xaml_CaptureAVolumeToAWIMOrVHDXFile" xml:space="preserve"><value>WIMまたはVHDXファイルにボリュームをキャプチャします。</value></data>
+  <data name="Xaml_Captured" xml:space="preserve"><value>キャプチャ済み</value></data>
+  <data name="Xaml_ChangeDriveLetter" xml:space="preserve"><value>ドライブ文字を変更</value></data>
+  <data name="Xaml_Check" xml:space="preserve"><value>チェック</value></data>
+  <data name="Xaml_ChooseADriveAndScanItToRankTheLargestTopLevelFolders" xml:space="preserve"><value>ドライブを選択し、スキャンして最大のトップレベルフォルダをランク付けします。</value></data>
+  <data name="Xaml_ChooseASupportedTargetSizeForTheSelectedVolume" xml:space="preserve"><value>選択したボリュームでサポートされているターゲットサイズを選択します。</value></data>
+  <data name="Xaml_ChooseAVolumeForFreeSpaceWipeOrADiskForFullDestructiveWipe" xml:space="preserve"><value>ボリュームを選択して空き領域をワイプするか、ディスクを選択して完全に破壊的なワイプを行います。</value></data>
+  <data name="Xaml_ClearActivityLog" xml:space="preserve"><value>アクティビティログをクリア</value></data>
+  <data name="Xaml_ClearPendingOperations" xml:space="preserve"><value>保留中の操作をクリア</value></data>
+  <data name="Xaml_CloneDestinationDisk" xml:space="preserve"><value>クローン先ディスク</value></data>
+  <data name="Xaml_CloneProgress" xml:space="preserve"><value>クローンの進行状況</value></data>
+  <data name="Xaml_CloneSizeSummary" xml:space="preserve"><value>クローンサイズの概要</value></data>
+  <data name="Xaml_CloneSourceDisk" xml:space="preserve"><value>クローン元ディスク</value></data>
+  <data name="Xaml_Close" xml:space="preserve"><value>閉じる</value></data>
+  <data name="Xaml_CompareCurrentLayout" xml:space="preserve"><value>現在のレイアウトを比較</value></data>
+  <data name="Xaml_CompareSelectedSnapshotWithCurrentDiskLayout" xml:space="preserve"><value>選択したスナップショットを現在のディスクレイアウトと比較する</value></data>
+  <data name="Xaml_ConfirmMerge" xml:space="preserve"><value>統合を確認</value></data>
+  <data name="Xaml_ControllerBusyTime" xml:space="preserve"><value>コントローラーのビジー時間</value></data>
+  <data name="Xaml_Convert" xml:space="preserve"><value>変換</value></data>
+  <data name="Xaml_ConvertFAT32ToNTFS" xml:space="preserve"><value>FAT32をNTFSに変換</value></data>
+  <data name="Xaml_ConvertMBRToGPT" xml:space="preserve"><value>MBRをGPTに変換</value></data>
+  <data name="Xaml_ConvertVolume" xml:space="preserve"><value>ボリュームの変換</value></data>
+  <data name="Xaml_CopyEverySectorFromASourceDiskToADestinationDiskCreatesAnE_85d7e317" xml:space="preserve"><value>ソースディスクからターゲットディスクにすべてのセクターをコピーします。正確なバイト単位の重複を作成します。</value></data>
+  <data name="Xaml_CopyGuidance" xml:space="preserve"><value>ガイダンスをコピー</value></data>
+  <data name="Xaml_CopySnapshotRecoveryGuidance" xml:space="preserve"><value>スナップショットのリカバリガイダンスをコピーする</value></data>
+  <data name="Xaml_CreateADevDriveVolumeReFSWithOptimizedIOAndAntivirusFilter_d75777a5" xml:space="preserve"><value>最適化されたI/Oとウイルス対策フィルター制御を備えたDev Driveボリューム（ReFS）を作成します。Windows 11 23H2 +が必要です。</value></data>
+  <data name="Xaml_CreateADynamicallyExpandingVHD" xml:space="preserve"><value>動的に拡張するVHDを作成する</value></data>
+  <data name="Xaml_CreateAFixedSizeVHD" xml:space="preserve"><value>固定サイズのVHDを作成する</value></data>
+  <data name="Xaml_CreateAPartitionFromUnallocatedSpace" xml:space="preserve"><value>割り当てられていない領域からパーティションを作成する</value></data>
+  <data name="Xaml_CreateAVHDOrVHDXInitializeItFormatItAndMountIt" xml:space="preserve"><value>VHDまたはVHDXを作成し、初期化、フォーマット、マウントします。</value></data>
+  <data name="Xaml_CreateDevDrive" xml:space="preserve"><value>Dev Driveを作成</value></data>
+  <data name="Xaml_CreateDiskImage" xml:space="preserve"><value>ディスクイメージを作成する</value></data>
+  <data name="Xaml_CreatePartition" xml:space="preserve"><value>パーティションを作成</value></data>
+  <data name="Xaml_CreateVHD" xml:space="preserve"><value>VHDを作成</value></data>
+  <data name="Xaml_CreateVirtualHardDisk" xml:space="preserve"><value>仮想ハードディスクの作成</value></data>
+  <data name="Xaml_CriticalWarning" xml:space="preserve"><value>重大な警告！</value></data>
+  <data name="Xaml_CurrentLetter" xml:space="preserve"><value>現在のレター</value></data>
+  <data name="Xaml_CurrentlyMountedImages" xml:space="preserve"><value>現在マウントされているイメージ</value></data>
+  <data name="Xaml_CurrentSize" xml:space="preserve"><value>現在のサイズ</value></data>
+  <data name="Xaml_CurrentVolume" xml:space="preserve"><value>現在のボリューム</value></data>
+  <data name="Xaml_Custom" xml:space="preserve"><value>カスタム</value></data>
+  <data name="Xaml_Defrag" xml:space="preserve"><value>デフラグメンテーション</value></data>
+  <data name="Xaml_DeletePartition" xml:space="preserve"><value>パーティションを削除</value></data>
+  <data name="Xaml_DeleteTheSelectedPartition" xml:space="preserve"><value>選択したパーティションを削除する</value></data>
+  <data name="Xaml_DestructiveOperationsRequireConfirmationLogTheirCommandOut_3d2db885" xml:space="preserve"><value>破壊操作には確認が必要で、コマンド出力をログに記録し、その後パーティションマップを更新します。</value></data>
+  <data name="Xaml_Details" xml:space="preserve"><value>詳細</value></data>
+  <data name="Xaml_DevDriveReFS" xml:space="preserve"><value>Dev Drive (ReFS)</value></data>
+  <data name="Xaml_DevDriveVolumeSelector" xml:space="preserve"><value>Dev Driveボリュームセレクター</value></data>
+  <data name="Xaml_DevicePreset" xml:space="preserve"><value>デバイスプリセット</value></data>
+  <data name="Xaml_Direction" xml:space="preserve"><value>方向</value></data>
+  <data name="Xaml_Disk" xml:space="preserve"><value>ディスク</value></data>
+  <data name="Xaml_DiskBenchmark" xml:space="preserve"><value>ディスクベンチマーク</value></data>
+  <data name="Xaml_DiskCloningTab" xml:space="preserve"><value>ディスククローンタブ</value></data>
+  <data name="Xaml_DiskDoD3Pass" xml:space="preserve"><value>ディスク（ DoD 3パス）</value></data>
+  <data name="Xaml_DiskDoD7Pass" xml:space="preserve"><value>ディスク（ DoD 7パス）</value></data>
+  <data name="Xaml_DiskHealthStatus" xml:space="preserve"><value>正常性の状態</value></data>
+  <data name="Xaml_DiskHealthTab" xml:space="preserve"><value>[ディスクの状態]タブ</value></data>
+  <data name="Xaml_DiskImagesTab" xml:space="preserve"><value>[ディスクイメージ]タブ</value></data>
+  <data name="Xaml_DiskIOActivity" xml:space="preserve"><value>ディスクI/Oアクティビティ</value></data>
+  <data name="Xaml_DiskIOPerformanceCounters" xml:space="preserve"><value>ディスクI/Oパフォーマンスカウンタ</value></data>
+  <data name="Xaml_DiskNVMeSanitize" xml:space="preserve"><value>ディスク（NVMe Sanitize）</value></data>
+  <data name="Xaml_DiskSelector" xml:space="preserve"><value>ディスクセレクター</value></data>
+  <data name="Xaml_DiskUsageAnalysis" xml:space="preserve"><value>利用状況分析</value></data>
+  <data name="Xaml_DiskUsageResults" xml:space="preserve"><value>ディスク使用結果</value></data>
+  <data name="Xaml_DiskUsageTab" xml:space="preserve"><value>ディスクの使用量</value></data>
+  <data name="Xaml_DiskUsageTreemap" xml:space="preserve"><value>ディスク使用率ツリーマップ</value></data>
+  <data name="Xaml_DismountSelected" xml:space="preserve"><value>選択項目をマウント解除</value></data>
+  <data name="Xaml_DismountSelectedImage" xml:space="preserve"><value>選択したイメージをマウント解除</value></data>
+  <data name="Xaml_DoD3Pass" xml:space="preserve"><value>DoD 3 パス</value></data>
+  <data name="Xaml_DoD3PassWipe" xml:space="preserve"><value>DoD 3 パス消去</value></data>
+  <data name="Xaml_DoD3PassWipeDiskSelector" xml:space="preserve"><value>DoD 3パスワイプディスクセレクター</value></data>
+  <data name="Xaml_DoD522022M3PassOverwriteZerosOnesRandom" xml:space="preserve"><value>DoD 5220.22-M 3パス上書き（ゼロ、1、ランダム）</value></data>
+  <data name="Xaml_DoD522022M7PassOverwrite" xml:space="preserve"><value>DoD 5220.22-M 7パス上書き</value></data>
+  <data name="Xaml_DoD7Pass" xml:space="preserve"><value>DoD 7 パス</value></data>
+  <data name="Xaml_DoD7PassWipe" xml:space="preserve"><value>DoD 7 パス消去</value></data>
+  <data name="Xaml_DoD7PassWipeDiskSelector" xml:space="preserve"><value>DoD 7パスワイプディスクセレクター</value></data>
+  <data name="Xaml_Drive" xml:space="preserve"><value>ドライブ</value></data>
+  <data name="Xaml_DriveLetter" xml:space="preserve"><value>ドライブ文字</value></data>
+  <data name="Xaml_DriveLetterSelector" xml:space="preserve"><value>ドライブ文字セレクター</value></data>
+  <data name="Xaml_Dynamic" xml:space="preserve"><value>ダイナミック</value></data>
+  <data name="Xaml_ElevateToAdministrator" xml:space="preserve"><value>管理者に昇格</value></data>
+  <data name="Xaml_EncryptDiskImage" xml:space="preserve"><value>ディスクイメージを暗号化する</value></data>
+  <data name="Xaml_EncryptImageAES256GCM" xml:space="preserve"><value>イメージの暗号化（ AES -256 - GCM ）</value></data>
+  <data name="Xaml_EnduranceStatus" xml:space="preserve"><value>耐久ステータス</value></data>
+  <data name="Xaml_EntireDisk" xml:space="preserve"><value>ディスク全体</value></data>
+  <data name="Xaml_EntireDiskWipeIsDestructiveConfirmTheSelectedTargetBeforeStarting" xml:space="preserve"><value>ディスク全体の消去は破壊的な操作です。開始前に選択したターゲットを確認してください。</value></data>
+  <data name="Xaml_ErrorLogEntries" xml:space="preserve"><value>エラーログエントリ</value></data>
+  <data name="Xaml_ExFAT" xml:space="preserve"><value>exFAT</value></data>
+  <data name="Xaml_ExportActivityLog" xml:space="preserve"><value>アクティビティログをエクスポート</value></data>
+  <data name="Xaml_ExportAMismatchCheckedRecoveryPlanForThisSnapshot" xml:space="preserve"><value>このスナップショットの不一致チェックされたリカバリプランをエクスポートする</value></data>
+  <data name="Xaml_ExportARedactedDiagnosticBundleForTroubleshooting" xml:space="preserve"><value>トラブルシューティング用に機密情報を除去した診断バンドルをエクスポート</value></data>
+  <data name="Xaml_ExportBenchmarkResults" xml:space="preserve"><value>ベンチマーク結果をエクスポート</value></data>
+  <data name="Xaml_ExportJSON" xml:space="preserve"><value>JSON のエクスポート</value></data>
+  <data name="Xaml_ExportRecoveryPlan" xml:space="preserve"><value>復旧計画をエクスポート</value></data>
+  <data name="Xaml_ExportReport" xml:space="preserve"><value>レポートのエクスポート</value></data>
+  <data name="Xaml_ExportResults" xml:space="preserve"><value>結果をエクスポート</value></data>
+  <data name="Xaml_ExportSelectedPartitionSnapshot" xml:space="preserve"><value>選択したパーティションのスナップショットをエクスポート</value></data>
+  <data name="Xaml_ExportSMARTDiagnosticReport" xml:space="preserve"><value>SMART診断レポートをエクスポート</value></data>
+  <data name="Xaml_ExportSupportBundle" xml:space="preserve"><value>サポートバンドルをエクスポート</value></data>
+  <data name="Xaml_ExtendedTest" xml:space="preserve"><value>拡張テスト</value></data>
+  <data name="Xaml_ExtendPartition" xml:space="preserve"><value>パーティションを拡張</value></data>
+  <data name="Xaml_ExtendTheSelectedPartitionIntoAvailableSpace" xml:space="preserve"><value>選択したパーティションを使用可能なスペースに拡張する</value></data>
+  <data name="Xaml_FAT32" xml:space="preserve"><value>FAT32</value></data>
+  <data name="Xaml_FAT32VolumeSelector" xml:space="preserve"><value>FAT32ボリュームセレクター</value></data>
+  <data name="Xaml_FilePath" xml:space="preserve"><value>ファイルのパス</value></data>
+  <data name="Xaml_Files" xml:space="preserve"><value>ファイル</value></data>
+  <data name="Xaml_FileSystem" xml:space="preserve"><value>ファイルシステム</value></data>
+  <data name="Xaml_FilesystemColumn" xml:space="preserve"><value>ファイルシステム</value></data>
+  <data name="Xaml_FilesystemCheckAndRepair" xml:space="preserve"><value>ファイルシステムのチェックと修復</value></data>
+  <data name="Xaml_FilesystemCheckVolumeSelector" xml:space="preserve"><value>ファイルシステムチェックボリュームセレクター</value></data>
+  <data name="Xaml_FilesystemSupport" xml:space="preserve"><value>ファイルシステムのサポート</value></data>
+  <data name="Xaml_FilesystemSupportMatrix" xml:space="preserve"><value>ファイルシステムサポートマトリックス</value></data>
+  <data name="Xaml_Fixed" xml:space="preserve"><value>固定</value></data>
+  <data name="Xaml_Folder" xml:space="preserve"><value>フォルダー</value></data>
+  <data name="Xaml_FormatPartition" xml:space="preserve"><value>パーティションをフォーマット</value></data>
+  <data name="Xaml_FormatTheSelectedVolume" xml:space="preserve"><value>選択したボリュームをフォーマットする</value></data>
+  <data name="Xaml_FormattingReplacesTheFileSystemOnThisVolumeAndRemovesItsEx_b589b663" xml:space="preserve"><value>フォーマットは、このボリュームのファイルシステムを置き換え、既存のファイルを削除します。</value></data>
+  <data name="Xaml_Free" xml:space="preserve"><value>空き</value></data>
+  <data name="Xaml_FreeSpace" xml:space="preserve"><value>空き領域</value></data>
+  <data name="Xaml_FSSupport" xml:space="preserve"><value>FSサポート</value></data>
+  <data name="Xaml_GB" xml:space="preserve"><value>GB</value></data>
+  <data name="Xaml_GeneralNTFS" xml:space="preserve"><value>一般NTFS</value></data>
+  <data name="Xaml_HexDumpDisplay" xml:space="preserve"><value>Hex ダンプ表示</value></data>
+  <data name="Xaml_HexViewerDiskSelector" xml:space="preserve"><value>Hex ビューアーのディスクセレクター</value></data>
+  <data name="Xaml_HexViewerStatus" xml:space="preserve"><value>Hex ビューアーの状態</value></data>
+  <data name="Xaml_HexViewerTab" xml:space="preserve"><value>Hex ビューアータブ</value></data>
+  <data name="Xaml_HideOrUnhide" xml:space="preserve"><value>非表示または非表示解除</value></data>
+  <data name="Xaml_HideOrUnhidePartition" xml:space="preserve"><value>パーティションの表示/非表示</value></data>
+  <data name="Xaml_HideOrUnhideTheSelectedPartition" xml:space="preserve"><value>選択したパーティションの表示/非表示を切り替えます</value></data>
+  <data name="Xaml_History" xml:space="preserve"><value>履歴:</value></data>
+  <data name="Xaml_ID" xml:space="preserve"><value>ID</value></data>
+  <data name="Xaml_ImageDestinationPreflight" xml:space="preserve"><value>イメージ保存先の事前確認</value></data>
+  <data name="Xaml_ImageFile" xml:space="preserve"><value>イメージファイル</value></data>
+  <data name="Xaml_ImageFilePath" xml:space="preserve"><value>イメージファイルのパス</value></data>
+  <data name="Xaml_InitializeThisUnpartitionedDiskWithAGPTPartitionTable" xml:space="preserve"><value>このパーティション化されていないディスクをGPTパーティションテーブルで初期化します</value></data>
+  <data name="Xaml_Label" xml:space="preserve"><value>ラベル</value></data>
+  <data name="Xaml_LargestFreeExtent" xml:space="preserve"><value>最大フリーエクステント</value></data>
+  <data name="Xaml_LargeUSBExFAT" xml:space="preserve"><value>大USB （ exFAT ）</value></data>
+  <data name="Xaml_Layout" xml:space="preserve"><value>レイアウト</value></data>
+  <data name="Xaml_Letter" xml:space="preserve"><value>文字</value></data>
+  <data name="Xaml_Level" xml:space="preserve"><value>レベル</value></data>
+  <data name="Xaml_LiveDiskTemperatures" xml:space="preserve"><value>ライブディスク温度</value></data>
+  <data name="Xaml_LiveTemperatureMonitor" xml:space="preserve"><value>ライブ温度モニター</value></data>
+  <data name="Xaml_LoadingHealthData" xml:space="preserve"><value>ヘルスデータを読み込んでいます</value></data>
+  <data name="Xaml_LoadingSnapshots" xml:space="preserve"><value>スナップショットを読み込んでいます</value></data>
+  <data name="Xaml_MaintenanceTools" xml:space="preserve"><value>メンテナンスツール</value></data>
+  <data name="Xaml_MarkTheSelectedPartitionAsActive" xml:space="preserve"><value>選択したパーティションをアクティブとしてマークする</value></data>
+  <data name="Xaml_MBRDiskSelector" xml:space="preserve"><value>MBRディスクセレクタ</value></data>
+  <data name="Xaml_MergePartitions" xml:space="preserve"><value>パーティションを結合</value></data>
+  <data name="Xaml_MergePartitionsDialog" xml:space="preserve"><value>パーティションの結合ダイアログ</value></data>
+  <data name="Xaml_MergeTwoAdjacentPartitions" xml:space="preserve"><value>隣接する2つのパーティションを結合</value></data>
+  <data name="Xaml_MergeTwoAdjacentPartitionsIntoOne" xml:space="preserve"><value>2つの隣接するパーティションを1つにマージする</value></data>
+  <data name="Xaml_MountDiskImage" xml:space="preserve"><value>ディスクイメージをマウント</value></data>
+  <data name="Xaml_MountDismountAndCreateISOVHDAndVHDXImages" xml:space="preserve"><value>ISO、VHD、およびVHDXイメージをマウント、マウント解除、および作成します。</value></data>
+  <data name="Xaml_MountDismountAndVHDOperationsAreBeingLogged" xml:space="preserve"><value>マウント、ディスマウント、およびVHD操作がログに記録されています。</value></data>
+  <data name="Xaml_MountedImagesTable" xml:space="preserve"><value>マウント済みイメージの一覧</value></data>
+  <data name="Xaml_MountedISOVHDAndVHDXFilesWillAppearHere" xml:space="preserve"><value>マウントされたISO、VHD、およびVHDXファイルがここに表示されます。</value></data>
+  <data name="Xaml_MountImage" xml:space="preserve"><value>イメージをマウント</value></data>
+  <data name="Xaml_NewDriveLetter" xml:space="preserve"><value>新しいドライブ文字</value></data>
+  <data name="Xaml_NewLetter" xml:space="preserve"><value>新しいレター</value></data>
+  <data name="Xaml_NewPartitionSizeGB" xml:space="preserve"><value>新しいパーティションサイズ（ GB ）</value></data>
+  <data name="Xaml_NewPartitionSizeInGB" xml:space="preserve"><value>新しいパーティションサイズ（ GB ）</value></data>
+  <data name="Xaml_NewSizeGB" xml:space="preserve"><value>新しいサイズ（ GB ）</value></data>
+  <data name="Xaml_NewSizeInGB" xml:space="preserve"><value>GB単位の新しいサイズ</value></data>
+  <data name="Xaml_Next" xml:space="preserve"><value>次へ</value></data>
+  <data name="Xaml_NextSector" xml:space="preserve"><value>次のセクター</value></data>
+  <data name="Xaml_NintendoSwitchFAT3264KBClusters" xml:space="preserve"><value>Nintendo Switch （ FAT32、64KBクラスター）</value></data>
+  <data name="Xaml_NoAlignmentEntries" xml:space="preserve"><value>アライメント項目がありません</value></data>
+  <data name="Xaml_NoCloningTargetsLoaded" xml:space="preserve"><value>クローニングターゲットが読み込まれていません</value></data>
+  <data name="Xaml_NoDiskHealthDataLoaded" xml:space="preserve"><value>ディスクヘルスデータが読み込まれていません</value></data>
+  <data name="Xaml_NoMountedImages" xml:space="preserve"><value>マウントされたイメージがありません</value></data>
+  <data name="Xaml_NoPartitionDataLoaded" xml:space="preserve"><value>パーティションデータが読み込まれていません</value></data>
+  <data name="Xaml_NoSnapshotsSaved" xml:space="preserve"><value>スナップショットが保存されていません</value></data>
+  <data name="Xaml_Notes" xml:space="preserve"><value>メモ</value></data>
+  <data name="Xaml_NoUsageScanResults" xml:space="preserve"><value>使用状況スキャン結果がありません</value></data>
+  <data name="Xaml_NTFS" xml:space="preserve"><value>NTFS</value></data>
+  <data name="Xaml_NVMeFirmwareErase" xml:space="preserve"><value>NVMeファームウェア消去</value></data>
+  <data name="Xaml_NVMeSanitizeDiskSelector" xml:space="preserve"><value>NVMeサニタイズディスクセレクター</value></data>
+  <data name="Xaml_OfflineRepair" xml:space="preserve"><value>オフライン修理</value></data>
+  <data name="Xaml_Offset" xml:space="preserve"><value>オフセット</value></data>
+  <data name="Xaml_OneWayConversionForFAT32VolumesThatNeedNTFSFeatures" xml:space="preserve"><value>NTFS機能を必要とするFAT32ボリュームの一方向変換。</value></data>
+  <data name="Xaml_OperationsSupportedByPartitionPilotPerFilesystemTypeLimita_c6dd9bed" xml:space="preserve"><value>ファイルシステムタイプごとにPartitionPilotでサポートされる操作。制限は、Windows Storage APIによって課されます。</value></data>
+  <data name="Xaml_OptimizeAndTRIM" xml:space="preserve"><value>最適化とTRIM</value></data>
+  <data name="Xaml_OptimizeVolumeSelector" xml:space="preserve"><value>最適化するボリュームのセレクター</value></data>
+  <data name="Xaml_OutputIsBeingCapturedInTheActivityLog" xml:space="preserve"><value>出力はアクティビティログにキャプチャされています。</value></data>
+  <data name="Xaml_Partition" xml:space="preserve"><value>パーティション</value></data>
+  <data name="Xaml_PartitionActions" xml:space="preserve"><value>パーティションアクション</value></data>
+  <data name="Xaml_PartitionSizeInGB" xml:space="preserve"><value>パーティションサイズ（ GB ）</value></data>
+  <data name="Xaml_PartitionSnapshotHistory" xml:space="preserve"><value>パーティションのスナップショット履歴</value></data>
+  <data name="Xaml_PartitionsTab" xml:space="preserve"><value>パーティションタブ</value></data>
+  <data name="Xaml_PartitionStyle" xml:space="preserve"><value>パーティションスタイル</value></data>
+  <data name="Xaml_PartitionTable" xml:space="preserve"><value>パーティションテーブル</value></data>
+  <data name="Xaml_PartitionToRemove" xml:space="preserve"><value>削除するパーティション</value></data>
+  <data name="Xaml_PartitionToRemoveDuringMerge" xml:space="preserve"><value>マージ中に削除するパーティション</value></data>
+  <data name="Xaml_PartitionWorkspace" xml:space="preserve"><value>パーティションワークスペース</value></data>
+  <data name="Xaml_Path" xml:space="preserve"><value>パス</value></data>
+  <data name="Xaml_PhysicalDiskSelector" xml:space="preserve"><value>物理ディスクセレクタ</value></data>
+  <data name="Xaml_Prev" xml:space="preserve"><value>前へ</value></data>
+  <data name="Xaml_PreviousSector" xml:space="preserve"><value>前のセクター</value></data>
+  <data name="Xaml_PrimaryPartition" xml:space="preserve"><value>プライマリパーティション</value></data>
+  <data name="Xaml_PrimaryPartitionSelector" xml:space="preserve"><value>プライマリパーティションセレクタ</value></data>
+  <data name="Xaml_QueryingDisksOrApplyingTheRequestedPartitionOperation" xml:space="preserve"><value>ディスクをクエリするか、要求されたパーティション操作を適用します。</value></data>
+  <data name="Xaml_QueueMerge" xml:space="preserve"><value>結合をキューに追加</value></data>
+  <data name="Xaml_QuickFormat" xml:space="preserve"><value>クイックフォーマット</value></data>
+  <data name="Xaml_RaspberryPiFAT32" xml:space="preserve"><value>Raspberry Pi （FAT32）</value></data>
+  <data name="Xaml_RatedTBWInTerabytes" xml:space="preserve"><value>定格TBW （テラバイト）</value></data>
+  <data name="Xaml_RatedTBWTB" xml:space="preserve"><value>定格TBW （ TB ） :</value></data>
+  <data name="Xaml_RawValue" xml:space="preserve"><value>生の値</value></data>
+  <data name="Xaml_Read" xml:space="preserve"><value>読み取り</value></data>
+  <data name="Xaml_ReadingPhysicalDiskSMARTAndAlignmentDetails" xml:space="preserve"><value>物理ディスク、SMART、およびアライメントの詳細を読み取ります。</value></data>
+  <data name="Xaml_ReadingSavedPartitionLayoutsAndComparisonData" xml:space="preserve"><value>保存されたパーティションレイアウトと比較データを読み取ります。</value></data>
+  <data name="Xaml_ReadSector" xml:space="preserve"><value>セクターを読み取る</value></data>
+  <data name="Xaml_RebuildBootFilesForADetectedWindowsInstallation" xml:space="preserve"><value>検出されたWindowsインストールのブートファイルを再構築します。</value></data>
+  <data name="Xaml_RefreshCurrentWorkspace" xml:space="preserve"><value>現在のワークスペースを更新</value></data>
+  <data name="Xaml_RefreshDiskHealth" xml:space="preserve"><value>ディスクの状態を更新する</value></data>
+  <data name="Xaml_RefreshDiskImages" xml:space="preserve"><value>ディスクイメージを更新する</value></data>
+  <data name="Xaml_RefreshDiskList" xml:space="preserve"><value>ディスクリストを更新</value></data>
+  <data name="Xaml_RefreshDisks" xml:space="preserve"><value>ディスクを更新する</value></data>
+  <data name="Xaml_RefreshLists" xml:space="preserve"><value>リストを更新</value></data>
+  <data name="Xaml_RefreshPartitionSnapshots" xml:space="preserve"><value>パーティションのスナップショットを更新する</value></data>
+  <data name="Xaml_RefreshToLoadPhysicalDiskSMARTReliabilityAndAlignmentDetails" xml:space="preserve"><value>リフレッシュして、物理ディスク、SMARTの信頼性、およびアライメントの詳細を読み込みます。</value></data>
+  <data name="Xaml_RefreshToLoadSourceVolumesAndTargetDisksBeforeCreatingOrRe_ac385bff" xml:space="preserve"><value>イメージを作成または復元する前に、ソースボリュームとターゲットディスクを読み込むために更新します。</value></data>
+  <data name="Xaml_RefreshToolLists" xml:space="preserve"><value>ツールリストを更新する</value></data>
+  <data name="Xaml_ReFS" xml:space="preserve"><value>ReFS</value></data>
+  <data name="Xaml_RemovePendingOperation" xml:space="preserve"><value>保留中の操作を削除</value></data>
+  <data name="Xaml_RepairBootloader" xml:space="preserve"><value>ブートローダーを修復する</value></data>
+  <data name="Xaml_RequiresWindows1123H2OrNewerWithDevDriveSupport" xml:space="preserve"><value>Dev DriveをサポートするWindows 11 23H2以降が必要です。</value></data>
+  <data name="Xaml_RescueModeContinueOnReadErrors" xml:space="preserve"><value>レスキューモード（読み取りエラーで続行）</value></data>
+  <data name="Xaml_RescueModeForBadSectors" xml:space="preserve"><value>不良セクターのレスキューモード</value></data>
+  <data name="Xaml_ResizePartition" xml:space="preserve"><value>パーティションのサイズを変更</value></data>
+  <data name="Xaml_ResizeTheSelectedVolume" xml:space="preserve"><value>選択したボリュームのサイズを変更する</value></data>
+  <data name="Xaml_RestoreDiskImage" xml:space="preserve"><value>ディスクイメージを復元</value></data>
+  <data name="Xaml_RestoreImageFilePath" xml:space="preserve"><value>復元イメージのファイルパス</value></data>
+  <data name="Xaml_RestoreWritesToTheSelectedTargetDiskAndReplacesItsContents" xml:space="preserve"><value>復元すると、選択したターゲットディスクに書き込まれ、既存の内容が置き換えられます。</value></data>
+  <data name="Xaml_ReviewADiskLayoutBeforeCreatingResizingFormattingOrAssigningVolumes" xml:space="preserve"><value>ボリュームを作成、サイズ変更、フォーマット、または割り当てる前に、ディスクレイアウトを確認します。</value></data>
+  <data name="Xaml_ReviewSavedPartitionTableSnapshotsExportEvidenceAndCopyGui_d4ae9b65" xml:space="preserve"><value>保存されたパーティションテーブルのスナップショット、エビデンスのエクスポート、ガイド付きリカバリノートのコピーを確認します。</value></data>
+  <data name="Xaml_Role" xml:space="preserve"><value>役割</value></data>
+  <data name="Xaml_RunBenchmark" xml:space="preserve"><value>ベンチマークを実行</value></data>
+  <data name="Xaml_RunCheck" xml:space="preserve"><value>チェックを実行</value></data>
+  <data name="Xaml_RunDiskSpdSequentialAndRandomProfilesAgainstATemporaryTest_8ed7a19c" xml:space="preserve"><value>一時的なテストファイルに対してDiskSpdシーケンシャルプロファイルとランダムプロファイルを実行し、エビデンスをエクスポートします。</value></data>
+  <data name="Xaml_RunFilesystemCheck" xml:space="preserve"><value>ファイルシステムチェックの実行</value></data>
+  <data name="Xaml_RunNativeWindowsDiskUtilitiesWithClearerTargetingAndLoggedOutput" xml:space="preserve"><value>より明確なターゲティングとログ出力で、ネイティブのWindowsディスクユーティリティを実行します。</value></data>
+  <data name="Xaml_RunningTool" xml:space="preserve"><value>ツールを実行しています...</value></data>
+  <data name="Xaml_RunOptimize" xml:space="preserve"><value>最適化を実行</value></data>
+  <data name="Xaml_RunSMARTExtendedSelfTest" xml:space="preserve"><value>SMART拡張セルフテストを実行</value></data>
+  <data name="Xaml_RunSMARTShortSelfTest" xml:space="preserve"><value>SMARTショートセルフテストを実行</value></data>
+  <data name="Xaml_RunSurfaceTest" xml:space="preserve"><value>サーフェステストを実行</value></data>
+  <data name="Xaml_Safety" xml:space="preserve"><value>安全性</value></data>
+  <data name="Xaml_ScanAVolumeForBadSectorsUsingRepairVolumeOfflineScanAndFix_b4beca22" xml:space="preserve"><value>修復ボリュームOfflineScanAndFixを使用して、ボリュームをスキャンして不良セクターを探します。数分かかる場合があります。</value></data>
+  <data name="Xaml_ScanAVolumeToSeeWhichFoldersConsumeTheMostSpace" xml:space="preserve"><value>ボリュームをスキャンして、どのフォルダが最もスペースを消費するかを確認します。</value></data>
+  <data name="Xaml_ScanDiskUsage" xml:space="preserve"><value>ディスク使用量をスキャン</value></data>
+  <data name="Xaml_ScanForFileSystemErrorsOrRunARepairModeOnTheSelectedVolume" xml:space="preserve"><value>ファイルシステムエラーをスキャンするか、選択したボリュームで修復モードを実行します。</value></data>
+  <data name="Xaml_ScanningDrive" xml:space="preserve"><value>ドライブをスキャンしています</value></data>
+  <data name="Xaml_Sector" xml:space="preserve"><value>セクター:</value></data>
+  <data name="Xaml_SectorCloneOverwritesALLDataOnTheDestinationDiskTheDestina_75f97d43" xml:space="preserve"><value>セクタークローンは、デスティネーションディスク上のすべてのデータを上書きします。宛先は少なくともソースと同じ大きさでなければなりません。</value></data>
+  <data name="Xaml_SectorOffset" xml:space="preserve"><value>セクターオフセット</value></data>
+  <data name="Xaml_SelectAnISOVHDOrVHDXFileAndMountItAsADrive" xml:space="preserve"><value>ISO、VHD、またはVHDXファイルを選択し、ドライブとしてマウントします。</value></data>
+  <data name="Xaml_Selection" xml:space="preserve"><value>選択</value></data>
+  <data name="Xaml_SelectTwoAdjacentPartitionsToMergeDataFromThePrimaryPartit_055a4e63" xml:space="preserve"><value>マージする隣接する2つのパーティションを選択します。プライマリパーティションからのデータは保持されます。セカンダリパーティションは空である必要があります。空でない場合、そのデータは失われます。</value></data>
+  <data name="Xaml_SetPartitionActive" xml:space="preserve"><value>パーティションをアクティブに設定</value></data>
+  <data name="Xaml_Severity" xml:space="preserve"><value>重大度</value></data>
+  <data name="Xaml_Share" xml:space="preserve"><value>共有</value></data>
+  <data name="Xaml_ShortTest" xml:space="preserve"><value>ショートテスト</value></data>
+  <data name="Xaml_ShowFilesystemSupportMatrix" xml:space="preserve"><value>ファイルシステムサポートマトリックスを表示</value></data>
+  <data name="Xaml_ShowWhichOperationsEachFilesystemSupports" xml:space="preserve"><value>各ファイルシステムがサポートする操作を表示</value></data>
+  <data name="Xaml_Size" xml:space="preserve"><value>サイズ</value></data>
+  <data name="Xaml_SizeGB" xml:space="preserve"><value>サイズ（ GB ）</value></data>
+  <data name="Xaml_SMARTAttributesTable" xml:space="preserve"><value>SMART属性テーブル</value></data>
+  <data name="Xaml_SMARTReliabilityDataIsNotAvailableForTheSelectedDisk" xml:space="preserve"><value>SMART信頼性データは、選択したディスクでは利用できません。</value></data>
+  <data name="Xaml_SMARTSelfTestAvailability" xml:space="preserve"><value>SMARTセルフテストアベイラビリティ</value></data>
+  <data name="Xaml_SMARTSelfTestStatus" xml:space="preserve"><value>SMARTセルフテストステータス</value></data>
+  <data name="Xaml_SnapshotComparisonOutput" xml:space="preserve"><value>スナップショット比較出力</value></data>
+  <data name="Xaml_SnapshotPartitionTable" xml:space="preserve"><value>スナップショットパーティションテーブル</value></data>
+  <data name="Xaml_SnapshotRecoveryGuidance" xml:space="preserve"><value>スナップショットリカバリのガイダンス</value></data>
+  <data name="Xaml_SnapshotsAreSavedBeforeDestructivePartitionOperationsAndWi_1843916b" xml:space="preserve"><value>スナップショットは、破壊的なパーティション操作の前に保存され、ここに表示されます。</value></data>
+  <data name="Xaml_SnapshotsTab" xml:space="preserve"><value>[スナップショット]タブ</value></data>
+  <data name="Xaml_SplitPartition" xml:space="preserve"><value>パーティションを分割</value></data>
+  <data name="Xaml_SplitTheSelectedVolumeIntoTwoVolumes" xml:space="preserve"><value>選択したボリュームを2つのボリュームに分割します</value></data>
+  <data name="Xaml_SpotFix" xml:space="preserve"><value>SpotFix</value></data>
+  <data name="Xaml_SSDEndurance" xml:space="preserve"><value>SSD耐久性</value></data>
+  <data name="Xaml_StartSectorClone" xml:space="preserve"><value>セクターの複製を開始</value></data>
+  <data name="Xaml_StartSecureWipe" xml:space="preserve"><value>安全なワイプを開始する</value></data>
+  <data name="Xaml_StartWipe" xml:space="preserve"><value>ワイプを開始</value></data>
+  <data name="Xaml_Status" xml:space="preserve"><value>状態</value></data>
+  <data name="Xaml_SurfaceTestResults" xml:space="preserve"><value>サーフェステスト結果</value></data>
+  <data name="Xaml_SurfaceTestVolumeSelector" xml:space="preserve"><value>サーフェステストのボリュームセレクター</value></data>
+  <data name="Xaml_Temp" xml:space="preserve"><value>温度</value></data>
+  <data name="Xaml_TemperatureAlertHistory" xml:space="preserve"><value>温度アラート履歴</value></data>
+  <data name="Xaml_ThePartitionToRemoveWillBeDeletedThePrimaryPartitionWillBe_8e358bb5" xml:space="preserve"><value>削除するパーティションが削除されます。キューされた操作が適用されると、プライマリパーティションは解放されたスペースに拡張されます。</value></data>
+  <data name="Xaml_TheWorkspaceWillPopulateAfterDiskDiscoveryCompletesOrAfter_6ed26184" xml:space="preserve"><value>ディスクの検出完了後、またはディスクを選択すると、ワークスペースに内容が表示されます。</value></data>
+  <data name="Xaml_Time" xml:space="preserve"><value>時刻</value></data>
+  <data name="Xaml_ToggleDiskIOMonitoring" xml:space="preserve"><value>ディスクI/Oモニタリングの切り替え</value></data>
+  <data name="Xaml_ToggleTemperatureMonitoring" xml:space="preserve"><value>温度モニタリングを切り替える</value></data>
+  <data name="Xaml_ToggleTheme" xml:space="preserve"><value>テーマを切り替える</value></data>
+  <data name="Xaml_ToolsTab" xml:space="preserve"><value>[ツール]タブ</value></data>
+  <data name="Xaml_TRIM" xml:space="preserve"><value>TRIM</value></data>
+  <data name="Xaml_Type" xml:space="preserve"><value>種類</value></data>
+  <data name="Xaml_UnsafeShutdowns" xml:space="preserve"><value>正常でないシャットダウン</value></data>
+  <data name="Xaml_UseArrowKeysToInspectFoldersPressEnterOrSpaceToSelect" xml:space="preserve"><value>矢印キーを使用してフォルダを検査します。Enterキーまたはスペースキーを押して選択します。</value></data>
+  <data name="Xaml_UseAvailableUnallocatedSpaceToCreateAndFormatANewVolume" xml:space="preserve"><value>使用可能な割り当てられていない領域を使用して、新しいボリュームを作成し、フォーマットします。</value></data>
+  <data name="Xaml_UseCryptoEraseFastestRequiresSelfEncryptingDrive" xml:space="preserve"><value>暗号消去を使用（最速、自己暗号化ドライブが必要）</value></data>
+  <data name="Xaml_UseCryptoEraseInsteadOfBlockErase" xml:space="preserve"><value>ブロック消去の代わりに暗号消去を使用する</value></data>
+  <data name="Xaml_Validate" xml:space="preserve"><value>検証</value></data>
+  <data name="Xaml_ValidateFirstThenConvertACompatibleSystemDiskWithoutDeleti_3693ed34" xml:space="preserve"><value>最初に検証してから、パーティションを削除せずに互換性のあるシステムディスクを変換します。</value></data>
+  <data name="Xaml_ValidateMBRToGPTConversion" xml:space="preserve"><value>MBRからGPTへの変換を検証する</value></data>
+  <data name="Xaml_VerifyAfterClone" xml:space="preserve"><value>クローン後に確認</value></data>
+  <data name="Xaml_VerifyCloneAfterCompletion" xml:space="preserve"><value>完了後にクローンを検証する</value></data>
+  <data name="Xaml_VHDPath" xml:space="preserve"><value>VHDパス</value></data>
+  <data name="Xaml_VHDSizeInGB" xml:space="preserve"><value>VHDサイズ（ GB ）</value></data>
+  <data name="Xaml_Volume" xml:space="preserve"><value>ボリューム</value></data>
+  <data name="Xaml_VolumeLabel" xml:space="preserve"><value>ボリュームラベル</value></data>
+  <data name="Xaml_WindowsVolume" xml:space="preserve"><value>Windowsボリューム</value></data>
+  <data name="Xaml_WindowsVolumeSelector" xml:space="preserve"><value>Windowsボリュームセレクタ</value></data>
+  <data name="Xaml_WipeDiskSelector" xml:space="preserve"><value>ワイプディスクセレクター</value></data>
+  <data name="Xaml_WipeEntireDisk" xml:space="preserve"><value>ディスク全体をワイプする</value></data>
+  <data name="Xaml_WipeFreeSpaceOnly" xml:space="preserve"><value>空き領域のみを消去</value></data>
+  <data name="Xaml_WipeVolumeSelector" xml:space="preserve"><value>ワイプボリュームセレクター</value></data>
+  <data name="Xaml_Working" xml:space="preserve"><value>処理中</value></data>
+  <data name="Xaml_WorkingWithDiskImages" xml:space="preserve"><value>ディスクイメージを操作する</value></data>
+  <data name="XamlValue" xml:space="preserve"><value>#</value></data>
+</root>

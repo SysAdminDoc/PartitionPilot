@@ -39,6 +39,7 @@ public static class LanguageService
         new("de", "Deutsch"),
         new("es", "Español"),
         new("fr", "Français"),
+        new("ja", "日本語"),
         // Pseudo-locale: every string padded and bracketed. Kept in the list because reviewing
         // translations and spotting unlocalized text is exactly what the selector is for.
         new("qps-ploc", "Pseudo (qps-ploc)")
@@ -111,3 +112,4 @@ public static class LanguageService
             string.Equals(l.Code, osCulture.TwoLetterISOLanguageName, StringComparison.OrdinalIgnoreCase));
     }
 }
+
