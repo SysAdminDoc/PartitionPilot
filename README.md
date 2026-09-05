@@ -99,7 +99,7 @@ dotnet run --project .\src\PartitionPilot.Cli\PartitionPilot.Cli.csproj -- parti
 dotnet run --project .\src\PartitionPilot.Cli\PartitionPilot.Cli.csproj -- health --json
 ```
 
-Commands: `disks`, `partitions`, `volumes`, `smart`, `smart-history`, `smart-trends`, `health`, `alignment`, `temperature`, `benchmark`, `snapshot`, `restore-snapshot`, `shrink-blockers`, `diagnostics`, `boot-audit`, `plan`, `apply-layout`, `recovery-scan`, `release-manifest`, `rescue-profile`, `version`. All support `--json` for scripted automation.
+Commands: `disks`, `partitions`, `volumes`, `smart`, `smart-history`, `smart-trends`, `health`, `alignment`, `temperature`, `benchmark`, `snapshot`, `restore-snapshot`, `shrink-blockers`, `clone`, `wipe`, `diagnostics`, `boot-audit`, `plan`, `apply-layout`, `recovery-scan`, `release-manifest`, `rescue-profile`, `version`. All support `--json` for scripted automation.
 
 ## Why a Volume Will Not Shrink
 
