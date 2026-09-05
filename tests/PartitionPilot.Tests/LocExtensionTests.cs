@@ -114,6 +114,17 @@ public class LocExtensionTests
     [InlineData("HexSelectDiskPrompt", "", "", "Select a disk and read a sector.")]
     [InlineData("UsageScanCancelledSummary", "", "", "Disk usage scan cancelled.")]
     [InlineData("UsageScanFailedSummary", "boom", "", "Scan failed: boom")]
+    [InlineData("HealthSectorSizes", "512", "4096", "Logical: 512 / Physical: 4096")]
+    [InlineData("HealthTemperatureC", "38", "", "38 C")]
+    [InlineData("HealthWearUsed", "4", "", "4% used")]
+    [InlineData("HealthPowerOnHours", "1,204", "", "1,204 hours")]
+    [InlineData("HealthErrorsTotal", "7", "5", "7 total (5 corrected)")]
+    [InlineData("HealthMilliseconds", "12", "", "12 ms")]
+    [InlineData("HealthPercentValue", "99", "", "99%")]
+    [InlineData("HealthMinutes", "310", "", "310 min")]
+    [InlineData("SmartMetadataVersion", "2", "", "SMART metadata 2")]
+    [InlineData("HistoryMany", "5", "", "5 readings")]
+    [InlineData("EnduranceUnrated", "12.5", "", "12.5 TB written (set rated TBW for endurance gauge)")]
     public void Format_ReproducesTheEnglishTextItReplaced(string key, string first, string second, string expected)
     {
         Assert.Equal(expected, LocExtension.Format(key, first, second));
@@ -204,6 +215,14 @@ public class LocExtensionTests
             "Windows RE or remove the recovery environment.\n\n" +
             "Use a dedicated recovery relocation workflow before changing this partition.\n\nreagentc output",
             LocExtension.Format("RecoveryGuardBody", LocExtension.Get("VerbDelete"), "reagentc output"));
+    }
+
+    [Fact]
+    public void EnduranceRated_ReproducesTheEnglishTextItReplaced()
+    {
+        Assert.Equal(
+            "12.5 TB written of 300 TB rated (4.2% consumed)",
+            LocExtension.Format("EnduranceRated", "12.5", "300", "4.2"));
     }
 
     [Fact]
