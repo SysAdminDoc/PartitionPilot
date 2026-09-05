@@ -48,12 +48,16 @@ public static class ThemeService
         ApplyTheme();
     }
 
-    public static string GetLabel() => Preference switch
+    /// <summary>
+    /// Label for the toggle, which names the theme the next press will switch to. Resolved on each call
+    /// rather than cached so it follows a language change.
+    /// </summary>
+    public static string GetLabel() => LocExtension.Get(Preference switch
     {
-        ThemePreference.Dark => "Light Mode",
-        ThemePreference.Light => "System Theme",
-        _ => "Dark Mode"
-    };
+        ThemePreference.Dark => "ThemeLightMode",
+        ThemePreference.Light => "ThemeSystemTheme",
+        _ => "ThemeDarkMode"
+    });
 
     private static void ApplyTheme()
     {

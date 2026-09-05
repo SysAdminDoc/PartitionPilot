@@ -6,10 +6,25 @@ using System.Windows.Markup;
 namespace PartitionPilot.Tests;
 
 /// <summary>
+/// Groups every test that reads or writes the process-wide interface language.
+/// <para>
+/// The language is global state, so these must not run alongside each other: switching to the
+/// pseudo-locale mid-run made <see cref="LocExtensionTests"/> read bracketed strings and fail on keys
+/// that were perfectly fine.
+/// </para>
+/// </summary>
+[CollectionDefinition(Name, DisableParallelization = true)]
+public sealed class LocalizationCollection
+{
+    public const string Name = "Localization";
+}
+
+/// <summary>
 /// Covers the language selector end to end: that a switch reaches a live control without a restart,
 /// that the choice round-trips through the settings file, and that an unconfigured install follows the
 /// operating system.
 /// </summary>
+[Collection(LocalizationCollection.Name)]
 public class LanguageSwitchingTests : IDisposable
 {
     private readonly AppLanguage _original = LanguageService.Current;

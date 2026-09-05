@@ -162,6 +162,15 @@
   <data name="Export" xml:space="preserve"><value>Exportar</value></data>
   <data name="Compare" xml:space="preserve"><value>Comparar</value></data>
   <data name="RecoveryPlan" xml:space="preserve"><value>Plan de recuperación</value></data>
+  <data name="ThemeLightMode" xml:space="preserve"><value>Modo claro</value></data>
+  <data name="ThemeSystemTheme" xml:space="preserve"><value>Tema del sistema</value></data>
+  <data name="ThemeDarkMode" xml:space="preserve"><value>Modo oscuro</value></data>
+  <data name="SessionStateLabel" xml:space="preserve"><value>Estado de la sesión</value></data>
+  <data name="AdminSessionDetail" xml:space="preserve"><value>Cambios de disco disponibles</value></data>
+  <data name="ReadOnlySessionDetail" xml:space="preserve"><value>Ejecutar como administrador para operaciones de escritura</value></data>
+  <data name="ElevationStandard" xml:space="preserve"><value>Estándar (sin elevar)</value></data>
+  <data name="ElevationAdminProtection" xml:space="preserve"><value>Protección de administrador (perfil SMAA)</value></data>
+  <data name="ElevationLegacyUac" xml:space="preserve"><value>UAC clásico (elevado)</value></data>
   <data name="SelectLanguageTooltip" xml:space="preserve"><value>Cambiar el idioma de la interfaz</value></data>
   <data name="SelectLanguageAutomationName" xml:space="preserve"><value>Idioma de la interfaz</value></data>
   <data name="FindOperation" xml:space="preserve"><value>Buscar una operación</value></data>

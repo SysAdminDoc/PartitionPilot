@@ -5,6 +5,7 @@
 ### Features
 - Added a language selector to the command bar, next to the theme control. The app shipped five sets of translations with nothing in the interface to reach them, so anyone who launched into an unfamiliar language had no way out and a translator had no way to review their work. Each language is named in itself, so the entry you need stays legible even when the current language is one you cannot read.
 - Switching language now takes effect immediately, without restarting. Localized text was resolved once when a window was built, so every label kept whatever language it started in. Those labels are now bound to a single notifying source, and changing language re-evaluates all of them at once.
+- Localized the shell labels that come from code rather than markup. The theme button and all three status tiles were English literals, which nobody noticed while there was no way to change language; with the selector shipped they would have sat untranslated right beside it. A test now fails if one of those labels is assigned as a literal again.
 - The chosen language is remembered between runs. With no choice stored, the app follows the operating system's language, matching a regional variant such as `de-AT` to German, and falls back to English for a language it has no translations for.
 
 ## PartitionPilot v0.9.23 - 2026-09-04

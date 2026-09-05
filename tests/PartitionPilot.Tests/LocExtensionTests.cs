@@ -4,6 +4,8 @@ using System.Text.RegularExpressions;
 
 namespace PartitionPilot.Tests;
 
+// Reads the process-wide interface language, so it shares a collection with the tests that change it.
+[Collection(LocalizationCollection.Name)]
 public class LocExtensionTests
 {
     private static readonly Regex DirectLiteralAttributePattern = new(
