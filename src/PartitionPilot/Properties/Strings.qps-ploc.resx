@@ -162,6 +162,28 @@
   <data name="Export" xml:space="preserve"><value>[Export!!]</value></data>
   <data name="Compare" xml:space="preserve"><value>[Compare!!]</value></data>
   <data name="RecoveryPlan" xml:space="preserve"><value>[Recovery Plan!!]</value></data>
+  <data name="StatusUpdateAvailable" xml:space="preserve"><value>[Update available: v{0}!!]</value></data>
+  <data name="StatusUpdateReady" xml:space="preserve"><value>[Update v{0} ready — restart to apply!!]</value></data>
+  <data name="StatusUpdateDownloadFailed" xml:space="preserve"><value>[Update v{0} available (download failed)!!]</value></data>
+  <data name="StatusUpdateAvailableVerified" xml:space="preserve"><value>[Update available: v{0} ({1})!!]</value></data>
+  <data name="ThemeNameDark" xml:space="preserve"><value>[Dark!!]</value></data>
+  <data name="ThemeNameLight" xml:space="preserve"><value>[Light!!]</value></data>
+  <data name="ThemeNameSystem" xml:space="preserve"><value>[System!!]</value></data>
+  <data name="StatusThemeApplied" xml:space="preserve"><value>[{0} theme applied!!]</value></data>
+  <data name="LogExportedBody" xml:space="preserve"><value>[Log exported to:&#10;{0}!!]</value></data>
+  <data name="LogExportFailed" xml:space="preserve"><value>[Failed to export log:&#10;{0}!!]</value></data>
+  <data name="StatusLoadingPartitions" xml:space="preserve"><value>[Loading partition layout...!!]</value></data>
+  <data name="StatusLoadingSnapshots" xml:space="preserve"><value>[Loading partition snapshots...!!]</value></data>
+  <data name="StatusLoadingHealth" xml:space="preserve"><value>[Loading disk health data...!!]</value></data>
+  <data name="StatusLoadingTools" xml:space="preserve"><value>[Loading tools drive lists...!!]</value></data>
+  <data name="StatusLoadingImages" xml:space="preserve"><value>[Loading disk images...!!]</value></data>
+  <data name="StatusLoadingDrives" xml:space="preserve"><value>[Loading drive list...!!]</value></data>
+  <data name="StatusLoadingCloning" xml:space="preserve"><value>[Loading cloning data...!!]</value></data>
+  <data name="StatusLoadingHex" xml:space="preserve"><value>[Loading hex viewer...!!]</value></data>
+  <data name="StatusGeneratingBundle" xml:space="preserve"><value>[Generating support bundle...!!]</value></data>
+  <data name="SupportBundleExportedBody" xml:space="preserve"><value>[Support bundle exported to:&#10;{0}&#10;&#10;Serial numbers and user paths have been redacted.!!!]</value></data>
+  <data name="SupportBundleExportedTitle" xml:space="preserve"><value>[Support Bundle Exported!!]</value></data>
+  <data name="SupportBundleExportFailed" xml:space="preserve"><value>[Failed to export support bundle:&#10;{0}!!]</value></data>
   <data name="OpWipeFreeSpace" xml:space="preserve"><value>[Wipe free space on {0}:!!]</value></data>
   <data name="BitLockerVolumeLockedTitle" xml:space="preserve"><value>[BitLocker Volume Locked!!]</value></data>
   <data name="StatusWipingFreeSpace" xml:space="preserve"><value>[Wiping free space on {0}:...!!]</value></data>
