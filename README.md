@@ -196,6 +196,8 @@ Restore behavior is fail-closed for mismatched image hashes. Missing or unreadab
 
 ## Release Verification
 
+PartitionPilot ships self-contained, so it carries its own copy of the .NET runtime. Patching the machine's shared runtime does nothing for an installed copy: a runtime security fix only reaches users when the app is republished against the new runtime. Republish and cut a release after each .NET servicing update, and record the bundled runtime version in the release notes.
+
 PartitionPilot releases are built locally. A release candidate needs fresh published GUI and CLI folders, a Velopack package set, and release manifests. The Velopack assets are what the built-in updater reads, so every release must ship the full `.nupkg` and `releases.win.json` alongside the setup executable:
 
 ```powershell
