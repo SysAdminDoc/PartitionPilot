@@ -21,6 +21,8 @@
 
 - The CLI now returns distinct exit codes and honours `--json` when a command fails. Every failure used to be exit code 1 with prose on stderr, so a scripted caller could not tell a guard that stopped before touching the disk from an operation that failed partway through one, and a caller that asked for JSON got prose. Codes 3 to 7 all mean nothing was changed; 1 means a destructive operation may have got partway. The codes are documented in the README.
 
+- Fixed the release UI smoke gate, which could not run at all. It invoked the UI test project with `--no-restore`, but nothing else in the build restores that project, so on a checkout where it had never been restored no result file was produced and the gate failed with "UI smoke test result was not created" — a message about the symptom that hid the cause. It now restores the test project first. The fail-closed behaviour is unchanged: an all-skipped run without `-AllowHeadlessSkip` still fails.
+
 ### UX
 - The activity log is now resizable and collapsible. It occupied a fixed 184 pixels with no way to change it, which at the minimum window height took roughly a quarter of the vertical space permanently. A splitter resizes it and a button collapses it, and both survive a restart.
 - The activity log's Details column now stretches to fill the pane. It was a fixed 1040 pixels inside a window whose minimum width is 1080, so the log scrolled horizontally at small sizes and never used the space on a wide one.
