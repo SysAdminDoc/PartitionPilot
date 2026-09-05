@@ -19,6 +19,10 @@
 - Both commands run the same gate sequence the GUI does, now shared in Core: re-verify the target's identity, save the mandatory pre-destruction partition snapshot, lock and dismount the volumes involved, then execute. A rescue path that skipped the snapshot because it took different code would be worse than no rescue path.
 - Added an explanation for why a volume will not shrink further. "You cannot shrink a volume beyond the point where any unmovable files are located" is the most common complaint about Windows partitioning, and Windows already writes the answer to the Application log without showing it: Defrag event 259 names the blocking file, its last cluster and the shrink target. The resize dialog now names that file, classifies it as shadow copy storage, page file, hibernation file, NTFS change journal, search index or NTFS metadata, states how much space is blocked, and gives the command that resolves it. `pp shrink-blockers --drive C` prints the same, with `--json`. Reading the log needs no elevation.
 
+### UX
+- The status-bar indicator now reflects the actual status. It was hardcoded green, so the shell showed a healthy dot while the text beside it reported a failure. It renders success, warning and error, and carries the severity in its automation name so a screen reader gets it without the colour.
+- Removed a dead event handler left over from when the activity log was a text box.
+
 ### Security
 - Release manifests can now be signed, and the client can verify one against a key compiled into the build. Velopack checks a package's hash and size against the feed, so whoever controls the feed controls both; a signature over the manifest itself is what survives a compromised host. Sign with `pp release-manifest --manifest-key <pem>`, and set a lifetime with `--manifest-valid-days`. Verification also refuses a manifest that offers an older version than the one installed, which blocks a rollback to a known-vulnerable build, and one past its expiry, which blocks freezing a client on a stale release list. No signing key ships yet, so the channel reports as unsigned rather than rejecting updates and stranding existing installs.
 

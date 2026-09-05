@@ -32,6 +32,36 @@ public partial class MainViewModel : ViewModelBase
         }
     }
 
+    private StatusSeverity _statusSeverity = StatusSeverity.Normal;
+
+    /// <summary>
+    /// Drives the status indicator. It used to be hardcoded green, so the shell showed a healthy dot
+    /// while the status text next to it reported a failure.
+    /// </summary>
+    public StatusSeverity StatusSeverity
+    {
+        get => _statusSeverity;
+        set
+        {
+            if (SetProperty(ref _statusSeverity, value))
+                OnPropertyChanged(nameof(StatusSeverityText));
+        }
+    }
+
+    /// <summary>Spoken by a screen reader, so the severity is not conveyed by colour alone.</summary>
+    public string StatusSeverityText => StatusSeverity switch
+    {
+        StatusSeverity.Error => "Error",
+        StatusSeverity.Warning => "Warning",
+        _ => "OK"
+    };
+
+    private void SetStatus(string text, StatusSeverity severity = StatusSeverity.Normal)
+    {
+        StatusText = text;
+        StatusSeverity = severity;
+    }
+
     private int _selectedTabIndex;
     public int SelectedTabIndex
     {
@@ -116,11 +146,11 @@ public partial class MainViewModel : ViewModelBase
                 try
                 {
                     await UpdateService.DownloadAndApplyAsync(veloUpdate, Log);
-                    StatusText = $"Update v{veloUpdate.TargetFullRelease.Version} ready — restart to apply";
+                    SetStatus($"Update v{veloUpdate.TargetFullRelease.Version} ready — restart to apply");
                 }
                 catch
                 {
-                    StatusText = $"Update v{veloUpdate.TargetFullRelease.Version} available (download failed)";
+                    SetStatus($"Update v{veloUpdate.TargetFullRelease.Version} available (download failed)", StatusSeverity.Warning);
                 }
                 return;
             }
@@ -180,13 +210,13 @@ public partial class MainViewModel : ViewModelBase
     {
         try
         {
-            StatusText = "Refreshing current workspace...";
+            SetStatus("Refreshing current workspace...");
             await RefreshTabAsync(SelectedTabIndex);
-            StatusText = "Ready";
+            SetStatus("Ready");
         }
         catch (Exception ex)
         {
-            StatusText = $"Error: {ex.Message}";
+            SetStatus($"Error: {ex.Message}", StatusSeverity.Error);
             Log.Log($"Refresh error: {ex.Message}");
         }
     }
@@ -197,11 +227,11 @@ public partial class MainViewModel : ViewModelBase
         {
             var index = parameter is int i ? i : _selectedTabIndex;
             await RefreshTabAsync(index);
-            StatusText = "Ready";
+            SetStatus("Ready");
         }
         catch (Exception ex)
         {
-            StatusText = $"Error: {ex.Message}";
+            SetStatus($"Error: {ex.Message}", StatusSeverity.Error);
             Log.Log($"Tab switch error: {ex.Message}");
         }
     }
@@ -284,13 +314,13 @@ public partial class MainViewModel : ViewModelBase
             _dialog.ShowInfo($"Support bundle exported to:\n{dlg.FileName}\n\nSerial numbers and user paths have been redacted.",
                 "Support Bundle Exported");
 
-            StatusText = "Ready";
+            SetStatus("Ready");
         }
         catch (Exception ex)
         {
             Log.Log($"Support bundle export failed: {ex.Message}");
             _dialog.ShowError($"Failed to export support bundle:\n{ex.Message}", "Export Error");
-            StatusText = "Ready";
+            SetStatus("Ready");
         }
     }
 

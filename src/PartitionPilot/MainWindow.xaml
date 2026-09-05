@@ -294,9 +294,10 @@
                 <StackPanel Orientation="Horizontal">
                     <Ellipse Width="9"
                              Height="9"
-                             Fill="{DynamicResource SuccessBrush}"
+                             Fill="{Binding StatusSeverity, Converter={StaticResource StatusSeverityBrush}}"
                              Margin="0,0,8,0"
-                             VerticalAlignment="Center"/>
+                             VerticalAlignment="Center"
+                             AutomationProperties.Name="{Binding StatusSeverityText}"/>
                     <TextBlock Text="{Binding StatusText}"
                                Foreground="{DynamicResource SubtextBrush}"
                                FontSize="12"
