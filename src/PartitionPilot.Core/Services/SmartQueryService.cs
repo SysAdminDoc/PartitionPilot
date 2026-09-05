@@ -4,13 +4,52 @@ namespace PartitionPilot;
 
 public static class SmartQueryService
 {
+    private static readonly object OpenLock = new();
+    private static Computer? _computer;
+
+    /// <summary>
+    /// One LibreHardwareMonitor instance for the life of the process.
+    /// <para>
+    /// Opening one is not cheap: it enumerates every storage device and allocates an executable code
+    /// buffer for generated CPUID/RDTSC instructions, neither of which the storage-only path here needs.
+    /// Constructing one per query meant the temperature monitor paid that cost once per disk every thirty
+    /// seconds. Refreshing an already-open device with Update() is the supported way to get new readings.
+    /// </para>
+    /// </summary>
+    private static Computer GetComputer()
+    {
+        lock (OpenLock)
+        {
+            if (_computer is not null)
+                return _computer;
+
+            var computer = new Computer { IsStorageEnabled = true };
+            computer.Open();
+            _computer = computer;
+            return computer;
+        }
+    }
+
+    /// <summary>Closes the shared instance. Called on shutdown; safe to call when nothing was opened.</summary>
+    public static void Shutdown()
+    {
+        lock (OpenLock)
+        {
+            try { _computer?.Close(); }
+            catch { /* nothing useful to do while tearing down */ }
+            _computer = null;
+        }
+    }
+
     public static SmartData? QueryDisk(int diskNumber, IActivityLog? log = null)
     {
-        Computer? computer = null;
         try
         {
-            computer = new Computer { IsStorageEnabled = true };
-            computer.Open();
+            // Serialised because the hardware collection and each device's sensors are shared state, and
+            // the temperature monitor polls while the health tab can be refreshing.
+            lock (OpenLock)
+            {
+            var computer = GetComputer();
 
             var storageDevices = computer.Hardware
                 .Where(h => h.HardwareType == HardwareType.Storage)
@@ -94,15 +133,16 @@ public static class SmartQueryService
             data.AllAttributes = attributes;
             log?.Log($"LibreHardwareMonitor returned {attributes.Count} SMART attribute(s) for Windows disk {diskNumber}.");
             return data;
+            }
         }
         catch (Exception ex)
         {
             log?.Log($"LibreHardwareMonitor SMART query failed: {ex.Message}");
+
+            // A failure may have left the shared instance unusable, so drop it and let the next query
+            // open a fresh one rather than failing forever.
+            Shutdown();
             return null;
-        }
-        finally
-        {
-            computer?.Close();
         }
     }
 
