@@ -162,6 +162,8 @@
   <data name="Export" xml:space="preserve"><value>[Export!!]</value></data>
   <data name="Compare" xml:space="preserve"><value>[Compare!!]</value></data>
   <data name="RecoveryPlan" xml:space="preserve"><value>[Recovery Plan!!]</value></data>
+  <data name="ShrinkBlockedTitle" xml:space="preserve"><value>[Why this volume will not shrink further!!!]</value></data>
+  <data name="ShrinkBlockedAutomationName" xml:space="preserve"><value>[Shrink blocker details!!]</value></data>
   <data name="PreviewRestore" xml:space="preserve"><value>[Preview Restore!!]</value></data>
   <data name="PreviewRestoreTooltip" xml:space="preserve"><value>[Build the restore plan for this snapshot without changing the disk!!!]</value></data>
   <data name="PreviewRestoreAutomationName" xml:space="preserve"><value>[Preview snapshot restore plan!!]</value></data>

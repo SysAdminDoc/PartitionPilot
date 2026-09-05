@@ -99,7 +99,15 @@ dotnet run --project .\src\PartitionPilot.Cli\PartitionPilot.Cli.csproj -- parti
 dotnet run --project .\src\PartitionPilot.Cli\PartitionPilot.Cli.csproj -- health --json
 ```
 
-Commands: `disks`, `partitions`, `volumes`, `smart`, `smart-history`, `smart-trends`, `health`, `alignment`, `temperature`, `benchmark`, `snapshot`, `restore-snapshot`, `diagnostics`, `boot-audit`, `plan`, `apply-layout`, `recovery-scan`, `release-manifest`, `rescue-profile`, `version`. All support `--json` for scripted automation.
+Commands: `disks`, `partitions`, `volumes`, `smart`, `smart-history`, `smart-trends`, `health`, `alignment`, `temperature`, `benchmark`, `snapshot`, `restore-snapshot`, `shrink-blockers`, `diagnostics`, `boot-audit`, `plan`, `apply-layout`, `recovery-scan`, `release-manifest`, `rescue-profile`, `version`. All support `--json` for scripted automation.
+
+## Why a Volume Will Not Shrink
+
+`pp shrink-blockers --drive C` explains the shrink floor. Windows records a Defrag event 259 in the Application log after every shrink analysis, naming the last unmovable file, its last cluster and the offset the shrink wanted to reach, and never shows it. This reads that record, classifies the blocker, states how much space it is holding back, and gives the remedy.
+
+Recognised blockers: shadow copy storage, the page and swap files, the hibernation file, the NTFS change journal, the Windows Search index, and NTFS metadata that cannot move while the volume is mounted.
+
+Reading the log needs no elevation, but Windows must have attempted a shrink at least once for there to be a record. The resize dialog shows the same detail when a floor is in effect.
 
 ## Restoring a Partition Table
 

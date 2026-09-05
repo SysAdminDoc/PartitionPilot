@@ -162,6 +162,8 @@
   <data name="Export" xml:space="preserve"><value>Exportar</value></data>
   <data name="Compare" xml:space="preserve"><value>Comparar</value></data>
   <data name="RecoveryPlan" xml:space="preserve"><value>Plan de recuperación</value></data>
+  <data name="ShrinkBlockedTitle" xml:space="preserve"><value>Por qué este volumen no se puede reducir más</value></data>
+  <data name="ShrinkBlockedAutomationName" xml:space="preserve"><value>Detalles del bloqueo de reducción</value></data>
   <data name="PreviewRestore" xml:space="preserve"><value>Vista previa de restauración</value></data>
   <data name="PreviewRestoreTooltip" xml:space="preserve"><value>Crear el plan de restauración de esta instantánea sin modificar el disco</value></data>
   <data name="PreviewRestoreAutomationName" xml:space="preserve"><value>Ver el plan de restauración de la instantánea</value></data>
