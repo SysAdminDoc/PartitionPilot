@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.IO;
 using System.Windows;
 using System.Windows.Input;
@@ -107,22 +108,28 @@ public class DiskHealthViewModel : ViewModelBase, IDisposable
     public string DiskSizeText => SelectedDisk is not null ? SizeUtil.Format(SelectedDisk.Size) : "";
 
     public string SectorSizeText => SelectedDisk is not null
-        ? $"Logical: {SelectedDisk.LogicalSectorSize} / Physical: {SelectedDisk.PhysicalSectorSize}"
+        ? LocExtension.Format("HealthSectorSizes", SelectedDisk.LogicalSectorSize, SelectedDisk.PhysicalSectorSize)
         : "";
 
-    public string TemperatureText => Smart?.Temperature is not null ? $"{Smart.Temperature} C" : "N/A";
+    public string TemperatureText => Smart?.Temperature is not null
+        ? LocExtension.Format("HealthTemperatureC", Smart.Temperature)
+        : LocExtension.Get("NotAvailable");
 
-    public string WearText => Smart?.Wear is not null ? $"{Smart.Wear}% used" : "N/A";
+    public string WearText => Smart?.Wear is not null
+        ? LocExtension.Format("HealthWearUsed", Smart.Wear)
+        : LocExtension.Get("NotAvailable");
 
-    public string PowerOnText => Smart?.PowerOnHours is not null ? $"{Smart.PowerOnHours:N0} hours" : "N/A";
+    public string PowerOnText => Smart?.PowerOnHours is not null
+        ? LocExtension.Format("HealthPowerOnHours", Smart.PowerOnHours.Value.ToString("N0", CultureInfo.CurrentCulture))
+        : LocExtension.Get("NotAvailable");
 
     public string ReadErrorsText
     {
         get
         {
-            if (Smart?.ReadErrorsTotal is null) return "N/A";
+            if (Smart?.ReadErrorsTotal is null) return LocExtension.Get("NotAvailable");
             var corrected = Smart.ReadErrorsCorrected?.ToString() ?? "?";
-            return $"{Smart.ReadErrorsTotal} total ({corrected} corrected)";
+            return LocExtension.Format("HealthErrorsTotal", Smart.ReadErrorsTotal, corrected);
         }
     }
 
@@ -130,42 +137,50 @@ public class DiskHealthViewModel : ViewModelBase, IDisposable
     {
         get
         {
-            if (Smart?.WriteErrorsTotal is null) return "N/A";
+            if (Smart?.WriteErrorsTotal is null) return LocExtension.Get("NotAvailable");
             var corrected = Smart.WriteErrorsCorrected?.ToString() ?? "?";
-            return $"{Smart.WriteErrorsTotal} total ({corrected} corrected)";
+            return LocExtension.Format("HealthErrorsTotal", Smart.WriteErrorsTotal, corrected);
         }
     }
 
-    public string ReadLatencyText => Smart?.ReadLatencyMax is not null ? $"{Smart.ReadLatencyMax} ms" : "N/A";
+    public string ReadLatencyText => Smart?.ReadLatencyMax is not null
+        ? LocExtension.Format("HealthMilliseconds", Smart.ReadLatencyMax)
+        : LocExtension.Get("NotAvailable");
 
-    public string WriteLatencyText => Smart?.WriteLatencyMax is not null ? $"{Smart.WriteLatencyMax} ms" : "N/A";
+    public string WriteLatencyText => Smart?.WriteLatencyMax is not null
+        ? LocExtension.Format("HealthMilliseconds", Smart.WriteLatencyMax)
+        : LocExtension.Get("NotAvailable");
 
-    public string ReallocatedSectorsText => Smart?.ReallocatedSectors is not null ? Smart.ReallocatedSectors.Value.ToString("N0") : "N/A";
+    public string ReallocatedSectorsText => Smart?.ReallocatedSectors is not null ? Smart.ReallocatedSectors.Value.ToString("N0", CultureInfo.CurrentCulture) : LocExtension.Get("NotAvailable");
 
-    public string PendingSectorsText => Smart?.PendingSectors is not null ? Smart.PendingSectors.Value.ToString("N0") : "N/A";
+    public string PendingSectorsText => Smart?.PendingSectors is not null ? Smart.PendingSectors.Value.ToString("N0", CultureInfo.CurrentCulture) : LocExtension.Get("NotAvailable");
 
-    public string PowerCycleText => Smart?.PowerCycleCount is not null ? Smart.PowerCycleCount.Value.ToString("N0") : "N/A";
+    public string PowerCycleText => Smart?.PowerCycleCount is not null ? Smart.PowerCycleCount.Value.ToString("N0", CultureInfo.CurrentCulture) : LocExtension.Get("NotAvailable");
 
-    public string TotalWrittenText => Smart?.TotalBytesWritten is not null ? SizeUtil.Format(Smart.TotalBytesWritten.Value) : "N/A";
+    public string TotalWrittenText => Smart?.TotalBytesWritten is not null ? SizeUtil.Format(Smart.TotalBytesWritten.Value) : LocExtension.Get("NotAvailable");
 
-    public string TotalReadText => Smart?.TotalBytesRead is not null ? SizeUtil.Format(Smart.TotalBytesRead.Value) : "N/A";
+    public string TotalReadText => Smart?.TotalBytesRead is not null ? SizeUtil.Format(Smart.TotalBytesRead.Value) : LocExtension.Get("NotAvailable");
 
-    public string NvmeAvailableSpareText => Smart?.NvmeAvailableSpare is not null ? $"{Smart.NvmeAvailableSpare}%" : "N/A";
+    public string NvmeAvailableSpareText => Smart?.NvmeAvailableSpare is not null
+        ? LocExtension.Format("HealthPercentValue", Smart.NvmeAvailableSpare)
+        : LocExtension.Get("NotAvailable");
 
-    public string NvmeMediaErrorsText => Smart?.NvmeMediaErrors is not null ? Smart.NvmeMediaErrors.Value.ToString("N0") : "N/A";
+    public string NvmeMediaErrorsText => Smart?.NvmeMediaErrors is not null ? Smart.NvmeMediaErrors.Value.ToString("N0", CultureInfo.CurrentCulture) : LocExtension.Get("NotAvailable");
 
-    public string NvmeUnsafeShutdownsText => Smart?.NvmeUnsafeShutdowns is not null ? Smart.NvmeUnsafeShutdowns.Value.ToString("N0") : "N/A";
+    public string NvmeUnsafeShutdownsText => Smart?.NvmeUnsafeShutdowns is not null ? Smart.NvmeUnsafeShutdowns.Value.ToString("N0", CultureInfo.CurrentCulture) : LocExtension.Get("NotAvailable");
 
-    public string NvmeControllerBusyText => Smart?.NvmeControllerBusyMinutes is not null ? $"{Smart.NvmeControllerBusyMinutes:N0} min" : "N/A";
+    public string NvmeControllerBusyText => Smart?.NvmeControllerBusyMinutes is not null
+        ? LocExtension.Format("HealthMinutes", Smart.NvmeControllerBusyMinutes.Value.ToString("N0", CultureInfo.CurrentCulture))
+        : LocExtension.Get("NotAvailable");
 
-    public string NvmeErrorLogText => Smart?.NvmeErrorLogEntries is not null ? Smart.NvmeErrorLogEntries.Value.ToString("N0") : "N/A";
+    public string NvmeErrorLogText => Smart?.NvmeErrorLogEntries is not null ? Smart.NvmeErrorLogEntries.Value.ToString("N0", CultureInfo.CurrentCulture) : LocExtension.Get("NotAvailable");
 
     public string NvmeCriticalWarningText
     {
         get
         {
             var flags = Smart?.CriticalWarningFlags ?? new();
-            return flags.Count > 0 ? string.Join(", ", flags) : "None";
+            return flags.Count > 0 ? string.Join(", ", flags) : LocExtension.Get("CriticalWarningNone");
         }
     }
 
@@ -177,9 +192,15 @@ public class DiskHealthViewModel : ViewModelBase, IDisposable
         {
             if (Smart?.TotalBytesWritten is null) return "";
             var writtenTB = Smart.TotalBytesWritten.Value / (1024.0 * 1024 * 1024 * 1024);
-            if (RatedTbwTB <= 0) return $"{writtenTB:F1} TB written (set rated TBW for endurance gauge)";
+            if (RatedTbwTB <= 0)
+                return LocExtension.Format("EnduranceUnrated",
+                    writtenTB.ToString("F1", CultureInfo.CurrentCulture));
+
             var pct = writtenTB / RatedTbwTB * 100;
-            return $"{writtenTB:F1} TB written of {RatedTbwTB:F0} TB rated ({pct:F1}% consumed)";
+            return LocExtension.Format("EnduranceRated",
+                writtenTB.ToString("F1", CultureInfo.CurrentCulture),
+                RatedTbwTB.ToString("F0", CultureInfo.CurrentCulture),
+                pct.ToString("F1", CultureInfo.CurrentCulture));
         }
     }
 
@@ -246,7 +267,7 @@ public class DiskHealthViewModel : ViewModelBase, IDisposable
 
     public IReadOnlyList<SmartAdvisory> SmartAdvisories => Smart?.Advisories ?? new List<SmartAdvisory>();
 
-    public string SmartMetadataVersionText => Smart is null ? "" : $"SMART metadata {Smart.MetadataVersion}";
+    public string SmartMetadataVersionText => Smart is null ? "" : LocExtension.Format("SmartMetadataVersion", Smart.MetadataVersion);
 
     public ObservableCollection<SmartTrend> Trends { get; } = new();
     public bool HasTrends => Trends.Count > 0;
@@ -260,20 +281,20 @@ public class DiskHealthViewModel : ViewModelBase, IDisposable
 
     public string HistoryCountText => HistoryCount switch
     {
-        0 => "No history",
-        1 => "1 reading",
-        _ => $"{HistoryCount} readings"
+        0 => LocExtension.Get("HistoryNone"),
+        1 => LocExtension.Get("HistoryOne"),
+        _ => LocExtension.Format("HistoryMany", HistoryCount)
     };
 
     public string HealthStatusText => Smart?.Health switch
     {
-        HealthStatus.Good => "Good",
-        HealthStatus.Warning => "Warning",
-        HealthStatus.Critical => "Critical",
-        _ => "Unknown"
+        HealthStatus.Good => LocExtension.Get("Good"),
+        HealthStatus.Warning => LocExtension.Get("Warning"),
+        HealthStatus.Critical => LocExtension.Get("Critical"),
+        _ => LocExtension.Get("Unknown")
     };
 
-    public string HealthReasonText => Smart?.HealthReason ?? "No SMART data available";
+    public string HealthReasonText => Smart?.HealthReason ?? LocExtension.Get("NoSmartData");
 
     private bool _isMonitoring;
     public bool IsMonitoring
@@ -289,7 +310,7 @@ public class DiskHealthViewModel : ViewModelBase, IDisposable
         }
     }
 
-    public string MonitorButtonText => IsMonitoring ? "Stop Monitoring" : "Start Monitoring";
+    public string MonitorButtonText => IsMonitoring ? LocExtension.Get("StopMonitoring") : LocExtension.Get("StartMonitoring");
     public bool HasTemperatureAlerts => TemperatureAlerts.Count > 0;
 
     private string _liveTemperatureText = "";
@@ -317,7 +338,7 @@ public class DiskHealthViewModel : ViewModelBase, IDisposable
         }
     }
 
-    public string PerfButtonText => IsPerfMonitoring ? "Stop I/O Monitor" : "Start I/O Monitor";
+    public string PerfButtonText => IsPerfMonitoring ? LocExtension.Get("StopIoMonitor") : LocExtension.Get("StartIoMonitor");
 
     private string _perfText = "";
     public string PerfText
@@ -339,7 +360,7 @@ public class DiskHealthViewModel : ViewModelBase, IDisposable
     {
         CanRunSelfTest = false,
         Status = "NotChecked",
-        Detail = "Select a disk to check SMART self-test support."
+        Detail = LocExtension.Get("SelfTestSelectDisk")
     };
 
     public SmartctlCapability SmartSelfTestCapability
@@ -366,7 +387,7 @@ public class DiskHealthViewModel : ViewModelBase, IDisposable
             if (!string.IsNullOrWhiteSpace(SmartSelfTestCapability.Remediation) &&
                 !SmartSelfTestCapability.CanRunSelfTest)
                 detail = $"{detail} {SmartSelfTestCapability.Remediation}".Trim();
-            return string.IsNullOrWhiteSpace(detail) ? "SMART self-test support not checked." : detail;
+            return string.IsNullOrWhiteSpace(detail) ? LocExtension.Get("SelfTestSupportUnchecked") : detail;
         }
     }
 

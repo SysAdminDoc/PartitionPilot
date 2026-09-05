@@ -17,7 +17,6 @@ public class ViewModelMessageLocalizationTests
     private static readonly string[] PendingConversion =
     [
         "DiskCloningViewModel.cs",
-        "DiskHealthViewModel.cs",
         "MainViewModel.cs",
         "ToolsViewModel.cs"
     ];
@@ -32,12 +31,12 @@ public class ViewModelMessageLocalizationTests
         @"(?<![\w.])(StatusText|SummaryText|DiffText|_statusText|_summaryText|_diffText)\s*=(?!=)",
         RegexOptions.Compiled);
 
+    private static readonly Regex InterpolationHole = new(@"\{[^{}]*\}", RegexOptions.Compiled);
+
     /// <summary>
     /// Public string members. Every one of these is a candidate binding source, and several render straight
     /// into the window without ever passing through a status property.
     /// </summary>
-    private static readonly Regex InterpolationHole = new(@"\{[^{}]*\}", RegexOptions.Compiled);
-
     private static readonly Regex PublicTextMemberPattern = new(
         @"public\s+string\??\s+(?<name>[A-Z]\w*)\s*(?<body>=>|\{)",
         RegexOptions.Compiled);

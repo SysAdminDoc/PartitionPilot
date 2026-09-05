@@ -162,6 +162,26 @@
   <data name="Export" xml:space="preserve"><value>Exporter</value></data>
   <data name="Compare" xml:space="preserve"><value>Comparer</value></data>
   <data name="RecoveryPlan" xml:space="preserve"><value>Plan de récupération</value></data>
+  <data name="HealthSectorSizes" xml:space="preserve"><value>Logique : {0} / Physique : {1}</value></data>
+  <data name="HealthTemperatureC" xml:space="preserve"><value>{0} C</value></data>
+  <data name="HealthWearUsed" xml:space="preserve"><value>{0} % utilisés</value></data>
+  <data name="HealthPowerOnHours" xml:space="preserve"><value>{0} heures</value></data>
+  <data name="HealthErrorsTotal" xml:space="preserve"><value>{0} au total ({1} corrigées)</value></data>
+  <data name="HealthMilliseconds" xml:space="preserve"><value>{0} ms</value></data>
+  <data name="HealthPercentValue" xml:space="preserve"><value>{0} %</value></data>
+  <data name="HealthMinutes" xml:space="preserve"><value>{0} min</value></data>
+  <data name="CriticalWarningNone" xml:space="preserve"><value>Aucun</value></data>
+  <data name="EnduranceUnrated" xml:space="preserve"><value>{0} To écrits (définissez le TBW nominal pour la jauge d'endurance)</value></data>
+  <data name="EnduranceRated" xml:space="preserve"><value>{0} To écrits sur {1} To nominaux ({2} % consommés)</value></data>
+  <data name="SmartMetadataVersion" xml:space="preserve"><value>Métadonnées SMART {0}</value></data>
+  <data name="HistoryNone" xml:space="preserve"><value>Aucun historique</value></data>
+  <data name="HistoryOne" xml:space="preserve"><value>1 relevé</value></data>
+  <data name="HistoryMany" xml:space="preserve"><value>{0} relevés</value></data>
+  <data name="NoSmartData" xml:space="preserve"><value>Aucune donnée SMART disponible</value></data>
+  <data name="StartIoMonitor" xml:space="preserve"><value>Démarrer le moniteur d'E/S</value></data>
+  <data name="StopIoMonitor" xml:space="preserve"><value>Arrêter le moniteur d'E/S</value></data>
+  <data name="SelfTestSupportUnchecked" xml:space="preserve"><value>Prise en charge de l'autotest SMART non vérifiée.</value></data>
+  <data name="SelfTestSelectDisk" xml:space="preserve"><value>Sélectionnez un disque pour vérifier la prise en charge de l'autotest SMART.</value></data>
   <data name="HexSectorOffsetText" xml:space="preserve"><value>LBA {0} (décalage {1})</value></data>
   <data name="HexSectorOffsetOverflow" xml:space="preserve"><value>LBA {0} (le décalage dépasse la plage prise en charge)</value></data>
   <data name="HexDiskSummary" xml:space="preserve"><value>Disque {0} : {1} ({2})</value></data>

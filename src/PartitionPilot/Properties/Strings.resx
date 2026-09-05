@@ -162,6 +162,26 @@
   <data name="Export" xml:space="preserve"><value>Export</value></data>
   <data name="Compare" xml:space="preserve"><value>Compare</value></data>
   <data name="RecoveryPlan" xml:space="preserve"><value>Recovery Plan</value></data>
+  <data name="HealthSectorSizes" xml:space="preserve"><value>Logical: {0} / Physical: {1}</value></data>
+  <data name="HealthTemperatureC" xml:space="preserve"><value>{0} C</value></data>
+  <data name="HealthWearUsed" xml:space="preserve"><value>{0}% used</value></data>
+  <data name="HealthPowerOnHours" xml:space="preserve"><value>{0} hours</value></data>
+  <data name="HealthErrorsTotal" xml:space="preserve"><value>{0} total ({1} corrected)</value></data>
+  <data name="HealthMilliseconds" xml:space="preserve"><value>{0} ms</value></data>
+  <data name="HealthPercentValue" xml:space="preserve"><value>{0}%</value></data>
+  <data name="HealthMinutes" xml:space="preserve"><value>{0} min</value></data>
+  <data name="CriticalWarningNone" xml:space="preserve"><value>None</value></data>
+  <data name="EnduranceUnrated" xml:space="preserve"><value>{0} TB written (set rated TBW for endurance gauge)</value></data>
+  <data name="EnduranceRated" xml:space="preserve"><value>{0} TB written of {1} TB rated ({2}% consumed)</value></data>
+  <data name="SmartMetadataVersion" xml:space="preserve"><value>SMART metadata {0}</value></data>
+  <data name="HistoryNone" xml:space="preserve"><value>No history</value></data>
+  <data name="HistoryOne" xml:space="preserve"><value>1 reading</value></data>
+  <data name="HistoryMany" xml:space="preserve"><value>{0} readings</value></data>
+  <data name="NoSmartData" xml:space="preserve"><value>No SMART data available</value></data>
+  <data name="StartIoMonitor" xml:space="preserve"><value>Start I/O Monitor</value></data>
+  <data name="StopIoMonitor" xml:space="preserve"><value>Stop I/O Monitor</value></data>
+  <data name="SelfTestSupportUnchecked" xml:space="preserve"><value>SMART self-test support not checked.</value></data>
+  <data name="SelfTestSelectDisk" xml:space="preserve"><value>Select a disk to check SMART self-test support.</value></data>
   <data name="HexSectorOffsetText" xml:space="preserve"><value>LBA {0} (offset {1})</value></data>
   <data name="HexSectorOffsetOverflow" xml:space="preserve"><value>LBA {0} (offset exceeds supported range)</value></data>
   <data name="HexDiskSummary" xml:space="preserve"><value>Disk {0}: {1} ({2})</value></data>
