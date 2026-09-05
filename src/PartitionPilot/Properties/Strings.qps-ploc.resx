@@ -162,6 +162,14 @@
   <data name="Export" xml:space="preserve"><value>[Export!!]</value></data>
   <data name="Compare" xml:space="preserve"><value>[Compare!!]</value></data>
   <data name="RecoveryPlan" xml:space="preserve"><value>[Recovery Plan!!]</value></data>
+  <data name="HexReadingSector" xml:space="preserve"><value>[Reading sector {0}...!!]</value></data>
+  <data name="HexSectorRead" xml:space="preserve"><value>[Sector {0} read ({1} bytes)!!]</value></data>
+  <data name="HexReadFailed" xml:space="preserve"><value>[Read failed: {0}!!]</value></data>
+  <data name="UsageScanning" xml:space="preserve"><value>[Scanning {0}:\...!!]</value></data>
+  <data name="UsageScanningMft" xml:space="preserve"><value>[MFT scanning {0}:\ (fast NTFS mode)...!!!]</value></data>
+  <data name="UsageScanningEnumeration" xml:space="preserve"><value>[Scanning {0}:\ (directory enumeration)...!!!]</value></data>
+  <data name="UsageScanCancelled" xml:space="preserve"><value>[Scan cancelled.!!]</value></data>
+  <data name="UsageScanFailed" xml:space="preserve"><value>[Scan failed: {0}!!]</value></data>
   <data name="ThemeLightMode" xml:space="preserve"><value>[Light Mode!!]</value></data>
   <data name="ThemeSystemTheme" xml:space="preserve"><value>[System Theme!!]</value></data>
   <data name="ThemeDarkMode" xml:space="preserve"><value>[Dark Mode!!]</value></data>

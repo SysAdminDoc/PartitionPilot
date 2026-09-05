@@ -162,6 +162,14 @@
   <data name="Export" xml:space="preserve"><value>Exporter</value></data>
   <data name="Compare" xml:space="preserve"><value>Comparer</value></data>
   <data name="RecoveryPlan" xml:space="preserve"><value>Plan de récupération</value></data>
+  <data name="HexReadingSector" xml:space="preserve"><value>Lecture du secteur {0}...</value></data>
+  <data name="HexSectorRead" xml:space="preserve"><value>Secteur {0} lu ({1} octets)</value></data>
+  <data name="HexReadFailed" xml:space="preserve"><value>Échec de la lecture : {0}</value></data>
+  <data name="UsageScanning" xml:space="preserve"><value>Analyse de {0}:\...</value></data>
+  <data name="UsageScanningMft" xml:space="preserve"><value>Analyse MFT de {0}:\ (mode NTFS rapide)...</value></data>
+  <data name="UsageScanningEnumeration" xml:space="preserve"><value>Analyse de {0}:\ (énumération des répertoires)...</value></data>
+  <data name="UsageScanCancelled" xml:space="preserve"><value>Analyse annulée.</value></data>
+  <data name="UsageScanFailed" xml:space="preserve"><value>Échec de l'analyse : {0}</value></data>
   <data name="ThemeLightMode" xml:space="preserve"><value>Mode clair</value></data>
   <data name="ThemeSystemTheme" xml:space="preserve"><value>Thème du système</value></data>
   <data name="ThemeDarkMode" xml:space="preserve"><value>Mode sombre</value></data>
