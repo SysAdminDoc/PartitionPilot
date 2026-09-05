@@ -351,16 +351,20 @@ public class WmiDiskService : IWmiDiskService
             return result;
         }
 
-        // Attempt 3: the NVMe health log page on its own. IOCTL_STORAGE_QUERY_PROPERTY carries
-        // FILE_ANY_ACCESS, so this is the only source here that works without elevation — which makes it
-        // the one that matters when the two above have just failed with access denied.
+        // Attempt 3: read the drive's own health log directly. IOCTL_STORAGE_QUERY_PROPERTY carries
+        // FILE_ANY_ACCESS, so these are the only sources here that work without elevation — which makes
+        // them the ones that matter when the two above have just failed with access denied.
         try
         {
-            var nvmeOnly = new SmartData();
-            if (await Task.Run(() => NvmeHealthService.EnrichSmartData(nvmeOnly, diskNum, _log)))
-                return nvmeOnly;
+            var direct = new SmartData();
+            var gotData = await Task.Run(() => NvmeHealthService.EnrichSmartData(direct, diskNum, _log));
+            if (!gotData)
+                gotData = await Task.Run(() => AtaHealthService.EnrichSmartData(direct, diskNum, log: _log));
+
+            if (gotData)
+                return direct;
         }
-        catch (Exception ex) { _log.Log($"NVMe health query failed: {ex.Message}"); }
+        catch (Exception ex) { _log.Log($"Direct drive health query failed: {ex.Message}"); }
 
         // Attempt 4: PowerShell fallback
         try

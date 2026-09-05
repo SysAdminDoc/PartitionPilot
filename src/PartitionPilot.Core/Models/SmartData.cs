@@ -53,6 +53,9 @@ public class SmartData
     public long? NvmeErrorLogEntries { get; set; }
     public byte? NvmeCriticalWarning { get; set; }
 
+    /// <summary>Highest temperature the drive has ever recorded, from the ATA Device Statistics log.</summary>
+    public int? AtaHighestTemperature { get; set; }
+
     public List<SmartAttribute> AllAttributes { get; set; } = new();
     public string MetadataVersion => SmartAttributeMetadataService.MetadataVersion;
     public IReadOnlyList<SmartAdvisory> Advisories => SmartAttributeMetadataService.BuildAdvisories(this);
