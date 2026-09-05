@@ -31,12 +31,6 @@ public partial class MainWindow : Window
         base.OnClosed(e);
     }
 
-    private void LogBox_TextChanged(object sender, TextChangedEventArgs e)
-    {
-        if (sender is TextBox tb)
-            tb.ScrollToEnd();
-    }
-
     private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
     {
         if (DataContext is MainViewModel vm)

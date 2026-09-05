@@ -4,6 +4,7 @@
 
     <BooleanToVisibilityConverter x:Key="BoolVis"/>
     <local:InverseBooleanToVisibilityConverter x:Key="BoolVisInverse"/>
+    <local:StatusSeverityToBrushConverter x:Key="StatusSeverityBrush"/>
     <local:InverseBooleanConverter x:Key="InverseBool"/>
     <local:ProportionToWidthConverter x:Key="ProportionToWidth" MaxWidth="140"/>
 
