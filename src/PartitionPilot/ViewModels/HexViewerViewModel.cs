@@ -145,18 +145,18 @@ public class HexViewerViewModel : ViewModelBase
         var sectorLba = SectorOffset;
         var logicalSectorSize = LogicalSectorSize;
         IsBusy = true;
-        StatusText = $"Reading sector {sectorLba}...";
+        StatusText = LocExtension.Format("HexReadingSector", sectorLba);
 
         try
         {
             var data = await Task.Run(() => ReadRawSector(selectedDisk.Number, sectorLba, logicalSectorSize));
             HexText = FormatHexDump(data, DiskGeometry.GetByteOffset(sectorLba, logicalSectorSize));
-            StatusText = $"Sector {sectorLba} read ({data.Length} bytes)";
+            StatusText = LocExtension.Format("HexSectorRead", sectorLba, data.Length);
         }
         catch (Exception ex)
         {
             HexText = "";
-            StatusText = $"Read failed: {ex.Message}";
+            StatusText = LocExtension.Format("HexReadFailed", ex.Message);
             _log.Log($"Hex viewer read failed: {ex.Message}");
         }
         finally

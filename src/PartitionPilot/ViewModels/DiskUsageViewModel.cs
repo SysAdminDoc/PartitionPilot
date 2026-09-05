@@ -109,7 +109,7 @@ public class DiskUsageViewModel : ViewModelBase
         var ct = _cts.Token;
 
         IsBusy = true;
-        StatusText = $"Scanning {SelectedDrive}:\\...";
+        StatusText = LocExtension.Format("UsageScanning", SelectedDrive);
         SummaryText = "";
         ClearResults();
         var clearStatusWhenDone = true;
@@ -128,7 +128,7 @@ public class DiskUsageViewModel : ViewModelBase
             {
                 try
                 {
-                    StatusText = $"MFT scanning {SelectedDrive}:\\ (fast NTFS mode)...";
+                    StatusText = LocExtension.Format("UsageScanningMft", SelectedDrive);
                     results = await Task.Run(() => MftScanner.ScanVolume(SelectedDrive, 30, ct), ct);
                     usedMft = true;
                     _log.Log("Used MFT-direct scanning for fast NTFS analysis.");
@@ -136,7 +136,7 @@ public class DiskUsageViewModel : ViewModelBase
                 catch (Exception mftEx)
                 {
                     _log.Log($"MFT scan unavailable ({mftEx.Message}), falling back to directory enumeration.");
-                    StatusText = $"Scanning {SelectedDrive}:\\ (directory enumeration)...";
+                    StatusText = LocExtension.Format("UsageScanningEnumeration", SelectedDrive);
                     results = await Task.Run(() => ScanTopFolders(rootPath, ct), ct);
                 }
             }
@@ -169,14 +169,14 @@ public class DiskUsageViewModel : ViewModelBase
         catch (OperationCanceledException)
         {
             _log.Log("Disk usage scan cancelled.");
-            StatusText = "Scan cancelled.";
+            StatusText = LocExtension.Get("UsageScanCancelled");
             SummaryText = "Disk usage scan cancelled.";
             clearStatusWhenDone = false;
         }
         catch (Exception ex)
         {
             _log.Log($"Disk usage scan failed: {ex.Message}");
-            StatusText = $"Scan failed: {ex.Message}";
+            StatusText = LocExtension.Format("UsageScanFailed", ex.Message);
             SummaryText = $"Scan failed: {ex.Message}";
             clearStatusWhenDone = false;
         }

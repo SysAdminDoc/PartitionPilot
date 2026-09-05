@@ -50,4 +50,27 @@ public class LocExtension : MarkupExtension
     }
 
     public static string Get(string key) => LocalizationSource.Resolve(key);
+
+    /// <summary>
+    /// Resolves a key and substitutes runtime values into its placeholders.
+    /// <para>
+    /// Falls back to the unformatted text if a translation's placeholders do not match the arguments.
+    /// These strings are mostly error messages, so a mismatched placeholder throwing out of
+    /// <see cref="string.Format(string, object?[])"/> would replace a readable failure with a crash in
+    /// the code reporting it.
+    /// </para>
+    /// </summary>
+    public static string Format(string key, params object?[] args)
+    {
+        var template = LocalizationSource.Resolve(key);
+
+        try
+        {
+            return string.Format(CultureInfo.CurrentCulture, template, args);
+        }
+        catch (FormatException)
+        {
+            return template;
+        }
+    }
 }
