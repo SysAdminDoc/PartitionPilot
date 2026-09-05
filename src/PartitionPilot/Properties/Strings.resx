@@ -162,6 +162,45 @@
   <data name="Export" xml:space="preserve"><value>Export</value></data>
   <data name="Compare" xml:space="preserve"><value>Compare</value></data>
   <data name="RecoveryPlan" xml:space="preserve"><value>Recovery Plan</value></data>
+  <data name="SelectDiskImageTitle" xml:space="preserve"><value>Select Disk Image</value></data>
+  <data name="DiskImageFilter" xml:space="preserve"><value>Disk Images (*.iso;*.vhd;*.vhdx)|*.iso;*.vhd;*.vhdx|All Files (*.*)|*.*</value></data>
+  <data name="CreateVhdTitle" xml:space="preserve"><value>Create VHD File</value></data>
+  <data name="VhdFilter" xml:space="preserve"><value>VHDX Files (*.vhdx)|*.vhdx|VHD Files (*.vhd)|*.vhd</value></data>
+  <data name="BenchmarkComplete" xml:space="preserve"><value>Benchmark complete.</value></data>
+  <data name="PerfLine" xml:space="preserve"><value>Disk {0}: Read {1} MB/s ({2} IOPS)  Write {3} MB/s ({4} IOPS)  Queue {5}  Latency R:{6}ms W:{7}ms</value></data>
+  <data name="LiveTempEntry" xml:space="preserve"><value>Disk {0}: {1} C</value></data>
+  <data name="SelfTestStarting" xml:space="preserve"><value>Starting {0} self-test...</value></data>
+  <data name="SelfTestStarted" xml:space="preserve"><value>{0} test started. {1}</value></data>
+  <data name="SelfTestFailedStatus" xml:space="preserve"><value>Self-test failed: {0}</value></data>
+  <data name="SelfTestNoDisk" xml:space="preserve"><value>Select a physical disk before running SMART self-tests.</value></data>
+  <data name="SelfTestChecking" xml:space="preserve"><value>Checking smartctl support...</value></data>
+  <data name="SelfTestCheckFailed" xml:space="preserve"><value>Could not check smartctl support: {0}</value></data>
+  <data name="SelfTestCheckRemediation" xml:space="preserve"><value>Run diagnostics and verify smartctl is installed.</value></data>
+  <data name="StatusRefreshingWorkspace" xml:space="preserve"><value>Refreshing current workspace...</value></data>
+  <data name="StatusErrorPrefix" xml:space="preserve"><value>Error: {0}</value></data>
+  <data name="ExportSupportBundleTitle" xml:space="preserve"><value>Export Support Bundle</value></data>
+  <data name="ZipFilter" xml:space="preserve"><value>ZIP Archive (*.zip)|*.zip</value></data>
+  <data name="BenchmarkRunning" xml:space="preserve"><value>Running benchmark...</value></data>
+  <data name="BenchmarkCancelled" xml:space="preserve"><value>Benchmark cancelled.</value></data>
+  <data name="BenchmarkFailed" xml:space="preserve"><value>Benchmark failed: {0}</value></data>
+  <data name="ExportBenchmarkTitle" xml:space="preserve"><value>Export Benchmark Results</value></data>
+  <data name="BenchmarkFilter" xml:space="preserve"><value>JSON (*.json)|*.json|Text (*.txt)|*.txt</value></data>
+  <data name="BenchDiskSpdUnavailable" xml:space="preserve"><value>DiskSpd unavailable. Running built-in benchmark...</value></data>
+  <data name="BenchSeqWriteRunning" xml:space="preserve"><value>Sequential Write (1 MB blocks)...</value></data>
+  <data name="BenchSeqReadRunning" xml:space="preserve"><value>Sequential Read (1 MB blocks)...</value></data>
+  <data name="BenchRandomWriteRunning" xml:space="preserve"><value>Random 4K Write...</value></data>
+  <data name="BenchRandomReadRunning" xml:space="preserve"><value>Random 4K Read...</value></data>
+  <data name="BenchSeqWriteResult" xml:space="preserve"><value>Sequential Write:  {0} MB/s  ({1}s)</value></data>
+  <data name="BenchSeqReadResult" xml:space="preserve"><value>Sequential Read:   {0} MB/s  ({1}s)</value></data>
+  <data name="BenchRandomWriteResult" xml:space="preserve"><value>Random 4K Write:   {0} IOPS  ({1} MB/s)</value></data>
+  <data name="BenchRandomReadResult" xml:space="preserve"><value>Random 4K Read:    {0} IOPS  ({1} MB/s)</value></data>
+  <data name="SnapshotJsonFilter" xml:space="preserve"><value>JSON Files (*.json)|*.json|All Files (*.*)|*.*</value></data>
+  <data name="RecoveryPlanFilter" xml:space="preserve"><value>Text Files (*.txt)|*.txt|All Files (*.*)|*.*</value></data>
+  <data name="BootAuditIncomplete" xml:space="preserve"><value>Bootability audit could not complete: {0}</value></data>
+  <data name="BootAuditRemediation" xml:space="preserve"><value>Refresh disks and rerun the boot audit from the CLI or Disk Cloning workflow.</value></data>
+  <data name="OpCreatePartition" xml:space="preserve"><value>Create partition</value></data>
+  <data name="OpResizeDrive" xml:space="preserve"><value>Resize {0}:</value></data>
+  <data name="OpSplitDrive" xml:space="preserve"><value>Split {0}:</value></data>
   <data name="StatusUpdateAvailable" xml:space="preserve"><value>Update available: v{0}</value></data>
   <data name="StatusUpdateReady" xml:space="preserve"><value>Update v{0} ready — restart to apply</value></data>
   <data name="StatusUpdateDownloadFailed" xml:space="preserve"><value>Update v{0} available (download failed)</value></data>

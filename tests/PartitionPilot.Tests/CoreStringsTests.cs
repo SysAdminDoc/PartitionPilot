@@ -136,6 +136,52 @@ public class CoreStringsTests
     }
 
     /// <summary>
+    /// These two take an operation name the caller has already translated, so leaving the sentence around it
+    /// in English produced a message half in each language.
+    /// </summary>
+    [Fact]
+    public void BitLockerBlockedMessages_ReproduceTheEnglishTextTheyReplaced()
+    {
+        Assert.Equal(
+            "Extend partition 2 is blocked for D: because BitLocker protection is active or unknown.\n\n" +
+            "Encryption state: Encrypted\n\n" +
+            "Suspend BitLocker protection, unlock the volume if needed, refresh PartitionPilot, then retry.",
+            BitLockerPreflight.BuildMutationBlockedMessage("Extend partition 2", "D:", "Encrypted"));
+
+        Assert.Equal(
+            "Wipe free space on E: requires E: to be unlocked first.\n\n" +
+            "Encryption state: BitLocker: Not reported\n\n" +
+            "Unlock the volume in Windows, refresh PartitionPilot, then retry.",
+            BitLockerPreflight.BuildUnlockRequiredMessage("Wipe free space on E:", "E:", null));
+    }
+
+    /// <summary>
+    /// The whole message has to change language together. A translated operation name spliced into an
+    /// English sentence is the defect this replaced.
+    /// </summary>
+    [Fact]
+    public void BitLockerBlockedMessage_TranslatesTheSentenceAroundTheOperation()
+    {
+        var previous = CultureInfo.CurrentUICulture;
+        try
+        {
+            CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("qps-ploc");
+
+            var message = BitLockerPreflight.BuildMutationBlockedMessage("Op", "D:", "Encrypted");
+
+            // The pseudo-locale pads rather than translating words, so the proof is that the padding wraps
+            // the whole message: the closing marker is only there if the sentence after the operation name
+            // came from the resource rather than from a literal in the builder.
+            Assert.StartsWith("[", message);
+            Assert.EndsWith("!!!]", message);
+        }
+        finally
+        {
+            CultureInfo.CurrentUICulture = previous;
+        }
+    }
+
+    /// <summary>
     /// The point of the whole change: Core's text follows the thread's UI culture, which is what the app sets
     /// when a language is chosen and what the CLI inherits from the operating system.
     /// </summary>

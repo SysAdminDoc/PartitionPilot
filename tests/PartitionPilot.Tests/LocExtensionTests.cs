@@ -125,6 +125,18 @@ public class LocExtensionTests
     [InlineData("SmartMetadataVersion", "2", "", "SMART metadata 2")]
     [InlineData("HistoryMany", "5", "", "5 readings")]
     [InlineData("EnduranceUnrated", "12.5", "", "12.5 TB written (set rated TBW for endurance gauge)")]
+    [InlineData("LiveTempEntry", "0", "38", "Disk 0: 38 C")]
+    [InlineData("SelfTestStarting", "short", "", "Starting short self-test...")]
+    [InlineData("SelfTestStarted", "short", "about 2 minutes", "short test started. about 2 minutes")]
+    [InlineData("SelfTestFailedStatus", "boom", "", "Self-test failed: boom")]
+    [InlineData("SelfTestCheckFailed", "boom", "", "Could not check smartctl support: boom")]
+    [InlineData("StatusErrorPrefix", "boom", "", "Error: boom")]
+    [InlineData("BenchmarkFailed", "boom", "", "Benchmark failed: boom")]
+    [InlineData("BenchSeqWriteResult", "512.0", "10.25", "Sequential Write:  512.0 MB/s  (10.25s)")]
+    [InlineData("BenchRandomReadResult", "90000", "351.6", "Random 4K Read:    90000 IOPS  (351.6 MB/s)")]
+    [InlineData("BootAuditIncomplete", "boom", "", "Bootability audit could not complete: boom")]
+    [InlineData("OpResizeDrive", "E", "", "Resize E:")]
+    [InlineData("OpSplitDrive", "E", "", "Split E:")]
     public void Format_ReproducesTheEnglishTextItReplaced(string key, string first, string second, string expected)
     {
         Assert.Equal(expected, LocExtension.Format(key, first, second));
@@ -284,6 +296,15 @@ public class LocExtensionTests
 
         Assert.Equal("Sector clone to Disk 2", LocExtension.Format("OpSectorCloneToDisk", 2));
         Assert.Equal("Restore image to Disk 2", LocExtension.Format("OpRestoreImageToDisk", 2));
+    }
+
+    [Fact]
+    public void PerfLine_ReproducesTheEnglishTextItReplaced()
+    {
+        Assert.Equal(
+            "Disk 0: Read 512.0 MB/s (9000 IOPS)  Write 480.5 MB/s (8000 IOPS)  " +
+            "Queue 1.2  Latency R:0.4ms W:0.6ms",
+            LocExtension.Format("PerfLine", 0, "512.0", "9000", "480.5", "8000", "1.2", "0.4", "0.6"));
     }
 
     [Fact]

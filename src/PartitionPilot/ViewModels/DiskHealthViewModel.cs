@@ -441,11 +441,15 @@ public class DiskHealthViewModel : ViewModelBase, IDisposable
         var sb = new System.Text.StringBuilder();
         foreach (var s in snapshots)
         {
-            sb.AppendLine($"Disk {s.DiskNumber}: " +
-                $"Read {s.ReadMBps:F1} MB/s ({s.ReadIOPS:F0} IOPS)  " +
-                $"Write {s.WriteMBps:F1} MB/s ({s.WriteIOPS:F0} IOPS)  " +
-                $"Queue {s.QueueLength:F1}  " +
-                $"Latency R:{s.AvgReadLatencyMs:F1}ms W:{s.AvgWriteLatencyMs:F1}ms");
+            sb.AppendLine(LocExtension.Format("PerfLine",
+                s.DiskNumber,
+                s.ReadMBps.ToString("F1", CultureInfo.CurrentCulture),
+                s.ReadIOPS.ToString("F0", CultureInfo.CurrentCulture),
+                s.WriteMBps.ToString("F1", CultureInfo.CurrentCulture),
+                s.WriteIOPS.ToString("F0", CultureInfo.CurrentCulture),
+                s.QueueLength.ToString("F1", CultureInfo.CurrentCulture),
+                s.AvgReadLatencyMs.ToString("F1", CultureInfo.CurrentCulture),
+                s.AvgWriteLatencyMs.ToString("F1", CultureInfo.CurrentCulture)));
         }
         Application.Current?.Dispatcher?.BeginInvoke(() =>
         {
@@ -490,18 +494,18 @@ public class DiskHealthViewModel : ViewModelBase, IDisposable
         }
 
         IsBusy = true;
-        SelfTestStatus = $"Starting {testType} self-test...";
+        SelfTestStatus = LocExtension.Format("SelfTestStarting", testType);
 
         try
         {
             var result = await SmartTestService.StartTestAsync(selectedDisk, testType, _runner, _log);
             SelfTestStatus = result.Started
-                ? $"{testType} test started. {result.EstimatedDuration ?? ""}"
+                ? LocExtension.Format("SelfTestStarted", testType, result.EstimatedDuration ?? "")
                 : result.Message;
         }
         catch (Exception ex)
         {
-            SelfTestStatus = $"Self-test failed: {ex.Message}";
+            SelfTestStatus = LocExtension.Format("SelfTestFailedStatus", ex.Message);
             _log.Log($"SMART self-test error: {ex.Message}");
         }
         finally
@@ -526,7 +530,7 @@ public class DiskHealthViewModel : ViewModelBase, IDisposable
             {
                 CanRunSelfTest = false,
                 Status = "NoDisk",
-                Detail = "Select a physical disk before running SMART self-tests."
+                Detail = LocExtension.Get("SelfTestNoDisk")
             };
             return;
         }
@@ -535,7 +539,7 @@ public class DiskHealthViewModel : ViewModelBase, IDisposable
         {
             CanRunSelfTest = false,
             Status = "Checking",
-            Detail = "Checking smartctl support..."
+            Detail = LocExtension.Get("SelfTestChecking")
         };
 
         try
@@ -552,8 +556,8 @@ public class DiskHealthViewModel : ViewModelBase, IDisposable
             {
                 CanRunSelfTest = false,
                 Status = "Error",
-                Detail = $"Could not check smartctl support: {ex.Message}",
-                Remediation = "Run diagnostics and verify smartctl is installed."
+                Detail = LocExtension.Format("SelfTestCheckFailed", ex.Message),
+                Remediation = LocExtension.Get("SelfTestCheckRemediation")
             };
         }
     }
@@ -693,7 +697,7 @@ public class DiskHealthViewModel : ViewModelBase, IDisposable
     private void OnTemperaturesUpdated(object? sender, Dictionary<string, int> temps)
     {
         if (_disposed || temps.Count == 0) return;
-        var parts = temps.Select(kv => $"Disk {kv.Key}: {kv.Value} C");
+        var parts = temps.Select(kv => LocExtension.Format("LiveTempEntry", kv.Key, kv.Value));
         var text = string.Join("  |  ", parts);
         Application.Current?.Dispatcher?.BeginInvoke(() =>
         {

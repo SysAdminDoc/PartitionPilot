@@ -56,4 +56,7 @@
   <data name="BitLockerTargetLine" xml:space="preserve"><value>  - {0}</value></data>
   <data name="BitLockerPartitionLabel" xml:space="preserve"><value>Partition {0}</value></data>
   <data name="SectorCloneCompleteBody" xml:space="preserve"><value>Sector clone complete.&#10;&#10;Disk {0} -&gt; Disk {1}&#10;{2}&#10;&#10;{3}</value></data>
+  <data name="BitLockerNotReported" xml:space="preserve"><value>BitLocker: Not reported</value></data>
+  <data name="BitLockerMutationBlockedBody" xml:space="preserve"><value>{0} is blocked for {1} because BitLocker protection is active or unknown.&#10;&#10;Encryption state: {2}&#10;&#10;Suspend BitLocker protection, unlock the volume if needed, refresh PartitionPilot, then retry.</value></data>
+  <data name="BitLockerUnlockRequiredBody" xml:space="preserve"><value>{0} requires {1} to be unlocked first.&#10;&#10;Encryption state: {2}&#10;&#10;Unlock the volume in Windows, refresh PartitionPilot, then retry.</value></data>
 </root>
