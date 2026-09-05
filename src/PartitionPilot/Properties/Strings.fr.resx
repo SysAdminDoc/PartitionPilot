@@ -162,6 +162,8 @@
   <data name="Export" xml:space="preserve"><value>Exporter</value></data>
   <data name="Compare" xml:space="preserve"><value>Comparer</value></data>
   <data name="RecoveryPlan" xml:space="preserve"><value>Plan de récupération</value></data>
+  <data name="SelectLanguageTooltip" xml:space="preserve"><value>Changer la langue de l'interface</value></data>
+  <data name="SelectLanguageAutomationName" xml:space="preserve"><value>Langue de l'interface</value></data>
   <data name="FindOperation" xml:space="preserve"><value>Rechercher une opération</value></data>
   <data name="FindOperationAutomationName" xml:space="preserve"><value>Rechercher une opération par nom</value></data>
   <data name="FindOperationResultsAutomationName" xml:space="preserve"><value>Opérations correspondantes</value></data>

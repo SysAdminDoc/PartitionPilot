@@ -24,6 +24,10 @@
   <ItemGroup>
     <ProjectReference Include="..\PartitionPilot.Core\PartitionPilot.Core.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="PartitionPilot.Tests" />
+  </ItemGroup>
   <ItemGroup>
     <Resource Include="Assets\AppIcon.png" />
   </ItemGroup>

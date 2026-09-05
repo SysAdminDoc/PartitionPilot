@@ -14,6 +14,12 @@ public sealed class ShellSettings
     public int SelectedTabIndex { get; set; }
     public double? ActivityLogHeight { get; set; }
     public bool ActivityLogCollapsed { get; set; }
+
+    /// <summary>
+    /// Interface language, as a culture name. Empty string means English; null means the user has never
+    /// chosen, in which case the operating system's language is used.
+    /// </summary>
+    public string? Language { get; set; }
 }
 
 /// <summary>

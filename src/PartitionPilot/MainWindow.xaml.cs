@@ -21,7 +21,34 @@ public partial class MainWindow : Window
         InitializeComponent();
         DataContext = new MainViewModel();
         RestoreShellLayout(ShellSettingsService.Load());
+        InitialiseLanguageSelector();
     }
+
+    private void InitialiseLanguageSelector()
+    {
+        cboLanguage.ItemsSource = LanguageService.Available;
+        cboLanguage.SelectedItem = LanguageService.Current;
+    }
+
+    private void OnLanguageSelected(object sender, SelectionChangedEventArgs e)
+    {
+        if (cboLanguage.SelectedItem is not AppLanguage language || language == LanguageService.Current)
+            return;
+
+        LanguageService.Apply(language);
+
+        // Labels set from code rather than through a binding do not follow the change on their own.
+        RefreshCodeBehindText();
+
+        SaveShellLayout();
+        (DataContext as MainViewModel)?.Log.Log($"Interface language set to {language.DisplayName}.");
+    }
+
+    /// <summary>
+    /// Re-applies the handful of strings this window assigns imperatively. Everything declared in XAML
+    /// goes through a binding and updates itself.
+    /// </summary>
+    private void RefreshCodeBehindText() => SetActivityLogCollapsed(rowActivityLog.Height.Value <= 0);
 
     protected override void OnSourceInitialized(EventArgs e)
     {
@@ -123,7 +150,8 @@ public partial class MainWindow : Window
             WindowMaximized = WindowState == WindowState.Maximized,
             SelectedTabIndex = (DataContext as MainViewModel)?.SelectedTabIndex ?? 0,
             ActivityLogHeight = collapsed ? _restoredActivityLogHeight : rowActivityLog.Height.Value,
-            ActivityLogCollapsed = collapsed
+            ActivityLogCollapsed = collapsed,
+            Language = LanguageService.Current.Code
         }, (DataContext as MainViewModel)?.Log);
     }
 
