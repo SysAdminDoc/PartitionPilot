@@ -5,6 +5,7 @@
 ### Safety & Reliability
 - Fixed VSS snapshot creation, which had never worked on Windows 10 or 11. Capture used `vssadmin create shadow`, a Windows Server-only verb, so on client Windows every image capture failed the snapshot step and fell back to an inconsistent live copy behind the degraded-mode prompt. Shadow copies are now created through the `Win32_ShadowCopy` WMI class, which works on client and server alike, and are deleted when capture finishes or fails.
 - Added a diagnostics check that proves a shadow copy can actually be created and removed, rather than only listing VSS providers and writers. Both of those pass on client Windows even when creation is impossible, which is how the broken capture path went unnoticed.
+- Fixed sector clones onto a larger disk leaving a broken partition table. A raw clone copies the source byte for byte, so the backup GPT header landed where the source disk ended, the primary header pointed at that stale location, and whatever backup header the destination already carried survived at its true last LBA. Windows reported such a disk as needing repair and the trailing space was unusable. Clones now move the backup header and entry array to the end of the destination, re-point the primary at them, erase the stranded copy, and widen the protective MBR.
 
 ## PartitionPilot v0.9.22 - 2026-08-24
 
