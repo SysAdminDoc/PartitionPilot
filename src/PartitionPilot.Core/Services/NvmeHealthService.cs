@@ -125,6 +125,16 @@ public static class NvmeHealthService
 
             var healthData = new byte[HealthLogLength];
             Marshal.Copy(buffer + payloadOffset, healthData, 0, Math.Min(payloadLength, HealthLogLength));
+
+            // Some bridges and RAID passthroughs answer the IOCTL for a device that is not NVMe and hand
+            // back a zeroed page. Parsing that would report a pristine drive with no power-on hours as
+            // genuine telemetry, so an all-zero log is treated as no answer.
+            if (IsEmptyLog(healthData))
+            {
+                log?.Log($"NVMe health log for drive {diskNumber} came back empty; treating as unavailable");
+                return false;
+            }
+
             ParseHealthLog(data, healthData);
             log?.Log($"NVMe health log parsed for drive {diskNumber}");
             return true;
@@ -164,7 +174,17 @@ public static class NvmeHealthService
         return true;
     }
 
-    private static void ParseHealthLog(SmartData data, byte[] log)
+    /// <summary>An all-zero page means the device answered without supplying a health log.</summary>
+    internal static bool IsEmptyLog(ReadOnlySpan<byte> log)
+    {
+        foreach (var b in log)
+            if (b != 0)
+                return false;
+
+        return true;
+    }
+
+    internal static void ParseHealthLog(SmartData data, byte[] log)
     {
         data.NvmeCriticalWarning = log[0];
 
@@ -174,9 +194,9 @@ public static class NvmeHealthService
 
         data.NvmeAvailableSpare ??= log[3];
 
-        int percentUsed = log[5];
-        if (percentUsed > 0)
-            data.Wear ??= percentUsed;
+        // No "> 0" guard: 0% used is what a healthy new drive reports, and skipping it would show the
+        // field as unavailable on exactly the drives in the best condition.
+        data.Wear ??= log[5];
 
         data.PowerCycleCount ??= ReadUInt128AsLong(log, 0x70);
         data.PowerOnHours ??= ReadUInt128AsLong(log, 0x80);
