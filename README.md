@@ -101,6 +101,23 @@ dotnet run --project .\src\PartitionPilot.Cli\PartitionPilot.Cli.csproj -- healt
 
 Commands: `disks`, `partitions`, `volumes`, `smart`, `smart-history`, `smart-trends`, `health`, `alignment`, `temperature`, `benchmark`, `snapshot`, `restore-snapshot`, `shrink-blockers`, `clone`, `wipe`, `diagnostics`, `boot-audit`, `plan`, `apply-layout`, `recovery-scan`, `release-manifest`, `rescue-profile`, `version`. All support `--json` for scripted automation.
 
+### Exit codes
+
+Every command returns a code a script can branch on, and `--json` produces a JSON error object on the failure path as well as the success path.
+
+| Code | Meaning |
+| --- | --- |
+| 0 | Success |
+| 1 | The operation ran and failed; a destructive target may be partially written |
+| 2 | Completed with warnings, such as a clone that found bad sectors or failed verification |
+| 3 | Usage error: missing or invalid arguments |
+| 4 | Target not found |
+| 5 | Precondition failed, such as an unreadable or empty input file |
+| 6 | Blocked by a safety guard before anything was written |
+| 7 | Cancelled at the confirmation prompt |
+
+Codes 3 to 7 all mean nothing was changed. Code 1 is the one that means a destructive operation may have got partway through.
+
 ## Why a Volume Will Not Shrink
 
 `pp shrink-blockers --drive C` explains the shrink floor. Windows records a Defrag event 259 in the Application log after every shrink analysis, naming the last unmovable file, its last cluster and the offset the shrink wanted to reach, and never shows it. This reads that record, classifies the blocker, states how much space it is holding back, and gives the remedy.

@@ -17,5 +17,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\PartitionPilot\PartitionPilot.csproj" />
+    <ProjectReference Include="..\..\src\PartitionPilot.Cli\PartitionPilot.Cli.csproj" />
   </ItemGroup>
 </Project>

@@ -390,6 +390,12 @@
           "System.Management": "[10.0.11, )",
           "Velopack": "[1.2.0, )"
         }
+      },
+      "pp": {
+        "type": "Project",
+        "dependencies": {
+          "PartitionPilot.Core": "[0.9.22, )"
+        }
       }
     },
     "net10.0-windows7.0/win-x64": {
