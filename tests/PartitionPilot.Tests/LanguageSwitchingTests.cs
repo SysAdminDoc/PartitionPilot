@@ -90,6 +90,7 @@ public class LanguageSwitchingTests : IDisposable
     [InlineData("de")]
     [InlineData("es")]
     [InlineData("fr")]
+    [InlineData("ja")]
     [InlineData("qps-ploc")]
     public void EveryShippedLanguage_ResolvesDifferentTextFromEnglish(string code)
     {
@@ -128,6 +129,7 @@ public class LanguageSwitchingTests : IDisposable
     [InlineData("de")]
     [InlineData("es")]
     [InlineData("fr")]
+    [InlineData("ja")]
     [InlineData("qps-ploc")]
     public void Apply_ReturnsToEnglishAfterAnotherLanguageWasChosen(string code)
     {
@@ -211,6 +213,7 @@ public class LanguageSwitchingTests : IDisposable
     [InlineData("de-CH", "de")]
     [InlineData("fr-CA", "fr")]
     [InlineData("es-MX", "es")]
+    [InlineData("ja-JP", "ja")]
     [InlineData("de", "de")]
     public void MatchCulture_ResolvesARegionalSystemLanguageToItsShippedBase(string osCulture, string expected)
     {
@@ -218,7 +221,6 @@ public class LanguageSwitchingTests : IDisposable
     }
 
     [Theory]
-    [InlineData("ja-JP")]
     [InlineData("pt-BR")]
     [InlineData("")]
     public void MatchCulture_ReturnsNothingForALanguageTheAppDoesNotShip(string osCulture)
@@ -242,6 +244,7 @@ public class LanguageSwitchingTests : IDisposable
         Assert.Equal("English", LanguageService.Available[0].DisplayName);
         Assert.Contains(LanguageService.Available, l => l.DisplayName == "Deutsch");
         Assert.Contains(LanguageService.Available, l => l.DisplayName == "Français");
+        Assert.Contains(LanguageService.Available, l => l.DisplayName == "日本語");
         Assert.All(LanguageService.Available, l => Assert.False(string.IsNullOrWhiteSpace(l.DisplayName)));
     }
 
@@ -303,3 +306,4 @@ public class LanguageSwitchingTests : IDisposable
             serviceType == typeof(IProvideValueTarget) ? this : null;
     }
 }
+

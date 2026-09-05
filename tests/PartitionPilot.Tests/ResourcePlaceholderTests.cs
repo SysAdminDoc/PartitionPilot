@@ -17,7 +17,7 @@ public class ResourcePlaceholderTests
     private static readonly Regex Placeholder = new(@"\{(?<index>\d+)(?:[,:][^}]*)?\}", RegexOptions.Compiled);
 
     public static TheoryData<string> TranslatedFiles() =>
-        ["Strings.de.resx", "Strings.es.resx", "Strings.fr.resx", "Strings.qps-ploc.resx"];
+        ["Strings.de.resx", "Strings.es.resx", "Strings.fr.resx", "Strings.ja.resx", "Strings.qps-ploc.resx"];
 
     [Theory]
     [MemberData(nameof(TranslatedFiles))]
@@ -143,3 +143,4 @@ public class ResourcePlaceholderTests
         return dir?.FullName ?? throw new InvalidOperationException("Repository root not found.");
     }
 }
+

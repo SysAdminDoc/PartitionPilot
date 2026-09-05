@@ -45,7 +45,7 @@ PartitionPilot is a Windows disk partition management tool for power users and I
 - Real-time disk temperature monitoring with configurable threshold alerts.
 - MFT-direct NTFS scanning for near-instant disk usage analysis.
 - Sector-level disk-to-disk clone with progress reporting and cancel support.
-- Interface language selector in the command bar covering English, German, Spanish, French and a pseudo-locale for translation review. Switching applies immediately without a restart, is remembered between runs, and follows the operating system's language until you choose one.
+- Interface language selector in the command bar covering English, German, Spanish, French, Japanese and a pseudo-locale for translation review. Switching applies immediately without a restart, is remembered between runs, and follows the operating system's language until you choose one.
 - XAML localization resources with pseudo-locale coverage for visible labels and automation names.
 - Activity log with export, filtering, and auto-save.
 - Cancellable long-running operations with progress and rate reporting.
