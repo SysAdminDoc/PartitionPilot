@@ -81,14 +81,24 @@ public partial class MainViewModel : ViewModelBase
     public ICommand ShowFilesystemSupportCommand { get; }
 
     public string VersionText => GetVersionText();
-    public string AdminSessionText { get; }
-    public string AdminSessionDetail { get; }
-    public string ElevationContextText { get; }
+
+    // Resolved on each read rather than captured in the constructor, so a language change refreshes them
+    // the same way the XAML-declared labels refresh.
+    public string AdminSessionText => LocExtension.Get(IsElevated ? "AdminSession" : "ReadOnlySession");
+    public string AdminSessionDetail => LocExtension.Get(IsElevated ? "AdminSessionDetail" : "ReadOnlySessionDetail");
+    public string ElevationContextText => LocExtension.Get(DetectElevationContextKey(IsElevated));
     public bool IsElevated { get; }
     public bool IsReadOnly => !IsElevated;
     public ICommand ElevateCommand { get; }
-    public string SessionStateText => "Session state";
+    public string SessionStateText => LocExtension.Get("SessionStateLabel");
     public string SessionStateDetail => StatusText;
+
+    /// <summary>Every label this view model resolves from resources rather than from bound state.</summary>
+    private static readonly string[] LocalizedLabels =
+    [
+        nameof(AdminSessionText), nameof(AdminSessionDetail), nameof(ElevationContextText),
+        nameof(SessionStateText), nameof(ThemeLabel)
+    ];
 
     private string _themeLabel = ThemeService.GetLabel();
     public string ThemeLabel
@@ -123,12 +133,9 @@ public partial class MainViewModel : ViewModelBase
         RefreshCurrentCommand = new AsyncRelayCommand(_ => RefreshCurrentAsync());
         ShowFilesystemSupportCommand = new WpfRelayCommand(_ => ShowFilesystemSupport());
 
-        var isAdmin = IsRunningAsAdministrator();
-        IsElevated = isAdmin;
-        AdminSessionText = isAdmin ? "Admin session" : "Read-only session";
-        AdminSessionDetail = isAdmin ? "Disk changes available" : "Run as administrator for write operations";
-        ElevationContextText = DetectElevationContext(isAdmin);
+        IsElevated = IsRunningAsAdministrator();
         ElevateCommand = new WpfRelayCommand(_ => RelaunchElevated(), _ => !IsElevated);
+        LanguageService.LanguageChanged += OnLanguageChanged;
 
         Log.Log("PartitionPilot ready.");
         _ = CheckForUpdateAsync();
@@ -201,6 +208,7 @@ public partial class MainViewModel : ViewModelBase
 
     public void OnClosing()
     {
+        LanguageService.LanguageChanged -= OnLanguageChanged;
         DiskHealth.Dispose();
         SmartQueryService.Shutdown();
         Log.AutoSave();
@@ -347,15 +355,20 @@ public partial class MainViewModel : ViewModelBase
         catch { }
     }
 
-    private static string DetectElevationContext(bool isAdmin)
+    internal static string DetectElevationContextKey(bool isAdmin)
     {
-        if (!isAdmin) return "Standard (unelevated)";
+        if (!isAdmin) return "ElevationStandard";
 
         var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
         var isAdminProtection = userProfile.Contains("ADMIN_", StringComparison.OrdinalIgnoreCase);
-        return isAdminProtection
-            ? "Administrator Protection (SMAA profile)"
-            : "Legacy UAC (elevated)";
+        return isAdminProtection ? "ElevationAdminProtection" : "ElevationLegacyUac";
+    }
+
+    private void OnLanguageChanged(object? sender, EventArgs e)
+    {
+        ThemeLabel = ThemeService.GetLabel();
+        foreach (var label in LocalizedLabels)
+            OnPropertyChanged(label);
     }
 
     public static string GetVersionText() => $"PartitionPilot v{UpdateService.GetCurrentVersion()}";

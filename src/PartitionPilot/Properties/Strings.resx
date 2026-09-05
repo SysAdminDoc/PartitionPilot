@@ -162,6 +162,15 @@
   <data name="Export" xml:space="preserve"><value>Export</value></data>
   <data name="Compare" xml:space="preserve"><value>Compare</value></data>
   <data name="RecoveryPlan" xml:space="preserve"><value>Recovery Plan</value></data>
+  <data name="ThemeLightMode" xml:space="preserve"><value>Light Mode</value></data>
+  <data name="ThemeSystemTheme" xml:space="preserve"><value>System Theme</value></data>
+  <data name="ThemeDarkMode" xml:space="preserve"><value>Dark Mode</value></data>
+  <data name="SessionStateLabel" xml:space="preserve"><value>Session state</value></data>
+  <data name="AdminSessionDetail" xml:space="preserve"><value>Disk changes available</value></data>
+  <data name="ReadOnlySessionDetail" xml:space="preserve"><value>Run as administrator for write operations</value></data>
+  <data name="ElevationStandard" xml:space="preserve"><value>Standard (unelevated)</value></data>
+  <data name="ElevationAdminProtection" xml:space="preserve"><value>Administrator Protection (SMAA profile)</value></data>
+  <data name="ElevationLegacyUac" xml:space="preserve"><value>Legacy UAC (elevated)</value></data>
   <data name="SelectLanguageTooltip" xml:space="preserve"><value>Change the interface language</value></data>
   <data name="SelectLanguageAutomationName" xml:space="preserve"><value>Interface language</value></data>
   <data name="FindOperation" xml:space="preserve"><value>Find an operation</value></data>
