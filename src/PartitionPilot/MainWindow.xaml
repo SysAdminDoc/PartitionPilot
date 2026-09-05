@@ -14,8 +14,9 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="184"/>
+            <RowDefinition Height="*" MinHeight="200"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition x:Name="rowActivityLog" Height="184" MinHeight="0"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
@@ -205,7 +206,17 @@
             </TabItem>
         </TabControl>
 
-        <Border Grid.Row="3"
+        <GridSplitter x:Name="logSplitter" Grid.Row="3"
+                      Height="6"
+                      HorizontalAlignment="Stretch"
+                      VerticalAlignment="Center"
+                      Background="Transparent"
+                      ResizeBehavior="PreviousAndNext"
+                      ResizeDirection="Rows"
+                      Margin="18,0"
+                      AutomationProperties.Name="{local:Loc ResizeActivityLog}"/>
+
+        <Border Grid.Row="4"
                 Style="{StaticResource Card}"
                 Padding="0"
                 Margin="18,0,18,10">
@@ -259,8 +270,13 @@
                             <Button Content="{local:Loc Clear}"
                                     Command="{Binding Log.ClearCommand}"
                                     Style="{StaticResource CommandBarButton}"
-                                    Margin="0"
                                     AutomationProperties.Name="{local:Loc Xaml_ClearActivityLog}"/>
+                            <Button x:Name="btnToggleLog"
+                                    Content="{local:Loc CollapseActivityLog}"
+                                    Click="OnToggleActivityLog"
+                                    Style="{StaticResource CommandBarButton}"
+                                    Margin="0"
+                                    AutomationProperties.Name="{local:Loc CollapseActivityLogAutomationName}"/>
                         </StackPanel>
                     </Grid>
                 </Border>
@@ -274,14 +290,14 @@
                         <GridView>
                             <GridViewColumn Header="{local:Loc Xaml_Time}" Width="92" DisplayMemberBinding="{Binding Timestamp}"/>
                             <GridViewColumn Header="{local:Loc Xaml_Level}" Width="92" DisplayMemberBinding="{Binding Level}"/>
-                            <GridViewColumn Header="{local:Loc Xaml_Details}" Width="1040" DisplayMemberBinding="{Binding Message}"/>
+                            <GridViewColumn x:Name="colLogDetails" Header="{local:Loc Xaml_Details}" DisplayMemberBinding="{Binding Message}"/>
                         </GridView>
                     </ListView.View>
                 </ListView>
             </Grid>
         </Border>
 
-        <Border Grid.Row="4"
+        <Border Grid.Row="5"
                 Background="{DynamicResource StatusBgBrush}"
                 BorderBrush="{DynamicResource BorderBrush}"
                 BorderThickness="0,1,0,0"

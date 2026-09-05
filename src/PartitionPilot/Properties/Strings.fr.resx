@@ -162,6 +162,11 @@
   <data name="Export" xml:space="preserve"><value>Exporter</value></data>
   <data name="Compare" xml:space="preserve"><value>Comparer</value></data>
   <data name="RecoveryPlan" xml:space="preserve"><value>Plan de récupération</value></data>
+  <data name="CollapseActivityLog" xml:space="preserve"><value>Masquer le journal</value></data>
+  <data name="ExpandActivityLog" xml:space="preserve"><value>Afficher le journal</value></data>
+  <data name="CollapseActivityLogAutomationName" xml:space="preserve"><value>Réduire le journal d'activité</value></data>
+  <data name="ExpandActivityLogAutomationName" xml:space="preserve"><value>Développer le journal d'activité</value></data>
+  <data name="ResizeActivityLog" xml:space="preserve"><value>Redimensionner le journal d'activité</value></data>
   <data name="ShrinkBlockedTitle" xml:space="preserve"><value>Pourquoi ce volume ne peut pas être réduit davantage</value></data>
   <data name="ShrinkBlockedAutomationName" xml:space="preserve"><value>Détails du blocage de réduction</value></data>
   <data name="PreviewRestore" xml:space="preserve"><value>Aperçu de la restauration</value></data>

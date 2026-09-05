@@ -20,6 +20,9 @@
 - Added an explanation for why a volume will not shrink further. "You cannot shrink a volume beyond the point where any unmovable files are located" is the most common complaint about Windows partitioning, and Windows already writes the answer to the Application log without showing it: Defrag event 259 names the blocking file, its last cluster and the shrink target. The resize dialog now names that file, classifies it as shadow copy storage, page file, hibernation file, NTFS change journal, search index or NTFS metadata, states how much space is blocked, and gives the command that resolves it. `pp shrink-blockers --drive C` prints the same, with `--json`. Reading the log needs no elevation.
 
 ### UX
+- The activity log is now resizable and collapsible. It occupied a fixed 184 pixels with no way to change it, which at the minimum window height took roughly a quarter of the vertical space permanently. A splitter resizes it and a button collapses it, and both survive a restart.
+- The activity log's Details column now stretches to fill the pane. It was a fixed 1040 pixels inside a window whose minimum width is 1080, so the log scrolled horizontally at small sizes and never used the space on a wide one.
+- The window remembers its size, position, maximised state and selected tab. A window restored onto a monitor that has since been unplugged is pulled back onto the current display instead of opening out of reach.
 - The status-bar indicator now reflects the actual status. It was hardcoded green, so the shell showed a healthy dot while the text beside it reported a failure. It renders success, warning and error, and carries the severity in its automation name so a screen reader gets it without the colour.
 - Removed a dead event handler left over from when the activity log was a text box.
 

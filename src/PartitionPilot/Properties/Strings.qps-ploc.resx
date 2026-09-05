@@ -162,6 +162,11 @@
   <data name="Export" xml:space="preserve"><value>[Export!!]</value></data>
   <data name="Compare" xml:space="preserve"><value>[Compare!!]</value></data>
   <data name="RecoveryPlan" xml:space="preserve"><value>[Recovery Plan!!]</value></data>
+  <data name="CollapseActivityLog" xml:space="preserve"><value>[Hide Log!!]</value></data>
+  <data name="ExpandActivityLog" xml:space="preserve"><value>[Show Log!!]</value></data>
+  <data name="CollapseActivityLogAutomationName" xml:space="preserve"><value>[Collapse the activity log!!!]</value></data>
+  <data name="ExpandActivityLogAutomationName" xml:space="preserve"><value>[Expand the activity log!!!]</value></data>
+  <data name="ResizeActivityLog" xml:space="preserve"><value>[Resize the activity log!!!]</value></data>
   <data name="ShrinkBlockedTitle" xml:space="preserve"><value>[Why this volume will not shrink further!!!]</value></data>
   <data name="ShrinkBlockedAutomationName" xml:space="preserve"><value>[Shrink blocker details!!]</value></data>
   <data name="PreviewRestore" xml:space="preserve"><value>[Preview Restore!!]</value></data>
