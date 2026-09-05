@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Text.Json;
 
 namespace PartitionPilot.Tests;
@@ -20,9 +21,17 @@ public class UpdateServiceTests
     {
         var current = UpdateService.GetCurrentVersion();
 
-        Assert.NotEqual("0.2.3", current);
+        var declared = typeof(UpdateService).Assembly
+            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+            ?.InformationalVersion
+            .Split('+', 2)[0];
+
         Assert.True(Version.TryParse(current, out _));
-        Assert.StartsWith("0.9.22", current);
+
+        // The point of the method is that it reads assembly metadata rather than returning its
+        // last-resort constant, so those are what the test pins.
+        Assert.NotEqual("0.0.0", current);
+        Assert.Equal(declared, current);
     }
 
     [Fact]
