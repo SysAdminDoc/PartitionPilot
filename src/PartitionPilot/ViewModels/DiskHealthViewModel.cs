@@ -535,6 +535,17 @@ public class DiskHealthViewModel : ViewModelBase, IDisposable
             return;
         }
 
+        if (_wmiService is SimulatedDiskService)
+        {
+            SmartSelfTestCapability = new SmartctlCapability
+            {
+                CanRunSelfTest = true,
+                Status = "Simulated",
+                Detail = LocExtension.Get("SelfTestSimulationReady")
+            };
+            return;
+        }
+
         SmartSelfTestCapability = new SmartctlCapability
         {
             CanRunSelfTest = false,

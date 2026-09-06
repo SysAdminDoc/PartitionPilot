@@ -138,7 +138,8 @@ public partial class MainViewModel : ViewModelBase
         LanguageService.LanguageChanged += OnLanguageChanged;
 
         Log.Log("PartitionPilot ready.");
-        _ = CheckForUpdateAsync();
+        if (!App.IsSimulationMode)
+            _ = CheckForUpdateAsync();
         _ = Partitions.LoadDisksAsync();
     }
 

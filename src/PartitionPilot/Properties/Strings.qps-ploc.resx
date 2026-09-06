@@ -35,7 +35,7 @@
   <data name="Refresh" xml:space="preserve"><value>[Refresh!!]</value></data>
   <data name="ExportLog" xml:space="preserve"><value>[Export Log!!]</value></data>
   <data name="SupportBundle" xml:space="preserve"><value>[SUpport BUndle!!]</value></data>
-  <data name="Elevate" xml:space="preserve"><value>[Elevate!!]</value></data>
+  <data name="Elevate" xml:space="preserve"><value>[Run as admin!!]</value></data>
   <data name="ElevateTooltip" xml:space="preserve"><value>[Re-laUnch as administrator for disk write operations!!]</value></data>
   <data name="Ready" xml:space="preserve"><value>[Ready!!]</value></data>
   <data name="ActivityLog" xml:space="preserve"><value>[Activity Log!!]</value></data>
@@ -759,7 +759,8 @@
   <data name="Xaml_FormattingReplacesTheFileSystemOnThisVolumeAndRemovesItsEx_b589b663" xml:space="preserve"><value>[Formatting replaces the file system on this volume and removes its existing files.!!]</value></data>
   <data name="Xaml_Free" xml:space="preserve"><value>[Free!!]</value></data>
   <data name="Xaml_FreeSpace" xml:space="preserve"><value>[Free space!!]</value></data>
-  <data name="Xaml_FSSupport" xml:space="preserve"><value>[FS Support!!]</value></data>
+  <data name="Xaml_FSSupport" xml:space="preserve"><value>[File Systems!!]</value></data>
+  <data name="SelfTestSimulationReady" xml:space="preserve"><value>[SMART self-tests are available in this simulated session.!!]</value></data>
   <data name="Xaml_GB" xml:space="preserve"><value>[GB!!]</value></data>
   <data name="Xaml_GeneralNTFS" xml:space="preserve"><value>[General NTFS!!]</value></data>
   <data name="Xaml_HexDumpDisplay" xml:space="preserve"><value>[Hex dump display!!]</value></data>
