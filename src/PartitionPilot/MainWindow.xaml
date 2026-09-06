@@ -33,13 +33,13 @@
 
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <Image Source="Assets/AppIcon.png"
-                           Width="28"
-                           Height="28"
-                           Margin="0,0,10,0"/>
+                           Width="32"
+                           Height="32"
+                           Margin="0,0,11,0"/>
                     <StackPanel>
                         <TextBlock Text="{local:Loc AppTitle}" Style="{StaticResource ShellTitleText}"/>
                         <TextBlock Text="{Binding VersionText}"
-                                   Style="{StaticResource TinyLabelText}"
+                                   Style="{StaticResource BrandMetaText}"
                                    Margin="1,1,0,0"/>
                     </StackPanel>
                 </StackPanel>

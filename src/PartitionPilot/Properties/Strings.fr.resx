@@ -35,7 +35,7 @@
   <data name="Refresh" xml:space="preserve"><value>Actualiser</value></data>
   <data name="ExportLog" xml:space="preserve"><value>Exporter le journal</value></data>
   <data name="SupportBundle" xml:space="preserve"><value>Lot de support</value></data>
-  <data name="Elevate" xml:space="preserve"><value>Élever</value></data>
+  <data name="Elevate" xml:space="preserve"><value>Exécuter en admin</value></data>
   <data name="ElevateTooltip" xml:space="preserve"><value>Relancer en tant qu'administrateur pour les opérations d'écriture sur disque</value></data>
   <data name="Ready" xml:space="preserve"><value>Prêt</value></data>
   <data name="ActivityLog" xml:space="preserve"><value>Journal d'activité</value></data>
@@ -759,7 +759,8 @@
   <data name="Xaml_FormattingReplacesTheFileSystemOnThisVolumeAndRemovesItsEx_b589b663" xml:space="preserve"><value>Formatting replaces the file system on this volume and removes its existing files.</value><comment>English fallback pending verified translation.</comment></data>
   <data name="Xaml_Free" xml:space="preserve"><value>Free</value><comment>English fallback pending verified translation.</comment></data>
   <data name="Xaml_FreeSpace" xml:space="preserve"><value>Free space</value><comment>English fallback pending verified translation.</comment></data>
-  <data name="Xaml_FSSupport" xml:space="preserve"><value>FS Support</value><comment>English fallback pending verified translation.</comment></data>
+  <data name="Xaml_FSSupport" xml:space="preserve"><value>Systèmes de fichiers</value></data>
+  <data name="SelfTestSimulationReady" xml:space="preserve"><value>Les autotests SMART sont disponibles dans cette session simulée.</value></data>
   <data name="Xaml_GB" xml:space="preserve"><value>GB</value><comment>English fallback pending verified translation.</comment></data>
   <data name="Xaml_GeneralNTFS" xml:space="preserve"><value>General NTFS</value><comment>English fallback pending verified translation.</comment></data>
   <data name="Xaml_HexDumpDisplay" xml:space="preserve"><value>Hex dump display</value><comment>English fallback pending verified translation.</comment></data>
