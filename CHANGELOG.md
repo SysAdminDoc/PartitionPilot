@@ -1,5 +1,12 @@
 # Changelog
 
+## PartitionPilot v0.9.26 (2026-09-07)
+
+- Preserved all three original logo directions and an untouched copy of the selected storage-route master, with a selection record beside them.
+- Tightened the README's opening copy around inspection and review, and linked the brand archive for future reuse.
+- Refreshed the four production-interface captures and social preview after reviewing them beside the previous release.
+- Included the project license and dependency notices in the installable packages, with source links for the MPL libraries.
+
 ## PartitionPilot v0.9.25 (2026-09-06)
 
 ### Product presentation
@@ -19,6 +26,7 @@
 ## PartitionPilot v0.9.24 (2026-09-05)
 
 ### Features
+
 - Added a language selector to the command bar, next to the theme control. The app shipped five sets of translations with nothing in the interface to reach them, so anyone who launched into an unfamiliar language had no way out and a translator had no way to review their work. Each language is named in itself, so the entry you need stays legible even when the current language is one you cannot read.
 - Switching language now takes effect immediately, without restarting. Localized text was resolved once when a window was built, so every label kept whatever language it started in. Those labels are now bound to a single notifying source, and changing language re-evaluates all of them at once.
 - Localized the shell labels that come from code rather than markup. The theme button and all three status tiles were English literals, which nobody noticed while there was no way to change language; with the selector shipped they would have sat untranslated right beside it. A test now fails if one of those labels is assigned as a literal again.
@@ -29,11 +37,13 @@
 - The confirmations that gate wiping, cloning and overwriting a disk can now be translated. They are built in the shared Core library, which `pp.exe` uses too, so they could not reach the app's markup extension and stayed English no matter what language was selected. Core now resolves them through its own resource set, following the language the app sets or, for the CLI, the one Windows reports. German, Spanish and French wording for those specific warnings is deliberately not shipped yet: a softened or mangled warning in front of an irreversible operation is worse than an English one, so it waits on review by someone who reads the language.
 
 ### Fixes
+
 - Choosing English in the language selector now switches back to English. English mapped to no culture at all, which left resource lookups following whatever language was last selected, so a user who tried German could not get back, and anyone on a non-English machine never saw English in the first place.
 
 ## PartitionPilot v0.9.23 (2026-09-04)
 
 ### Features
+
 - Partition snapshots can now be restored instead of only printed. The Snapshots tab gained Preview Restore and Restore Table, and the CLI gained `pp restore-snapshot --file F --disk N`, both dry-run by default. A restore rebuilds every partition at its recorded offset, size, filesystem, label and letter. Previously a snapshot only produced a list of commands to retype by hand.
 - A restore refuses before touching the disk when the target's identity no longer matches the snapshot, or when the snapshot does not record a filesystem for every partition. An unelevated capture often leaves the filesystem blank, and recreating an EFI System Partition as NTFS would leave the machine unbootable, so the restore asks for a fresh elevated capture rather than guessing.
 - Layout specs accept an optional `OffsetKB` per partition, so a recreated table lands on the offsets the original disk had rather than repacking from the front.
@@ -56,6 +66,7 @@
 - Fixed the release UI smoke gate, which could not run at all. It invoked the UI test project with `--no-restore`, but nothing else in the build restores that project, so on a checkout where it had never been restored no result file was produced and the gate failed with "UI smoke test result was not created". a message about the symptom that hid the cause. It now restores the test project first. The fail-closed behaviour is unchanged: an all-skipped run without `-AllowHeadlessSkip` still fails.
 
 ### UX
+
 - Added an operation search to the command bar. Eight tabs hold roughly forty operations with no way to find one by name, so anyone who knew they wanted Dev Drive or NVMe sanitize had to remember which tab it lived on. Typing filters a list and picking a result switches to the owning tab. Names come from the same localization keys the tabs use, so the search works in every shipped language rather than only English.
 - The activity log is now resizable and collapsible. It occupied a fixed 184 pixels with no way to change it, which at the minimum window height took roughly a quarter of the vertical space permanently. A splitter resizes it and a button collapses it, and both survive a restart.
 - The activity log's Details column now stretches to fill the pane. It was a fixed 1040 pixels inside a window whose minimum width is 1080, so the log scrolled horizontally at small sizes and never used the space on a wide one.
@@ -64,12 +75,15 @@
 - Removed a dead event handler left over from when the activity log was a text box.
 
 ### Testing
+
 - Added coverage for the safety gates that had none: image destination preflight, the BitLocker capture guard, and volume locking. Each new test was checked by breaking the guard it covers and confirming it goes red, so a removed same-volume check or a `RequireLock` that stopped throwing now fails the suite instead of shipping.
 
 ### Security
+
 - Release manifests can now be signed, and the client can verify one against a key compiled into the build. Velopack checks a package's hash and size against the feed, so whoever controls the feed controls both; a signature over the manifest itself is what survives a compromised host. Sign with `pp release-manifest --manifest-key <pem>`, and set a lifetime with `--manifest-valid-days`. Verification also refuses a manifest that offers an older version than the one installed, which blocks a rollback to a known-vulnerable build, and one past its expiry, which blocks freezing a client on a stale release list. No signing key ships yet, so the channel reports as unsigned rather than rejecting updates and stranding existing installs.
 
 ### Safety & Reliability
+
 - Fixed VSS snapshot creation, which had never worked on Windows 10 or 11. Capture used `vssadmin create shadow`, a Windows Server-only verb, so on client Windows every image capture failed the snapshot step and fell back to an inconsistent live copy behind the degraded-mode prompt. Shadow copies are now created through the `Win32_ShadowCopy` WMI class, which works on client and server alike, and are deleted when capture finishes or fails.
 - Added a diagnostics check that proves a shadow copy can actually be created and removed, rather than only listing VSS providers and writers. Both of those pass on client Windows even when creation is impossible, which is how the broken capture path went unnoticed.
 - Fixed sector clones onto a larger disk leaving a broken partition table. A raw clone copies the source byte for byte, so the backup GPT header landed where the source disk ended, the primary header pointed at that stale location, and whatever backup header the destination already carried survived at its true last LBA. Windows reported such a disk as needing repair and the trailing space was unusable. Clones now move the backup header and entry array to the end of the destination, re-point the primary at them, erase the stranded copy, and widen the protective MBR.
@@ -78,20 +92,24 @@
 ## PartitionPilot v0.9.22 (2026-08-24)
 
 ### Reliability
+
 - Fixed a startup crash on the Disk Health tab: ProgressBar.Value binds two-way by default, and binding it to the read-only EndurancePercent property threw InvalidOperationException while the window loaded. The binding is now explicitly one-way. Reported and patched by an80sPWNstar in PR #1.
 - Added a regression test that scans every view for default two-way bindings aimed at read-only view-model properties, so this class of crash gets caught at test time.
 
 ## PartitionPilot v0.9.21 (2026-08-12)
 
 ### Security
+
 - HTML-encoded all dynamic SMART report values so disk metadata and attribute text cannot alter report markup.
 
 ### Reliability
+
 - Detached Windows theme notifications before dispatcher shutdown to prevent callbacks during app exit.
 - Stopped Disk Health background monitoring, canceled active health work, and released performance counters on window close.
 - Centralized destructive workflow confirmations and final disk-identity checks so cloning and wipe paths enforce one safety gate.
 
 ### Correctness
+
 - Made hex-viewer LBA addressing and reads honor each disk's logical sector size, including 4Kn media.
 - Matched LibreHardwareMonitor storage devices by their Windows disk number instead of enumeration order.
 - Kept the partition workspace busy state active until all overlapping disk and partition refreshes finish.
@@ -100,11 +118,13 @@
 - Returned a successful CLI exit code for boot-audit warnings while preserving exit code 2 for failed audits.
 
 ### UX
+
 - Replaced the inline encryption password window with a focused dialog that follows active theme colors and button styles.
 
 ## PartitionPilot v0.9.20 (2026-06-30)
 
 ### Security
+
 - Replaced `Random.Shared` with `RandomNumberGenerator` for DoD wipe random passes to provide cryptographically secure randomness.
 - Migrated raw `IntPtr` kernel handles to `SafeFileHandle` in SectorCloneService, MftScanner, NvmeHealthService, PartitionRecoveryScanner, and HexViewerViewModel to prevent handle leaks on exceptions.
 - Added `CryptographicOperations.ZeroMemory` for derived encryption keys in all encrypt/decrypt paths.
@@ -112,6 +132,7 @@
 - Fixed WQL double-quoting in storage pool membership query that caused incorrect pool-to-disk assignment.
 
 ### Correctness
+
 - Fixed `AsyncRelayCommand` to catch unhandled exceptions in `async void Execute` instead of crashing the app.
 - Fixed `MainViewModel.CheckForUpdateAsync` to wrap the entire method in try/catch to prevent unobserved task exception crash.
 - Fixed `SectorCloneService` verification to count read-length mismatches as failures instead of silently comparing partial reads.
@@ -126,15 +147,18 @@
 - Added MFT parent-chain cycle guard (256 depth limit) in `MftScanner`.
 
 ### UX
+
 - Fixed `TreemapControl` labels and borders invisible in light theme by replacing frozen dark-theme-only brushes with theme-aware resource lookups.
 - Fixed benchmark result associating disk 0 metadata regardless of which drive was benchmarked.
 
 ### Testing
+
 - Added 11 tests for `ParseSizeMB` covering valid inputs and invalid edge cases.
 
 ## PartitionPilot v0.9.19 (2026-06-30)
 
 ### Operator Documentation
+
 - Documented layout JSON fields, validation rules, target identity matching, and dry-run/apply/replace behavior.
 - Documented encrypted image container compatibility, manifest rebinding, and degraded restore confirmations.
 - Documented recovery scan mode tradeoffs, deep-scan resume behavior, and local release verification artifacts.
@@ -142,6 +166,7 @@
 ## PartitionPilot v0.9.18 (2026-06-30)
 
 ### Workflow Boundaries
+
 - Extracted image destination preflight, BitLocker capture guards, support-bundle assembly, layout-plan generation, wipe confirmations, and clone summaries into Core workflow services.
 - Updated the WPF view models and CLI plan command to call Core services instead of duplicating orchestration logic.
 - Added unit coverage for layout planning, destructive prompt sequences, clone summaries, support-bundle redaction, and existing image preflight behavior.
@@ -149,6 +174,7 @@
 ## PartitionPilot v0.9.17 (2026-06-30)
 
 ### WinPE Rescue Profile
+
 - Added `pp rescue-profile --output DIR [--source DIR]` to create a guarded portable rescue folder with `pp-rescue.cmd`, optional GUI launcher, operator notes, and `rescue-profile.json`.
 - Added `pp diagnostics --rescue` checks for WinPE runtime detection, MSFT_Disk storage API access, BitLocker WMI/provider support, DiskPart, DISM, manage-bde, and BCDBoot.
 - Added tests for rescue source validation, launcher/manifest generation, and WinPE runtime detection.
@@ -156,6 +182,7 @@
 ## PartitionPilot v0.9.16 (2026-06-30)
 
 ### Drive Health Metadata
+
 - Added a curated SMART/NVMe metadata layer with attribute names, severity, operator guidance, and a visible metadata version.
 - Disk Health, CLI SMART output, JSON output, and exported SMART reports now surface advisory text while preserving unknown vendor attributes as raw telemetry.
 - Added tests for known ATA mappings, unknown attribute fallback, and NVMe top-level advisory generation.
@@ -163,6 +190,7 @@
 ## PartitionPilot v0.9.15 (2026-06-30)
 
 ### Localization
+
 - Converted XAML visible labels, dialog strings, and automation names to `LocExtension` resource keys.
 - Added source-level tests that block hardcoded XAML user-facing strings and verify every XAML localization key exists in resources.
 - Preserved invariant filesystem and format-preset values with `ComboBoxItem.Tag` so localized display text cannot alter partition operations.
@@ -170,6 +198,7 @@
 ## PartitionPilot v0.9.14 (2026-06-30)
 
 ### UI Smoke Gate
+
 - Added `tools/run-ui-smoke.ps1` to build the WPF app, run FlaUI simulation-mode smoke tests, and save TRX/log/screenshot artifacts under `artifacts\ui-smoke`.
 - The smoke gate now fails when all UI tests skip unless `-AllowHeadlessSkip` is explicitly passed for noninteractive verification.
 - UI smoke screenshots can now be redirected with `PARTITIONPILOT_UI_SCREENSHOT_DIR`.
@@ -177,6 +206,7 @@
 ## PartitionPilot v0.9.13 (2026-06-30)
 
 ### Bootability Audit
+
 - Added a Core bootability audit for restored and cloned Windows targets covering partition style, EFI/system partition presence, BCD files, and WinRE status.
 - Restore and sector-clone completion now include pass/warn/fail boot audit output plus a non-destructive bcdboot/reagentc repair plan when needed.
 - Added `pp boot-audit --disk N [--windows C]` for rerunning the same audit from the CLI.
@@ -184,6 +214,7 @@
 ## PartitionPilot v0.9.12 (2026-06-30)
 
 ### SMART Diagnostics
+
 - Environment diagnostics now report smartctl availability, version, path, and remediation when SMART self-tests are unavailable.
 - Disk Health self-test buttons are gated by disk-aware smartctl capability, including NVMe mode selection, USB SAT bridge labeling, and unsupported-device warnings.
 - Added unit coverage for smartctl discovery, missing-tool diagnostics, device-mode selection, and self-test command generation.
@@ -191,6 +222,7 @@
 ## PartitionPilot v0.9.11 (2026-06-30)
 
 ### Image Integrity
+
 - WIM capture/apply now uses DISM `/CheckIntegrity` and `/Verify`.
 - Image capture writes a `.ppmanifest.json` sidecar with image SHA256, source-volume metadata, source file counts/bytes, and sampled source file hashes.
 - Encrypted image captures rebind the sidecar manifest to the encrypted file hash while preserving the plain-image hash, and restores validate manifests before clearing the target disk.
@@ -198,6 +230,7 @@
 ## PartitionPilot v0.9.10 (2026-06-30)
 
 ### Release Integrity
+
 - Added `pp release-manifest` to generate `SHA256SUMS` and `SHA256SUMS.json` for local release artifacts.
 - Release manifest generation Authenticode-signs `.exe` artifacts when a signing certificate thumbprint is configured and marks unsigned outputs as `UnsignedLocalTest`.
 - Update checks now surface GitHub release asset digest/manifest status, and Velopack downloads require expected checksum metadata before apply.
@@ -205,6 +238,7 @@
 ## PartitionPilot v0.9.9 (2026-06-30)
 
 ### Recovery
+
 - Replaced whole-disk 512-byte-stride recovery scans with default fast mode and explicit deep mode.
 - Fast recovery scans probe common legacy and 1 MiB partition boundaries while still checking filesystem boot records and superblock offsets.
 - Deep recovery scans now checkpoint progress to a resume state file, support Ctrl+C cancellation from the CLI, coalesce duplicate candidates, and include scan mode plus coverage in text and JSON reports.
@@ -212,6 +246,7 @@
 ## PartitionPilot v0.9.8 (2026-06-30)
 
 ### Safety & Reliability
+
 - Added a shared filesystem capability policy for create, format, resize, extend, check, and label support.
 - GUI partition, tools, VHD creation, CLI plan/apply, and layout-spec paths now fail closed before invoking native disk tools for unsupported filesystems.
 - Updated filesystem support dialog data and tests to cover NTFS, FAT32, exFAT, ReFS, FAT16, ext, APFS, HFS+, Linux swap, and LUKS behavior.
@@ -219,6 +254,7 @@
 ## PartitionPilot v0.9.7 (2026-06-29)
 
 ### Safety & Reliability
+
 - Added VSS writer-health parsing and preflight checks before live volume image capture.
 - Image capture now requires healthy VSS writers or an explicit degraded-mode confirmation before proceeding without a consistent snapshot.
 - Environment diagnostics now report VSS writer health separately from provider availability.
@@ -226,6 +262,7 @@
 ## PartitionPilot v0.9.6 (2026-06-29)
 
 ### Safety & Reliability
+
 - Added required pre-destruction partition snapshots for image restore, sector clone destinations, whole-disk wipe, DoD wipe, and NVMe sanitize workflows.
 - Snapshot write failures now block destructive disk actions before native overwrite commands run and log the snapshot path for recovery evidence.
 - Support bundles now include the newest partition snapshots first.
@@ -233,6 +270,7 @@
 ## PartitionPilot v0.9.5 (2026-06-28)
 
 ### Safety & Reliability
+
 - Added stable disk identity fields from `MSFT_Disk` to disk records, CLI JSON output, partition snapshots, and operation journals.
 - Added target identity text to destructive wipe, sanitize, clone, restore, format, delete, layout, and queue-apply confirmations.
 - Blocked queued operations and layout specs when the saved target identity no longer matches the current disk.
@@ -241,6 +279,7 @@
 ## PartitionPilot v0.9.4 (2026-06-28)
 
 ### Safety & Reliability
+
 - Replaced whole-file encrypted image writes with a chunked `PPENC2` AES-256-GCM container that keeps memory bounded for large WIM/VHDX images.
 - Authenticated each encrypted chunk with header-bound associated data and preserved legacy `PPENC1` decrypt compatibility.
 - Added encryption tests for chunked round-trip, legacy decrypt, tamper detection, wrong-password failure, and cancellation.
@@ -248,6 +287,7 @@
 ## PartitionPilot v0.9.3 (2026-06-28)
 
 ### Safety & Reliability
+
 - Made declarative `apply-layout` idempotent for matching disk layouts.
 - Blocked destructive layout replacement by default; populated-disk mismatches now require `--replace` plus the existing destructive confirmation.
 - Added layout-diff tests for no-op, create-only, blocked mismatch, and explicit replacement plans.
@@ -255,6 +295,7 @@
 ## PartitionPilot v0.9.2 (2026-06-28)
 
 ### Safety & Reliability
+
 - Added fail-closed validation for declarative layout specs before DiskPart scripts are emitted.
 - Rejected invalid or injection-shaped partition style, size, and drive-letter values with clear errors.
 - Added layout-diff tests covering valid normalization and unsafe JSON-shaped inputs.
@@ -262,6 +303,7 @@
 ## PartitionPilot v0.9.1 (2026-06-27)
 
 ### Documentation & Release Hygiene
+
 - Drained stale completed items from the active roadmap after verifying the v0.9.0 feature work is present in the codebase.
 - Replaced current README CI language with local build and release artifact instructions.
 - Bumped app, CLI, core library, installer, and README version strings to v0.9.1.
@@ -270,6 +312,7 @@
 ## PartitionPilot v0.9.0 (2026-06-20)
 
 ### Safety & Reliability
+
 - Added post-clone verification pass: after sector clone, source and destination are re-read and compared block-by-block. Mismatches are reported with count and duration.
 - Added bad-sector rescue mode for sector clone: when enabled, read failures zero the destination block and log the offset instead of aborting. Final report lists all bad sectors with count and percentage.
 - Added journal-save failure logging: OperationQueue now logs warnings when crash-recovery journal writes fail instead of silently swallowing errors.
@@ -277,18 +320,21 @@
 - Added pre-clone target signature erasure checkbox and verify-after-clone checkbox to the Disk Cloning UI.
 
 ### Features
+
 - Added CLI benchmark command: `pp benchmark --drive C` runs DiskSpd profiles and outputs results in text or JSON.
 - Added CLI SMART history command: `pp smart-history --disk N` shows recorded SMART readings over time.
 - Added CLI SMART trends command: `pp smart-trends --disk N` shows trend analysis with severity levels.
 - Added CLI temperature command: `pp temperature` shows current temperatures for all physical disks with threshold warnings.
 
 ### UX
+
 - Added filesystem support matrix dialog showing which operations each filesystem supports, accessible from the command bar.
 - Added read-only hex sector viewer tab: displays raw disk sectors in hex + ASCII, with sector navigation, read-only access to any physical disk.
 - Added FAT32 >32GB formatting via PowerShell Format-Volume (bypasses Windows 32GB diskpart limitation with auto-scaled cluster size).
 - Added pre-clone target signature erasure: first 64KB of destination disk is zeroed before sector clone to prevent ghost filesystem detection.
 
 ### Health & Monitoring
+
 - Added full NVMe health log: Unsafe Shutdowns, Controller Busy Time, Error Information Log Entries, Critical Warning flags (spare low, temp exceeded, reliability degraded, read-only, backup failed) via IOCTL_STORAGE_QUERY_PROPERTY.
 - Added SMART self-test triggers: "Short Test" and "Extended Test" buttons on Disk Health tab invoke smartctl for both SATA and NVMe drives. Status and estimated duration displayed inline.
 - Added SMART diagnostic report export: HTML report with drive info, all SMART attributes, health status, trend analysis, temperature history, and alignment audit. Opens in default browser.
@@ -296,6 +342,7 @@
 - Expanded recovery scanner to detect ext2/3/4, btrfs, XFS, HFS+/HFSX, APFS, and Linux swap signatures in addition to existing NTFS/FAT/exFAT/ReFS.
 
 ### Quality
+
 - Added 5 tests for SectorCloneResult (report formatting, verification, bad sectors, phase display).
 - Expanded BitLocker tests from 5 to 17: encryption method mapping, conversion state handling, IsProtected for mid-encryption volumes.
 - Added 4 tests for NVMe Critical Warning flag bitfield parsing.
@@ -309,15 +356,17 @@
 ## PartitionPilot v0.8.0 (2026-06-19)
 
 ### Safety & Reliability
+
 - Added operation queue journaling for crash recovery: every Apply batch writes a redacted JSON journal to ProgramData. On startup, interrupted journals are detected and shown with per-operation status. Journals auto-purge after 30 days.
 - Fixed Storage Spaces membership: replaced imprecise pool assignment with proper MSFT_StoragePoolToPhysicalDisk association query. Pool health, operational status, and read-only state are now exposed.
 - Added VSS-backed live volume image capture: WIM/VHDX capture creates a VSS shadow copy for point-in-time consistency, with explicit user confirmation before fallback to live capture.
  : **Correction, 2026-09-04:** this never worked on Windows 10 or 11. The snapshot was created with `vssadmin create shadow`, a verb that ships only on Windows Server, so on client Windows the call always failed and capture fell back to an inconsistent live copy behind the degraded-mode prompt. Fixed in v0.9.23, which creates shadow copies through `Win32_ShadowCopy.Create` instead.
 - Added operation impact preview before Apply: confirmation dialog now shows risk summary, affected targets, and per-operation type/risk breakdown.
-- Added versioned JSON schemas for persisted files: snapshot and SMART history files include schema version envelopes, v0 files load seamlessly, corrupt files are quarantined to .corrupt.
+- Added versioned JSON schemas for persisted files: snapshot and SMART history files include schema version envelopes, v0 files still load, and corrupt files are quarantined to .corrupt.
 - Fixed sector clone fail-open bug: read failures and zero-byte reads now throw with offset context. Partial writes handled correctly. Source pooled-disk guard added.
 
 ### Features
+
 - Added CLI plan/apply automation: `pp plan create|delete|format|change-letter` with --apply flag, YES confirmation for destructive operations, and --json structured output.
 - Added read-only lost-partition scanning: scans raw disk sectors for NTFS, FAT32, FAT16/12, exFAT, and ReFS filesystem signatures. CLI: `pp recovery-scan --disk N`.
 - Added preflight environment diagnostics: checks elevation, .NET version, WMI providers, native tools, DiskSpd cache, and data directory. CLI: `pp diagnostics`.
@@ -327,15 +376,18 @@
 - Activated WPF UI smoke tests in CI with screenshot capture and xUnit v3 runtime skip.
 
 ### Quality
+
 - Added 76 tests for v0.7.0 services (145 -> 231 total): SMART trend analysis, sector clone validation, temperature monitor, localization keys, operation journal.
 
 ## PartitionPilot v0.7.0 (2026-06-19)
 
 ### Architecture
+
 - Adopted .NET 10 Fluent theme with system dark/light tracking. Theme button now cycles Dark → Light → System, where System follows the OS Apps theme setting via registry change notifications. Removed ~95 lines of custom ScrollBar, RadioButton, CheckBox, and MenuItem templates now handled by the Fluent theme engine.
 - Extracted PartitionPilot.Core library: all models and non-WPF services (13 models, 15 services) now live in a standalone net10.0-windows class library with no WPF dependency. Introduced IActivityLog interface to decouple core services from the WPF-bound ActivityLog.
 
 ### Features
+
 - Added CLI companion (pp.exe) for scripted disk management. Commands: disks, partitions, volumes, smart, health, alignment, snapshot. All support --json for automation.
 - Added SMART attribute history tracking with trend alerts. Records readings per device and analyzes the last 10 readings for degradation trends (reallocated sectors, NVMe media errors, wear, spare capacity, temperature). Trend alerts display in the Disk Health tab.
 - Added real-time disk temperature monitoring with threshold alerts. Polls all disks every 30 seconds with Warning at 55 C and Critical at 65 C. Live temperatures and alert history display in the Disk Health tab.
@@ -344,18 +396,21 @@
 - Added sector-level disk-to-disk clone. Raw sector copy with 1 MB buffer, progress reporting (rate, ETA), volume lock acquisition, triple-confirmation with BitLocker preflight, and cancel support.
 
 ### Safety & Reliability
+
 - Preserved failed and skipped pending operations after a queue apply failure so users can review, retry, or remove the remaining work instead of losing the queue.
 - Hardened DiskSpd benchmarking by verifying the downloaded ZIP and cached executable hashes, passing the required 1 GiB test-file creation argument, draining stderr, and falling back when all DiskSpd profiles fail.
 - Fixed the fallback GitHub release update check to call the GitHub API endpoint instead of parsing the HTML release page.
 - Redacted support-bundle activity logs and snapshots for user paths plus JSON/plain-text serial numbers before export.
 
 ### UX & Polish
+
 - Fixed object-backed disk selectors so they show readable disk and volume labels instead of CLR type names.
 - Cleared stale Disk Usage results at scan start so cancelled or failed scans do not leave old treemap data visible as if current.
 
 ## PartitionPilot v0.5.0 (2026-06-19)
 
 ### Architecture & Quality
+
 - Added pending operations queue: partition operations (create, delete, format, resize, split, change letter) are now queued, previewed in the action rail, and executed only on Apply. Individual operations can be removed. Execution stops on first failure with a status report. This closes the #1 safety gap vs GParted/EaseUS/AOMEI.
 - Expanded SMART monitoring via LibreHardwareMonitorLib 0.9.6: Disk Health tab now shows Reallocated Sectors, Pending Sectors, Power Cycles, Total Written/Read, NVMe Available Spare, NVMe Media Errors, and a full SMART attribute table. Health classification includes reallocated-sector and NVMe-spare thresholds. WMI data fills gaps.
 - Replaced custom benchmark with DiskSpd-backed methodology: 8 standard profiles (SEQ1M Q1/Q8, RND4K Q1/Q32, read+write) with XML output parsing. DiskSpd auto-downloads from GitHub on first use. Falls back to built-in benchmark if unavailable.
@@ -364,6 +419,7 @@
 ## PartitionPilot v0.4.0 (2026-06-18)
 
 ### Architecture & Quality
+
 - Integrated Velopack 1.2.0 for auto-updates with delta packages via GitHub Releases. Falls back to the existing version-check API when Velopack releases aren't published yet.
 - Cached WMI scope connections per namespace (Storage, CIMV2, BitLocker) with automatic reconnect on failure, reducing 4-6 WMI connections per tab switch to at most 3.
 - Deduplicated BitLocker status resolution into a shared WmiDiskService helper, removing identical copies from ToolsViewModel and DiskCloningViewModel.
@@ -372,6 +428,7 @@
 - Added CI release provenance with SHA256SUMS generation and GitHub artifact attestation via Sigstore.
 
 ### Safety & Reliability
+
 - Added Administrator Protection compatibility: partition snapshots and activity logs now use ProgramData instead of %TEMP% so data persists across elevation contexts under SMAA. Elevation context detection (legacy UAC vs Administrator Protection) added to session info.
 - Added Storage Spaces pool detection via MSFT_StoragePool. Pooled disks are labeled with pool name and destructive operations show pool integrity warnings.
 - Expanded GPT type mapping to recognize Linux, Linux Swap, Linux Home, Linux Root, LUKS, HFS+, APFS, and LDM partitions. Destructive operations on unsupported types require stronger confirmation.
@@ -380,6 +437,7 @@
 - Added disk initialization workflow for RAW/unpartitioned disks (GPT partition table via Initialize-Disk).
 
 ### Features
+
 - Added privacy-preserving support bundle export: ZIP containing redacted system info, activity log, disk summary, and up to 10 partition snapshots with serial numbers stripped.
 - Added benchmark result export as JSON or text with drive metadata (letter, model, capacity, timestamp).
 - Added progress rate and duration reporting for DoD wipe passes and disk usage scans.
@@ -388,10 +446,12 @@
 ## Unreleased (pre-v0.3.0)
 
 ### Release Trust
+
 - Fixed release metadata drift: the update checker now reads the app version from assembly metadata, the Inno installer reports v0.3.0, README uses a non-versioned screenshot path, and CI validates installer/README version consistency.
 - Made NuGet restores deterministic with lock files, explicit package versions, CI locked-mode restore, and migration of the test suite to xUnit v3.
 
 ### Safety & Reliability
+
 - Changed destructive volume operations to fail closed when exclusive volume locking cannot be acquired, including format, resize, split, delete, extend, clone restore, free-space wipe, and disk wipe flows.
 - Fixed VHDX image create/restore success handling so missing mounted/source/destination drive letters now stop the operation instead of silently skipping copy work.
 - Added per-disk NVMe sanitize preflight so firmware erase is available only when the selected physical disk is verified as NVMe on a supported Windows build, with the UI showing the reason when unavailable.
@@ -416,6 +476,7 @@
 ## PartitionPilot v0.3.0 (2026-06-16)
 
 ### Security Hardening (P0)
+
 - Switched PowerShell execution from `-Command` to `-EncodedCommand` (Base64 UTF-16LE), eliminating shell metacharacter injection via outer argument parsing.
 - Added `EscapePowerShellString()` helper that wraps values in single quotes with proper `'` → `''` escaping. Applied to all user-influenced file paths in DiskCloningViewModel and DiskImagesViewModel.
 - Expanded `SanitizeLabel()` to strip shell metacharacters (`;`, `&`, `|`, `$`, `` ` ``, `(`, `)`) in addition to quotes and newlines.
@@ -425,6 +486,7 @@
 - Updated CI workflow to restore and audit both main project and test project.
 
 ### Safety & Reliability
+
 - Added partition table backup service. saves JSON snapshots of disk layout to `%TEMP%/PartitionPilot/backups/` before every destructive operation (delete, format, extend, split). Snapshots retained for 30 days.
 - Added format confirmation dialog. format now requires explicit "ALL DATA WILL BE ERASED" confirmation after parameter selection, matching the existing delete confirmation pattern.
 - Fixed concurrent `LoadPartitionsAsync` race. rapid disk selection now cancels any in-flight load via `CancellationTokenSource`, preventing overlapping collection updates and UI flicker. Same fix applied to `DiskHealthViewModel.LoadHealthDataAsync`.
@@ -442,6 +504,7 @@
 ## PartitionPilot v0.2.3 (2026-06-16)
 
 ### Reference-Driven Console Polish
+
 - Reworked the main shell into a denser disk-console layout with compact brand/command bar, session-status tiles, descriptive navigation, and a calmer bottom status strip.
 - Added a global Refresh command that reloads the active workspace and auto-loads the partition workspace at startup to reduce first-run friction.
 - Moved partition operations into a persistent right-side action rail with clearer selection context, safety copy, and disabled-state affordances.
@@ -452,6 +515,7 @@
 ## PartitionPilot v0.2.2 (2026-06-16)
 
 ### Premium UX Polish
+
 - Refined the app shell with a dark native title bar, custom PartitionPilot icon, stronger product hierarchy, and clearer status badges.
 - Added semantic theme surfaces for notices, badges, empty states, disabled controls, busy panels, scrollbars, and dialog footers.
 - Converted brush references to DynamicResource so dark/light theme switching applies live without requiring restart.
@@ -463,6 +527,7 @@
 ## PartitionPilot v0.2.1 (2026-06-16)
 
 ### Audit Fixes
+
 - Fixed update checker using lexicographic version comparison (0.10.0 < 0.2.0 was wrong); now uses System.Version for semantic comparison.
 - Fixed disk cloning crash: robocopy exit codes 1-7 are success (files copied), only >=8 is fatal. Every successful clone was throwing.
 - Fixed Disk Usage "Share" column always showing zero-width bars (was using InverseBool converter on a double proportion; replaced with ProportionToWidthConverter).
@@ -479,11 +544,13 @@
 ## PartitionPilot v0.2.0 (2026-06-16)
 
 ### P0 Fixes
+
 - Fixed FindImageDriveLetter: mounted ISO/VHD images now display their assigned drive letter.
 - Replaced 10 silent catch blocks in WmiDiskService with ActivityLog error messages.
 - Fixed boot repair EFI partition detection: auto-detects ESP by GPT type GUID instead of hardcoding /s S:.
 
 ### P1 Architecture
+
 - Hardened ProcessRunner: non-zero exit code always throws, diskpart stdout scanned for error patterns, PowerShell stderr ignored on success.
 - Added input sanitization (SanitizeLabel, ValidateDriveLetter) for all diskpart script interpolation points.
 - Extracted IDialogService interface. all 20+ MessageBox.Show calls replaced with testable dialog methods.
@@ -495,12 +562,14 @@
 - Added GitHub Actions CI pipeline (build + test on push/PR to main).
 
 ### P2 Features
+
 - Added dark/light theme switching with persistent preference (default: dark).
 - Added BitLocker encryption status display per volume in partition details.
 - Added Disk Usage analysis tab with top-30 folder size breakdown, cancellable scan.
 - Added Inno Setup installer script for professional distribution.
 
 ### P3 Features
+
 - Added disk surface test (Repair-Volume OfflineScanAndFix) in Tools tab.
 - Added startup update check against GitHub Releases API.
 - Added disk cloning tab with WIM/VHDX create and restore workflows.

@@ -5,10 +5,10 @@
 <h1 align="center">PartitionPilot</h1>
 
 <p align="center">
-  Plan, inspect, and recover Windows storage without handing control to a black box.
+  Inspect Windows storage and review a plan before anything changes.
 </p>
 
-![Version](https://img.shields.io/badge/version-0.9.25-19C8FF)
+![Version](https://img.shields.io/badge/version-0.9.26-19C8FF)
 ![License](https://img.shields.io/badge/license-MIT-5EE0A0)
 ![Platform](https://img.shields.io/badge/platform-Windows%2010%20%7C%2011-F4C96A)
 ![.NET](https://img.shields.io/badge/.NET-10-7C3AED)
@@ -21,7 +21,7 @@ PartitionPilot brings disk layout, drive health, recovery evidence, and imaging 
 
 ## Why use it
 
-Windows Disk Management is fine for a quick format. It gets harder to trust when a task involves several disks, a damaged layout, BitLocker, or a change that needs to be repeated on another machine.
+Use PartitionPilot when a storage job needs more context than a partition list. Keep the plan beside drive health and recovery evidence, then review each change before you apply it.
 
 PartitionPilot keeps the evidence visible:
 
@@ -106,7 +106,7 @@ These screens come from the production WPF interface running against PartitionPi
 PartitionPilot supports 64-bit Windows 10 and Windows 11.
 
 1. Open the [latest release](https://github.com/SysAdminDoc/PartitionPilot/releases/latest).
-2. Choose `PartitionPilot-0.9.25-Setup.exe` for normal installation, or download the portable ZIP.
+2. Choose `PartitionPilot-0.9.26-Setup.exe` for normal installation, or download the portable ZIP.
 3. Start in the standard read-only session for inspection. Use **Run as admin** only when a write operation needs elevation.
 
 The current release is not Authenticode-signed because no signing certificate is available. Windows may show SmartScreen the first time it runs. Each release publishes GitHub's server-side digest, and the project also produces SHA-256 manifests during local packaging.
@@ -225,6 +225,10 @@ dotnet run --project .\tools\PartitionPilot.MarketingCapture\PartitionPilot.Mark
 
 The interface includes English, German, Spanish, French, and a pseudo-locale for translation review. Language changes apply immediately and are remembered between runs.
 
+## Brand assets
+
+The storage-route icon is the selected PartitionPilot identity. The [untouched master](assets/brand/partitionpilot-selected-master.png) preserves the original artwork, while the [concept archive](assets/brand/concepts/) keeps all three reviewed directions. [selection.json](assets/brand/concepts/selection.json) identifies the selected source. Use the production mark and icon sizes elsewhere in `assets/brand/` for product integration.
+
 ## License
 
-PartitionPilot is available under the [MIT License](LICENSE).
+PartitionPilot's own code is available under the [MIT License](LICENSE). Bundled libraries keep their original terms; see [third-party notices](THIRD_PARTY_NOTICES.md) for licenses and source links.

@@ -1,5 +1,5 @@
 {
-  "version": "PartitionPilot v0.9.25",
+  "version": "PartitionPilot v0.9.26",
   "isolatedDesktop": true,
   "simulatedData": true,
   "screenshots": [
@@ -8,28 +8,28 @@
       "file": "01-partition-workspace.png",
       "width": 1440,
       "height": 863,
-      "bytes": 131792
+      "bytes": 131857
     },
     {
       "tab": 2,
       "file": "02-disk-health.png",
       "width": 1440,
       "height": 863,
-      "bytes": 119604
+      "bytes": 119672
     },
     {
       "tab": 3,
       "file": "03-maintenance-tools.png",
       "width": 1440,
       "height": 863,
-      "bytes": 127597
+      "bytes": 127660
     },
     {
       "tab": 6,
       "file": "04-imaging-and-cloning.png",
       "width": 1440,
       "height": 863,
-      "bytes": 121284
+      "bytes": 121352
     }
   ]
 }
