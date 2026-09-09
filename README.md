@@ -223,7 +223,7 @@ dotnet run --project .\tools\PartitionPilot.MarketingCapture\PartitionPilot.Mark
 
 ## Languages
 
-The interface includes English, German, Spanish, French, and a pseudo-locale for translation review. Language changes apply immediately and are remembered between runs.
+The interface includes English, German, Spanish, French, Japanese, and a pseudo-locale for translation review. Language changes apply immediately and are remembered between runs.
 
 ## Brand assets
 
