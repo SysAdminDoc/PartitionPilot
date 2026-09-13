@@ -1,0 +1,148 @@
+{
+  "width": 1280,
+  "height": 640,
+  "selectedCandidate": "candidate-2",
+  "containsReleaseNumber": false,
+  "screenshotCrop": {
+    "X": 200,
+    "Y": 160,
+    "Width": 1220,
+    "Height": 660,
+    "excludesApplicationVersion": true
+  },
+  "sources": {
+    "logo": "assets/brand/partitionpilot-mark.png",
+    "screenshot": "assets/concepts/2026-09-12-readme-hero/release-source-captures/01-partition-workspace.png"
+  },
+  "final": {
+    "file": "readme-hero-final.png",
+    "sha256": "c234f7a382b7d7ebcca1f11bd10b5e74ae63dc4b02eedafb74867d4f3c5f46f5"
+  },
+  "files": [
+    {
+      "file": "current-run-captures/01-partition-workspace.png",
+      "sha256": "41b8d4019b9809f17c59162b66ba7d351c00197abcda6e720f400032e04e0b09",
+      "bytes": 131857
+    },
+    {
+      "file": "current-run-captures/02-disk-health.png",
+      "sha256": "5fbce560b6083dfdc6b6adea1f7105949e81c427a08421a62b55edcf4d882b90",
+      "bytes": 119672
+    },
+    {
+      "file": "current-run-captures/03-maintenance-tools.png",
+      "sha256": "732765283a66b759f1f01085dd93191ffc77c1d0faf8108c08e496897af218d6",
+      "bytes": 127660
+    },
+    {
+      "file": "current-run-captures/04-imaging-and-cloning.png",
+      "sha256": "a9c430a782e02ff4e338a87b244dcc0d317cc9e82b7d7d0aabadd5dadba86b71",
+      "bytes": 121352
+    },
+    {
+      "file": "readme-hero-candidate-01-continuity.png",
+      "sha256": "89fdc43327b6ea33b66411367ea9e398407e905088510c699d7347058df8e125",
+      "bytes": 101681
+    },
+    {
+      "file": "readme-hero-candidate-02-safety-led.png",
+      "sha256": "c234f7a382b7d7ebcca1f11bd10b5e74ae63dc4b02eedafb74867d4f3c5f46f5",
+      "bytes": 104170
+    },
+    {
+      "file": "readme-hero-final.png",
+      "sha256": "c234f7a382b7d7ebcca1f11bd10b5e74ae63dc4b02eedafb74867d4f3c5f46f5",
+      "bytes": 104170
+    },
+    {
+      "file": "release-source-captures/01-partition-workspace.png",
+      "sha256": "98d918b0ed21b5f0cfb3b08f7057e57974f0bf1ed3ef1116a444fb0d9f8f46c7",
+      "bytes": 131758
+    },
+    {
+      "file": "release-source-captures/02-disk-health.png",
+      "sha256": "9578f44642fbd7e5182d772393a4a51dc1710c0a2f55cce0338017c1c785285d",
+      "bytes": 119572
+    },
+    {
+      "file": "release-source-captures/03-maintenance-tools.png",
+      "sha256": "ce3d8b1671a215a371e3862956acb268d623629db002868e4f4ee9491527c156",
+      "bytes": 127564
+    },
+    {
+      "file": "release-source-captures/04-imaging-and-cloning.png",
+      "sha256": "052304647519db3e9ba07cd6dbb990ffb5ead6da8f4fc40ce4f36b5ac41a6dab",
+      "bytes": 121253
+    },
+    {
+      "file": "review/candidate-01-640.png",
+      "sha256": "cfe5a66621b318adc2f848bd654a903b8f74ee10ff8c5f97879eee93d5fb3ae8",
+      "bytes": 67166
+    },
+    {
+      "file": "review/candidate-01-960.png",
+      "sha256": "279e3b48a7ab202951d464e12acfac6cdc5f273a96095c1f2ea120fbe5fb2c43",
+      "bytes": 120634
+    },
+    {
+      "file": "review/candidate-02-640.png",
+      "sha256": "32eb7448c24d02ae551dd95dad7c4366d35671129f8a450ce1ecccb18d2cbb51",
+      "bytes": 74419
+    },
+    {
+      "file": "review/candidate-02-960.png",
+      "sha256": "12aae7a9c9b23032e2f36b24cb9d1a7e5578d74c4979f45ea2b11ec6a3f200ea",
+      "bytes": 132741
+    },
+    {
+      "file": "review/candidate-comparison.png",
+      "sha256": "260c0337f8a1cde8e44318ec171d0afc840ae2da89b7615de093e876f19c804b",
+      "bytes": 264716
+    },
+    {
+      "file": "review/reference-and-candidates.png",
+      "sha256": "bb8021be7dd4061ad6e534c25f06118288a19f880226df8f84c01a0e280852c5",
+      "bytes": 447264
+    },
+    {
+      "file": "review/selected-640.png",
+      "sha256": "32eb7448c24d02ae551dd95dad7c4366d35671129f8a450ce1ecccb18d2cbb51",
+      "bytes": 74419
+    },
+    {
+      "file": "review/selected-960.png",
+      "sha256": "12aae7a9c9b23032e2f36b24cb9d1a7e5578d74c4979f45ea2b11ec6a3f200ea",
+      "bytes": 132741
+    },
+    {
+      "file": "source/approved-brand-concepts/direction-01-selected-partition-flow.png",
+      "sha256": "808ec531cdf957b7b80d9148fd367680532ed672d7768b36f99068b379061ba5",
+      "bytes": 848172
+    },
+    {
+      "file": "source/approved-brand-concepts/direction-02-partition-scale.png",
+      "sha256": "0bc78522e604cfa2379a333e4922d4bbabc35670f6a05cff69adbfcec0f66e8f",
+      "bytes": 885582
+    },
+    {
+      "file": "source/approved-brand-concepts/direction-03-partition-flow-outline.png",
+      "sha256": "535c99b0a78db81b62fe2586e9cbf174958c60831d109e3345dc6660272a190b",
+      "bytes": 919032
+    },
+    {
+      "file": "source/approved-logo-master.png",
+      "sha256": "808ec531cdf957b7b80d9148fd367680532ed672d7768b36f99068b379061ba5",
+      "bytes": 848172
+    },
+    {
+      "file": "source/previous-social-preview-versioned.png",
+      "sha256": "b6b912f9001ff6508f6ed8764c1b041e10e9cbbc0cd05bbc40347f99a68527f8",
+      "bytes": 190585
+    },
+    {
+      "file": "source/production-mark-before.png",
+      "sha256": "e57073436d17767ff06a2afc3cb15f38e3400fe476ffb5837852b812f945e7d3",
+      "bytes": 702551
+    }
+  ]
+}

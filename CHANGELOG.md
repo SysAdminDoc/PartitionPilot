@@ -1,5 +1,13 @@
 # Changelog
 
+## PartitionPilot v0.9.27 (2026-09-12)
+
+- Added one version-free README hero as the first content, with the approved storage-route identity and a real private-desktop product capture.
+- Chose the safety-led direction after checking two candidates at full size and normal GitHub README width.
+- Preserved the previous versioned social card, source captures, approved brand concepts, rejected direction, comparisons, and final selection in the repository.
+- Added regression checks for one README hero reference, selected-file parity, expected image dimensions, and evergreen visible copy.
+- Refreshed the self-contained .NET runtime and matching Windows management packages to the 10.0.12 servicing release.
+
 ## PartitionPilot v0.9.26 (2026-09-07)
 
 - Preserved all three original logo directions and an untouched copy of the selected storage-route master, with a selection record beside them.

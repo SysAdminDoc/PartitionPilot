@@ -1,10 +1,14 @@
-![PartitionPilot guarded Windows disk management workspace](assets/marketing/readme-hero.png)
+<p align="center">
+  <img src="assets/brand/partitionpilot-mark.png" width="132" alt="PartitionPilot logo">
+</p>
 
-# PartitionPilot
+<h1 align="center">PartitionPilot</h1>
 
-Inspect Windows storage and review a plan before anything changes.
+<p align="center">
+  Inspect Windows storage and review a plan before anything changes.
+</p>
 
-![Version](https://img.shields.io/badge/version-0.9.27-19C8FF)
+![Version](https://img.shields.io/badge/version-0.9.26-19C8FF)
 ![License](https://img.shields.io/badge/license-MIT-5EE0A0)
 ![Platform](https://img.shields.io/badge/platform-Windows%2010%20%7C%2011-F4C96A)
 ![.NET](https://img.shields.io/badge/.NET-10-7C3AED)
@@ -12,6 +16,8 @@ Inspect Windows storage and review a plan before anything changes.
 [Download the latest release](https://github.com/SysAdminDoc/PartitionPilot/releases/latest) · [Read the safety model](#safety-model) · [Use the CLI](#command-line)
 
 PartitionPilot brings disk layout, drive health, recovery evidence, and imaging into one Windows workspace. Changes sit in a pending plan until you apply them. The same safeguards are available through the included `pp.exe` command-line tool.
+
+![PartitionPilot partition workspace](assets/screenshots/01-partition-workspace.png)
 
 ## Why use it
 
@@ -100,7 +106,7 @@ These screens come from the production WPF interface running against PartitionPi
 PartitionPilot supports 64-bit Windows 10 and Windows 11.
 
 1. Open the [latest release](https://github.com/SysAdminDoc/PartitionPilot/releases/latest).
-2. Choose `PartitionPilot-0.9.27-Setup.exe` for normal installation, or download the portable ZIP.
+2. Choose `PartitionPilot-0.9.26-Setup.exe` for normal installation, or download the portable ZIP.
 3. Start in the standard read-only session for inspection. Use **Run as admin** only when a write operation needs elevation.
 
 The current release is not Authenticode-signed because no signing certificate is available. Windows may show SmartScreen the first time it runs. Each release publishes GitHub's server-side digest, and the project also produces SHA-256 manifests during local packaging.

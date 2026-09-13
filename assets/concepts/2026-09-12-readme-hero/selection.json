@@ -1,0 +1,36 @@
+{
+  "repositoryNodeId": "R_kgDOS87h_A",
+  "repository": "SysAdminDoc/PartitionPilot",
+  "reviewDate": "2026-09-12",
+  "selectedCandidate": "readme-hero-candidate-02-safety-led.png",
+  "selectedFinal": "readme-hero-final.png",
+  "productionHero": "../../marketing/readme-hero.png",
+  "socialPreview": "../../social-preview.png",
+  "sha256": "c234f7a382b7d7ebcca1f11bd10b5e74ae63dc4b02eedafb74867d4f3c5f46f5",
+  "dimensions": {
+    "width": 1280,
+    "height": 640,
+    "colorType": "RGB"
+  },
+  "approvedIdentity": "source/approved-logo-master.png",
+  "productEvidence": "release-source-captures/01-partition-workspace.png",
+  "rejected": [
+    {
+      "file": "source/previous-social-preview-versioned.png",
+      "reason": "The embedded application chrome contains a release number, so the card is not evergreen."
+    },
+    {
+      "file": "readme-hero-candidate-01-continuity.png",
+      "reason": "The continuity message is memorable, but the safety-led direction better communicates deliberate disk changes."
+    }
+  ],
+  "checks": {
+    "approvedLogoPreserved": true,
+    "realProductCapture": true,
+    "releaseNumberInArtwork": false,
+    "reviewedAtFullSize": true,
+    "reviewedAt960Pixels": true,
+    "reviewedAt640Pixels": true,
+    "readmeReferenceCount": 1
+  }
+}
