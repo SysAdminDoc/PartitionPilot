@@ -24,8 +24,8 @@ Each component's folder contains the upstream MPL 2.0 license. DiskInfoToolkit's
 | Mono.Posix.NETStandard | 1.0.0 | Microsoft and Mono notices. Its NuGet license link points to [Mono's license collection](https://github.com/mono/mono/blob/0f53e9e151d92944cacab3e24ac359410c606df6/LICENSE). That collection and the patent grant are included unchanged. |
 | System.IO.FileSystem.AccessControl | 5.0.0 | MIT and included third-party notices. |
 | System.IO.Ports | 10.0.3 | MIT and included third-party notices. |
-| System.Management | 10.0.11 | MIT and included third-party notices. |
-| .NET and Windows Desktop runtimes | 10.0.11 | MIT and included third-party notices from the self-contained runtime packages. |
+| System.Management | 10.0.12 | MIT and included third-party notices. |
+| .NET and Windows Desktop runtimes | 10.0.12 | MIT and included third-party notices from the self-contained runtime packages. |
 
 Microsoft components are published through the [.NET project](https://github.com/dotnet/dotnet). Their license texts and notices remain unchanged in the corresponding folders. The bundled .NET runtime also supplies the Windows performance-counter APIs used by PartitionPilot.
 
