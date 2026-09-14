@@ -9,6 +9,16 @@ Inspect Windows storage and review a plan before anything changes.
 ![Platform](https://img.shields.io/badge/platform-Windows%2010%20%7C%2011-F4C96A)
 ![.NET](https://img.shields.io/badge/.NET-10-7C3AED)
 
+<p align="center">
+  <a href="https://ko-fi.com/X8K126YVER">
+    <img height="42" src="https://storage.ko-fi.com/cdn/kofi2.png?v=3" alt="Buy me a coffee on Ko-fi" />
+  </a>
+</p>
+
+<p align="center">
+  <sub><em>If this project helps you, a coffee helps me keep working on it.</em></sub>
+</p>
+
 [Download the latest release](https://github.com/SysAdminDoc/PartitionPilot/releases/latest) · [Read the safety model](#safety-model) · [Use the CLI](#command-line)
 
 PartitionPilot brings disk layout, drive health, recovery evidence, and imaging into one Windows workspace. Changes sit in a pending plan until you apply them. The same safeguards are available through the included `pp.exe` command-line tool.
